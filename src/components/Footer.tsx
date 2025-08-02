@@ -12,17 +12,17 @@ export const Footer = ({ language }: FooterProps) => {
   const socialLinks = [
     {
       icon: <Mail className="h-5 w-5" />,
-      href: 'mailto:marco.rossi@email.com',
+      href: 'mailto:thomas.vignoli@pm.me',
       label: 'Email'
     },
     {
       icon: <Linkedin className="h-5 w-5" />,
-      href: 'https://linkedin.com/in/marco-rossi-devops',
+      href: 'https://linkedin.com/in/thomas-vignoli',
       label: 'LinkedIn'
     },
     {
       icon: <Github className="h-5 w-5" />,
-      href: 'https://github.com/marcorossi',
+      href: 'https://github.com/0xtvignoli',
       label: 'GitHub'
     }
   ];
