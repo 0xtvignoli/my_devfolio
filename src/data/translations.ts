@@ -8,7 +8,7 @@ export const translations = {
     contact: 'Contatti',
     
     // Hero Section
-    heroTitle: 'Marco Rossi',
+    heroTitle: 'Thomas Vignoli',
     heroSubtitle: 'DevOps Engineer',
     heroDescription: 'Esperto in automazione cloud, CI/CD e orchestrazione container. Trasformo idee in infrastrutture scalabili e sicure.',
     heroCTA: 'Scopri di più',
@@ -33,7 +33,7 @@ export const translations = {
     getInTouch: 'Contattami',
     
     // Footer
-    footerText: '© 2024 Marco Rossi. Tutti i diritti riservati.',
+    footerText: '© 2024 Thomas Vignoli. Tutti i diritti riservati.',
     
     // Skills
     terraform: 'Infrastructure as Code',
@@ -54,7 +54,7 @@ export const translations = {
     contact: 'Contact',
     
     // Hero Section
-    heroTitle: 'Marco Rossi',
+    heroTitle: 'Thomas Vignoli',
     heroSubtitle: 'DevOps Engineer',
     heroDescription: 'Expert in cloud automation, CI/CD, and container orchestration. I transform ideas into scalable and secure infrastructures.',
     heroCTA: 'Learn More',
@@ -79,7 +79,7 @@ export const translations = {
     getInTouch: 'Get in Touch',
     
     // Footer
-    footerText: '© 2024 Marco Rossi. All rights reserved.',
+    footerText: '© 2024 Thomas Vignoli. All rights reserved.',
     
     // Skills
     terraform: 'Infrastructure as Code',

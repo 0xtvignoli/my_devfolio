@@ -25,7 +25,7 @@ export const Hero = ({ language }: HeroProps) => {
           <div className="mb-8 scale-in">
             <img
               src={profilePhoto}
-              alt="Marco Rossi"
+              alt="Thomas Vignoli"
               className="w-40 h-40 md:w-48 md:h-48 rounded-full mx-auto shadow-large object-cover border-4 border-white"
             />
           </div>
