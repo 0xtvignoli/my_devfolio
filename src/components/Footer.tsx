@@ -32,7 +32,7 @@ export const Footer = ({ language }: FooterProps) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-center md:text-left">
-            <div className="text-2xl font-bold text-primary mb-2">MR</div>
+            <div className="text-2xl font-bold text-primary mb-2">TV</div>
             <p className="text-muted-foreground text-sm">
               {t.footerText}
             </p>

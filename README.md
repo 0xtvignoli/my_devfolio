@@ -1,73 +1,87 @@
-# Welcome to your Lovable project
+# Thomas Vignoli - DevOps Engineer Portfolio
 
-## Project info
+## About
 
-**URL**: https://lovable.dev/projects/7459db20-ac9e-4927-8fdf-faa75e64714d
+This is the personal portfolio website of Thomas Vignoli, a DevOps Engineer specialized in Terraform, AWS, Azure, Kubernetes, and CI/CD.
 
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/7459db20-ac9e-4927-8fdf-faa75e64714d) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
+## Technologies Used
 
 This project is built with:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- **Vite** - Build tool and development server
+- **TypeScript** - Type-safe JavaScript
+- **React** - UI framework
+- **shadcn/ui** - Component library
+- **Tailwind CSS** - Utility-first CSS framework
+- **React Router** - Client-side routing
+- **React Query** - Data fetching and caching
+- **Vercel Analytics** - Web analytics
+- **Vercel Speed Insights** - Performance monitoring
 
-## How can I deploy this project?
+## Development
 
-Simply open [Lovable](https://lovable.dev/projects/7459db20-ac9e-4927-8fdf-faa75e64714d) and click on Share -> Publish.
+### Prerequisites
 
-## Can I connect a custom domain to my Lovable project?
+- Node.js (version 18 or higher)
+- npm, yarn, pnpm, or bun
 
-Yes, you can!
+### Getting Started
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+1. **Clone the repository**
+   ```bash
+   git clone <your-repo-url>
+   cd infra-vision-site
+   ```
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+2. **Install dependencies**
+   ```bash
+   npm install
+   # or
+   yarn install
+   # or
+   pnpm install
+   # or
+   bun install
+   ```
+
+3. **Start the development server**
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   # or
+   pnpm dev
+   # or
+   bun dev
+   ```
+
+4. **Open your browser**
+   Navigate to `http://localhost:8080` to view the application.
+
+### Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run build:dev` - Build for development
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+
+## Deployment
+
+This site is deployed on Vercel with a custom domain. The deployment is automatically triggered on pushes to the main branch.
+
+## Features
+
+- **Responsive Design** - Optimized for all device sizes
+- **Performance Optimized** - Fast loading with Vite and optimized assets
+- **SEO Friendly** - Proper meta tags and structured data
+- **Analytics** - Vercel Analytics and Speed Insights integration
+- **Modern UI** - Clean, professional design with shadcn/ui components
+
+## Contact
+
+For professional inquiries, please reach out through the contact information provided on the website.
+
+## License
+
+This project is private and proprietary.
