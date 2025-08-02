@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronDown } from 'lucide-react';
 import { translations } from '@/data/translations';
 import { Language } from '@/hooks/useLanguage';
-import profilePhoto from '@/assets/profile-photo.jpg';
+import profilePhoto from '@/assets/profile-photo.png';
 
 interface HeroProps {
   language: Language;
