@@ -7,6 +7,9 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import HelmDeployArticle from "./pages/HelmDeployArticle";
+import K8sProductionArticle from "./pages/K8sProductionArticle";
+import IaCBestPracticesArticle from "./pages/IaCBestPracticesArticle";
 
 const queryClient = new QueryClient();
 
@@ -18,6 +21,9 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/article/helm-deploy" element={<HelmDeployArticle />} />
+          <Route path="/article/k8s-production" element={<K8sProductionArticle />} />
+          <Route path="/article/iac-best-practices" element={<IaCBestPracticesArticle />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

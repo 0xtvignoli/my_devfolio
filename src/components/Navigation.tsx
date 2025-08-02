@@ -25,6 +25,12 @@ export const Navigation = ({ language, onLanguageToggle }: NavigationProps) => {
   }, []);
 
   const scrollToSection = (sectionId: string) => {
+    // If we're on an article page, navigate to home first
+    if (window.location.pathname !== '/') {
+      window.location.href = `/#${sectionId}`;
+      return;
+    }
+    
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
@@ -35,7 +41,7 @@ export const Navigation = ({ language, onLanguageToggle }: NavigationProps) => {
   const navItems = [
     { label: t.home, id: 'home' },
     { label: t.about, id: 'about' },
-    { label: t.experience, id: 'experience' },
+    { label: t.articles, id: 'articles' },
     { label: t.projects, id: 'projects' },
     { label: t.contact, id: 'contact' },
   ];
@@ -46,7 +52,12 @@ export const Navigation = ({ language, onLanguageToggle }: NavigationProps) => {
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
-          <div className="text-xl font-bold text-primary">TV</div>
+          <div 
+            className="text-xl font-bold text-primary cursor-pointer hover:text-blue-600 transition-colors"
+            onClick={() => window.location.href = '/'}
+          >
+            TV
+          </div>
           
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">

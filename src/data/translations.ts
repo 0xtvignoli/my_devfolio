@@ -3,7 +3,7 @@ export const translations = {
     // Navigation
     home: 'Home',
     about: 'Chi Sono',
-    experience: 'Esperienze',
+    articles: 'Articoli',
     projects: 'Progetti',
     contact: 'Contatti',
     
@@ -18,8 +18,21 @@ export const translations = {
     aboutDescription: 'Sono un DevOps Engineer appassionato con oltre 5 anni di esperienza nella progettazione e implementazione di soluzioni cloud scalabili. La mia missione è creare ponti tra sviluppo e operations, automatizzando processi e ottimizzando l\'efficienza.',
     skills: 'Competenze Principali',
     
-    // Experience Section
-    experienceTitle: 'Esperienza Professionale',
+    // Articles Section
+    articlesTitle: 'Articoli',
+    articlesDescription: 'Condivido le mie esperienze e best practices nel mondo DevOps',
+    readMore: 'Leggi di più',
+    backToArticles: 'Torna agli articoli',
+    
+    // Article Titles
+    helmDeployTitle: 'Deploy con Helm + Cheat Sheet',
+    k8sProductionTitle: 'Gestione Cluster Kubernetes in Produzione',
+    iacBestPracticesTitle: 'Best Practices per Infrastructure as Code',
+    
+    // Article Descriptions
+    helmDeployDesc: 'Guida completa al deployment con Helm e comandi essenziali',
+    k8sProductionDesc: 'Strategie e strumenti per gestire cluster Kubernetes in produzione',
+    iacBestPracticesDesc: 'Principi e pattern per un IaC efficace e manutenibile',
     
     // Projects Section
     projectsTitle: 'Progetti',
@@ -49,7 +62,7 @@ export const translations = {
     // Navigation
     home: 'Home',
     about: 'About',
-    experience: 'Experience',
+    articles: 'Articles',
     projects: 'Projects',
     contact: 'Contact',
     
@@ -64,8 +77,21 @@ export const translations = {
     aboutDescription: 'I\'m a passionate DevOps Engineer with over 5 years of experience in designing and implementing scalable cloud solutions. My mission is to bridge development and operations, automating processes and optimizing efficiency.',
     skills: 'Core Skills',
     
-    // Experience Section
-    experienceTitle: 'Professional Experience',
+    // Articles Section
+    articlesTitle: 'Articles',
+    articlesDescription: 'Sharing my experiences and best practices in the DevOps world',
+    readMore: 'Read More',
+    backToArticles: 'Back to Articles',
+    
+    // Article Titles
+    helmDeployTitle: 'Helm Deploy + Cheat Sheet',
+    k8sProductionTitle: 'Managing Kubernetes Clusters in Production',
+    iacBestPracticesTitle: 'Infrastructure as Code Best Practices',
+    
+    // Article Descriptions
+    helmDeployDesc: 'Complete guide to Helm deployment and essential commands',
+    k8sProductionDesc: 'Strategies and tools for managing Kubernetes clusters in production',
+    iacBestPracticesDesc: 'Principles and patterns for effective and maintainable IaC',
     
     // Projects Section
     projectsTitle: 'Projects',

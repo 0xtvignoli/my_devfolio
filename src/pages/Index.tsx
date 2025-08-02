@@ -2,7 +2,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { Navigation } from '@/components/Navigation';
 import { Hero } from '@/components/Hero';
 import { About } from '@/components/About';
-import { Experience } from '@/components/Experience';
+import { Articles } from '@/components/Articles';
 import { Projects } from '@/components/Projects';
 import { Contact } from '@/components/Contact';
 import { Footer } from '@/components/Footer';
@@ -15,7 +15,7 @@ const Index = () => {
       <Navigation language={language} onLanguageToggle={toggleLanguage} />
       <Hero language={language} />
       <About language={language} />
-      <Experience language={language} />
+      <Articles language={language} />
       <Projects language={language} />
       <Contact language={language} />
       <Footer language={language} />
