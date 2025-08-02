@@ -15,21 +15,18 @@ export const Contact = ({ language }: ContactProps) => {
     {
       icon: <Mail className="h-6 w-6" />,
       label: 'Email',
-      value: 'thomas.vignoli@pm.me',
       href: 'mailto:thomas.vignoli@pm.me',
       color: 'bg-red-100 text-red-800'
     },
     {
       icon: <Linkedin className="h-6 w-6" />,
       label: 'LinkedIn',
-      value: 'thomas-vignoli',
       href: 'https://linkedin.com/in/thomas-vignoli',
       color: 'bg-blue-100 text-blue-800'
     },
     {
       icon: <Github className="h-6 w-6" />,
       label: 'GitHub',
-      value: 'thomas-vignoli',
       href: 'https://github.com/0xtvignoli',
       color: 'bg-gray-100 text-gray-800'
     }
