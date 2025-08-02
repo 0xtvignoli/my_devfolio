@@ -29,10 +29,7 @@ export const ArticlePage = ({
   const [isVisible, setIsVisible] = useState(false);
   const t = translations[language];
 
-  // Debug: log language changes
-  useEffect(() => {
-    console.log('ArticlePage language changed:', language);
-  }, [language]);
+
 
   useEffect(() => {
     // Scroll to top when component mounts

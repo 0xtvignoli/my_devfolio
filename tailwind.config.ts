@@ -8,6 +8,8 @@ export default {
 		"./app/**/*.{ts,tsx}",
 		"./src/**/*.{ts,tsx}",
 	],
+	// Purge unused CSS in production
+	safelist: [],
 	prefix: "",
 	theme: {
 		container: {
