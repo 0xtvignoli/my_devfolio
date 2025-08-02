@@ -8,9 +8,6 @@ import { SpeedInsights } from "@vercel/speed-insights/react";
 import { lazy, Suspense } from "react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import HelmDeployArticle from "./pages/HelmDeployArticle";
-import K8sProductionArticle from "./pages/K8sProductionArticle";
-import IaCBestPracticesArticle from "./pages/IaCBestPracticesArticle";
 
 // Lazy load article components
 const HelmDeployArticle = lazy(() => import("./pages/HelmDeployArticle"));
