@@ -7,6 +7,8 @@ import { person, projects } from "@/lib/data";
 import { ArrowRight, Download, Mail } from "lucide-react";
 import Link from "next/link";
 import { ProjectCard } from "@/components/sections/project-card";
+import { SectionHeader } from "@/components/sections/section-header";
+import { StatsCards } from "@/components/sections/stats-cards";
 
 const skills = [
     "Kubernetes", "Docker", "Terraform", "Ansible", "Jenkins", 
@@ -29,6 +31,12 @@ const labProject = {
 
 export default function HomePage() {
   const featuredProjects = [labProject, ...projects.slice(0, 2)];
+  const stats = [
+    { label: "Production uptime", value: "99.99%" },
+    { label: "Pipelines automated", value: "50+" },
+    { label: "Clusters managed", value: "12" },
+    { label: "Incidents resolved", value: "200+" },
+  ]
 
   return (
     <div className="space-y-20 sm:space-y-32">
@@ -66,8 +74,8 @@ export default function HomePage() {
       </section>
 
       {/* Core Technologies & Skills Section */}
-      <section className="text-center space-y-8">
-        <h2 className="text-3xl font-bold font-headline">Core Technologies & Skills</h2>
+      <section className="space-y-8">
+        <SectionHeader title="Core Technologies & Skills" align="center" subtitle="Tools and platforms I use to build resilient systems." />
         <div className="flex flex-wrap justify-center gap-2 md:gap-4">
           {skills.map(skill => (
             <Badge key={skill} variant="secondary" className="text-sm px-4 py-2 rounded-lg">
@@ -77,9 +85,14 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Quick Stats */}
+      <section>
+        <StatsCards items={stats} />
+      </section>
+
       {/* Featured Projects Section */}
       <section className="space-y-8">
-        <h2 className="text-3xl font-bold font-headline text-center">Featured Projects</h2>
+        <SectionHeader title="Featured Projects" align="center" subtitle="A snapshot of work spanning cloud, DevOps, and platform engineering." />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {featuredProjects.map(project => (
             <ProjectCard key={project.id} project={project} />

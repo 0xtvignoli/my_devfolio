@@ -4,18 +4,12 @@ import { articles } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { SectionHeader } from "@/components/sections/section-header";
 
 export default function ArticlesPage() {
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-headline text-3xl font-bold tracking-tight">
-          Articles
-        </h1>
-        <p className="text-muted-foreground">
-          Thoughts on technology, infrastructure, and software engineering.
-        </p>
-      </div>
+  <SectionHeader align="left" title="Articles" subtitle="Thoughts on technology, infrastructure, and software engineering." />
       <div className="space-y-6">
         {articles.map((article) => (
           <Link key={article.id} href={`/articles/${article.id}`} className="group block">
