@@ -1,12 +1,19 @@
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
+  // Ensure Vercel picks up the output directory (default .next). We also alias it to 'dist'.
+  distDir: 'dist',
+  typescript: { ignoreBuildErrors: true },
+  eslint: { ignoreDuringBuilds: true },
+  webpack: (config) => {
+    // Ignore optional server-only modules that some deps reference but we don't use.
+    config.resolve = config.resolve || {};
+    config.resolve.alias = {
+      ...(config.resolve?.alias || {}),
+      '@opentelemetry/exporter-jaeger': false,
+      '@genkit-ai/firebase': false,
+    } as typeof config.resolve.alias;
+    return config;
   },
   images: {
     remotePatterns: [
