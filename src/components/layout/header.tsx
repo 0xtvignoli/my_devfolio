@@ -3,7 +3,7 @@
 
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { MainNav } from "./main-nav";
 import { Code2 } from "lucide-react";
@@ -27,7 +27,10 @@ export function Header() {
               <span className="sr-only">Toggle Menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="p-0 w-64 bg-sidebar border-sidebar-border text-sidebar-foreground">
+  <SheetContent side="left" className="p-0 w-64 bg-sidebar border-sidebar-border text-sidebar-foreground">
+     {/* Accessible title/description for Sheet (Radix Dialog) */}
+     <SheetTitle className="sr-only">Main navigation</SheetTitle>
+     <SheetDescription className="sr-only">Use this panel to navigate between sections of the site.</SheetDescription>
            <div className="h-16 flex items-center px-4 border-b border-sidebar-border">
             <Link href="/" className="flex items-center gap-3">
                 <Code2 className="h-8 w-8 text-primary" />

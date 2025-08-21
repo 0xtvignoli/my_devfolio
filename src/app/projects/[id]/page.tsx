@@ -83,7 +83,14 @@ export default function ProjectDetailsPage({ params }: Props) {
                 <CarouselItem key={index}>
                     <Card className="overflow-hidden">
                         <div className="relative aspect-video w-full">
-                            <Image src={image.url} alt={image.alt} data-ai-hint={image.aiHint} fill className="object-cover"/>
+                            <Image
+                              src={image.url}
+                              alt={image.alt}
+                              data-ai-hint={image.aiHint}
+                              fill
+                              sizes="100vw"
+                              className="object-cover"
+                            />
                         </div>
                     </Card>
                 </CarouselItem>
