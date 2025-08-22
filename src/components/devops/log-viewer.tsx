@@ -69,17 +69,17 @@ export function LogViewer({ activeTab }: LogViewerProps) {
   }
 
   return (
-    <Card className="flex flex-col h-full max-h-[40vh]">
+    <Card className="flex flex-col h-[55vh] min-h-[400px]">
       <CardHeader>
         <CardTitle>{isScenarioLog ? "Scenario Log Stream" : "Interactive Terminal"}</CardTitle>
         <CardDescription>
           {isScenarioLog ? "Live logs from the AI-generated pipeline run." : "Simulated shell for interacting with the production environment."}
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex-1 flex flex-col overflow-hidden">
-        <ScrollArea className="flex-1" viewportRef={viewportRef}>
+      <CardContent className="flex-1 flex flex-col min-h-0">
+        <ScrollArea className="flex-1 border rounded-md bg-background/50" viewportRef={viewportRef}>
           <div
-            className="p-4 font-mono text-sm"
+            className="p-4 font-mono text-sm space-y-1"
           >
             {displayedLogs.map((log, index) => (
               <div

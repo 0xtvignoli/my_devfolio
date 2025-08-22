@@ -8,8 +8,9 @@ const nextConfig: NextConfig = {
   // Turbopack stable config (replaces deprecated experimental.turbo)
   turbopack: {
     resolveAlias: {
-      '@opentelemetry/exporter-jaeger': require.resolve('./src/empty-module.ts'),
-      '@genkit-ai/firebase': require.resolve('./src/empty-module.ts'),
+      // Map optional server-only deps to a local empty stub to avoid resolution errors in dev.
+      '@opentelemetry/exporter-jaeger': './src/empty-module',
+      '@genkit-ai/firebase': './src/empty-module',
     },
   },
   webpack: (config) => {
