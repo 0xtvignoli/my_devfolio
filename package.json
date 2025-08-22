@@ -4,7 +4,7 @@
   "private": true,
   "engines": {
     "node": "20.x",
-    "npm": ">=10 <11.99" 
+    "npm": ">=10 <11.99"
   },
   "scripts": {
     "dev": "node scripts/dev.js",
@@ -16,9 +16,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@genkit-ai/firebase": "^1.14.1",
     "@genkit-ai/googleai": "^1.14.1",
     "@genkit-ai/next": "^1.14.1",
-  "@genkit-ai/firebase": "^1.14.1",
     "@hookform/resolvers": "^4.1.3",
     "@radix-ui/react-accordion": "^1.2.3",
     "@radix-ui/react-alert-dialog": "^1.1.6",
@@ -48,7 +48,8 @@
     "embla-carousel-react": "^8.6.0",
     "firebase": "^11.9.1",
     "framer-motion": "^11.2.12",
-  "genkit": "^1.14.1",
+    "genkit": "^1.14.1",
+    "hammerjs": "2.0.8",
     "lucide-react": "^0.475.0",
     "next": "^15.3.3",
     "next-themes": "^0.3.0",

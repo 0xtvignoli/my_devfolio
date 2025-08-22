@@ -13,7 +13,7 @@ import { Layers, ListChecks, BrainCircuit, Server } from "lucide-react";
 import { ChaosControl } from "@/components/devops/chaos-control";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClusterStatus } from "@/components/devops/cluster-status";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import dynamic from 'next/dynamic';
 
 
@@ -51,13 +51,48 @@ const renderSkeletons = () => (
 function LabPageContent() {
   const { metrics, isLoading, pipelineStatus } = useDevopsSim();
   const [activeTab, setActiveTab] = useState<'prod-workload' | 'ai-scenario'>("prod-workload");
+  const scenarioInnerTabRef = useRef<"pipeline" | "services">("pipeline");
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const scenarioTabsRef = useRef<HTMLDivElement | null>(null);
+
+  // Dynamically import Hammer only on client
+  useEffect(() => {
+    let hammerMain: any; let hammerScenario: any;
+    (async () => {
+      const Hammer = (await import('hammerjs')).default; // hammerjs has default export
+      if (containerRef.current) {
+        hammerMain = new Hammer(containerRef.current);
+        hammerMain.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL, velocity: 0.2, threshold: 5 });
+        hammerMain.on('swipeleft', () => setActiveTab(prev => prev === 'prod-workload' ? 'ai-scenario' : prev));
+        hammerMain.on('swiperight', () => setActiveTab(prev => prev === 'ai-scenario' ? 'prod-workload' : prev));
+      }
+      if (scenarioTabsRef.current) {
+        hammerScenario = new Hammer(scenarioTabsRef.current);
+        hammerScenario.get('swipe').set({ direction: Hammer.DIRECTION_HORIZONTAL, velocity: 0.2, threshold: 5 });
+        hammerScenario.on('swipeleft', () => {
+          scenarioInnerTabRef.current = 'services';
+          const btn = scenarioTabsRef.current?.querySelector('[data-value="services"]') as HTMLElement | null;
+          btn?.click();
+        });
+        hammerScenario.on('swiperight', () => {
+          scenarioInnerTabRef.current = 'pipeline';
+          const btn = scenarioTabsRef.current?.querySelector('[data-value="pipeline"]') as HTMLElement | null;
+          btn?.click();
+        });
+      }
+    })();
+    return () => {
+      hammerMain?.destroy?.();
+      hammerScenario?.destroy?.();
+    };
+  }, []);
   
   if (isLoading) {
     return renderSkeletons();
   }
 
   return (
-    <div className="space-y-6 h-full flex flex-col">
+    <div ref={containerRef} className="space-y-6 h-full flex flex-col touch-pan-y select-none">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="flex-1 space-y-1">
            <h1 className="font-headline text-3xl font-bold tracking-tight text-primary">
@@ -132,7 +167,7 @@ function LabPageContent() {
                             <TabsTrigger value="pipeline"><ListChecks className="mr-2 h-4 w-4" />Pipeline</TabsTrigger>
                             <TabsTrigger value="services"><Layers className="mr-2 h-4 w-4" />Services</TabsTrigger>
                         </TabsList>
-                        <TabsContent value="pipeline" className="mt-4">
+                        <TabsContent value="pipeline" className="mt-4" ref={scenarioTabsRef as any}>
                             <DeploymentPipeline />
                         </TabsContent>
                         <TabsContent value="services" className="mt-4">
