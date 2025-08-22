@@ -19,7 +19,16 @@ import type {
   IncidentType,
   ChaosExperiment,
 } from '@/lib/types';
-import { generateScenario, type Scenario } from '@/ai/flows/generate-scenario';
+// Local Scenario type to avoid importing server-only AI code into the client bundle
+type Scenario = {
+  scenarioTitle: string;
+  scenarioDescription: string;
+  isIncident: boolean;
+  services: string[];
+  pipeline: Array<{ name: string; duration: number; status: 'success' | 'failure'; logOutput?: string }>;
+  logTheme: string;
+  affectedServices?: Array<{ name: string; status: 'OPERATIONAL' | 'DEGRADED' | 'OUTAGE'; impactNote: string }>; 
+};
 
 const MAX_METRICS = 30;
 const MAX_LOGS = 200;
@@ -766,7 +775,9 @@ export const DevopsSimProvider = ({ children }: { children: React.ReactNode }) =
 
         // Step 2: Generate and set up AI scenario in parallel
         addScenarioLog('INFO', 'Generating a unique DevOps scenario with AI...');
-        const scenario = await generateScenario();
+        const res = await fetch('/api/generate-scenario', { method: 'GET' });
+        if (!res.ok) throw new Error(`API responded ${res.status}`);
+        const scenario: Scenario = await res.json();
         if (!isMounted) return;
 
         dispatch({ type: 'SET_SCENARIO', payload: { scenario } });

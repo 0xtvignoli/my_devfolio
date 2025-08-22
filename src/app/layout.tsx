@@ -55,9 +55,31 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Prefer configured site URL, fallback to metadata/openGraph default
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://your-domain.com';
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: person.name,
+    jobTitle: person.roleTitle,
+    description: person.bio,
+    url: siteUrl,
+    email: person.email ? `mailto:${person.email}` : undefined,
+    sameAs: [
+      person.social.github,
+      person.social.linkedin,
+      person.social.twitter,
+    ].filter(Boolean),
+  } as const;
   return (
     <html lang="en" suppressHydrationWarning>
-      <head />
+      <head>
+        <script
+          type="application/ld+json"
+          // JSON-LD must be a string
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body className={`${inter.className} font-body bg-background text-foreground antialiased`}>
         <ThemeProvider
           attribute="class"

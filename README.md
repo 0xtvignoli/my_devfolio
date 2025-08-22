@@ -52,6 +52,15 @@ Personal portfolio of Thomas Vignoli, DevOps Engineer specialized in Terraform, 
 
 Create a `.env.local` for local development. Client-exposed variables must be prefixed with `NEXT_PUBLIC_`.
 
+Recommended variables:
+
+- `NEXT_PUBLIC_SITE_URL` — Absolute site URL used in metadata/JSON-LD (e.g., `https://example.com`).
+
+Notes:
+
+- JSON-LD Person structured data is injected in `src/app/layout.tsx` and uses `NEXT_PUBLIC_SITE_URL` as the canonical `url`.
+- Never commit secrets. Only expose values with the `NEXT_PUBLIC_` prefix if they are safe for clients.
+
 ## Deployment
 
 This project can be deployed to Vercel or Firebase App Hosting. Choose one and configure:

@@ -26,11 +26,12 @@ const StackBlitzIcon = () => (
 );
 
 type Props = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const project = projects.find((p) => p.id === params.id);
+  const { id } = await params;
+  const project = projects.find((p) => p.id === id);
   if (!project) {
     return { title: 'Project Not Found' };
   }
@@ -51,8 +52,9 @@ export function generateStaticParams() {
   }));
 }
 
-export default function ProjectDetailsPage({ params }: Props) {
-  const project = projects.find((p) => p.id === params.id);
+export default async function ProjectDetailsPage({ params }: Props) {
+  const { id } = await params;
+  const project = projects.find((p) => p.id === id);
 
   if (!project) {
     notFound();

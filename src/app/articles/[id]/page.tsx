@@ -7,11 +7,12 @@ import type { Metadata } from 'next';
 import { person } from '@/lib/data';
 
 type Props = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const article = articles.find((p) => p.id === params.id);
+  const { id } = await params;
+  const article = articles.find((p) => p.id === id);
   if (!article) {
     return { title: 'Article Not Found' };
   }
@@ -31,8 +32,9 @@ export function generateStaticParams() {
   }));
 }
 
-export default function ArticleDetailsPage({ params }: Props) {
-  const article = articles.find((p) => p.id === params.id);
+export default async function ArticleDetailsPage({ params }: Props) {
+  const { id } = await params;
+  const article = articles.find((p) => p.id === id);
 
   if (!article) {
     notFound();
