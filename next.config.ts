@@ -5,6 +5,13 @@ const nextConfig: NextConfig = {
   distDir: 'dist',
   typescript: { ignoreBuildErrors: true },
   eslint: { ignoreDuringBuilds: true },
+  // Turbopack stable config (replaces deprecated experimental.turbo)
+  turbopack: {
+    resolveAlias: {
+      '@opentelemetry/exporter-jaeger': require.resolve('./src/empty-module.ts'),
+      '@genkit-ai/firebase': require.resolve('./src/empty-module.ts'),
+    },
+  },
   webpack: (config) => {
     // Ignore optional server-only modules that some deps reference but we don't use.
     config.resolve = config.resolve || {};
