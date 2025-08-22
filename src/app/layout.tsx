@@ -1,4 +1,3 @@
-
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
@@ -9,13 +8,17 @@ import { ThemeProvider } from '@/providers/theme-provider';
 import dynamic from 'next/dynamic';
 import { SidebarSkeleton } from '@/components/layout/sidebar-skeleton';
 import { HeaderSkeleton } from '@/components/layout/header-skeleton';
+import { Inter } from 'next/font/google';
 
-const Sidebar = dynamic(() => import('@/components/layout/sidebar').then(mod => mod.Sidebar), {
+// Define fonts at module scope (recommended for Server Components)
+const inter = Inter({ subsets: ['latin'], display: 'swap' });
+
+const Sidebar = dynamic(() => import('@/components/layout/sidebar').then((mod) => mod.Sidebar), {
   loading: () => <SidebarSkeleton />,
 });
 
-const Header = dynamic(() => import('@/components/layout/header').then(mod => mod.Header), {
-    loading: () => <HeaderSkeleton />
+const Header = dynamic(() => import('@/components/layout/header').then((mod) => mod.Header), {
+  loading: () => <HeaderSkeleton />,
 });
 
 export const metadata: Metadata = {
@@ -54,19 +57,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body className="font-body bg-background text-foreground antialiased">
+      <head />
+      <body className={`${inter.className} font-body bg-background text-foreground antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

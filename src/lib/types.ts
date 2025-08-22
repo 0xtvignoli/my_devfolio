@@ -1,4 +1,3 @@
-
 export type Person = {
   name: string;
   roleTitle: string;
@@ -27,13 +26,13 @@ export type Person = {
 };
 
 export type Article = {
-    id: string;
-    title: string;
-    summary: string;
-    date: string;
-    tags: string[];
-    content: string;
-}
+  id: string;
+  title: string;
+  summary: string;
+  date: string;
+  tags: string[];
+  content: string;
+};
 
 export type Project = {
   id: string;
@@ -67,7 +66,7 @@ export type Metric = {
   [key: string]: number | string;
 };
 
-export type ServiceStatus = "OPERATIONAL" | "DEGRADED" | "OUTAGE";
+export type ServiceStatus = 'OPERATIONAL' | 'DEGRADED' | 'OUTAGE';
 
 export type Service = {
   id: string;
@@ -76,7 +75,7 @@ export type Service = {
   pods: string[];
 };
 
-export type LogLevel = "INFO" | "WARN" | "ERROR" | "DEBUG";
+export type LogLevel = 'INFO' | 'WARN' | 'ERROR' | 'DEBUG';
 
 export type LogEntry = {
   timestamp: Date;
@@ -87,12 +86,12 @@ export type LogEntry = {
 
 export type PipelineStage = {
   name: string;
-  status: "pending" | "running" | "success" | "failure";
+  status: 'pending' | 'running' | 'success' | 'failure';
   duration?: number;
   logOutput?: string;
 };
 
-export type IncidentType = "pod-delete" | "container-kill" | "network-latency";
+export type IncidentType = 'pod-delete' | 'container-kill' | 'network-latency';
 
 export type ChaosExperiment = {
   type: IncidentType;

@@ -1,8 +1,7 @@
+'use client';
 
-"use client";
-
-import { useDevopsSim } from "@/providers/devops-sim-provider";
-import { Button } from "@/components/ui/button";
+import { useDevopsSim } from '@/providers/devops-sim-provider';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,8 +13,8 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuPortal,
-} from "@/components/ui/dropdown-menu";
-import { AlertTriangle, ShieldCheck, Zap } from "lucide-react";
+} from '@/components/ui/dropdown-menu';
+import { AlertTriangle, ShieldCheck, Zap } from 'lucide-react';
 
 export function ChaosControl() {
   const { incident, availableExperiments, services, runCommand, isBusy } = useDevopsSim();
@@ -55,7 +54,7 @@ export function ChaosControl() {
                 {services.map((service) => (
                   <DropdownMenuItem
                     key={service.id}
-                    onClick={() => runCommand("run chaos", { experiment: exp, service })}
+                    onClick={() => runCommand('run chaos', { experiment: exp, service })}
                     disabled={isBusy}
                   >
                     {service.name}

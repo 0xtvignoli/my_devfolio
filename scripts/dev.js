@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-const net = require("net");
-const { spawn } = require("child_process");
+const net = require('net');
+const { spawn } = require('child_process');
 
 const BASE_PORT = Number(process.env.BASE_PORT || 9002);
 const MAX_TRIES = Number(process.env.MAX_PORT_TRIES || 100);
@@ -10,8 +10,8 @@ function checkPort(port) {
   return new Promise((resolve) => {
     const server = net.createServer();
     server.unref();
-    server.on("error", () => resolve(false));
-    server.listen({ port, host: "::" }, () => {
+    server.on('error', () => resolve(false));
+    server.listen({ port, host: '::' }, () => {
       const assigned = server.address();
       server.close(() => resolve(assigned && assigned.port === port));
     });
@@ -21,7 +21,7 @@ function checkPort(port) {
 async function findAvailablePort(start) {
   for (let i = 0; i < MAX_TRIES; i++) {
     const port = start + i;
-    // eslint-disable-next-line no-await-in-loop
+     
     const free = await checkPort(port);
     if (free) return port;
   }
@@ -31,7 +31,7 @@ async function findAvailablePort(start) {
 async function main() {
   const port = await findAvailablePort(BASE_PORT);
 
-  if (process.env.PORT_CHECK_ONLY === "1") {
+  if (process.env.PORT_CHECK_ONLY === '1') {
     console.log(String(port));
     return;
   }
@@ -41,12 +41,12 @@ async function main() {
   }
 
   const child = spawn(
-    process.platform === "win32" ? "npx.cmd" : "npx",
-    ["next", "dev", "--turbopack", "-p", String(port)],
+    process.platform === 'win32' ? 'npx.cmd' : 'npx',
+    ['next', 'dev', '--turbopack', '-p', String(port)],
     {
-      stdio: "inherit",
+      stdio: 'inherit',
       env: { ...process.env, PORT: String(port) },
-    }
+    },
   );
 
   const forward = (signal) => {
@@ -57,10 +57,10 @@ async function main() {
     }
   };
 
-  process.on("SIGINT", () => forward("SIGINT"));
-  process.on("SIGTERM", () => forward("SIGTERM"));
+  process.on('SIGINT', () => forward('SIGINT'));
+  process.on('SIGTERM', () => forward('SIGTERM'));
 
-  child.on("exit", (code) => process.exit(code ?? 0));
+  child.on('exit', (code) => process.exit(code ?? 0));
 }
 
 main().catch((err) => {

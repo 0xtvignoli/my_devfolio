@@ -1,10 +1,11 @@
-import type {NextConfig} from 'next';
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   // Ensure Vercel picks up the output directory (default .next). We also alias it to 'dist'.
   distDir: 'dist',
-  typescript: { ignoreBuildErrors: true },
-  eslint: { ignoreDuringBuilds: true },
+  // Do not ignore type or lint errors in production builds to prevent shipping broken code.
+  typescript: { ignoreBuildErrors: false },
+  eslint: { ignoreDuringBuilds: false },
   // Turbopack stable config (replaces deprecated experimental.turbo)
   turbopack: {
     resolveAlias: {

@@ -1,0 +1,8 @@
+dist
+.next
+node_modules
+.vercel
+coverage
+*.log
+.genkit
+.env*

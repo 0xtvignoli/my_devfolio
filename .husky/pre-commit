@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+# Husky v9+: no need to source internal helper
+
+npx --no-install lint-staged

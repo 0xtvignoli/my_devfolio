@@ -1,99 +1,112 @@
-"use client";
+'use client';
 
-import React, { useEffect, useRef, useState } from "react";
-import { createPopper, type Instance, type Placement, type Modifier } from "@popperjs/core";
-import ReactDOM from "react-dom";
+import React, { useEffect, useRef, useState } from 'react';
+import { createPopper, type Instance, type Placement, type Modifier } from '@popperjs/core';
+import ReactDOM from 'react-dom';
 
 export interface PopperProps {
   anchor: HTMLElement | null;
   open: boolean;
   placement?: Placement;
   offset?: [number, number];
-  strategy?: "fixed" | "absolute";
+  strategy?: 'fixed' | 'absolute';
   className?: string;
   children: React.ReactNode;
   modifiers?: Modifier<any, any>[];
   withArrow?: boolean;
-  elevation?: "sm" | "md" | "lg";
+  elevation?: 'sm' | 'md' | 'lg';
   radius?: string; // tailwind radius class e.g. 'rounded-md'
-  tone?: "default" | "inverted";
+  tone?: 'default' | 'inverted';
 }
 
 // Lightweight popper wrapper. Renders nothing server-side; positions after mount.
 export const Popper: React.FC<PopperProps> = ({
   anchor,
   open,
-  placement = "bottom-start",
+  placement = 'bottom-start',
   offset = [0, 8],
-  strategy = "absolute",
-  className = "",
+  strategy = 'absolute',
+  className = '',
   children,
   modifiers = [],
   withArrow = true,
-  elevation = "md",
-  radius = "rounded-md",
-  tone = "default"
+  elevation = 'md',
+  radius = 'rounded-md',
+  tone = 'default',
 }) => {
   const ref = useRef<HTMLDivElement | null>(null);
   const arrowRef = useRef<HTMLDivElement | null>(null);
   const popperInstance = useRef<Instance | null>(null);
-  const [, forceUpdate] = useState(0); // trigger rerender once mounted
+  const [, forceUpdate] = useState<number>(0); // trigger rerender once mounted
+
+  // Normalize dependencies (kept for potential stability), but also include raw values
+  const offsetKey = JSON.stringify(offset);
+  const modifiersKey = JSON.stringify(modifiers.map((m) => (m && (m as any).name) || 'custom'));
 
   useEffect(() => {
     if (!open) return () => {};
     if (!anchor || !ref.current) return () => {};
     // Create instance
-  popperInstance.current = createPopper(anchor, ref.current, {
+    popperInstance.current = createPopper(anchor, ref.current, {
       placement,
       strategy,
       modifiers: [
-        { name: "offset", options: { offset } },
-        { name: "preventOverflow", options: { padding: 8 } },
-        { name: "flip", options: { fallbackPlacements: ["bottom-start", "top-start", "right", "left"] } },
-        ...(withArrow ? [{
-          name: 'arrow',
-          enabled: true,
-          phase: 'main',
-          fn: () => {}, // core arrow logic handled internally by popper's bundled arrow modifier; placeholder to satisfy type
-          options: { element: arrowRef.current, padding: 6 }
-        } as unknown as Modifier<'arrow', any>] : []),
+        { name: 'offset', options: { offset } },
+        { name: 'preventOverflow', options: { padding: 8 } },
+        {
+          name: 'flip',
+          options: { fallbackPlacements: ['bottom-start', 'top-start', 'right', 'left'] },
+        },
+        ...(withArrow
+          ? [
+              {
+                name: 'arrow',
+                enabled: true,
+                phase: 'main',
+                fn: () => {}, // core arrow logic handled internally by popper's bundled arrow modifier; placeholder to satisfy type
+                options: { element: arrowRef.current, padding: 6 },
+              } as unknown as Modifier<'arrow', any>,
+            ]
+          : []),
         ...modifiers,
       ],
     });
     // Update on next tick (fonts/layout)
     requestAnimationFrame(() => {
       popperInstance.current?.update();
-      forceUpdate(x => x + 1);
+      forceUpdate((x) => x + 1);
     });
     return () => {
       popperInstance.current?.destroy();
       popperInstance.current = null;
     };
-  }, [open, anchor, placement, strategy, JSON.stringify(offset), JSON.stringify(modifiers)]);
+  }, [open, anchor, placement, strategy, offset, modifiers, withArrow, offsetKey, modifiersKey]);
 
   // Recompute when window resizes
   useEffect(() => {
     if (!open) return;
     const handler = () => popperInstance.current?.update();
-    window.addEventListener("resize", handler);
-    window.addEventListener("scroll", handler, true);
+    window.addEventListener('resize', handler);
+    window.addEventListener('scroll', handler, true);
     return () => {
-      window.removeEventListener("resize", handler);
-      window.removeEventListener("scroll", handler, true);
+      window.removeEventListener('resize', handler);
+      window.removeEventListener('scroll', handler, true);
     };
   }, [open]);
 
-  if (typeof document === "undefined") return null; // SSR guard
+  if (typeof document === 'undefined') return null; // SSR guard
   if (!open) return null;
 
-  const elevationMap = {
+  type Elevation = 'sm' | 'md' | 'lg';
+  const elevationMap: Record<Elevation, string> = {
     sm: 'shadow-sm',
     md: 'shadow-md',
-    lg: 'shadow-xl'
-  } as const;
-  const toneClasses = tone === 'inverted'
-    ? 'bg-foreground text-background border-border'
-    : 'bg-popover/95 backdrop-blur supports-[backdrop-filter]:bg-popover/80 text-popover-foreground border-border';
+    lg: 'shadow-xl',
+  };
+  const toneClasses =
+    tone === 'inverted'
+      ? 'bg-foreground text-background border-border'
+      : 'bg-popover/95 backdrop-blur supports-[backdrop-filter]:bg-popover/80 text-popover-foreground border-border';
   const panel = (
     <div
       ref={ref}

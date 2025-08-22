@@ -1,6 +1,5 @@
-
-import Link from "next/link";
-import Image from "next/image";
+import Link from 'next/link';
+import Image from 'next/image';
 import {
   Card,
   CardContent,
@@ -8,10 +7,10 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import type { Project } from "@/lib/types";
-import { Badge } from "@/components/ui/badge";
-import { ArrowRight } from "lucide-react";
+} from '@/components/ui/card';
+import type { Project } from '@/lib/types';
+import { Badge } from '@/components/ui/badge';
+import { ArrowRight } from 'lucide-react';
 
 type ProjectCardProps = {
   project: Project;
@@ -43,7 +42,9 @@ export function ProjectCard({ project }: ProjectCardProps) {
         <CardContent className="flex-1">
           <div className="flex flex-wrap gap-2">
             {project.stack.slice(0, 4).map((tech) => (
-              <Badge key={tech} variant="secondary">{tech}</Badge>
+              <Badge key={tech} variant="secondary">
+                {tech}
+              </Badge>
             ))}
           </div>
         </CardContent>

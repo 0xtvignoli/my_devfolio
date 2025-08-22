@@ -1,9 +1,8 @@
+'use client';
 
-"use client";
-
-import { MainNav } from "@/components/layout/main-nav";
-import { Code2 } from "lucide-react";
-import Link from "next/link";
+import { MainNav } from '@/components/layout/main-nav';
+import { Code2 } from 'lucide-react';
+import Link from 'next/link';
 
 export function Sidebar() {
   return (

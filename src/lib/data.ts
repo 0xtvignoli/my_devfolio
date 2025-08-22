@@ -1,65 +1,65 @@
-
-import type { Person, Project, Article } from "./types";
+import type { Person, Project, Article } from './types';
 
 export const person: Person = {
-  name: "Alex Doe",
-  roleTitle: "Cloud & DevOps Engineer",
-  bio: "A portfolio of resilient infrastructure, automated pipelines, and cloud-native solutions, demonstrating a deep expertise in modern DevOps practices and system architecture.",
-  location: "San Francisco, CA (Remote)",
-  email: "alex.doe@example.com",
+  name: 'Alex Doe',
+  roleTitle: 'Cloud & DevOps Engineer',
+  bio: 'A portfolio of resilient infrastructure, automated pipelines, and cloud-native solutions, demonstrating a deep expertise in modern DevOps practices and system architecture.',
+  location: 'San Francisco, CA (Remote)',
+  email: 'alex.doe@example.com',
   social: {
-    github: "https://github.com/example",
-    linkedin: "https://linkedin.com/in/example",
-    twitter: "https://twitter.com/example",
+    github: 'https://github.com/example',
+    linkedin: 'https://linkedin.com/in/example',
+    twitter: 'https://twitter.com/example',
   },
-  resumeUrl: "/resume.pdf",
+  resumeUrl: '/resume.pdf',
   about:
     "<p>This portfolio is not just a collection of projects; it's a living demonstration of infrastructure as code, CI/CD, and operational excellence. Each component, from the frontend to the simulated backend, is designed to showcase best practices in cloud engineering and DevOps.</p><p>My philosophy is that a resume can only tell you so much. To truly understand an engineer's capabilities, you need to see their work in action. This interactive lab is my answer to that. It's a testament to my passion for building automated, scalable, and resilient systems. Explore the lab, run chaos experiments, and see for yourself the principles I bring to every challenge.</p>",
   experience: [
     {
-      role: "Lead DevOps Engineer",
-      company: "Innovate Inc.",
-      period: "2021 - Present",
+      role: 'Lead DevOps Engineer',
+      company: 'Innovate Inc.',
+      period: '2021 - Present',
       description:
-        "Led the design and implementation of a multi-region Kubernetes platform on AWS, improving developer velocity and system reliability. Championed GitOps practices using ArgoCD and automated infrastructure with Terraform.",
+        'Led the design and implementation of a multi-region Kubernetes platform on AWS, improving developer velocity and system reliability. Championed GitOps practices using ArgoCD and automated infrastructure with Terraform.',
     },
     {
-      role: "Senior Site Reliability Engineer",
-      company: "DataStream Corp.",
-      period: "2018 - 2021",
+      role: 'Senior Site Reliability Engineer',
+      company: 'DataStream Corp.',
+      period: '2018 - 2021',
       description:
-        "Managed a large-scale data analytics platform on GCP. Developed a comprehensive observability stack with Prometheus, Grafana, and Loki, reducing MTTR for critical incidents by 50%.",
+        'Managed a large-scale data analytics platform on GCP. Developed a comprehensive observability stack with Prometheus, Grafana, and Loki, reducing MTTR for critical incidents by 50%.',
     },
     {
-      role: "Cloud Engineer",
-      company: "Tech Solutions LLC",
-      period: "2015 - 2018",
+      role: 'Cloud Engineer',
+      company: 'Tech Solutions LLC',
+      period: '2015 - 2018',
       description:
-        "Contributed to migrating monolithic applications to a microservices architecture running in Docker containers. Built and maintained CI/CD pipelines using Jenkins and later, GitHub Actions.",
+        'Contributed to migrating monolithic applications to a microservices architecture running in Docker containers. Built and maintained CI/CD pipelines using Jenkins and later, GitHub Actions.',
     },
   ],
   education: [
     {
-      degree: "AWS Certified DevOps Engineer",
-      institution: "Amazon Web Services",
-      period: "2022",
+      degree: 'AWS Certified DevOps Engineer',
+      institution: 'Amazon Web Services',
+      period: '2022',
     },
     {
-      degree: "Certified Kubernetes Administrator",
-      institution: "Cloud Native Computing Foundation",
-      period: "2020",
+      degree: 'Certified Kubernetes Administrator',
+      institution: 'Cloud Native Computing Foundation',
+      period: '2020',
     },
   ],
 };
 
 export const articles: Article[] = [
-    {
-      id: "gitops-with-argocd",
-      title: "Implementing GitOps with ArgoCD on Kubernetes",
-      summary: "A deep dive into setting up a GitOps workflow for continuous deployment using ArgoCD, transforming Git into the single source of truth for your infrastructure.",
-      date: "2023-10-15",
-      tags: ["Kubernetes", "GitOps", "ArgoCD", "CI/CD"],
-      content: `
+  {
+    id: 'gitops-with-argocd',
+    title: 'Implementing GitOps with ArgoCD on Kubernetes',
+    summary:
+      'A deep dive into setting up a GitOps workflow for continuous deployment using ArgoCD, transforming Git into the single source of truth for your infrastructure.',
+    date: '2023-10-15',
+    tags: ['Kubernetes', 'GitOps', 'ArgoCD', 'CI/CD'],
+    content: `
         <h2>The GitOps Revolution: Why Your Repo is Your New Ops Team</h2>
         <p>In modern cloud-native development, the speed of iteration is relentless. Traditional deployment models, often involving manual steps or complex scripting, are brittle, opaque, and prone to configuration drift. GitOps flips this paradigm on its head. It's a methodology for continuous deployment that leverages Git as the single source of truth for declarative infrastructure and applications.</p>
         <p>Instead of pushing changes directly to a cluster, you push code to a Git repository. A GitOps operator, like ArgoCD, then automatically and continuously reconciles the cluster's state with the state defined in your repository. This article provides an expert-level walkthrough of how to implement a robust GitOps workflow using ArgoCD on a Kubernetes cluster.</p>
@@ -153,14 +153,15 @@ spec:
           <strong>Further Reading:</strong> Check out the official documentation on the <a href="https://argo-cd.readthedocs.io/en/stable/core_concepts/" target="_blank" rel="noopener noreferrer">ArgoCD Core Concepts</a> and the <a href="https://www.weave.works/technologies/gitops/" target="_blank" rel="noopener noreferrer">GitOps principles</a> from Weaveworks.
         </blockquote>
       `,
-    },
-    {
-      id: "terraform-modules",
-      title: "Building Reusable Infrastructure with Terraform Modules",
-      summary: "Learn how to create modular, reusable, and version-controlled infrastructure components with Terraform for efficient and consistent cloud deployments.",
-      date: "2023-09-02",
-      tags: ["Terraform", "IaC", "AWS", "Best Practices", "Modules"],
-      content: `
+  },
+  {
+    id: 'terraform-modules',
+    title: 'Building Reusable Infrastructure with Terraform Modules',
+    summary:
+      'Learn how to create modular, reusable, and version-controlled infrastructure components with Terraform for efficient and consistent cloud deployments.',
+    date: '2023-09-02',
+    tags: ['Terraform', 'IaC', 'AWS', 'Best Practices', 'Modules'],
+    content: `
         <h2>From Monoliths to Modules: The Evolution of Infrastructure as Code</h2>
         <p>As infrastructure grows in complexity, managing it with monolithic Terraform configurations becomes untenable. Just as software engineering evolved from single-file scripts to modular applications, Infrastructure as Code (IaC) must also embrace modularity. Terraform modules are the answer, providing a standard way to encapsulate and reuse infrastructure components, enforce best practices, and scale your operations.</p>
         <p>This guide explores the 'why' and 'how' of building effective Terraform modules, transforming your IaC from a collection of resources into a composable, version-controlled library of infrastructure patterns.</p>
@@ -296,14 +297,15 @@ resource "aws_iam_policy" "read_logs_policy" {
 
         <p>By investing in a well-designed module library, you establish a solid foundation for your cloud infrastructure. You empower teams to build faster and more safely, knowing that the core components they are using are secure, compliant, and maintained by experts.</p>
       `,
-    },
-    {
-      id: "kubernetes-observability",
-      title: "A Practical Guide to Kubernetes Observability",
-      summary: "Explore the pillars of observability (logs, metrics, traces) and how to implement them in a Kubernetes environment using open-source tools.",
-      date: "2023-07-21",
-      tags: ["Kubernetes", "Observability", "Prometheus", "Grafana", "Loki"],
-      content: `
+  },
+  {
+    id: 'kubernetes-observability',
+    title: 'A Practical Guide to Kubernetes Observability',
+    summary:
+      'Explore the pillars of observability (logs, metrics, traces) and how to implement them in a Kubernetes environment using open-source tools.',
+    date: '2023-07-21',
+    tags: ['Kubernetes', 'Observability', 'Prometheus', 'Grafana', 'Loki'],
+    content: `
         <h2>Beyond Monitoring: Achieving True Observability in Kubernetes</h2>
         <p>In the dynamic, ephemeral world of Kubernetes, traditional monitoring—checking if a system is up or down—is no longer enough. We need observability: the ability to ask arbitrary questions about our system's state without having to know in advance what we'll need to ask. It's about understanding the 'why' behind system behavior, not just the 'what'.</p>
         <p>Observability is built on three core pillars: **metrics**, **logs**, and **traces**. This guide provides a practical, hands-on approach to implementing a powerful, open-source observability stack for your Kubernetes clusters.</p>
@@ -378,99 +380,99 @@ kubectl port-forward -n monitoring svc/prometheus-grafana 8080:80
         </ul>
         <p>The true power comes from correlating this data. You can create a dashboard that shows metrics for a service, and clicking on a spike in errors can take you directly to the logs from that exact time period for that specific pod. This tight integration dramatically reduces Mean Time To Resolution (MTTR) and gives developers the tools they need to truly own their services in production.</p>
       `,
-    }
-]
+  },
+];
 
 export const projects: Project[] = [
   {
-    id: "e-commerce-platform",
-    title: "Cloud-Native E-Commerce Platform",
+    id: 'e-commerce-platform',
+    title: 'Cloud-Native E-Commerce Platform',
     summary:
-      "A showcase of a resilient and scalable e-commerce platform built on a microservices architecture and deployed to Kubernetes.",
-    stack: ["Go", "Next.js", "Kubernetes", "PostgreSQL", "Redis", "AWS", "Docker", "Terraform"],
-    role: "Lead DevOps/Cloud Engineer",
+      'A showcase of a resilient and scalable e-commerce platform built on a microservices architecture and deployed to Kubernetes.',
+    stack: ['Go', 'Next.js', 'Kubernetes', 'PostgreSQL', 'Redis', 'AWS', 'Docker', 'Terraform'],
+    role: 'Lead DevOps/Cloud Engineer',
     outcomes: [
-      "Achieved 99.99% uptime with a resilient, auto-scaling infrastructure on AWS EKS.",
-      "Implemented a full GitOps workflow with ArgoCD for automated, reliable deployments.",
-      "Established a comprehensive observability stack, providing deep insights into system health.",
+      'Achieved 99.99% uptime with a resilient, auto-scaling infrastructure on AWS EKS.',
+      'Implemented a full GitOps workflow with ArgoCD for automated, reliable deployments.',
+      'Established a comprehensive observability stack, providing deep insights into system health.',
     ],
     links: {
-      repo: "https://github.com/example/e-commerce",
-      codespaces: "https://github.com/codespaces/new?repo=example/e-commerce",
-      stackblitz: "https://stackblitz.com/github/example/e-commerce",
+      repo: 'https://github.com/example/e-commerce',
+      codespaces: 'https://github.com/codespaces/new?repo=example/e-commerce',
+      stackblitz: 'https://stackblitz.com/github/example/e-commerce',
     },
-    dates: { start: "2021-01-01", end: "2023-06-01" },
+    dates: { start: '2021-01-01', end: '2023-06-01' },
     images: [
       {
-        url: "https://placehold.co/800x600.png",
-        alt: "System architecture diagram",
-        aiHint: "architecture diagram",
+        url: 'https://placehold.co/800x600.png',
+        alt: 'System architecture diagram',
+        aiHint: 'architecture diagram',
       },
       {
-        url: "https://placehold.co/800x600.png",
-        alt: "Grafana dashboard showing performance metrics",
-        aiHint: "grafana dashboard",
+        url: 'https://placehold.co/800x600.png',
+        alt: 'Grafana dashboard showing performance metrics',
+        aiHint: 'grafana dashboard',
       },
     ],
     longDescription:
-      "This project demonstrates a complete cloud-native solution. Key challenges included designing a resilient multi-AZ architecture, implementing a secure and automated CI/CD pipeline, and ensuring high availability. The infrastructure was defined as code using Terraform and deployed on AWS EKS for scalability and easy management. The focus was on operational excellence and demonstrating modern DevOps principles.",
+      'This project demonstrates a complete cloud-native solution. Key challenges included designing a resilient multi-AZ architecture, implementing a secure and automated CI/CD pipeline, and ensuring high availability. The infrastructure was defined as code using Terraform and deployed on AWS EKS for scalability and easy management. The focus was on operational excellence and demonstrating modern DevOps principles.',
   },
   {
-    id: "data-processing-pipeline",
-    title: "Real-Time Data Processing Pipeline",
+    id: 'data-processing-pipeline',
+    title: 'Real-Time Data Processing Pipeline',
     summary:
-      "A distributed data pipeline in Go to ingest and process millions of events per day, built for scale and reliability on GCP.",
-    stack: ["Go", "gRPC", "Kubernetes", "GCP", "Kafka", "Prometheus"],
-    role: "Senior SRE",
+      'A distributed data pipeline in Go to ingest and process millions of events per day, built for scale and reliability on GCP.',
+    stack: ['Go', 'gRPC', 'Kubernetes', 'GCP', 'Kafka', 'Prometheus'],
+    role: 'Senior SRE',
     outcomes: [
-      "Processed over 10 million events daily with an average latency of under 200ms.",
-      "Reduced infrastructure costs by 35% by optimizing resource allocation and using GKE Autopilot.",
-      "Enhanced system observability with a comprehensive monitoring stack using Prometheus and Grafana.",
+      'Processed over 10 million events daily with an average latency of under 200ms.',
+      'Reduced infrastructure costs by 35% by optimizing resource allocation and using GKE Autopilot.',
+      'Enhanced system observability with a comprehensive monitoring stack using Prometheus and Grafana.',
     ],
     links: {
-      repo: "https://github.com/example/data-pipeline",
-      codespaces: "https://github.com/codespaces/new?repo=example/data-pipeline",
-      stackblitz: "https://stackblitz.com/github/example/data-pipeline",
+      repo: 'https://github.com/example/data-pipeline',
+      codespaces: 'https://github.com/codespaces/new?repo=example/data-pipeline',
+      stackblitz: 'https://stackblitz.com/github/example/data-pipeline',
     },
-    dates: { start: "2019-05-01", end: "2020-12-01" },
+    dates: { start: '2019-05-01', end: '2020-12-01' },
     images: [
       {
-        url: "https://placehold.co/800x600.png",
-        alt: "Data pipeline architecture diagram",
-        aiHint: "architecture diagram",
+        url: 'https://placehold.co/800x600.png',
+        alt: 'Data pipeline architecture diagram',
+        aiHint: 'architecture diagram',
       },
       {
-        url: "https://placehold.co/800x600.png",
-        alt: "Grafana dashboard showing pipeline metrics",
-        aiHint: "grafana dashboard",
+        url: 'https://placehold.co/800x600.png',
+        alt: 'Grafana dashboard showing pipeline metrics',
+        aiHint: 'grafana dashboard',
       },
     ],
     longDescription:
-      "The core of this project was a set of microservices written in Go that communicated over gRPC. These services were responsible for consuming data from a Kafka stream, transforming it, and loading it into a data warehouse. The entire system was containerized with Docker and orchestrated with Kubernetes on Google Kubernetes Engine, ensuring high availability and fault tolerance.",
+      'The core of this project was a set of microservices written in Go that communicated over gRPC. These services were responsible for consuming data from a Kafka stream, transforming it, and loading it into a data warehouse. The entire system was containerized with Docker and orchestrated with Kubernetes on Google Kubernetes Engine, ensuring high availability and fault tolerance.',
   },
   {
-    id: "internal-dev-platform",
-    title: "Internal Developer Platform (IDP)",
+    id: 'internal-dev-platform',
+    title: 'Internal Developer Platform (IDP)',
     summary:
-      "Led the creation of an internal platform to streamline development workflows and abstract away infrastructure complexity.",
-    stack: ["Backstage.io", "React", "TypeScript", "Node.js", "Terraform", "Kubernetes"],
-    role: "Platform Engineer",
+      'Led the creation of an internal platform to streamline development workflows and abstract away infrastructure complexity.',
+    stack: ['Backstage.io', 'React', 'TypeScript', 'Node.js', 'Terraform', 'Kubernetes'],
+    role: 'Platform Engineer',
     outcomes: [
-      "Decreased new service deployment time from 2 days to 15 minutes via self-service scaffolding.",
-      "Centralized service cataloging, documentation, and observability for over 50 microservices.",
-      "Standardized development environments and CI/CD pipelines, improving developer experience.",
+      'Decreased new service deployment time from 2 days to 15 minutes via self-service scaffolding.',
+      'Centralized service cataloging, documentation, and observability for over 50 microservices.',
+      'Standardized development environments and CI/CD pipelines, improving developer experience.',
     ],
     links: {
-      repo: "https://github.com/example/idp",
-      codespaces: "https://github.com/codespaces/new?repo=example/idp",
-      stackblitz: "https://stackblitz.com/github/example/idp",
+      repo: 'https://github.com/example/idp',
+      codespaces: 'https://github.com/codespaces/new?repo=example/idp',
+      stackblitz: 'https://stackblitz.com/github/example/idp',
     },
-    dates: { start: "2018-03-01", end: "2019-04-01" },
+    dates: { start: '2018-03-01', end: '2019-04-01' },
     images: [
       {
-        url: "https://placehold.co/800x600.png",
-        alt: "Internal Developer Platform UI based on Backstage",
-        aiHint: "web application dashboard",
+        url: 'https://placehold.co/800x600.png',
+        alt: 'Internal Developer Platform UI based on Backstage',
+        aiHint: 'web application dashboard',
       },
     ],
     longDescription:

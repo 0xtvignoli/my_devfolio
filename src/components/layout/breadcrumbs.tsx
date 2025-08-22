@@ -1,27 +1,26 @@
-
-"use client";
+'use client';
 
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Home } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { projects } from '@/lib/data'; 
+import { projects } from '@/lib/data';
 import { articles } from '@/lib/data';
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 const getDisplayName = (segment: string) => {
-    // Check projects
-    const project = projects.find(p => p.id === segment);
-    if (project) return project.title;
+  // Check projects
+  const project = projects.find((p) => p.id === segment);
+  if (project) return project.title;
 
-    // Check articles
-    const article = articles.find(a => a.id === segment);
-    if (article) return article.title;
+  // Check articles
+  const article = articles.find((a) => a.id === segment);
+  if (article) return article.title;
 
-    // Fallback for static paths
-    return capitalize(segment.replace(/-/g, ' '));
+  // Fallback for static paths
+  return capitalize(segment.replace(/-/g, ' '));
 };
 
 export function Breadcrumbs() {
@@ -49,7 +48,7 @@ export function Breadcrumbs() {
                 href={href}
                 className={cn(
                   'transition-colors hover:text-foreground',
-                  isLast && 'text-foreground font-semibold pointer-events-none'
+                  isLast && 'text-foreground font-semibold pointer-events-none',
                 )}
                 aria-current={isLast ? 'page' : undefined}
               >

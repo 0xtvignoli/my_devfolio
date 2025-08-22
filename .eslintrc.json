@@ -1,0 +1,6 @@
+{
+  "root": true,
+  "extends": ["next/core-web-vitals", "plugin:jsx-a11y/recommended", "prettier"],
+  "plugins": ["jsx-a11y"],
+  "rules": {}
+}

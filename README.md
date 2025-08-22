@@ -2,86 +2,67 @@
 
 ## About
 
-This is the personal portfolio website of Thomas Vignoli, a DevOps Engineer specialized in Terraform, AWS, Azure, Kubernetes, and CI/CD.
+Personal portfolio of Thomas Vignoli, DevOps Engineer specialized in Terraform, AWS, Azure, Kubernetes, and CI/CD.
 
-## Technologies Used
+## Tech Stack
 
-This project is built with:
-
-- **Vite** - Build tool and development server
-- **TypeScript** - Type-safe JavaScript
-- **React** - UI framework
-- **shadcn/ui** - Component library
-- **Tailwind CSS** - Utility-first CSS framework
-- **React Router** - Client-side routing
-- **React Query** - Data fetching and caching
-- **Vercel Analytics** - Web analytics
-- **Vercel Speed Insights** - Performance monitoring
+- Next.js 15 (App Router)
+- TypeScript
+- Tailwind CSS + shadcn/ui + Radix UI
+- React 18
 
 ## Development
 
 ### Prerequisites
 
-- Node.js (version 18 or higher)
-- npm, yarn, pnpm, or bun
+- Node.js 20.x
+- npm ≥10 (or yarn/pnpm/bun)
 
 ### Getting Started
 
-1. **Clone the repository**
+1. Clone the repository
+
    ```bash
    git clone <your-repo-url>
-   cd infra-vision-site
+   cd my_devfolio
    ```
 
-2. **Install dependencies**
+2. Install dependencies
+
    ```bash
    npm install
-   # or
-   yarn install
-   # or
-   pnpm install
-   # or
-   bun install
    ```
 
-3. **Start the development server**
+3. Start the development server (Turbopack)
    ```bash
    npm run dev
-   # or
-   yarn dev
-   # or
-   pnpm dev
-   # or
-   bun dev
+   # The script will pick a free port starting from 9002 and print it in the console
    ```
-
-4. **Open your browser**
-   Navigate to `http://localhost:8080` to view the application.
 
 ### Available Scripts
 
-- `npm run dev` - Start development server
+- `npm run dev` - Start Next.js dev server (Turbopack)
 - `npm run build` - Build for production
-- `npm run build:dev` - Build for development
-- `npm run preview` - Preview production build
+- `npm start` - Start production server
 - `npm run lint` - Run ESLint
+- `npm run typecheck` - Run TypeScript type-check
+- `npm run format` - Prettier format (requires prettier installed)
+
+## Environment
+
+Create a `.env.local` for local development. Client-exposed variables must be prefixed with `NEXT_PUBLIC_`.
 
 ## Deployment
 
-This site is deployed on Vercel with a custom domain. The deployment is automatically triggered on pushes to the main branch.
+This project can be deployed to Vercel or Firebase App Hosting. Choose one and configure:
 
-## Features
+- Vercel: connect the repo and set build command to `next build` and output `.next` (or `dist` if customized).
+- Firebase App Hosting: see `apphosting.yaml` and follow Firebase docs.
 
-- **Responsive Design** - Optimized for all device sizes
-- **Performance Optimized** - Fast loading with Vite and optimized assets
-- **SEO Friendly** - Proper meta tags and structured data
-- **Analytics** - Vercel Analytics and Speed Insights integration
-- **Modern UI** - Clean, professional design with shadcn/ui components
+## SEO/Analytics
 
-## Contact
-
-For professional inquiries, please reach out through the contact information provided on the website.
+OpenGraph/Twitter metadata are defined in `src/app/layout.tsx`. Replace placeholder domain and images with real ones.
 
 ## License
 
-This project is private and proprietary.
+Private repository.

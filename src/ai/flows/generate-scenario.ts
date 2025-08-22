@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview An AI flow for generating dynamic DevOps simulation scenarios.
@@ -7,32 +6,65 @@
  * - Scenario - The return type for the generateScenario function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'zod';
+import { ai } from '@/ai/genkit';
+import { z } from 'zod';
 
 // Define the schema for a single pipeline stage
 const StageSchema = z.object({
-  name: z.string().describe('The concise name of this pipeline stage (e.g., "Helm Lint", "Deploy to Staging").'),
+  name: z
+    .string()
+    .describe('The concise name of this pipeline stage (e.g., "Helm Lint", "Deploy to Staging").'),
   duration: z.number().describe('The realistic duration of this stage in seconds (e.g., 30, 120).'),
   status: z.enum(['success', 'failure']).describe('The final status of this stage.'),
-  logOutput: z.string().describe("A realistic, multi-line log output for this stage. For 'failure' status, this should contain detailed error messages, stack traces, or diagnostic information that a real-world tool would produce. For 'success', it can be a standard success message."),
+  logOutput: z
+    .string()
+    .describe(
+      "A realistic, multi-line log output for this stage. For 'failure' status, this should contain detailed error messages, stack traces, or diagnostic information that a real-world tool would produce. For 'success', it can be a standard success message.",
+    ),
 });
 
 // Define the schema for the entire scenario
 const AffectedServiceSchema = z.object({
   name: z.string().describe('Service name exactly matching one in services list.'),
-  status: z.enum(['OPERATIONAL','DEGRADED','OUTAGE']).describe('Resulting status during the incident.'),
-  impactNote: z.string().describe('Short description of impact on this service.')
+  status: z
+    .enum(['OPERATIONAL', 'DEGRADED', 'OUTAGE'])
+    .describe('Resulting status during the incident.'),
+  impactNote: z.string().describe('Short description of impact on this service.'),
 });
 
 const ScenarioSchema = z.object({
-  scenarioTitle: z.string().describe('A creative, short title for the overall scenario (e.g., "Smooth Sailing Deployment", "Database Migration Glitch").'),
-  scenarioDescription: z.string().describe("A brief, user-friendly, one-sentence explanation of what this scenario simulates."),
-  isIncident: z.boolean().describe("Set to true if the scenario represents a failure, outage, or any kind of problem. Set to false for a successful, 'happy path' scenario."),
-  services: z.array(z.string()).describe('An array of 3 to 5 creative and relevant service names for this scenario (e.g., "Auth Service", "Data-Ingest-Worker").'),
-  pipeline: z.array(StageSchema).describe('An array of 4 to 6 stages representing a realistic CI/CD pipeline that reflects the scenario title.'),
-  logTheme: z.string().describe('A short theme for the log messages that will be generated, reflecting the scenario (e.g., "database connection errors", "user authentication traffic", "cache eviction").'),
-  affectedServices: z.array(AffectedServiceSchema).default([]).describe('Optional per-service impact definitions for the incident.'),
+  scenarioTitle: z
+    .string()
+    .describe(
+      'A creative, short title for the overall scenario (e.g., "Smooth Sailing Deployment", "Database Migration Glitch").',
+    ),
+  scenarioDescription: z
+    .string()
+    .describe('A brief, user-friendly, one-sentence explanation of what this scenario simulates.'),
+  isIncident: z
+    .boolean()
+    .describe(
+      "Set to true if the scenario represents a failure, outage, or any kind of problem. Set to false for a successful, 'happy path' scenario.",
+    ),
+  services: z
+    .array(z.string())
+    .describe(
+      'An array of 3 to 5 creative and relevant service names for this scenario (e.g., "Auth Service", "Data-Ingest-Worker").',
+    ),
+  pipeline: z
+    .array(StageSchema)
+    .describe(
+      'An array of 4 to 6 stages representing a realistic CI/CD pipeline that reflects the scenario title.',
+    ),
+  logTheme: z
+    .string()
+    .describe(
+      'A short theme for the log messages that will be generated, reflecting the scenario (e.g., "database connection errors", "user authentication traffic", "cache eviction").',
+    ),
+  affectedServices: z
+    .array(AffectedServiceSchema)
+    .default([])
+    .describe('Optional per-service impact definitions for the incident.'),
 });
 
 export type Scenario = z.infer<typeof ScenarioSchema>;
@@ -43,7 +75,7 @@ export async function generateScenario(): Promise<Scenario> {
 
 const prompt = ai.definePrompt({
   name: 'generateScenarioPrompt',
-  output: {schema: ScenarioSchema},
+  output: { schema: ScenarioSchema },
   prompt: `
     You are a DevOps Scenario Simulator. Your task is to generate a unique and interesting CI/CD pipeline scenario.
 
@@ -70,7 +102,7 @@ const generateScenarioFlow = ai.defineFlow(
     outputSchema: ScenarioSchema,
   },
   async () => {
-    const {output} = await prompt();
+    const { output } = await prompt();
     return output!;
-  }
+  },
 );

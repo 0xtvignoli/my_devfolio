@@ -1,15 +1,18 @@
-
-import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { articles } from "@/lib/data";
-import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { SectionHeader } from "@/components/sections/section-header";
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { articles } from '@/lib/data';
+import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
+import { SectionHeader } from '@/components/sections/section-header';
 
 export default function ArticlesPage() {
   return (
     <div className="space-y-8">
-  <SectionHeader align="left" title="Articles" subtitle="Thoughts on technology, infrastructure, and software engineering." />
+      <SectionHeader
+        align="left"
+        title="Articles"
+        subtitle="Thoughts on technology, infrastructure, and software engineering."
+      />
       <div className="space-y-6">
         {articles.map((article) => (
           <Link key={article.id} href={`/articles/${article.id}`} className="group block">
@@ -20,9 +23,11 @@ export default function ArticlesPage() {
               </CardHeader>
               <CardFooter className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex flex-wrap gap-2">
-                    {article.tags.map((tag) => (
-                        <Badge key={tag} variant="secondary">{tag}</Badge>
-                    ))}
+                  {article.tags.map((tag) => (
+                    <Badge key={tag} variant="secondary">
+                      {tag}
+                    </Badge>
+                  ))}
                 </div>
                 <div className="flex items-center text-sm font-medium text-primary w-full sm:w-auto">
                   Read Article
