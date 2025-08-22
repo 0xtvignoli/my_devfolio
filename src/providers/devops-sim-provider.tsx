@@ -71,6 +71,11 @@ type State = {
   isBusy: boolean;
   pipelineStatus: PipelineStatus;
   scenario: Scenario | null;
+  scenarioDebugMode: 'none' | 'manual' | 'auto';
+  scenarioHints: string[];
+  currentHintIndex: number;
+  fixApplied: boolean;
+  scenarioRootCause: string | null;
 };
 
 const initialState: State = {
@@ -87,11 +92,20 @@ const initialState: State = {
   isBusy: true,
   pipelineStatus: 'idle',
   scenario: null,
+  scenarioDebugMode: 'none',
+  scenarioHints: [],
+  currentHintIndex: 0,
+  fixApplied: false,
+  scenarioRootCause: null,
 };
 
 type DevOpsSimContextType = State & {
   runCommand: (command: string, args?: any) => void;
   runPipeline: () => void;
+  startScenarioDebug: (mode: 'manual' | 'auto') => void;
+  nextHint: () => void;
+  applyScenarioFix: () => void;
+  resetScenarioPipeline: () => void;
   isLoading: boolean;
 };
 
@@ -115,7 +129,12 @@ type Action =
   | { type: "UPDATE_SERVICE_STATUS"; payload: { serviceId: string; status: ServiceStatus } }
   | { type: "KILL_POD"; payload: { serviceId: string, podName: string } }
   | { type: "RESTART_POD"; payload: { serviceId: string, oldPodName: string } }
-  | { type: "SET_SCENARIO"; payload: { scenario: Scenario } };
+  | { type: "SET_SCENARIO"; payload: { scenario: Scenario } }
+  | { type: 'START_SCENARIO_DEBUG'; payload: { mode: 'manual' | 'auto'; hints: string[] } }
+  | { type: 'NEXT_HINT' }
+  | { type: 'APPLY_SCENARIO_FIX'; payload: { steps: string[] } }
+  | { type: 'RESET_SCENARIO_PIPELINE' }
+  | { type: 'SET_ROOT_CAUSE'; payload: { rootCause: string } };
 
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
@@ -142,12 +161,40 @@ const reducer = (state: State, action: Action): State => {
        };
     }
     case "SET_SCENARIO":
+      // Ensure final stage is Deploy to Production
+      const incoming = [...action.payload.scenario.pipeline];
+      const deployIdx = incoming.findIndex(s => /deploy/i.test(s.name));
+      if (deployIdx !== -1 && deployIdx !== incoming.length - 1) {
+        const [deployStage] = incoming.splice(deployIdx, 1);
+        incoming.push(deployStage);
+      } else if (deployIdx === -1) {
+        incoming.push({ name: 'Deploy to Production', status: 'success', duration: 8, logOutput: 'kubectl apply -f release.yaml\nDeployment successful.' } as any);
+      }
       return {
         ...state,
         scenario: action.payload.scenario,
-        pipeline: action.payload.scenario.pipeline.map(p => ({ name: p.name, status: 'pending' })),
+        pipeline: incoming.map(p => ({ name: p.name, status: 'pending' })),
+        // Merge AI services list with existing; initialize statuses using affectedServices if incident
+        services: (() => {
+          const base = action.payload.scenario.services.map(name => {
+            const id = name.toLowerCase().replace(/\s+/g,'-');
+            const existing = state.services.find(s => s.id === id);
+            return existing || { id, name, status: 'OPERATIONAL' as ServiceStatus, pods: [generatePodName(name), generatePodName(name)] };
+          });
+          if (action.payload.scenario.isIncident && (action.payload.scenario as any).affectedServices?.length) {
+            const impacts = new Map<string, any>();
+            (action.payload.scenario as any).affectedServices.forEach((i: any) => impacts.set(i.name, i));
+            return base.map(s => impacts.has(s.name) ? { ...s, status: impacts.get(s.name).status as ServiceStatus } : s);
+          }
+          return base;
+        })(),
         scenarioLogs: [{ level: 'INFO', message: `Scenario loaded: "${action.payload.scenario.scenarioTitle}".`, timestamp: new Date() }],
         pipelineStatus: 'idle',
+        scenarioDebugMode: 'none',
+        scenarioHints: [],
+        currentHintIndex: 0,
+        fixApplied: false,
+        scenarioRootCause: null,
       };
     case "UPDATE_METRICS": {
       let cpuBase = 20, cpuVar = 10;
@@ -260,6 +307,49 @@ const reducer = (state: State, action: Action): State => {
         })
       }
     }
+    case 'START_SCENARIO_DEBUG':
+      return {
+        ...state,
+        scenarioDebugMode: action.payload.mode,
+        scenarioHints: action.payload.hints,
+        currentHintIndex: 0,
+      };
+    case 'NEXT_HINT':
+      return {
+        ...state,
+        currentHintIndex: Math.min(state.currentHintIndex + 1, state.scenarioHints.length - 1),
+      };
+    case 'APPLY_SCENARIO_FIX':
+      return {
+        ...state,
+        fixApplied: true,
+        scenarioDebugMode: 'none',
+        scenarioLogs: [
+          ...state.scenarioLogs,
+          ...action.payload.steps.map(s => ({ level: 'INFO' as LogLevel, message: s, timestamp: new Date() })),
+          { level: 'INFO' as LogLevel, message: 'Fix applied. Resetting pipeline to verify...', timestamp: new Date() },
+        ].slice(-MAX_LOGS),
+        pipelineStatus: 'idle',
+        pipeline: state.scenario ? state.scenario.pipeline.map(p => ({ name: p.name, status: 'pending' })) : state.pipeline,
+      };
+    case 'RESET_SCENARIO_PIPELINE':
+      return {
+        ...state,
+        pipelineStatus: 'idle',
+        pipeline: state.scenario ? state.scenario.pipeline.map(p => ({ name: p.name, status: 'pending' })) : state.pipeline,
+        fixApplied: false,
+        scenarioDebugMode: 'none',
+        currentHintIndex: 0,
+        scenarioRootCause: null,
+        services: state.scenario && (state.scenario as any).affectedServices?.length
+          ? state.services.map(s => {
+              const impact = (state.scenario as any).affectedServices.find((i: any) => i.name === s.name);
+              return impact ? { ...s, status: impact.status as ServiceStatus } : s;
+            })
+          : state.services.map(s => ({ ...s, status: 'OPERATIONAL' })),
+      };
+    case 'SET_ROOT_CAUSE':
+      return { ...state, scenarioRootCause: action.payload.rootCause };
     default:
       return state;
   }
@@ -300,7 +390,7 @@ export const DevopsSimProvider = ({ children }: { children: React.ReactNode }) =
 
     let pipelineFailed = false;
 
-    for (let i = 0; i < scenario.pipeline.length; i++) {
+  for (let i = 0; i < scenario.pipeline.length; i++) {
       if (pipelineFailed) {
         dispatch({ type: "UPDATE_PIPELINE_STAGE", payload: { stageIndex: i, status: "pending" }});
         continue;
@@ -328,12 +418,94 @@ export const DevopsSimProvider = ({ children }: { children: React.ReactNode }) =
 
       if (stage.status === 'failure') {
         pipelineFailed = true;
+        // Mark related services degraded (simple heuristic: all scenario services)
+        stateRef.current.services.forEach(s => {
+          dispatch({ type: 'UPDATE_SERVICE_STATUS', payload: { serviceId: s.id, status: 'DEGRADED' } });
+        });
       }
     }
 
     dispatch({ type: "SET_PIPELINE_STATUS", payload: pipelineFailed ? 'failure' : 'success' });
     addScenarioLog("INFO", `Deployment pipeline finished with status: ${pipelineFailed ? 'FAILURE' : 'SUCCESS'}.`);
   }, [addScenarioLog]);
+
+  const startScenarioDebug = useCallback((mode: 'manual' | 'auto') => {
+    const current = stateRef.current;
+    if (!current.scenario || current.pipelineStatus === 'running') return;
+    if (!current.scenario.isIncident) return;
+    const failingStages = current.scenario.pipeline.filter(s => s.status === 'failure');
+    const hints: string[] = failingStages.flatMap(stage => {
+      const lines = stage.logOutput?.split('\n').filter(l => l.trim()) || [];
+      const firstErr = lines.find(l => /(error|fail|refused|timeout|exception)/i.test(l));
+      return [
+        `Stage '${stage.name}' failed. Begin with: kubectl logs deploy/${stage.name.toLowerCase().replace(/[^a-z0-9-]/g,'-')} -n production --tail=50`,
+        firstErr ? `(Extract) ${firstErr}` : '(No explicit error line captured)',
+        `Check pod status: kubectl get pods -l app=${stage.name.toLowerCase().split(' ')[0]} -n production`,
+        `Inspect events: kubectl describe deploy ${stage.name.toLowerCase().split(' ')[0]} -n production | grep -i warning || true`,
+        `Validate config maps/secrets if connectivity: kubectl get configmap,secret -n production | grep -i ${stage.name.split(' ')[0]}`,
+        `If DB/Cache issue: test network: kubectl exec -it <pod> -n production -- nc -zv redis 6379 || echo 'connection failed'`,
+        `Form a hypothesis (config? network? resource?). Apply remediation then rerun pipeline.`,
+      ];
+    });
+    if (failingStages.length) {
+      const rcLines = failingStages[0].logOutput?.split('\n') || [];
+      const rc = rcLines.find(l => /(connection refused|timeout|permission denied|out of memory|quota|insufficient)/i.test(l));
+      if (rc) dispatch({ type: 'SET_ROOT_CAUSE', payload: { rootCause: rc } });
+    }
+    dispatch({ type: 'START_SCENARIO_DEBUG', payload: { mode, hints } });
+    if (mode === 'auto') {
+      const steps = [
+        'Auto-debug: collecting failing stage logs (kubectl logs ...).',
+        'Auto-debug: inspecting pod status (kubectl get pods -n production).',
+        'Auto-debug: describing deployment (kubectl describe deploy ...).',
+        'Auto-debug: running connectivity probe (kubectl exec ... nc -zv redis 6379).',
+        'Auto-debug: root cause isolated: config / endpoint unreachable. Applying patch (kubectl apply -f updated-config.yaml).',
+        'Auto-debug: restarting workload (kubectl rollout restart deploy/<service>).',
+        'Auto-debug: waiting for readiness (kubectl wait --for=condition=available deployment/<service> --timeout=60s).',
+      ];
+      dispatch({ type: 'APPLY_SCENARIO_FIX', payload: { steps } });
+    } else {
+      addScenarioLog('INFO', 'Manual debug started. Reveal hints or apply fix when ready.');
+    }
+  }, [addScenarioLog]);
+
+  const nextHint = useCallback(() => {
+    const current = stateRef.current;
+    if (current.scenarioDebugMode !== 'manual') return;
+    if (current.currentHintIndex >= current.scenarioHints.length - 1) return;
+    dispatch({ type: 'NEXT_HINT' });
+    const hint = current.scenarioHints[current.currentHintIndex + 1];
+    if (hint) addScenarioLog('INFO', `(Hint) ${hint}`);
+  }, [addScenarioLog]);
+
+  const applyScenarioFix = useCallback(() => {
+    const current = stateRef.current;
+    if (!current.scenario || !current.scenario.isIncident) return;
+    if (current.fixApplied) return;
+    const steps = [
+      'Applying remediation: editing config (kubectl patch deploy <service> --type merge -p ...) ',
+      'Rolling restart: kubectl rollout restart deploy/<service>',
+      'Watching rollout status: kubectl rollout status deploy/<service> --timeout=90s',
+      'Running smoke test job: kubectl create job smoke-test --image=alpine:3 -- wget -qO- http://<service>:8080/health || exit 1',
+      'Smoke tests passed. Cleaning temporary job: kubectl delete job smoke-test',
+      'Monitoring recovery...',
+      'Services restored to OPERATIONAL state.'
+    ];
+    if (!current.scenarioRootCause) {
+      dispatch({ type: 'SET_ROOT_CAUSE', payload: { rootCause: 'Root cause inferred: service failed readiness due to external dependency connectivity.' } });
+    }
+    dispatch({ type: 'APPLY_SCENARIO_FIX', payload: { steps } });
+    // Restore services to OPERATIONAL after fix (simulate recovery delay)
+    setTimeout(() => {
+      stateRef.current.services.forEach(s => {
+        dispatch({ type: 'UPDATE_SERVICE_STATUS', payload: { serviceId: s.id, status: 'OPERATIONAL' } });
+      });
+    }, 1500);
+  }, []);
+
+  const resetScenarioPipeline = useCallback(() => {
+    dispatch({ type: 'RESET_SCENARIO_PIPELINE' });
+  }, []);
 
   const runCommand = useCallback(async (command: string, args?: any) => {
     dispatch({ type: "SET_BUSY", payload: true });
@@ -502,7 +674,7 @@ export const DevopsSimProvider = ({ children }: { children: React.ReactNode }) =
     }
   }, [addLog, addScenarioLog]);
 
-  const value = { ...state, runCommand, runPipeline, isLoading };
+  const value = { ...state, runCommand, runPipeline, startScenarioDebug, nextHint, applyScenarioFix, resetScenarioPipeline, isLoading };
 
   return (
     <DevOpsSimContext.Provider value={value}>{children}</DevOpsSimContext.Provider>

@@ -19,6 +19,12 @@ const StageSchema = z.object({
 });
 
 // Define the schema for the entire scenario
+const AffectedServiceSchema = z.object({
+  name: z.string().describe('Service name exactly matching one in services list.'),
+  status: z.enum(['OPERATIONAL','DEGRADED','OUTAGE']).describe('Resulting status during the incident.'),
+  impactNote: z.string().describe('Short description of impact on this service.')
+});
+
 const ScenarioSchema = z.object({
   scenarioTitle: z.string().describe('A creative, short title for the overall scenario (e.g., "Smooth Sailing Deployment", "Database Migration Glitch").'),
   scenarioDescription: z.string().describe("A brief, user-friendly, one-sentence explanation of what this scenario simulates."),
@@ -26,6 +32,7 @@ const ScenarioSchema = z.object({
   services: z.array(z.string()).describe('An array of 3 to 5 creative and relevant service names for this scenario (e.g., "Auth Service", "Data-Ingest-Worker").'),
   pipeline: z.array(StageSchema).describe('An array of 4 to 6 stages representing a realistic CI/CD pipeline that reflects the scenario title.'),
   logTheme: z.string().describe('A short theme for the log messages that will be generated, reflecting the scenario (e.g., "database connection errors", "user authentication traffic", "cache eviction").'),
+  affectedServices: z.array(AffectedServiceSchema).default([]).describe('Optional per-service impact definitions for the incident.'),
 });
 
 export type Scenario = z.infer<typeof ScenarioSchema>;
@@ -40,7 +47,9 @@ const prompt = ai.definePrompt({
   prompt: `
     You are a DevOps Scenario Simulator. Your task is to generate a unique and interesting CI/CD pipeline scenario.
 
-    Create a scenario with a clear theme. The scenario should consist of a title, a short user-friendly description, a boolean 'isIncident' flag, a list of relevant services, a sequence of pipeline stages, and a theme for log messages that matches the scenario.
+  Create a scenario with a clear theme. The scenario should consist of a title, a short user-friendly description, a boolean 'isIncident' flag, a list of relevant services, a sequence of pipeline stages, and a theme for log messages that matches the scenario.
+
+  If isIncident is true, also include an 'affectedServices' array describing which services degrade or go OUTAGE. Only include services from the 'services' list. Provide 1-3 affected services max. If no incident, use an empty array.
 
     **Crucially, you must decide if the scenario represents an incident.**
     - If the pipeline has any 'failure' stages, or represents a problem like a security vulnerability, resource contention, or an outage, you **MUST** set 'isIncident' to true.

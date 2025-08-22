@@ -11,11 +11,15 @@ import {
   CardFooter
 } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { BrainCircuit, Play, AlertTriangle } from "lucide-react";
+import { BrainCircuit, Play, AlertTriangle, Wrench, Lightbulb, FastForward, RefreshCcw, Bug } from "lucide-react";
 import { Button } from "../ui/button";
+import { Popper } from "@/components/ui/popper";
+import { useRef, useState } from "react";
 
 export function ScenarioInfo() {
-  const { scenario, runPipeline, pipelineStatus } = useDevopsSim();
+  const { scenario, runPipeline, pipelineStatus, scenarioDebugMode, startScenarioDebug, nextHint, applyScenarioFix, fixApplied, resetScenarioPipeline, currentHintIndex, scenarioHints, scenarioRootCause } = useDevopsSim();
+  const manualBtnRef = useRef<HTMLButtonElement | null>(null);
+  const [showManualPanel, setShowManualPanel] = useState(false);
 
   if (!scenario) return null;
 
@@ -45,6 +49,65 @@ export function ScenarioInfo() {
                 This scenario simulates a problem. The pipeline is expected to fail.
               </AlertDescription>
             </Alert>
+        )}
+        {scenario.isIncident && pipelineStatus === 'failure' && !fixApplied && (
+          <div className="space-y-3">
+            <div className="text-sm text-muted-foreground">Pipeline failed. Choose a debug path:</div>
+            <div className="flex flex-col gap-2">
+              <Button ref={manualBtnRef} variant="outline" size="sm" disabled={scenarioDebugMode==='manual'} onClick={() => { startScenarioDebug('manual'); setShowManualPanel(true); }}>
+                <Lightbulb className="h-4 w-4 mr-2" /> Manual Debug (Hints)
+              </Button>
+              <Button variant="outline" size="sm" disabled={scenarioDebugMode==='auto'} onClick={() => startScenarioDebug('auto')}>
+                <FastForward className="h-4 w-4 mr-2" /> Auto Debug & Fix
+              </Button>
+              <Popper
+                anchor={manualBtnRef.current}
+                open={scenarioDebugMode==='manual' && showManualPanel}
+                placement="bottom-start"
+                offset={[0, 8]}
+                elevation="lg"
+                className="w-80 p-3"
+              >
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold uppercase tracking-wide">Hints</span>
+                    <button
+                      aria-label="Close hints"
+                      className="text-xs text-muted-foreground hover:text-foreground rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      onClick={() => setShowManualPanel(false)}
+                    >✕</button>
+                  </div>
+                  <div className="text-xs font-mono max-h-44 overflow-auto pr-1 custom-scrollbar">
+                    Hint {currentHintIndex + 1} / {scenarioHints.length}: {scenarioHints[currentHintIndex] || 'Loading...'}
+                  </div>
+                  <div className="flex gap-2 flex-wrap">
+                    <Button size="sm" variant="secondary" disabled={currentHintIndex >= scenarioHints.length - 1} onClick={nextHint}>Next</Button>
+                    <Button size="sm" onClick={applyScenarioFix}><Wrench className="h-3 w-3 mr-1"/>Apply Fix</Button>
+                  </div>
+                </div>
+              </Popper>
+            </div>
+          </div>
+        )}
+        {fixApplied && (
+          <Alert>
+            <AlertTitle>Fix Applied</AlertTitle>
+            <AlertDescription className="space-y-2">
+              <p>Remediation steps executed. You can rerun the pipeline to validate resolution.</p>
+              <Button size="sm" variant="outline" onClick={resetScenarioPipeline}>
+                <RefreshCcw className="h-4 w-4 mr-2" /> Reset & Re-run
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+        {scenarioRootCause && (
+          <Alert>
+            <Bug className="h-4 w-4" />
+            <AlertTitle>Root Cause</AlertTitle>
+            <AlertDescription className="text-xs font-mono whitespace-pre-wrap">
+              {scenarioRootCause}
+            </AlertDescription>
+          </Alert>
         )}
       </CardContent>
       <CardFooter>

@@ -36,33 +36,23 @@ const statusInfo: Record<
 };
 
 export function ServicesStatus() {
-  const { scenario } = useDevopsSim();
+  const { services, scenario } = useDevopsSim();
 
   if (!scenario) return null;
-
-  const scenarioServices = scenario.services.map(name => ({
-      id: name.toLowerCase().replace(/\s+/g, '-'),
-      name: name,
-      // This is a simplified view for the scenario; we assume services are impacted if it's an incident.
-      status: scenario.isIncident ? 'DEGRADED' as ServiceStatus : 'OPERATIONAL' as ServiceStatus
-  }));
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Scenario Services</CardTitle>
-        <CardDescription>Health of applications relevant to the AI scenario</CardDescription>
+        <CardDescription>Live health of services tied to this scenario</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {scenarioServices.map((service) => (
+        {services.filter(s => scenario.services.includes(s.name)).map(service => (
           <div key={service.id} className="flex items-center justify-between">
             <span className="text-sm font-medium">{service.name}</span>
             <Badge
               variant="outline"
-              className={cn(
-                "text-xs gap-2",
-                statusInfo[service.status].className
-              )}
+              className={cn("text-xs gap-2", statusInfo[service.status].className)}
             >
               {statusInfo[service.status].icon}
               <span>{service.status}</span>
