@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import { DevopsSimProvider } from '@/providers/devops-sim-provider';
 import Template from './template';
 import { person } from '@/lib/data';
 import { ThemeProvider } from '@/providers/theme-provider';
@@ -87,18 +86,18 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <DevopsSimProvider>
             <div className="relative flex min-h-screen">
               <Sidebar />
               <div className="flex flex-1 flex-col">
                 <Header />
                 <main className="flex-1 flex flex-col">
-                  <Template>{children}</Template>
+                  <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8">
+                    <Template>{children}</Template>
+                  </div>
                 </main>
               </div>
             </div>
             <Toaster />
-          </DevopsSimProvider>
         </ThemeProvider>
       </body>
     </html>

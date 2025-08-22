@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, CalendarDays } from 'lucide-react';
 import type { Metadata } from 'next';
 import { person } from '@/lib/data';
+import ReactMarkdown from 'react-markdown';
+import gfm from 'remark-gfm';
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -16,9 +18,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!article) {
     return { title: 'Article Not Found' };
   }
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://your-domain.com';
   return {
     title: article.title,
     description: article.summary,
+    alternates: {
+      canonical: `${siteUrl}/articles/${id}`,
+    },
     openGraph: {
       title: `${article.title} | ${person.name}`,
       description: article.summary,
@@ -42,14 +48,6 @@ export default async function ArticleDetailsPage({ params }: Props) {
 
   return (
     <div className="space-y-8">
-      <Link
-        href="/articles"
-        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to Articles
-      </Link>
-
       <article
         className="prose prose-neutral dark:prose-invert max-w-none 
         prose-headings:font-headline prose-headings:text-primary
@@ -87,7 +85,9 @@ export default async function ArticleDetailsPage({ params }: Props) {
           </div>
         </header>
 
-        <div className="mt-8" dangerouslySetInnerHTML={{ __html: article.content }}></div>
+        <div className="mt-8">
+          <ReactMarkdown remarkPlugins={[gfm]}>{article.content}</ReactMarkdown>
+        </div>
       </article>
     </div>
   );

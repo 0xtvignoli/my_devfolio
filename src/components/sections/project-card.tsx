@@ -37,7 +37,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         )}
         <CardHeader>
           <CardTitle className="font-headline text-xl">{project.title}</CardTitle>
-          <CardDescription>{project.summary}</CardDescription>
+          <CardDescription className="clamp-3">{project.summary}</CardDescription>
         </CardHeader>
         <CardContent className="flex-1">
           <div className="flex flex-wrap gap-2">

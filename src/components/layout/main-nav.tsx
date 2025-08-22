@@ -21,7 +21,7 @@ export function MainNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex h-full flex-col justify-between">
+    <nav className="flex h-full flex-col justify-between" aria-label="Main navigation" role="navigation">
       <ul className="flex flex-col gap-1">
         {navItems.map((item) => {
           const isActive = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
@@ -36,6 +36,7 @@ export function MainNav() {
                     ? 'bg-sidebar-active text-sidebar-active-foreground'
                     : 'text-sidebar-foreground',
                 )}
+                aria-current={isActive ? 'page' : undefined}
               >
                 <item.icon className="h-4 w-4" />
                 {item.label}

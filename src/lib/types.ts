@@ -34,30 +34,37 @@ export type Article = {
   content: string;
 };
 
+export type ProjectLink = {
+  repo?: string;
+  live?: string;
+  caseStudy?: string;
+  codespaces?: string;
+  stackblitz?: string;
+};
+
+export type ProjectImage = {
+  url: string;
+  alt: string;
+  aiHint?: string;
+};
+
 export type Project = {
   id: string;
   title: string;
   summary: string;
+  longDescription: string;
+  images: ProjectImage[];
   stack: string[];
   role: string;
   outcomes: string[];
-  links?: {
-    repo?: string;
-    live?: string;
-    caseStudy?: string;
-    codespaces?: string;
-    stackblitz?: string;
-  };
+  links?: ProjectLink;
+  featured?: boolean;
+  date?: string;
+  tags?: string[];
   dates?: {
     start: string;
     end?: string;
   };
-  images?: {
-    alt: string;
-    url: string;
-    aiHint: string;
-  }[];
-  longDescription: string;
 };
 
 // --- DevOps Simulation Types ---

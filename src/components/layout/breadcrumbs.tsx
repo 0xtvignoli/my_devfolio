@@ -28,8 +28,11 @@ export function Breadcrumbs() {
   const segments = pathname.split('/').filter(Boolean);
 
   return (
-    <nav aria-label="Breadcrumb" className="text-sm font-medium text-muted-foreground">
-      <ol className="flex items-center gap-2">
+    <nav
+      aria-label="Breadcrumb"
+      className="text-sm font-medium text-muted-foreground overflow-x-auto whitespace-nowrap [-webkit-overflow-scrolling:touch] [-ms-overflow-style:none] scrollbar-none"
+    >
+      <ol className="flex items-center gap-2 -mx-4 px-4 sm:mx-0 sm:px-0">
         <li>
           <Link href="/" className="transition-colors hover:text-foreground">
             <Home className="h-4 w-4" />
@@ -48,7 +51,7 @@ export function Breadcrumbs() {
                 href={href}
                 className={cn(
                   'transition-colors hover:text-foreground',
-                  isLast && 'text-foreground font-semibold pointer-events-none',
+                  isLast && 'text-foreground font-semibold pointer-events-none max-w-[60vw] truncate',
                 )}
                 aria-current={isLast ? 'page' : undefined}
               >

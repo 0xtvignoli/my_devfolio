@@ -56,13 +56,6 @@ export function Header() {
         </Sheet>
         <ThemeToggle />
       </header>
-      {!isHomePage && (
-        <div className="hidden border-b p-4 md:block">
-          <React.Suspense fallback={<Skeleton className="h-6 w-1/2" />}>
-            <Breadcrumbs />
-          </React.Suspense>
-        </div>
-      )}
     </>
   );
 }

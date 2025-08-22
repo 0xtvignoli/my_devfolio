@@ -6,6 +6,18 @@ import { ArrowRight } from 'lucide-react';
 import { SectionHeader } from '@/components/sections/section-header';
 
 export default function ArticlesPage() {
+  const formatDate = (iso: string) =>
+    new Date(iso).toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+
+  const estimateReadTime = (html: string) => {
+    const text = html.replace(/<[^>]*>/g, ' ');
+    const words = text.trim().split(/\s+/).filter(Boolean).length;
+    return Math.max(1, Math.ceil(words / 200));
+  };
   return (
     <div className="space-y-8">
       <SectionHeader
@@ -19,7 +31,10 @@ export default function ArticlesPage() {
             <Card className="transition-all group-hover:shadow-lg group-hover:-translate-y-1">
               <CardHeader>
                 <CardTitle className="font-headline text-xl">{article.title}</CardTitle>
-                <CardDescription className="pt-1">{article.summary}</CardDescription>
+                <CardDescription className="text-xs text-muted-foreground">
+                  {formatDate(article.date)} • {estimateReadTime(article.content)} min read
+                </CardDescription>
+                <CardDescription className="pt-1 clamp-3">{article.summary}</CardDescription>
               </CardHeader>
               <CardFooter className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex flex-wrap gap-2">
