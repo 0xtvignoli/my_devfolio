@@ -2,86 +2,77 @@
 
 ## About
 
-This is the personal portfolio website of Thomas Vignoli, a DevOps Engineer specialized in Terraform, AWS, Azure, Kubernetes, and CI/CD.
+Questo sito è un portfolio personale costruito con Next.js (App Router), TypeScript, Tailwind CSS e componenti shadcn/ui.
 
 ## Technologies Used
 
 This project is built with:
 
-- **Vite** - Build tool and development server
+- **Next.js** (SSR/SSG, App Router)
 - **TypeScript** - Type-safe JavaScript
-- **React** - UI framework
-- **shadcn/ui** - Component library
 - **Tailwind CSS** - Utility-first CSS framework
-- **React Router** - Client-side routing
-- **React Query** - Data fetching and caching
-- **Vercel Analytics** - Web analytics
-- **Vercel Speed Insights** - Performance monitoring
+- **shadcn/ui / Radix UI** - Component library
+- **React Query (TanStack Query)** - Data fetching and caching
+- **Next Image Optimization** - Image optimization for faster loading
+- **Vercel Analytics & Speed Insights** - Web analytics and performance monitoring
 
 ## Development
 
 ### Prerequisites
 
-- Node.js (version 18 or higher)
-- npm, yarn, pnpm, or bun
+- Node.js 20+ (coerente con ambiente Vercel)
 
 ### Getting Started
 
 1. **Clone the repository**
    ```bash
    git clone <your-repo-url>
-   cd infra-vision-site
+   cd my_devfolio
    ```
 
 2. **Install dependencies**
    ```bash
    npm install
-   # or
-   yarn install
-   # or
-   pnpm install
-   # or
-   bun install
    ```
 
 3. **Start the development server**
    ```bash
    npm run dev
-   # or
-   yarn dev
-   # or
-   pnpm dev
-   # or
-   bun dev
    ```
 
 4. **Open your browser**
-   Navigate to `http://localhost:8080` to view the application.
+   Navigate to `http://localhost:9002` to view the application.
 
 ### Available Scripts
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run build:dev` - Build for development
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
+- `npm run dev` - Avvia dev server (Turbopack)
+- `npm run build` - Build per produzione
+- `npm run compile` - Alias per build
+- `npm run start` - Avvia server produzione (usa .next)
+- `npm run typecheck` - Controllo dei tipi
+- `npm run lint` - Esegui ESLint
+- `npm test` - Esegui test con Jest
 
 ## Deployment
 
-This site is deployed on Vercel with a custom domain. The deployment is automatically triggered on pushes to the main branch.
+Questo sito è deployato su Vercel con un dominio personalizzato. Il deployment è automaticamente attivato con i push sul branch principale. Non impostare manualmente la Output Directory (usa `.next`). Rimuovere eventuali valori “dist” nelle impostazioni del progetto.
 
 ## Features
 
-- **Responsive Design** - Optimized for all device sizes
-- **Performance Optimized** - Fast loading with Vite and optimized assets
-- **SEO Friendly** - Proper meta tags and structured data
-- **Analytics** - Vercel Analytics and Speed Insights integration
-- **Modern UI** - Clean, professional design with shadcn/ui components
+- **Responsive Design** - Ottimizzato per tutte le dimensioni dei dispositivi
+- **Performance Optimized** - Caricamento veloce con Vite e risorse ottimizzate
+- **SEO Friendly** - Meta tag e dati strutturati appropriati
+- **Analytics** - Integrazione con Vercel Analytics e Speed Insights
+- **Modern UI** - Design pulito e professionale con componenti shadcn/ui
 
 ## Contact
 
-For professional inquiries, please reach out through the contact information provided on the website.
+Per richieste professionali, si prega di contattare attraverso le informazioni fornite sul sito web.
 
 ## License
 
 This project is private and proprietary.
+
+## Notes
+
+Il precedente setup Vite è stato sostituito da Next.js; file come `index.html` non sono più necessari per il deploy su Vercel.
