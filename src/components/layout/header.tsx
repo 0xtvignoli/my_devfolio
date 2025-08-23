@@ -1,58 +1,96 @@
+'use client';
 
-"use client";
-
-import { ThemeToggle } from "@/components/layout/theme-toggle";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
-import { MainNav } from "./main-nav";
-import { Code2 } from "lucide-react";
-import { Breadcrumbs } from "./breadcrumbs";
-import React from "react";
-import { Skeleton } from "../ui/skeleton";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import Link from 'next/link';
+import { useLocale } from '@/hooks/use-locale';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { LocaleSwitcher } from '@/components/locale-switcher';
+import { Code2, LayoutGrid, Briefcase, BookOpen, FlaskConical } from 'lucide-react';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { useState } from 'react';
+import { HamburgerMenu } from './hamburger-menu';
+import { motion } from 'framer-motion';
 
 export function Header() {
-  const pathname = usePathname();
-  const isHomePage = pathname === '/';
+  const { t } = useLocale();
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+
+  const navLinks = [
+    { href: '/portfolio', label: t.nav.portfolio, icon: LayoutGrid },
+    { href: '/experience', label: t.nav.experience, icon: Briefcase },
+    { href: '/articles', label: t.nav.articles, icon: BookOpen },
+    { href: '/lab', label: t.nav.lab, icon: FlaskConical },
+  ];
 
   return (
-    <>
-    <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-sm md:justify-end">
-       <Sheet>
-        <SheetTrigger asChild>
-           <Button variant="ghost" size="icon" className="md:hidden">
-              <Menu className="h-6 w-6" />
-              <span className="sr-only">Toggle Menu</span>
-          </Button>
-        </SheetTrigger>
-  <SheetContent side="left" className="p-0 w-64 bg-sidebar border-sidebar-border text-sidebar-foreground">
-     {/* Accessible title/description for Sheet (Radix Dialog) */}
-     <SheetTitle className="sr-only">Main navigation</SheetTitle>
-     <SheetDescription className="sr-only">Use this panel to navigate between sections of the site.</SheetDescription>
-           <div className="h-16 flex items-center px-4 border-b border-sidebar-border">
-            <Link href="/" className="flex items-center gap-3">
-                <Code2 className="h-8 w-8 text-primary" />
-                <h1 className="text-xl font-bold font-headline text-sidebar-active-foreground">
-                    DevFolio
-                </h1>
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-16 items-center">
+        <Link href="/" className="mr-6 flex items-center space-x-2">
+          <Code2 className="h-6 w-6 text-primary" />
+          <span className="font-bold font-headline">DevOps Folio</span>
+        </Link>
+        <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="transition-colors hover:text-foreground/80 text-foreground/60"
+            >
+              {link.label}
             </Link>
-           </div>
-           <div className="p-4">
-            <MainNav />
-           </div>
-        </SheetContent>
-      </Sheet>
-      <ThemeToggle />
-    </header>
-    {!isHomePage && (
-      <div className="hidden border-b p-4 md:block">
-        <React.Suspense fallback={<Skeleton className="h-6 w-1/2" />}>
-          <Breadcrumbs />
-        </React.Suspense>
+          ))}
+        </nav>
+        <div className="flex flex-1 items-center justify-end space-x-2">
+          <div className="hidden md:flex items-center space-x-2">
+            <LocaleSwitcher />
+            <ThemeToggle />
+          </div>
+          <div className="md:hidden">
+            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+              <SheetTrigger asChild>
+                <HamburgerMenu isOpen={isSheetOpen} onToggle={setIsSheetOpen} />
+              </SheetTrigger>
+              <SheetContent side="left" className="p-0">
+                  <SheetHeader className="sr-only">
+                    <SheetTitle>Navigation Menu</SheetTitle>
+                    <SheetDescription>
+                      A list of links to navigate the site, including portfolio, experience, articles, and the lab.
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex flex-col h-full pt-4">
+                    <div className="p-2 mb-4 px-4">
+                       <Link href="/" className="flex items-center space-x-2" onClick={() => setIsSheetOpen(false)}>
+                        <Code2 className="h-6 w-6 text-primary" />
+                        <span className="font-bold font-headline text-lg">DevOps Folio</span>
+                      </Link>
+                    </div>
+                    <nav className="flex-grow px-2">
+                      <ul className="space-y-2">
+                        {navLinks.map((link) => (
+                          <li key={link.href}>
+                            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                              <Link
+                                href={link.href}
+                                onClick={() => setIsSheetOpen(false)}
+                                className="flex items-center gap-3 p-3 rounded-lg text-foreground/80 hover:bg-secondary hover:text-foreground transition-colors"
+                              >
+                                <link.icon className="w-5 h-5" />
+                                <span className="font-medium">{link.label}</span>
+                              </Link>
+                            </motion.div>
+                          </li>
+                        ))}
+                      </ul>
+                    </nav>
+                    <div className="mt-auto flex items-center justify-start space-x-2 p-4 border-t">
+                      <LocaleSwitcher />
+                      <ThemeToggle />
+                    </div>
+                  </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+        </div>
       </div>
-    )}
-    </>
+    </header>
   );
 }

@@ -1,38 +1,28 @@
+'use client';
 
-import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { articles } from "@/lib/data";
-import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { SectionHeader } from "@/components/sections/section-header";
+import { ArticleCard } from "@/components/shared/article-card";
+import { getArticles } from "@/data/content/articles";
+import { useLocale } from "@/hooks/use-locale";
 
 export default function ArticlesPage() {
-  return (
-    <div className="space-y-8">
-  <SectionHeader align="left" title="Articles" subtitle="Thoughts on technology, infrastructure, and software engineering." />
-      <div className="space-y-6">
-        {articles.map((article) => (
-          <Link key={article.id} href={`/articles/${article.id}`} className="group block">
-            <Card className="transition-all group-hover:shadow-lg group-hover:-translate-y-1">
-              <CardHeader>
-                <CardTitle className="font-headline text-xl">{article.title}</CardTitle>
-                <CardDescription className="pt-1">{article.summary}</CardDescription>
-              </CardHeader>
-              <CardFooter className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="flex flex-wrap gap-2">
-                    {article.tags.map((tag) => (
-                        <Badge key={tag} variant="secondary">{tag}</Badge>
-                    ))}
-                </div>
-                <div className="flex items-center text-sm font-medium text-primary w-full sm:w-auto">
-                  Read Article
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </div>
-              </CardFooter>
-            </Card>
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
+    const { t, locale } = useLocale();
+    const articles = getArticles(locale);
+
+    return (
+        <div className="container mx-auto px-4 py-16">
+            <div className="text-center mb-12">
+                <h1 className="font-headline text-4xl md:text-5xl font-bold tracking-tight">
+                    {t.nav.articles}
+                </h1>
+                <p className="text-lg text-muted-foreground mt-2">
+                    Deep dives into cloud technologies, automation, and best practices.
+                </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {articles.map((article) => (
+                    <ArticleCard key={article.slug} article={article} />
+                ))}
+            </div>
+        </div>
+    );
 }

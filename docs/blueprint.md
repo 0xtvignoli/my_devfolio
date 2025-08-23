@@ -1,21 +1,22 @@
-# **App Name**: DevFolio
+# **App Name**: DevOps Folio
 
 ## Core Features:
 
-- Project Gallery: Showcase a developer's projects in a visually appealing and responsive gallery.
-- Project Case Studies: Provide detailed case studies for each project, highlighting the developer's role, technologies used, and outcomes.
-- About Me Section: Present professional information with an about me section.
-- Skills Showcase: Display a categorized list of skills.
-- Contact Form: Allow visitors to send messages.
-- Image Filtering: Respond appropriately depending on whether an image is safe or not.
-- DevOps Simulation: Simulate a simplified DevOps environment using visualizations; the simulator will act as a tool showing the key skills.
+- Portfolio Display: Showcase of DevOps portfolio and experiences.
+- Bilingual Articles: Technical articles in both Italian and English, switchable with locale selector.
+- Code Highlighting: Display code snippets with syntax highlighting in articles.
+- OG Image Generation: Automatically generate visually appealing social media images to increase engagement using article titles.
+- Theme Toggle: Toggle dark/light mode, with preference remembered via local storage
+- Skill Timeline: Visually indicate growth through past roles, with an interactive timeline.
 
 ## Style Guidelines:
 
-- Primary color: Deep navy (#224568) to convey professionalism and trust.
-- Background color: Light gray (#F0F2F5) to ensure readability and a clean interface.
-- Accent color: Subtle orange (#E59656) to highlight key interactive elements without overwhelming the design.
-- Headline font: 'Space Grotesk' (sans-serif) for a modern, tech-oriented feel; body font: 'Inter' (sans-serif) for readability.
-- Use minimalist icons to represent different skill categories and project types.
-- Employ a grid-based layout for a structured and responsive design.
-- Incorporate subtle transitions and animations for a smooth user experience.
+- Primary color: Deep violet (#624CAB) to reflect knowledge and depth.
+- Background color: Very dark grayish violet (#191724) for a modern feel, and to allow content to stand out.
+- Accent color: Purple (#896BCC) to highlight key interactive elements.
+- Headline font: 'Space Grotesk' sans-serif for a clean, modern, technical feel.
+- Body font: 'Inter' sans-serif to ensure excellent readability of technical content.
+- Code font: 'Source Code Pro' monospaced for displaying code snippets.
+- Use 'lucide-react' icons, for a modern and polished feel
+- Tailwind CSS is the recommended styling approach.
+- Use subtle transitions and animations on UI elements for improved UX. This should not be distracting.
