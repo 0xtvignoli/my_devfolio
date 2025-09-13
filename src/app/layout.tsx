@@ -2,6 +2,7 @@ import type {Metadata} from 'next';
 import './globals.css';
 import {ThemeProvider} from '@/components/providers/theme-provider';
 import {LocaleProvider} from '@/contexts/locale-context';
+import {GamificationProvider} from '@/contexts/gamification-context';
 import {Header} from '@/components/layout/header';
 import {Footer} from '@/components/layout/footer';
 import { Toaster } from "@/components/ui/toaster"
@@ -51,12 +52,14 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <LocaleProvider>
-            <div className="flex min-h-screen flex-col">
-              <Header />
-              <main className="flex-grow">{children}</main>
-              <Footer />
-            </div>
-            <Toaster />
+            <GamificationProvider>
+              <div className="flex min-h-screen flex-col">
+                <Header />
+                <main className="flex-grow">{children}</main>
+                <Footer />
+              </div>
+              <Toaster />
+            </GamificationProvider>
           </LocaleProvider>
         </ThemeProvider>
       </body>

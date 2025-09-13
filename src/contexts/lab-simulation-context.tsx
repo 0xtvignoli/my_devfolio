@@ -43,7 +43,14 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
     const pipelinePromiseChain = useRef<Promise<any>>(Promise.resolve());
 
     const addRuntimeLog = useCallback((message: string) => {
-        setRuntimeLogs(prev => [...prev.slice(-100), `${new Date().toLocaleTimeString()}: ${message}`]);
+        setRuntimeLogs(prev => {
+            const newLog = `${new Date().toLocaleTimeString()}: ${message}`;
+            // Prevent duplicate consecutive logs
+            if (prev[prev.length - 1] === newLog) {
+                return prev;
+            }
+            return [...prev.slice(-100), newLog];
+        });
     }, []);
     
     const addIncident = useCallback((incident: Omit<Incident, 'id' | 'timestamp'>) => {
@@ -69,6 +76,15 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
             const newMemoryUsage = Math.min(100, baseMemory + Math.floor(Math.random() * 5));
             const newApiLatency = baseLatency + Math.floor(Math.random() * 15) + simulationEffects.current.latencyInjection;
 
+            // Optimize array operations - only create new arrays if values actually changed
+            const lastCpu = prev.cpuData[prev.cpuData.length - 1]?.usage;
+            const lastMemory = prev.memoryData[prev.memoryData.length - 1]?.usage;
+            const lastLatency = prev.apiResponseData[prev.apiResponseData.length - 1]?.p95;
+
+            if (lastCpu === newCpuUsage && lastMemory === newMemoryUsage && lastLatency === newApiLatency) {
+                return prev; // No changes, return same reference to prevent re-renders
+            }
+
             const newCpuData: TimeSeriesData[] = [...prev.cpuData.slice(1), { time: 'now', usage: newCpuUsage }];
             const newMemoryData: TimeSeriesData[] = [...prev.memoryData.slice(1), { time: 'now', usage: newMemoryUsage }];
             const newApiData: TimeSeriesData[] = [...prev.apiResponseData.slice(1), { time: 'now', p95: newApiLatency }];
@@ -82,10 +98,21 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
         return () => clearInterval(interval);
     }, [updateMonitoring]);
 
+    // Cleanup all timers on unmount
+    useEffect(() => {
+        return () => {
+            if (autoChaosTimer.current) {
+                clearInterval(autoChaosTimer.current);
+                autoChaosTimer.current = null;
+            }
+        };
+    }, []);
+
 
     const runChaos = useCallback((scenario: string) => {
-        addRuntimeLog(`💥 Initiating chaos experiment: ${scenario}`);
-        const startTime = Date.now();
+        try {
+            addRuntimeLog(`💥 Initiating chaos experiment: ${scenario}`);
+            const startTime = Date.now();
         
         if (scenario === 'latency') {
             const description = "Injecting 300ms latency into 'api-gateway'.";
@@ -99,6 +126,11 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
                 simulationEffects.current.latencyInjection = 0;
                 const duration = ((Date.now() - startTime) / 1000).toFixed(1);
                 addIncident({ type: 'API Latency', duration: `${duration}s`, status: 'Resolved' });
+                
+                // Trigger gamification event for chaos experiment
+                window.dispatchEvent(new CustomEvent('lab_activity', {
+                    detail: { type: 'chaos_experiment', data: { scenario: 'latency', duration } }
+                }));
             }, 8000);
 
         } else if(scenario === 'pod_failure') {
@@ -169,21 +201,47 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
         } else {
              addRuntimeLog(`Unknown chaos scenario: ${scenario}. Available: latency, pod_failure, cpu_spike`);
         }
+        } catch (error) {
+            console.error('Error in chaos experiment:', error);
+            addRuntimeLog(`❌ Error during chaos experiment: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            toast({ 
+                variant: 'destructive', 
+                title: 'Chaos Experiment Failed', 
+                description: 'An error occurred during the chaos experiment. Check logs for details.' 
+            });
+        }
     }, [addRuntimeLog, toast, cluster, addIncident]);
 
     const runStage = (stage: PipelineStage, commandOutput: string): Promise<void> => {
-        return new Promise(resolve => {
-            const duration = stage.baseDuration + Math.random() * 500;
-            setPipeline(prev => prev.map(s => s.name === stage.name ? { ...s, status: 'In Progress' } : s));
-            addRuntimeLog(`[Pipeline] > Stage '${stage.name}' started.`);
-            addRuntimeLog(`$ ${stage.details}`);
-            
-            setTimeout(() => {
-                 addRuntimeLog(commandOutput);
-                 setPipeline(prev => prev.map(s => s.name === stage.name ? { ...s, status: 'Success', duration: `${(duration/1000).toFixed(2)}s` } : s));
-                 addRuntimeLog(`[Pipeline] > Stage '${stage.name}' finished successfully.`);
-                 resolve();
-            }, duration);
+        return new Promise((resolve, reject) => {
+            try {
+                const duration = stage.baseDuration + Math.random() * 500;
+                setPipeline(prev => prev.map(s => s.name === stage.name ? { ...s, status: 'In Progress' } : s));
+                addRuntimeLog(`[Pipeline] > Stage '${stage.name}' started.`);
+                addRuntimeLog(`$ ${stage.details}`);
+                
+                const timer = setTimeout(() => {
+                    try {
+                        addRuntimeLog(commandOutput);
+                        setPipeline(prev => prev.map(s => s.name === stage.name ? { ...s, status: 'Success', duration: `${(duration/1000).toFixed(2)}s` } : s));
+                        addRuntimeLog(`[Pipeline] > Stage '${stage.name}' finished successfully.`);
+                        resolve();
+                    } catch (error) {
+                        console.error(`Error in pipeline stage ${stage.name}:`, error);
+                        setPipeline(prev => prev.map(s => s.name === stage.name ? { ...s, status: 'Failed' } : s));
+                        addRuntimeLog(`❌ [Pipeline] > Stage '${stage.name}' failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                        reject(error);
+                    }
+                }, duration);
+
+                // Store timer reference for cleanup if needed
+                return () => clearTimeout(timer);
+            } catch (error) {
+                console.error(`Error starting pipeline stage ${stage.name}:`, error);
+                setPipeline(prev => prev.map(s => s.name === stage.name ? { ...s, status: 'Failed' } : s));
+                addRuntimeLog(`❌ [Pipeline] > Failed to start stage '${stage.name}': ${error instanceof Error ? error.message : 'Unknown error'}`);
+                reject(error);
+            }
         });
     }
 
@@ -238,21 +296,26 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
                         
                         const canaryPod: Pod = { name: `frontend-webapp-c9-${deployConfig.version}`, service: 'Homepage', status: 'Running', cpu: '250m', memory: '512Mi', ip: generateIp(), isCanary: true, traffic: deployConfig.weight };
                         setCluster(prev => {
-                            const homepagePods = prev.nodes.flatMap(n => n.pods).filter(p => p.service === 'Homepage');
-                            const stableTraffic = (100 - deployConfig.weight) / homepagePods.length;
+                            const homepagePods = prev.nodes.flatMap(n => n.pods).filter(p => p.service === 'Homepage' && !p.isCanary);
+                            const stableTraffic = homepagePods.length > 0 ? (100 - deployConfig.weight) / homepagePods.length : 0;
                             
                             const newNodes = prev.nodes.map(node => ({
                                 ...node,
-                                pods: node.pods.map(pod => pod.service === 'Homepage' ? {...pod, traffic: stableTraffic } : pod)
+                                pods: node.pods.map(pod => 
+                                    pod.service === 'Homepage' && !pod.isCanary 
+                                        ? {...pod, traffic: stableTraffic } 
+                                        : pod
+                                )
                             }));
                             
-                            return {
-                                ...prev,
-                                nodes: [
-                                   {...newNodes[0], pods: [...newNodes[0].pods, canaryPod]},
-                                   ...newNodes.slice(1)
-                                ]
-                            }
+                            // Add canary pod to first node with available space
+                            const targetNodeIndex = newNodes.findIndex(n => n.pods.length < 4) || 0;
+                            newNodes[targetNodeIndex] = {
+                                ...newNodes[targetNodeIndex],
+                                pods: [...newNodes[targetNodeIndex].pods, canaryPod]
+                            };
+                            
+                            return { ...prev, nodes: newNodes };
                         });
 
                         const baselineLatency = 85 + Math.random() * 10;
@@ -276,6 +339,18 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
                             title: "Deployment Complete",
                             description: `Version ${deployConfig.version} has been successfully rolled out.`,
                         });
+
+                        // Trigger gamification event for successful deployment
+                        window.dispatchEvent(new CustomEvent('lab_activity', {
+                            detail: { 
+                                type: 'deployment_completed', 
+                                data: { 
+                                    strategy: deployConfig.strategy, 
+                                    version: deployConfig.version,
+                                    weight: deployConfig.weight
+                                } 
+                            }
+                        }));
 
                         setCluster(prev => {
                             const newProdPod: Omit<Pod, 'ip' | 'name'> = { service: 'Homepage', status: 'Running', cpu: '250m', memory: '512Mi', isCanary: false };
@@ -356,13 +431,6 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
     
     const isDeploying = pipelineStatus === 'deploying' || pipelineStatus === 'paused_canary';
 
-    useEffect(() => {
-        return () => {
-            if (autoChaosTimer.current) {
-                clearInterval(autoChaosTimer.current);
-            }
-        }
-    }, []);
 
     const value = {
         runtimeLogs,
