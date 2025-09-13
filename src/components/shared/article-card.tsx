@@ -11,7 +11,7 @@ interface ArticleCardProps {
 }
 
 export function ArticleCard({ article }: ArticleCardProps) {
-    const { t } = useLocale();
+    const { t, locale } = useLocale();
 
     return (
         <Link href={`/articles/${article.slug}`} className="block group">
@@ -19,7 +19,7 @@ export function ArticleCard({ article }: ArticleCardProps) {
                 <CardHeader>
                     <CardTitle className="font-headline">{article.title}</CardTitle>
                     <p className="text-sm text-muted-foreground pt-1">
-                      {t.article.published} {new Date(article.date).toLocaleDateString(t.locale, { year: 'numeric', month: 'long', day: 'numeric' })}
+                      {t.article.published} {new Date(article.date).toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' })}
                     </p>
                 </CardHeader>
                 <CardContent className="flex-grow">
