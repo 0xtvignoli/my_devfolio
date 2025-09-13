@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useLocale } from '@/hooks/use-locale';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { LocaleSwitcher } from '@/components/locale-switcher';
-import { Code2, LayoutGrid, Briefcase, BookOpen, FlaskConical } from 'lucide-react';
+import { Code2, LayoutGrid, Briefcase, BookOpen, FlaskConical, Trophy } from 'lucide-react';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useState } from 'react';
 import { HamburgerMenu } from './hamburger-menu';
@@ -15,6 +15,7 @@ export function Header() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const navLinks = [
+    { href: '/dashboard', label: 'Dashboard', icon: Trophy },
     { href: '/portfolio', label: t.nav.portfolio, icon: LayoutGrid },
     { href: '/experience', label: t.nav.experience, icon: Briefcase },
     { href: '/articles', label: t.nav.articles, icon: BookOpen },
@@ -22,7 +23,7 @@ export function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 select-none">
       <div className="container flex h-16 items-center">
         <Link href="/" className="mr-6 flex items-center space-x-2">
           <Code2 className="h-6 w-6 text-primary" />

@@ -69,6 +69,7 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
   const [input, setInput] = useState('');
   const [history, setHistory] = useState<CommandHistory[]>([]);
   const [activeTab, setActiveTab] = useState('terminal');
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const endOfHistoryRef = useRef<HTMLDivElement>(null);
   const endOfLogsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -108,6 +109,11 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
   };
 
   const executeCommand = (cmd: string): CommandOutput => {
+    // Trigger gamification event for terminal command
+    window.dispatchEvent(new CustomEvent('lab_activity', {
+      detail: { type: 'terminal_command', data: { command: cmd.split(' ')[0] } }
+    }));
+    
     // Delegate commands to parent first
     const delegatedOutput = onCommand(cmd);
     if (delegatedOutput !== null) {
@@ -135,9 +141,18 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
           '  chaos <scenario>    - Start a chaos experiment (scenarios: latency, pod_failure, cpu_spike)',
           '',
           'SIMULATED TOOLS (try them!):',
-          '  kubectl <cmd> [args]- Simulate Kubernetes commands (e.g., `kubectl get pods`)',
-          '  helm <cmd> [args]   - Simulate Helm commands (e.g., `helm list`)',
-          '  git <cmd> [args]    - Simulate Git commands (e.g., `git status`)',
+          '  kubectl <cmd> [args]- Simulate Kubernetes commands',
+          '    kubectl get pods              - List all pods',
+          '    kubectl describe pod <name>   - Describe pod details',
+          '    kubectl logs <pod-name>       - Show pod logs',
+          '    kubectl get nodes             - List cluster nodes',
+          '  helm <cmd> [args]   - Simulate Helm commands',
+          '    helm list                     - List installed releases',
+          '    helm status <release>         - Show release status',
+          '  git <cmd> [args]    - Simulate Git commands',
+          '    git status                    - Show working tree status',
+          '    git log                       - Show commit history',
+          '    git branch                    - List branches',
         ];
       case 'whoami':
         return 'A passionate DevOps Engineer exploring the vast world of cloud and automation.';
@@ -180,7 +195,21 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
                     const rows = pods.map(p => `${p.name.padEnd(24, ' ')}\t${p.status.padEnd(8, ' ')}\t${p.traffic?.toFixed(0) ?? 'N/A'}%\t\t0\t\t3h`);
                     return [header, ...rows];
                 }
-                return `error: resource type '${kubeArg}' not supported in this simulation. Try 'pods'.`;
+                if (kubeArg === 'nodes') {
+                    const header = "NAME\t\t\tSTATUS\tROLES\t\tAGE\tVERSION";
+                    const rows = cluster.nodes.map(n => `${n.name.padEnd(12, ' ')}\tReady\tworker\t\t5d\tv1.28.0`);
+                    return [header, ...rows];
+                }
+                if (kubeArg === 'services' || kubeArg === 'svc') {
+                    const header = "NAME\t\t\tTYPE\t\tCLUSTER-IP\tEXTERNAL-IP\tPORT(S)\t\tAGE";
+                    const services = [
+                        "frontend-service\tClusterIP\t10.96.0.10\t<none>\t\t80/TCP\t\t5d",
+                        "api-gateway-svc\tClusterIP\t10.96.0.11\t<none>\t\t8080/TCP\t5d",
+                        "monitoring-svc\tNodePort\t10.96.0.12\t<none>\t\t3000:30000/TCP\t5d"
+                    ];
+                    return [header, ...services];
+                }
+                return `error: resource type '${kubeArg}' not supported in this simulation. Try 'pods', 'nodes', or 'services'.`;
             case 'describe':
                 if (args[1] === 'pod' && args[2]) {
                     const pod = getPodByName(cluster, args[2]);
@@ -232,11 +261,32 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
           if (helmCmd === 'list') {
               const header = "NAME\t\tNAMESPACE\tREVISION\tUPDATED\t\t\tSTATUS\t\tCHART\t\t\tAPP VERSION";
               const rows = [
-                  "devops-folio\tdefault\t\t1\t\t2024-07-21 10:00:00\tdeployed\tdevops-folio-1.0.0\t1.0.0"
+                  "devops-folio\tdefault\t\t1\t\t2024-07-21 10:00:00\tdeployed\tdevops-folio-1.0.0\t1.0.0",
+                  "monitoring\tdefault\t\t3\t\t2024-07-20 15:30:00\tdeployed\tprometheus-15.0.0\t2.45.0"
               ];
               return [header, ...rows];
           }
-          return `'helm ${helmCmd}' is not a valid command in this simulation. Try 'list'.`;
+          if (helmCmd === 'status' && args[1]) {
+              const release = args[1];
+              if (release === 'devops-folio') {
+                  return [
+                      `NAME: devops-folio`,
+                      `LAST DEPLOYED: ${new Date().toUTCString()}`,
+                      `NAMESPACE: default`,
+                      `STATUS: deployed`,
+                      `REVISION: 1`,
+                      `TEST SUITE: None`,
+                      ``,
+                      `RESOURCES:`,
+                      `==> v1/Deployment`,
+                      `NAME           READY  UP-TO-DATE  AVAILABLE  AGE`,
+                      `frontend-app   1/1    1           1          5d`,
+                      `api-gateway    1/1    1           1          5d`,
+                  ];
+              }
+              return `Error: release "${release}" not found`;
+          }
+          return `'helm ${helmCmd}' is not a valid command in this simulation. Try 'list' or 'status <release>'.`;
 
       case 'git':
           const gitCmd = args[0];
@@ -263,7 +313,24 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
                 '    feat: Add initial lab structure and monitoring charts',
             ]
           }
-          return `'git ${gitCmd}' is not a valid command in this simulation. Try 'status' or 'log'.`;
+          if(gitCmd === 'branch') {
+            return [
+                '* main',
+                '  develop',
+                '  feature/gamification',
+                '  hotfix/memory-leak'
+            ]
+          }
+          if(gitCmd === 'remote') {
+            if (args[1] === '-v') {
+                return [
+                    'origin\thttps://github.com/DevOps-Folio/portfolio.git (fetch)',
+                    'origin\thttps://github.com/DevOps-Folio/portfolio.git (push)'
+                ];
+            }
+            return ['origin'];
+          }
+          return `'git ${gitCmd}' is not a valid command in this simulation. Try 'status', 'log', 'branch', or 'remote'.`;
 
       case '':
         return '';
@@ -281,6 +348,8 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
       e.preventDefault();
       const trimmedInput = input.trim();
       
+      setHasUserInteracted(true); // Mark that user has interacted
+      
       const output = executeCommand(trimmedInput);
       if (trimmedInput !== '') {
          setHistory(prev => [...prev.slice(-50), { command: trimmedInput, output }]);
@@ -289,13 +358,26 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
     }
   };
 
+  // Only auto-scroll when user interacts with terminal, not on external log updates
   useEffect(() => {
-    if (activeTab === 'terminal') {
-        endOfHistoryRef.current?.scrollIntoView({ behavior: 'smooth' });
-    } else {
-        endOfLogsRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (activeTab === 'terminal' && history.length > 0 && hasUserInteracted) {
+        // Only scroll if user has actually interacted with the terminal
+        // This prevents auto-scroll on page load or external updates
+        setTimeout(() => {
+          endOfHistoryRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
     }
-  }, [history, runtimeLogs, activeTab]);
+  }, [history.length, activeTab, hasUserInteracted]); // Include hasUserInteracted
+
+  // Separate effect for logs that only scrolls when tab is active and user manually switches
+  useEffect(() => {
+    if (activeTab === 'logs' && hasUserInteracted) {
+        // Only scroll logs when user actively switches to logs tab and has interacted
+        setTimeout(() => {
+          endOfLogsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
+    }
+  }, [activeTab, hasUserInteracted]); // Include hasUserInteracted
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -312,7 +394,10 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
         <TabsContent value="terminal">
             <div 
                 className="bg-slate-950 text-slate-100 font-code p-4 rounded-b-md h-96 text-sm overflow-y-auto" 
-                onClick={() => inputRef.current?.focus()}
+                onClick={() => {
+                  setHasUserInteracted(true);
+                  inputRef.current?.focus();
+                }}
             >
               {history.map((entry, index) => (
                 <div key={`hist-${index}`}>

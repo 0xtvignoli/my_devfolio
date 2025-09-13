@@ -36,7 +36,7 @@ export const it: Translations = {
     email: "thomas.vignoli@pm.me",
   },
   footer: {
-    copy: "© 2024 DevOps Folio. Tutti i diritti riservati.",
+    copy: "© 2025 Thomas Vignoli. Tutti i diritti riservati.",
   },
   theme: {
     light: "Chiaro",

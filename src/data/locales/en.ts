@@ -16,7 +16,7 @@ export const en: Translations = {
   skills: {
     title: "Core Technologies",
     list: [
-      "Terraform", "Kubernetes", "Helm", "Docker", "Go", "CI/CD (GitHub Actions, GitLab)", "AWS", "GCP", "Azure", "Prometheus", "Grafana", "Python"
+      "Terraform", "Kubernetes", "Helm", "Docker", "CI/CD (GitHub Actions, Jenkins)", "AWS", "GCP", "Azure", "Python", "TypeScript", "Javascript"
     ],
   },
   portfolio: {
@@ -36,7 +36,7 @@ export const en: Translations = {
     email: "thomas.vignoli@pm.me",
   },
   footer: {
-    copy: "© 2024 DevOps Folio. All rights reserved.",
+    copy: "© 2025 Thomas Vignoli. All rights reserved.",
   },
   theme: {
     light: "Light",
@@ -45,7 +45,7 @@ export const en: Translations = {
   },
   article: {
     back: "Back to articles",
-    author: "By",
+    author: "By tvignoli",
     published: "Published on",
   },
   project: {
