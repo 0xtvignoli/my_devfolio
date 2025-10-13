@@ -1,10 +1,4 @@
-// Setup for bun test runner with happy-dom
+// Setup for test runner (compatible with both Jest and Bun)
 import '@testing-library/jest-dom';
-import { beforeAll } from 'bun:test';
 
-beforeAll(() => {
-  // Setup happy-dom environment
-  if (typeof window !== 'undefined') {
-    // Already in a browser-like environment
-  }
-});
+// Setup is handled by test-setup.ts when running with Bun

@@ -1,0 +1,15 @@
+# Bun-specific files (not needed for Vercel builds)
+test-setup.ts
+bunfig.toml
+bun.lockb
+
+# Test files
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+
+# Development files
+.env.local
+.env*.local
+
