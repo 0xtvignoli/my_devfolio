@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useState, useEffect, useCallback, useRef, useContext } from 'react';
-import type { TimeSeriesData, DeploymentData, PipelineStage, KubernetesCluster, MonitoringData, Incident, Pod, CanaryMetrics, DeployConfig } from '@/lib/types';
+import type { TimeSeriesData, PipelineStage, KubernetesCluster, MonitoringData, Incident, Pod, CanaryMetrics, DeployConfig } from '@/lib/types';
 import { getInitialMonitoringData, getInitialPipeline, getInitialClusterData } from '@/data/content/monitoring';
 import { useToast } from '@/hooks/use-toast';
 
@@ -40,7 +40,7 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
     
     const simulationEffects = useRef({ latencyInjection: 0, cpuSpike: 0 });
     const autoChaosTimer = useRef<NodeJS.Timeout | null>(null);
-    const pipelinePromiseChain = useRef<Promise<any>>(Promise.resolve());
+    const pipelinePromiseChain = useRef<Promise<void>>(Promise.resolve());
 
     const addRuntimeLog = useCallback((message: string) => {
         setRuntimeLogs(prev => {
@@ -409,6 +409,7 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
             executeDeployment('promote');
         }
         
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pipelineStatus, addRuntimeLog, toast, addIncident]);
 
     const toggleAutoChaos = (enabled: boolean) => {

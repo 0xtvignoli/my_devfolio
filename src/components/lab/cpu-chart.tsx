@@ -1,6 +1,6 @@
 'use client';
 
-import { Line, LineChart, ResponsiveContainer } from 'recharts';
+import { Line, LineChart } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import type { TimeSeriesData } from '@/lib/types';
 

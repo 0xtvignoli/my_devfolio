@@ -20,7 +20,7 @@ const StatsCard = ({
   title: string;
   value: string | number;
   subtitle: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<{ className?: string }>;
   color?: string;
 }) => (
   <Card className="relative overflow-hidden">
@@ -83,7 +83,7 @@ const RecentActivity = () => {
 };
 
 const QuickActions = () => {
-  const { earnXP, userProgress, challenges } = useGamification();
+  const { userProgress, challenges } = useGamification();
   
   // Dynamic actions based on user progress and challenges
   const getQuickActions = () => {

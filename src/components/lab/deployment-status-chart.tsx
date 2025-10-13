@@ -1,6 +1,6 @@
 'use client';
 
-import { Bar, BarChart, Cell, ResponsiveContainer } from 'recharts';
+import { Bar, BarChart, Cell } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import type { DeploymentData } from '@/lib/types';
 

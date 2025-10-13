@@ -192,9 +192,9 @@ export const GamificationProvider = ({ children }: { children: React.ReactNode }
   
   const [achievements, setAchievements] = useState<Achievement[]>(INITIAL_ACHIEVEMENTS);
   const [challenges, setChallenges] = useState<Challenge[]>(generateDailyChallenges());
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [leaderboard] = useState<LeaderboardEntry[]>([]);
   const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading] = useState(false);
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -397,7 +397,7 @@ export const GamificationProvider = ({ children }: { children: React.ReactNode }
   // Integration hooks for lab activities
   useEffect(() => {
     const handleLabActivity = (event: CustomEvent) => {
-      const { type, data } = event.detail;
+      const { type } = event.detail;
       
       switch (type) {
         case 'deployment_completed':

@@ -1,7 +1,6 @@
 "use client"
 
 import type { Incident } from "@/lib/types";
-import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertTriangle, CheckCircle } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -20,7 +19,7 @@ export function IncidentHistory({ incidents }: IncidentHistoryProps) {
         return (
             <div className="text-center text-muted-foreground py-8">
                 <p>No incidents recorded yet.</p>
-                <p className="text-sm">Trigger a chaos experiment to see the system's resilience in action.</p>
+                <p className="text-sm">Trigger a chaos experiment to see the system&apos;s resilience in action.</p>
             </div>
         )
     }

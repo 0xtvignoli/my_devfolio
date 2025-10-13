@@ -165,22 +165,24 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
         if (!path) {
           return Object.keys(fileSystem).filter(k => !k.includes('.')).map(d => `${d}/`).concat(Object.keys(fileSystem).filter(k => k.includes('.')));
         }
-        if (dir && typeof (fileSystem as any)[dir] === 'object') {
-          return Object.keys((fileSystem as any)[dir]);
+        if (dir && typeof (fileSystem as Record<string, unknown>)[dir] === 'object') {
+          return Object.keys((fileSystem as Record<string, unknown>)[dir] as Record<string, string>);
         }
         return `ls: cannot access '${path}': No such file or directory`;
       case 'cat':
         if (!path) return 'cat: missing operand';
         const parts = path.split('/');
         if (parts.length === 1) {
-          if (typeof (fileSystem as any)[parts[0]] === 'string') {
-            return (fileSystem as any)[parts[0]];
+          const fsEntry = (fileSystem as Record<string, unknown>)[parts[0]];
+          if (typeof fsEntry === 'string') {
+            return fsEntry;
           }
         } else if (parts.length === 2) {
           const dir = parts[0];
           const file = parts[1];
-          if ((fileSystem as any)[dir] && typeof (fileSystem as any)[dir][file] === 'string') {
-            return (fileSystem as any)[dir][file];
+          const fsDir = (fileSystem as Record<string, unknown>)[dir] as Record<string, string> | undefined;
+          if (fsDir && typeof fsDir[file] === 'string') {
+            return fsDir[file];
           }
         }
         return `cat: ${path}: No such file or directory`;

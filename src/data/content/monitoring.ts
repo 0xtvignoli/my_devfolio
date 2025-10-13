@@ -1,4 +1,4 @@
-import type { TimeSeriesData, DeploymentData, PipelineStage, KubernetesCluster, MonitoringData, Pod, DeployConfig } from "@/lib/types";
+import type { DeploymentData, PipelineStage, KubernetesCluster, MonitoringData, Pod, DeployConfig } from "@/lib/types";
 
 // --- INITIAL DATA GENERATORS ---
 

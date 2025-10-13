@@ -3,10 +3,9 @@
 import React, { useRef } from 'react';
 import { useLocale } from '@/hooks/use-locale';
 import { useLabSimulation } from '@/contexts/lab-simulation-context';
-import { useGamification } from '@/contexts/gamification-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlayCircle, Zap, ShieldAlert, FileTerminal, Power, AlertTriangle, History, CheckCircle, XCircle, Forward, Undo } from 'lucide-react';
+import { Zap, ShieldAlert, FileTerminal, History, Forward, Undo, PlayCircle } from 'lucide-react';
 import { CpuUsageChart } from '@/components/lab/cpu-chart';
 import { MemoryUsageChart } from '@/components/lab/memory-chart';
 import { DeploymentStatusChart } from '@/components/lab/deployment-status-chart';
@@ -26,7 +25,6 @@ import { CanaryAnalysis } from '@/components/lab/canary-analysis';
 
 export function LabClientPage() {
   const { t } = useLocale();
-  const { earnXP } = useGamification();
   const { 
     runtimeLogs, 
     monitoringData, 
