@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import { describe, test, expect } from 'bun:test';
 import '@testing-library/jest-dom';
 import { Button } from './button';
 
@@ -15,21 +16,22 @@ describe('Button Component', () => {
     expect(buttonElement).toBeInTheDocument();
   });
 
-  test('applies the correct default variant class', () => {
+  test('applies classes correctly', () => {
     render(<Button>Default Button</Button>);
     const buttonElement = screen.getByRole('button');
-    expect(buttonElement).toHaveClass('bg-primary');
+    expect(buttonElement.className).toMatch(/inline-flex/);
+    expect(buttonElement.className).toMatch(/bg-primary/);
   });
 
-  test('applies a destructive variant class', () => {
+  test('renders with different variants', () => {
     render(<Button variant="destructive">Delete</Button>);
     const buttonElement = screen.getByRole('button');
-    expect(buttonElement).toHaveClass('bg-destructive');
+    expect(buttonElement.className).toMatch(/bg-destructive/);
   });
 
-  test('is disabled when the disabled prop is passed', () => {
+  test('can be disabled', () => {
     render(<Button disabled>Disabled Button</Button>);
     const buttonElement = screen.getByRole('button');
-    expect(buttonElement).toBeDisabled();
+    expect(buttonElement).toHaveAttribute('disabled');
   });
 });
