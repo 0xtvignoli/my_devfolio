@@ -35,13 +35,20 @@ This project is built with:
    npm install
    ```
 
-3. **Start the development server**
+3. **Setup environment variables**
+   ```bash
+   cp .env.example .env.local
+   # Edit .env.local and add your GEMINI_API_KEY
+   ```
+   Get your Gemini API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
+
+4. **Start the development server**
    ```bash
    npm run dev
    ```
 
-4. **Open your browser**
-   Navigate to `http://localhost:9002` to view the application.
+5. **Open your browser**
+   Navigate to `http://localhost:9004` to view the application.
 
 ### Available Scripts
 
