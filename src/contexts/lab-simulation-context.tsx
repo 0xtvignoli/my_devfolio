@@ -378,7 +378,7 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
                         setMonitoringData(prev => {
                             const newDeploymentData = [...prev.deploymentData];
                             const today = new Date().toISOString().split('T')[0];
-                            let todayData = newDeploymentData.find(d => d.date === today && d.status === 'success');
+                            const todayData = newDeploymentData.find(d => d.date === today && d.status === 'success');
                             if (todayData) {
                                 todayData.count += 1;
                             } else {

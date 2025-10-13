@@ -36,8 +36,9 @@ const getAllPods = (cluster: KubernetesCluster): Pod[] => {
 };
 
 const CommandOutputDisplay = ({ output }: { output: CommandOutput }) => {
-    if (output === null) return null;
     const [hasCopied, setHasCopied] = useState(false);
+    
+    if (output === null) return null;
     const textToCopy = Array.isArray(output) ? output.join('\n') : output;
 
     const copyToClipboard = () => {
