@@ -1,12 +1,12 @@
 'use client';
 
 import { LabSimulationProvider } from '@/contexts/lab-simulation-context';
-import { LabClientPage } from '@/components/lab/lab-client-page';
+import { ImmersiveLabLayout } from '@/components/lab/immersive-lab-layout';
 
 export default function LabPage() {
   return (
     <LabSimulationProvider>
-      <LabClientPage />
+      <ImmersiveLabLayout />
     </LabSimulationProvider>
   );
 }
