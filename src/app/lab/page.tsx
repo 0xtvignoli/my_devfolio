@@ -1,12 +1,18 @@
 'use client';
 
 import { LabSimulationProvider } from '@/contexts/lab-simulation-context';
-import { ImmersiveLabLayout } from '@/components/lab/immersive-lab-layout';
+import { LabClientPage } from '@/components/lab/lab-client-page';
+import { AuroraBackground } from '@/components/backgrounds/aurora';
+import { GridBackground } from '@/components/backgrounds/grid';
 
 export default function LabPage() {
   return (
-    <LabSimulationProvider>
-      <ImmersiveLabLayout />
-    </LabSimulationProvider>
+    <div className="relative">
+      <AuroraBackground />
+      <GridBackground />
+      <LabSimulationProvider>
+        <LabClientPage />
+      </LabSimulationProvider>
+    </div>
   );
 }
