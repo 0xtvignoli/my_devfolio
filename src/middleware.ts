@@ -3,13 +3,14 @@ import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
   const hostname = request.headers.get('host') || '';
+  const { pathname } = request.nextUrl;
   
-  // Se il dominio è dev.tvignoli.com, reindirizza alla pagina lab
-  if (hostname.startsWith('dev.')) {
+  // Gestione subdomain dev.tvignoli.com
+  if (hostname.includes('dev.tvignoli.com') || hostname.startsWith('dev.')) {
     const url = request.nextUrl.clone();
     
-    // Se siamo già su /lab, continua
-    if (url.pathname === '/lab') {
+    // Se siamo già su /lab o su route lab-related, continua
+    if (pathname.startsWith('/lab')) {
       return NextResponse.next();
     }
     
@@ -18,6 +19,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.rewrite(url);
   }
   
+  // Homepage principale (tvignoli.com)
   return NextResponse.next();
 }
 
