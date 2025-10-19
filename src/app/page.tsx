@@ -9,6 +9,7 @@ import { ExperienceTimeline } from '@/components/experience-timeline';
 import { ArticleCard } from '@/components/shared/article-card';
 import { getArticles } from '@/data/content/articles';
 import { ArrowRight } from 'lucide-react';
+import { EnhancedHero } from '@/components/enhanced-hero';
 
 export default function Home() {
   const { t, locale } = useLocale();
@@ -19,30 +20,12 @@ export default function Home() {
 
   return (
     <div className="container mx-auto px-4 py-12 md:py-20">
-      <section id="hero" className="text-center py-20">
-        <h1 className="font-headline text-4xl md:text-6xl font-bold tracking-tight mb-4">
-          {t.hero.title}
-        </h1>
-        <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-          {t.hero.subtitle}
-        </p>
-        <div className="flex justify-center items-center gap-4">
-          <Button asChild size="lg">
-            <Link href="/portfolio">{t.hero.ctaPortfolio}</Link>
-          </Button>
-          <div className="relative group">
-            <Link
-              href="#contact"
-              className="relative inline-block p-px font-semibold leading-6 text-foreground bg-transparent shadow-sm cursor-pointer rounded-md transition-transform duration-300 ease-in-out hover:scale-105 active:scale-95"
-            >
-              <span className="absolute inset-0 rounded-md bg-gradient-to-r from-primary via-blue-500 to-purple-500 p-[2px] opacity-0 transition-opacity duration-500 group-hover:opacity-100"></span>
-              <span className="relative z-10 block h-11 rounded-md px-8 bg-background border border-input flex items-center justify-center">
-                 {t.hero.ctaContact}
-              </span>
-            </Link>
-          </div>
-        </div>
-      </section>
+      <EnhancedHero 
+        title={t.hero.title}
+        subtitle={t.hero.subtitle}
+        ctaPortfolio={t.hero.ctaPortfolio}
+        ctaContact={t.hero.ctaContact}
+      />
 
       <section id="skills" className="py-16">
         <h2 className="font-headline text-3xl font-bold text-center mb-12">
