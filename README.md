@@ -3,18 +3,21 @@
 ## About
 
 Questo sito è un portfolio personale costruito con Next.js (App Router), TypeScript, Tailwind CSS e componenti shadcn/ui.
+La codebase è ora suddivisa in due route group principali:
+
+- `src/app/(marketing)` ospita le pagine statiche/SSR (home, portfolio, articoli, experience) e condivide layout, header e footer ottimizzati per server rendering.
+- `src/app/(lab)` contiene il laboratorio interattivo con provider client-side dedicati (theme, gamification e simulazione).
 
 ## Technologies Used
 
 This project is built with:
 
-- **Next.js** (SSR/SSG, App Router)
-- **TypeScript** - Type-safe JavaScript
-- **Tailwind CSS** - Utility-first CSS framework
-- **shadcn/ui / Radix UI** - Component library
-- **React Query (TanStack Query)** - Data fetching and caching
-- **Next Image Optimization** - Image optimization for faster loading
-- **Vercel Analytics & Speed Insights** - Web analytics and performance monitoring
+- **Next.js 15** con App Router, Server Actions e route groups `(marketing)/(lab)`
+- **TypeScript** e **Bun** (installazioni con `bun install`, script con `bun run`)
+- **Tailwind CSS** con design tokens neon ispirati a Flow Nexus
+- **shadcn/ui / Radix UI** per i componenti interattivi
+- **Next Image Optimization** e middleware per host-based routing
+- **Vercel Analytics & Speed Insights** per osservabilità
 
 ## Development
 
@@ -32,7 +35,7 @@ This project is built with:
 
 2. **Install dependencies**
    ```bash
-   npm install
+   bun install
    ```
 
 3. **Setup environment variables**
@@ -44,7 +47,7 @@ This project is built with:
 
 4. **Start the development server**
    ```bash
-   npm run dev
+   bun run dev
    ```
 
 5. **Open your browser**
@@ -52,13 +55,12 @@ This project is built with:
 
 ### Available Scripts
 
-- `npm run dev` - Avvia dev server (Turbopack)
-- `npm run build` - Build per produzione
-- `npm run compile` - Alias per build
-- `npm run start` - Avvia server produzione (usa .next)
-- `npm run typecheck` - Controllo dei tipi
-- `npm run lint` - Esegui ESLint
-- `npm test` - Esegui test con Jest
+- `bun run dev` - Avvia dev server (Turbopack)
+- `bun run build` - Build per produzione
+- `bun run start` - Avvia server produzione (usa .next)
+- `bun run lint` - Esegue ESLint
+- `bun run typecheck` - Controllo statico dei tipi
+- `bun run test` - Test unitari e di integrazione
 
 ## Deployment
 
@@ -66,11 +68,11 @@ Questo sito è deployato su Vercel con un dominio personalizzato. Il deployment 
 
 ## Features
 
-- **Responsive Design** - Ottimizzato per tutte le dimensioni dei dispositivi
-- **Performance Optimized** - Caricamento veloce con Vite e risorse ottimizzate
-- **SEO Friendly** - Meta tag e dati strutturati appropriati
-- **Analytics** - Integrazione con Vercel Analytics e Speed Insights
-- **Modern UI** - Design pulito e professionale con componenti shadcn/ui
+- **Server-first rendering** - Le pagine marketing sono SSR/SSG, il lab vive in un gruppo client isolato
+- **Locale management** - Cookie `locale` bootstrap via middleware, switch con Server Action (`setLocaleAction`) e refresh
+- **Design Flow Nexus** - Palette neon (`--bg-primary`, `--neon-accent`, glow) e CTA stile command panel
+- **Responsive Design** - Ottimizzato per mobile con layout a colonne singole e componenti dinamici
+- **Analytics & Lab Tools** - Integrazione con Vercel Analytics e simulatore osservabilità interattivo
 
 ## Contact
 
@@ -82,4 +84,4 @@ This project is private and proprietary.
 
 ## Notes
 
-Il precedente setup Vite è stato sostituito da Next.js; file come `index.html` non sono più necessari per il deploy su Vercel.
+Il precedente setup Vite è stato sostituito da Next.js; file come `index.html` non sono più necessari per il deploy su Vercel. La pipeline utilizza Bun per tutte le installazioni/build.

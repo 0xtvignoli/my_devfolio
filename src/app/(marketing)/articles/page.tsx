@@ -1,11 +1,10 @@
-'use client';
-
 import { ArticleCard } from "@/components/shared/article-card";
 import { getArticles } from "@/data/content/articles";
-import { useLocale } from "@/hooks/use-locale";
+import { resolveLocale, getTranslations } from "@/lib/i18n/server";
 
-export default function ArticlesPage() {
-    const { t, locale } = useLocale();
+export default async function ArticlesPage() {
+    const locale = await resolveLocale();
+    const t = getTranslations(locale);
     const articles = getArticles(locale);
 
     return (
@@ -20,7 +19,7 @@ export default function ArticlesPage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {articles.map((article) => (
-                    <ArticleCard key={article.slug} article={article} />
+                    <ArticleCard key={article.slug} article={article} locale={locale} translations={t} />
                 ))}
             </div>
         </div>

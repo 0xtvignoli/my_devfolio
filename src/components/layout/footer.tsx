@@ -1,10 +1,9 @@
-'use client';
-
-import { useLocale } from '@/hooks/use-locale';
+import { resolveLocale, getTranslations } from '@/lib/i18n/server';
 import { Github, Linkedin, Twitter } from 'lucide-react';
 
-export function Footer() {
-  const { t } = useLocale();
+export async function Footer() {
+  const locale = await resolveLocale();
+  const t = getTranslations(locale);
 
   return (
     <footer className="border-t">

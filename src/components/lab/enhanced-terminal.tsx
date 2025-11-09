@@ -75,8 +75,8 @@ export function EnhancedTerminal({ onCommand, initialHistory = [] }: EnhancedTer
     if (saved) {
       try {
         setCommandHistory(JSON.parse(saved));
-      } catch (e) {
-        console.error('Failed to parse command history');
+      } catch (error) {
+        console.error('Failed to parse command history', error);
       }
     }
   }, []);

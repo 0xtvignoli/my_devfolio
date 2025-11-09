@@ -1,11 +1,10 @@
-'use client';
-
 import { ProjectCard } from "@/components/shared/project-card";
 import { projects } from "@/data/content/projects";
-import { useLocale } from "@/hooks/use-locale";
+import { resolveLocale, getTranslations } from "@/lib/i18n/server";
 
-export default function PortfolioPage() {
-    const { t } = useLocale();
+export default async function PortfolioPage() {
+    const locale = await resolveLocale();
+    const t = getTranslations(locale);
 
     return (
         <div className="container mx-auto px-4 py-16">
@@ -19,7 +18,7 @@ export default function PortfolioPage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {projects.map((project) => (
-                    <ProjectCard key={project.id} project={project} />
+                    <ProjectCard key={project.id} project={project} locale={locale} translations={t} />
                 ))}
             </div>
         </div>

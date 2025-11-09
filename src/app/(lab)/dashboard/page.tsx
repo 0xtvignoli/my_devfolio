@@ -22,7 +22,7 @@ export default function DashboardPage() {
             <h1 className="font-headline text-4xl md:text-6xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary via-blue-500 to-purple-500">
               Developer Journey Dashboard
             </h1>
-            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+            <p className="text-lg text-muted-foreground dark:text-muted-foreground max-w-3xl mx-auto">
               Track progress, unlock achievements, and level up through interactive DevOps simulations.
             </p>
           </div>

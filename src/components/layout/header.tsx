@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useLocale } from '@/hooks/use-locale';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { LocaleSwitcher } from '@/components/locale-switcher';
 import { Code2, LayoutGrid, Briefcase, BookOpen, FlaskConical, Trophy } from 'lucide-react';
@@ -9,17 +8,22 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import { useState } from 'react';
 import { HamburgerMenu } from './hamburger-menu';
 import { motion } from 'framer-motion';
+import type { Locale, Translations } from '@/lib/types';
 
-export function Header() {
-  const { t } = useLocale();
+interface HeaderProps {
+  locale: Locale;
+  translations: Translations;
+}
+
+export function Header({ locale, translations }: HeaderProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const navLinks = [
     { href: '/dashboard', label: 'Dashboard', icon: Trophy },
-    { href: '/portfolio', label: t.nav.portfolio, icon: LayoutGrid },
-    { href: '/experience', label: t.nav.experience, icon: Briefcase },
-    { href: '/articles', label: t.nav.articles, icon: BookOpen },
-    { href: '/lab', label: t.nav.lab, icon: FlaskConical },
+    { href: '/portfolio', label: translations.nav.portfolio, icon: LayoutGrid },
+    { href: '/experience', label: translations.nav.experience, icon: Briefcase },
+    { href: '/articles', label: translations.nav.articles, icon: BookOpen },
+    { href: '/lab', label: translations.nav.lab, icon: FlaskConical },
   ];
 
   return (
@@ -42,8 +46,8 @@ export function Header() {
         </nav>
         <div className="flex flex-1 items-center justify-end space-x-2">
           <div className="hidden md:flex items-center space-x-2">
-            <LocaleSwitcher />
-            <ThemeToggle />
+            <LocaleSwitcher locale={locale} />
+            <ThemeToggle labels={translations.theme} />
           </div>
           <div className="md:hidden">
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
@@ -83,8 +87,8 @@ export function Header() {
                       </ul>
                     </nav>
                     <div className="mt-auto flex items-center justify-start space-x-2 p-4 border-t">
-                      <LocaleSwitcher />
-                      <ThemeToggle />
+                      <LocaleSwitcher locale={locale} />
+                      <ThemeToggle labels={translations.theme} />
                     </div>
                   </div>
               </SheetContent>

@@ -64,7 +64,7 @@ export function VisualDeployPipeline({ pipelineStages }: VisualDeployPipelinePro
               'Success': 'text-green-500',
               'In Progress': 'text-blue-500 animate-pulse',
               'Failed': 'text-red-500',
-              'Queued': 'text-muted-foreground'
+              'Queued': 'text-muted-foreground dark:text-muted-foreground'
             }[stage.status];
 
             const StatusIcon = {
@@ -88,7 +88,7 @@ export function VisualDeployPipeline({ pipelineStages }: VisualDeployPipelinePro
                       <StatusIcon className={cn('h-4 w-4', statusConfig)} />
                       <span>{stage.name}: {stage.status}</span>
                     </div>
-                    <div className="text-sm text-muted-foreground">{stage.details}</div>
+                    <div className="text-sm text-muted-foreground dark:text-muted-foreground">{stage.details}</div>
                 </TooltipContent>
               </Tooltip>
             )

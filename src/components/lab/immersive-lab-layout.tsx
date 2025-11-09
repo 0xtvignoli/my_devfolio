@@ -14,7 +14,6 @@ import {
   Terminal, 
   Activity, 
   ShieldAlert, 
-  Zap, 
   PlayCircle,
   Forward,
   Undo,
@@ -25,9 +24,23 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import type { DeployConfig } from '@/lib/types';
+import type { DeployConfig, Locale, Translations } from '@/lib/types';
+import { translations as localeTable } from '@/data/locales';
 
-export function ImmersiveLabLayout() {
+const sidebarTabs = ['cluster', 'pipeline', 'metrics'] as const;
+type SidebarTab = typeof sidebarTabs[number];
+const isSidebarTab = (value: string): value is SidebarTab =>
+  sidebarTabs.includes(value as SidebarTab);
+
+interface ImmersiveLabLayoutProps {
+  locale?: Locale;
+  translations?: Translations;
+}
+
+export function ImmersiveLabLayout({
+  locale = 'en',
+  translations = localeTable.en,
+}: ImmersiveLabLayoutProps = {}) {
   const {
     runtimeLogs,
     monitoringData,
@@ -41,13 +54,16 @@ export function ImmersiveLabLayout() {
     runDeployment,
   } = useLabSimulation();
 
-  const [activeSidebar, setActiveSidebar] = useState<'cluster' | 'pipeline' | 'metrics'>('cluster');
+  const [activeSidebar, setActiveSidebar] = useState<SidebarTab>('cluster');
   const [isBottomPanelExpanded, setIsBottomPanelExpanded] = useState(true);
   const terminalRef = useRef<{ setCommand: (command: string) => void; setActiveTab: (tab: 'terminal' | 'logs') => void }>(null);
 
   const cpuUsage = Number(monitoringData.cpuData[monitoringData.cpuData.length - 1]?.usage || 0);
   const memoryUsage = Number(monitoringData.memoryData[monitoringData.memoryData.length - 1]?.usage || 0);
   const p95Latency = Number(monitoringData.apiResponseData[monitoringData.apiResponseData.length - 1]?.p95 || 0);
+  const glassPanel = "supports-[backdrop-filter]:backdrop-blur-2xl border border-slate-200/70 bg-white/85 text-slate-900 shadow-[0_35px_120px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-black/40 dark:text-white dark:shadow-[0_35px_120px_rgba(0,0,0,0.6)]";
+  const quickBarSurface = "supports-[backdrop-filter]:backdrop-blur-xl border-b border-slate-200/70 bg-white/75 text-slate-600 dark:border-white/10 dark:bg-black/40 dark:text-white";
+  const bottomPanelSurface = "supports-[backdrop-filter]:backdrop-blur-xl border-t border-slate-200/70 bg-white/80 text-slate-900 dark:border-white/10 dark:bg-black/40 dark:text-white";
 
   const handleQuickAction = (command: string) => {
     if (terminalRef.current) {
@@ -92,19 +108,19 @@ export function ImmersiveLabLayout() {
   };
 
   return (
-    <div className="h-screen w-full bg-gradient-to-br from-black via-gray-950 to-gray-900 text-white overflow-hidden">
+    <div className="h-screen w-full overflow-hidden text-slate-900 dark:text-white bg-[radial-gradient(circle_at_top,_#f5fff8,_#e6f7ef_45%,_#d8f0ea_80%)] dark:bg-gradient-to-br dark:from-black dark:via-gray-950 dark:to-gray-900">
       {/* Header Bar */}
-      <div className="h-14 border-b border-gray-800 bg-black/50 backdrop-blur-sm flex items-center justify-between px-6">
+      <div className={cn("h-14 flex items-center justify-between px-6", quickBarSurface)}>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <Terminal className="h-5 w-5 text-emerald-400" />
-            <span className="font-mono text-sm font-bold text-emerald-400">dev.tvignoli.com</span>
+            <Terminal className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />
+            <span className="font-mono text-sm font-bold text-emerald-600 dark:text-emerald-400">dev.tvignoli.com</span>
           </div>
-          <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 text-xs">
+          <Badge variant="outline" className="border-emerald-500/30 text-emerald-600 text-xs dark:text-emerald-400">
             LIVE
           </Badge>
         </div>
-        
+
         {/* Real-time Metrics */}
         <div className="flex items-center gap-6">
           <MetricBadge label="CPU" value={`${cpuUsage}%`} status={cpuUsage > 70 ? 'warning' : 'ok'} />
@@ -114,35 +130,43 @@ export function ImmersiveLabLayout() {
       </div>
 
       {/* Main Layout */}
-      <div className="flex h-[calc(100vh-3.5rem)]">
+      <div className="flex h-[calc(100vh-3.5rem)] gap-4 px-4 pb-4">
         {/* Left Sidebar - Visualization */}
-        <div className="w-96 border-r border-gray-800 bg-black/30 backdrop-blur-sm overflow-y-auto">
-          <Tabs value={activeSidebar} onValueChange={(v) => setActiveSidebar(v as any)} className="w-full">
-            <TabsList className="w-full grid grid-cols-3 bg-black/50 rounded-none border-b border-gray-800">
-              <TabsTrigger value="cluster" className="data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400">
+        <div className={cn("w-96 overflow-y-auto rounded-3xl p-3", glassPanel)}>
+          <Tabs
+            value={activeSidebar}
+            onValueChange={(value) => {
+              if (isSidebarTab(value)) {
+                setActiveSidebar(value);
+              }
+            }}
+            className="w-full"
+          >
+            <TabsList className="w-full grid grid-cols-3 rounded-2xl border border-slate-200/70 bg-white/60 text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-white">
+              <TabsTrigger value="cluster" className="data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-500">
                 <Layers className="h-4 w-4 mr-2" />
                 Cluster
               </TabsTrigger>
-              <TabsTrigger value="pipeline" className="data-[state=active]:bg-blue-500/10 data-[state=active]:text-blue-400">
+              <TabsTrigger value="pipeline" className="data-[state=active]:bg-blue-500/10 data-[state=active]:text-blue-500">
                 <Activity className="h-4 w-4 mr-2" />
                 Pipeline
               </TabsTrigger>
-              <TabsTrigger value="metrics" className="data-[state=active]:bg-purple-500/10 data-[state=active]:text-purple-400">
+              <TabsTrigger value="metrics" className="data-[state=active]:bg-purple-500/10 data-[state=active]:text-purple-500">
                 <GaugeCircle className="h-4 w-4 mr-2" />
                 Metrics
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="cluster" className="p-4 mt-0">
+            <TabsContent value="cluster" className="p-4">
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Kubernetes Cluster</h3>
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-400 uppercase tracking-wider">Kubernetes Cluster</h3>
                 <KubernetesClusterViz cluster={cluster} />
               </div>
             </TabsContent>
 
-            <TabsContent value="pipeline" className="p-4 mt-0">
+            <TabsContent value="pipeline" className="p-4">
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">CI/CD Pipeline</h3>
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-400 uppercase tracking-wider">CI/CD Pipeline</h3>
                 <VisualDeployPipeline pipelineStages={pipeline} />
                 
                 {pipelineStatus === 'paused_canary' && canaryMetrics && (
@@ -184,9 +208,9 @@ export function ImmersiveLabLayout() {
               </div>
             </TabsContent>
 
-            <TabsContent value="metrics" className="p-4 mt-0">
+            <TabsContent value="metrics" className="p-4">
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">System Metrics</h3>
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-400 uppercase tracking-wider">System Metrics</h3>
                 <MetricCard title="CPU Usage" value={`${cpuUsage}%`} trend="+2.3%" />
                 <MetricCard title="Memory" value={`${memoryUsage}%`} trend="-1.1%" />
                 <MetricCard title="API Latency (P95)" value={`${p95Latency}ms`} trend="+5ms" />
@@ -201,10 +225,10 @@ export function ImmersiveLabLayout() {
         </div>
 
         {/* Center - Terminal (Main Focus) */}
-        <div className="flex-1 flex flex-col bg-black/20">
+        <div className={cn("flex-1 flex flex-col rounded-3xl overflow-hidden", glassPanel)}>
           {/* Quick Actions Bar */}
-          <div className="h-12 border-b border-gray-800 bg-black/30 backdrop-blur-sm flex items-center px-4 gap-2 overflow-x-auto">
-            <span className="text-xs text-gray-500 font-mono mr-2">QUICK:</span>
+          <div className={cn("h-12 flex items-center px-4 gap-2 overflow-x-auto", quickBarSurface)}>
+            <span className="text-xs text-gray-700 dark:text-gray-300 font-mono mr-2 uppercase tracking-[0.25em]">Quick</span>
             <QuickAction onClick={() => handleQuickAction('kubectl get pods')} label="get pods" />
             <QuickAction onClick={() => handleQuickAction('helm list')} label="helm list" />
             <QuickAction onClick={() => handleQuickAction('deploy --weight=20')} label="deploy" variant="primary" />
@@ -214,24 +238,53 @@ export function ImmersiveLabLayout() {
           </div>
 
           {/* Terminal Area */}
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 overflow-hidden bg-black dark:bg-black">
             <InteractiveTerminal
               ref={terminalRef}
               runtimeLogs={runtimeLogs}
               cluster={cluster}
+              locale={locale}
+              translations={translations}
               onCommand={(cmd) => {
                 const [command] = cmd.trim().split(' ');
                 if (command === 'deploy' || command === 'chaos') {
+                  const deployConfig = command === 'deploy' ? parseDeployCommand(cmd) : null;
+                  const scenario = command === 'chaos' ? cmd.trim().split(' ')[1] ?? 'latency' : null;
                   handleBackgroundAction(() => {
                     if (command === 'deploy') {
-                      const deployConfig = parseDeployCommand(cmd);
                       runDeployment('start', deployConfig || undefined);
                     } else {
-                      const [, scenario = 'latency'] = cmd.trim().split(' ');
-                      runChaos(scenario);
+                      runChaos(scenario || 'latency');
                     }
                   });
-                  return '';
+                  if (command === 'deploy') {
+                    return {
+                      output: [
+                        'Pipeline request accepted. Synthesizing manifests...',
+                        `strategy: ${deployConfig?.strategy ?? 'canary'}  weight: ${deployConfig?.weight ?? 10}%  version: ${deployConfig?.version ?? 'auto'}`,
+                        'Track progress in the Pipeline + Canary panels hugging the terminal.',
+                      ],
+                      contextHint: 'Visual cues around the lab sync with this command.',
+                      suggestion: 'Once stages flip, run `kubectl get pods` to verify workloads.',
+                      streamingSteps: [
+                        '[busy] acquiring build artifacts...',
+                        '[sync] publishing image to registry...',
+                        '[ready] applying rollout to cluster...',
+                      ],
+                    };
+                  }
+                  return {
+                    output: [
+                      `Chaos scenario "${scenario}" armed. Fault injection stays inside this lab cluster.`,
+                      'Watch Incidents + Metrics tabs for blast-radius telemetry.',
+                    ],
+                    contextHint: 'Auto-chaos toggles remain unaffected.',
+                    suggestion: 'Use `status` to confirm steady state after recovery.',
+                    streamingSteps: [
+                      '[busy] priming chaos controllers...',
+                      `[sync] issuing ${scenario} disruption...`,
+                    ],
+                  };
                 }
                 return null;
               }}
@@ -247,13 +300,13 @@ export function ImmersiveLabLayout() {
             initial={{ height: 0 }}
             animate={{ height: '200px' }}
             exit={{ height: 0 }}
-            className="border-t border-gray-800 bg-black/40 backdrop-blur-sm overflow-hidden"
+            className={cn("overflow-hidden rounded-3xl rounded-t-none", bottomPanelSurface)}
           >
             <div className="h-full overflow-y-auto p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <ShieldAlert className="h-4 w-4 text-orange-400" />
-                  <h3 className="text-sm font-semibold text-gray-300">Incident History</h3>
+                  <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300">Incident History</h3>
                   <Badge variant="outline" className="text-xs">{incidents.length}</Badge>
                 </div>
                 <Button
@@ -272,7 +325,7 @@ export function ImmersiveLabLayout() {
       </AnimatePresence>
 
       {!isBottomPanelExpanded && (
-        <div className="h-8 border-t border-gray-800 bg-black/40 backdrop-blur-sm flex items-center justify-center">
+        <div className={cn("h-8 flex items-center justify-center rounded-3xl rounded-t-none", bottomPanelSurface)}>
           <Button
             size="sm"
             variant="ghost"
@@ -292,10 +345,10 @@ export function ImmersiveLabLayout() {
 function MetricBadge({ label, value, status }: { label: string; value: string; status: 'ok' | 'warning' }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="text-xs text-gray-500 font-mono">{label}</span>
+      <span className="text-xs text-gray-700 dark:text-gray-400 font-mono uppercase tracking-wide">{label}</span>
       <span className={cn(
         "text-sm font-mono font-semibold",
-        status === 'ok' ? 'text-emerald-400' : 'text-orange-400'
+        status === 'ok' ? 'text-emerald-600 dark:text-emerald-400' : 'text-orange-500 dark:text-orange-400'
       )}>
         {value}
       </span>
@@ -306,13 +359,13 @@ function MetricBadge({ label, value, status }: { label: string; value: string; s
 function MetricCard({ title, value, trend }: { title: string; value: string; trend: string }) {
   const isPositive = trend.startsWith('+');
   return (
-    <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-3">
-      <div className="text-xs text-gray-500 mb-1">{title}</div>
+    <div className="rounded-2xl border border-slate-200/70 bg-white/85 p-4 shadow-[0_15px_45px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-gray-900/60">
+      <div className="text-xs text-gray-700 dark:text-gray-400 mb-1 uppercase tracking-wide">{title}</div>
       <div className="flex items-end justify-between">
-        <div className="text-2xl font-bold text-white">{value}</div>
+        <div className="text-2xl font-semibold text-slate-900 dark:text-white">{value}</div>
         <div className={cn(
           "text-xs font-mono",
-          isPositive ? 'text-emerald-400' : 'text-gray-500'
+          isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'
         )}>
           {trend}
         </div>
@@ -323,16 +376,16 @@ function MetricCard({ title, value, trend }: { title: string; value: string; tre
 
 function QuickAction({ onClick, label, variant = 'default' }: { onClick: () => void; label: string; variant?: 'default' | 'primary' | 'danger' }) {
   const variants = {
-    default: 'bg-gray-800 hover:bg-gray-700 text-gray-300',
-    primary: 'bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/30',
-    danger: 'bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30',
+    default: 'bg-white/80 border border-slate-200/70 text-slate-700 shadow-[0_10px_30px_rgba(15,23,42,0.08)] hover:bg-white dark:bg-gray-800/60 dark:border-white/15 dark:text-white',
+    primary: 'bg-emerald-500/15 border border-emerald-200 text-emerald-700 hover:bg-emerald-500/25 dark:bg-emerald-500/20 dark:border-emerald-400/40 dark:text-emerald-100',
+    danger: 'bg-rose-500/10 border border-rose-200 text-rose-600 hover:bg-rose-500/20 dark:bg-red-600/20 dark:border-red-500/40 dark:text-red-100',
   };
 
   return (
     <button
       onClick={onClick}
       className={cn(
-        "px-3 py-1 rounded text-xs font-mono whitespace-nowrap transition-colors",
+        "px-3 py-1 rounded-full text-xs font-mono whitespace-nowrap transition-colors",
         variants[variant]
       )}
     >
@@ -340,4 +393,3 @@ function QuickAction({ onClick, label, variant = 'default' }: { onClick: () => v
     </button>
   );
 }
-

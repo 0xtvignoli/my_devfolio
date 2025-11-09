@@ -1,18 +1,37 @@
 "use client";
 
+import { useTransition } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { useLocale } from "@/hooks/use-locale";
+import type { Locale } from "@/lib/types";
+import { setLocaleAction } from "@/actions/locale";
 
-export function LocaleSwitcher() {
-  const { locale, setLocale } = useLocale();
+interface LocaleSwitcherProps {
+  locale: Locale;
+}
+
+export function LocaleSwitcher({ locale }: LocaleSwitcherProps) {
+  const router = useRouter();
+  const pathname = usePathname() || "/";
+  const [isPending, startTransition] = useTransition();
 
   const toggleLocale = () => {
-    setLocale(locale === 'en' ? 'it' : 'en');
+    const nextLocale: Locale = locale === "en" ? "it" : "en";
+    startTransition(async () => {
+      await setLocaleAction(nextLocale, pathname);
+      router.refresh();
+    });
   };
 
   return (
-    <Button variant="ghost" size="sm" onClick={toggleLocale} aria-label="Switch language">
-      {locale.toUpperCase()}
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={toggleLocale}
+      aria-label="Switch language"
+      disabled={isPending}
+    >
+      {isPending ? "..." : locale.toUpperCase()}
     </Button>
   );
 }
