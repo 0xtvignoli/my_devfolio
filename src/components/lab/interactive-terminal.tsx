@@ -819,8 +819,14 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
     inputRef.current?.focus();
   };
 
+  const handleTabChange = (value: string) => {
+    if (value === 'terminal' || value === 'logs') {
+      setActiveTab(value);
+    }
+  };
+
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+    <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
       <TabsList className="grid w-full grid-cols-2">
         <TabsTrigger value="terminal">
           <FileTerminal className="mr-2 h-4 w-4" />
