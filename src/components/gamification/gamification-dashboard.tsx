@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import { UserProgressBar } from './progress-bar';
 import { AchievementsPanel } from './achievements-panel';
 import { ChallengesWidget } from './challenges-widget';
@@ -9,6 +10,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useGamification } from '@/contexts/gamification-context';
 import { TrendingUp, Award, Target, Zap } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+const colorClassMap: Record<string, string> = {
+  'blue-500': 'text-blue-500',
+  'purple-500': 'text-purple-500',
+  'yellow-500': 'text-yellow-500',
+  'green-500': 'text-green-500',
+  'primary': 'text-primary',
+};
 
 const StatsCard = ({ 
   title, 
@@ -26,7 +36,7 @@ const StatsCard = ({
   <Card className="relative overflow-hidden">
     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
       <CardTitle className="text-sm font-medium">{title}</CardTitle>
-      <Icon className={`h-4 w-4 text-${color}`} />
+      <Icon className={cn("h-4 w-4", colorClassMap[color] || colorClassMap.primary)} />
     </CardHeader>
     <CardContent>
       <div className="text-2xl font-bold">{value}</div>
@@ -38,9 +48,10 @@ const StatsCard = ({
 const RecentActivity = () => {
   const { recentActivities } = useGamification();
   
-  const formatTimeAgo = (timestamp: Date) => {
+  const formatTimeAgo = (timestamp: Date | string) => {
+    const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
     const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - timestamp.getTime()) / 1000);
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
     
     if (diffInSeconds < 60) return 'Just now';
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
@@ -84,6 +95,7 @@ const RecentActivity = () => {
 
 const QuickActions = () => {
   const { userProgress, challenges } = useGamification();
+  const router = useRouter();
   
   // Dynamic actions based on user progress and challenges
   const getQuickActions = () => {
@@ -96,7 +108,7 @@ const QuickActions = () => {
       description: 'Visit the interactive lab',
       xp: 10,
       action: () => {
-        window.location.href = '/lab';
+        router.push('/lab');
       }
     });
 
@@ -109,7 +121,7 @@ const QuickActions = () => {
         description: `Complete daily deployment (${dailyDeployChallenge.progress}/${dailyDeployChallenge.maxProgress})`,
         xp: dailyDeployChallenge.xpReward,
         action: () => {
-          window.location.href = '/lab#deployment';
+          router.push('/lab#deployment');
         }
       });
     }
@@ -122,7 +134,7 @@ const QuickActions = () => {
         description: `Run chaos experiments (${chaosChallenge.progress}/${chaosChallenge.maxProgress})`,
         xp: chaosChallenge.xpReward,
         action: () => {
-          window.location.href = '/lab#chaos';
+          router.push('/lab#chaos');
         }
       });
     }
@@ -135,7 +147,7 @@ const QuickActions = () => {
         description: 'Check out my work',
         xp: 5,
         action: () => {
-          window.location.href = '/portfolio';
+          router.push('/portfolio');
         }
       });
     }
@@ -177,10 +189,14 @@ const QuickActions = () => {
 };
 
 export const GamificationDashboard = () => {
-  const { userProgress, getUnlockedAchievements, challenges } = useGamification();
+  const { userProgress, getUnlockedAchievements, challenges, achievements } = useGamification();
   
   const unlockedAchievements = getUnlockedAchievements();
   const completedChallenges = challenges.filter(c => c.completed).length;
+  const totalAchievements = achievements.length;
+  const achievementsPercentage = totalAchievements > 0 
+    ? ((unlockedAchievements.length / totalAchievements) * 100).toFixed(0)
+    : '0';
 
   return (
     <div className="space-y-6">
@@ -206,7 +222,7 @@ export const GamificationDashboard = () => {
         <StatsCard
           title="Achievements"
           value={unlockedAchievements.length}
-          subtitle={`${((unlockedAchievements.length / 5) * 100).toFixed(0)}% completed`}
+          subtitle={`${achievementsPercentage}% completed`}
           icon={Award}
           color="yellow-500"
         />

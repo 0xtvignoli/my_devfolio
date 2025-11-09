@@ -86,7 +86,10 @@ const AchievementCard = ({ achievement }: { achievement: Achievement }) => {
               
               {isUnlocked && achievement.unlockedAt && (
                 <p className="text-xs text-muted-foreground">
-                  Unlocked {achievement.unlockedAt.toLocaleDateString()}
+                  Unlocked {(achievement.unlockedAt instanceof Date 
+                    ? achievement.unlockedAt 
+                    : new Date(achievement.unlockedAt)
+                  ).toLocaleDateString()}
                 </p>
               )}
             </div>

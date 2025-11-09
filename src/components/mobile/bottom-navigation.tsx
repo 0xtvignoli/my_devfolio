@@ -109,7 +109,6 @@ interface BottomSheetProps {
 
 export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetProps) {
   const controls = useAnimation();
-  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -120,8 +119,6 @@ export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetPro
   }, [isOpen, controls]);
 
   const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    setIsDragging(false);
-    
     // Se trascinato verso il basso oltre threshold, chiudi
     if (info.offset.y > 100) {
       onClose();
@@ -148,7 +145,6 @@ export function BottomSheet({ isOpen, onClose, title, children }: BottomSheetPro
         drag="y"
         dragConstraints={{ top: 0 }}
         dragElastic={0.2}
-        onDragStart={() => setIsDragging(true)}
         onDragEnd={handleDragEnd}
         animate={controls}
         initial={{ y: '100%' }}

@@ -1,10 +1,9 @@
 'use client';
 
-import { useLocale } from '@/hooks/use-locale';
 import { projects } from '@/data/content/projects';
 import { experiences } from '@/data/content/experiences';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import type { KubernetesCluster, Pod } from '@/lib/types';
+import type { KubernetesCluster, Locale, Pod, Translations } from '@/lib/types';
 import { Check, Clipboard, FileTerminal, Power } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -21,6 +20,8 @@ interface InteractiveTerminalProps {
   runtimeLogs: string[];
   cluster: KubernetesCluster;
   onCommand: (command: string) => CommandOutput;
+  locale: Locale;
+  translations: Translations;
 }
 
 const getPodByName = (cluster: KubernetesCluster, name: string): Pod | undefined => {
@@ -65,8 +66,7 @@ const CommandOutputDisplay = ({ output }: { output: CommandOutput }) => {
 };
 
 
-export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) => void, setActiveTab: (tab: 'terminal' | 'logs') => void }, InteractiveTerminalProps>(({ runtimeLogs, cluster, onCommand }, ref) => {
-  const { locale, t } = useLocale();
+export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) => void, setActiveTab: (tab: 'terminal' | 'logs') => void }, InteractiveTerminalProps>(({ runtimeLogs, cluster, onCommand, locale, translations }, ref) => {
   const [input, setInput] = useState('');
   const [history, setHistory] = useState<CommandHistory[]>([]);
   const [activeTab, setActiveTab] = useState('terminal');
@@ -104,8 +104,8 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
       ),
       'README.md': 'This directory contains my professional experience.'
     },
-    'skills.txt': t.skills.list.join('\n'),
-    'contact.txt': `You can reach me at: ${t.contact.email}`,
+    'skills.txt': translations.skills.list.join('\n'),
+    'contact.txt': `You can reach me at: ${translations.contact.email}`,
     'README.md': "Welcome to my interactive portfolio! Type `help` to see available commands.",
   };
 

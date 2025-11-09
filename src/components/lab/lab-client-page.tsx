@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useRef } from 'react';
-import { useLocale } from '@/hooks/use-locale';
 import { useLabSimulation } from '@/contexts/lab-simulation-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,7 +13,7 @@ import { Code, GaugeCircle, GanttChartSquare } from 'lucide-react';
 import { InteractiveTerminal } from '@/components/lab/interactive-terminal';
 import { KubernetesClusterViz } from '@/components/lab/kubernetes-cluster-viz';
 import { VisualDeployPipeline } from '@/components/lab/visual-deploy-pipeline';
-import type { DeployConfig } from '@/lib/types';
+import type { DeployConfig, Locale, Translations } from '@/lib/types';
 import { FancyButton } from '@/components/lab/fancy-button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -23,8 +22,12 @@ import { IncidentHistory } from '@/components/lab/incident-history';
 import { CanaryAnalysis } from '@/components/lab/canary-analysis';
 
 
-export function LabClientPage() {
-  const { t } = useLocale();
+interface LabClientPageProps {
+  locale: Locale;
+  translations: Translations;
+}
+
+export function LabClientPage({ locale, translations }: LabClientPageProps) {
   const { 
     runtimeLogs, 
     monitoringData, 
@@ -84,27 +87,206 @@ export function LabClientPage() {
       return config;
   }
 
+  const successfulDeploys = monitoringData.deploymentData
+    .filter((d) => d.status === 'success')
+    .reduce((acc, d) => acc + d.count, 0);
+  const latestCpu = monitoringData.cpuData.at(-1)?.usage ?? 0;
+  const latestLatency = monitoringData.apiResponseData.at(-1)?.p95 ?? 0;
+  const missionPlaybook = [
+    {
+      label: 'Cluster pulse',
+      description: 'List pods and their rollout status.',
+      command: 'kubectl get pods',
+      icon: FileTerminal,
+    },
+    {
+      label: 'Canary 20%',
+      description: 'Ship the next build to 20% of traffic.',
+      command: 'deploy --strategy=canary --weight=20',
+      icon: Zap,
+    },
+    {
+      label: 'Blue/Green',
+      description: 'Spin up the green environment before cutover.',
+      command: 'deploy --strategy=blue-green',
+      icon: PlayCircle,
+    },
+    {
+      label: 'Chaos · pods',
+      description: 'Drop a pod to validate auto-healing.',
+      command: 'chaos pod_failure',
+      icon: ShieldAlert,
+    },
+    {
+      label: 'Chaos · latency',
+      description: 'Spike API latency for 60s.',
+      command: 'chaos latency',
+      icon: GaugeCircle,
+    },
+  ] as const;
+
+  const executeMacro = (macroCommand: string) => {
+    const trimmed = macroCommand.trim();
+    const [command] = trimmed.split(' ');
+    if (command === 'deploy') {
+      const deployConfig = parseDeployCommand(trimmed);
+      handleBackgroundAction(() => runDeployment('start', deployConfig || undefined));
+      return;
+    }
+    if (command === 'chaos') {
+      const [, scenario = 'latency'] = trimmed.split(' ');
+      handleBackgroundAction(() => runChaos(scenario));
+      return;
+    }
+    handleQuickAction(trimmed);
+  };
+
+  const isMacroDisabled = (macroCommand: string) => {
+    if (macroCommand.startsWith('chaos')) {
+      return isAutoChaosEnabled || isDeploying;
+    }
+    if (macroCommand.startsWith('deploy')) {
+      return isDeploying;
+    }
+    return false;
+  };
+
   return (
-    <div className="container mx-auto px-4 py-16">
-      <div className="text-center mb-16">
+    <div className="container mx-auto px-4 py-16 space-y-12">
+      <section className="text-center space-y-4">
+        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+          Live Control Room
+        </div>
         <h1 className="font-headline text-4xl md:text-5xl font-bold tracking-tight">
-          {t.nav.lab}
+          {translations.nav.lab}
         </h1>
-        <p className="text-lg text-muted-foreground mt-2 max-w-3xl mx-auto">
-          Welcome to the interactive lab. This is a real-time demonstration of the infrastructure and observability of this very portfolio.
+        <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+          This is your mission console. Every visualization, chaos experiment, and deployment is driven from the terminal so you can reason like an operator.
         </p>
-      </div>
+        <div className="flex flex-wrap justify-center gap-3 text-xs font-mono text-muted-foreground">
+          <span className="rounded-full border border-white/10 px-3 py-1">CPU {latestCpu}%</span>
+          <span className="rounded-full border border-white/10 px-3 py-1">P95 {latestLatency}ms</span>
+          <span className="rounded-full border border-white/10 px-3 py-1">{successfulDeploys} deploys · 7d</span>
+        </div>
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
+        <Card className="bg-card/80 backdrop-blur">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <FileTerminal className="h-5 w-5 text-primary" />
+              Command-first Interface
+            </CardTitle>
+            <CardDescription>
+              Every interaction flows through the terminal. Trigger rollouts, interrogate Kubernetes, or chaos-test resilience.
+            </CardDescription>
+            <div className="flex flex-wrap gap-2 pt-2">
+              <Button variant="outline" size="sm" onClick={() => handleQuickAction('kubectl get pods')}>
+                <FileTerminal className="mr-2 h-3 w-3" /> kubectl get pods
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => handleQuickAction('kubectl describe pod api')}>
+                <FileTerminal className="mr-2 h-3 w-3" /> describe pod api
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => handleQuickAction('cat contact.txt')}>
+                <FileTerminal className="mr-2 h-3 w-3" /> cat contact.txt
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="rounded-lg border border-white/10 bg-background/60 p-3 text-xs font-mono text-muted-foreground flex items-center justify-between">
+              <span>Connected · dev-cluster</span>
+              <span className="flex items-center gap-1 text-emerald-400">
+                <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                live
+              </span>
+            </div>
+            <InteractiveTerminal 
+              ref={terminalRef}
+              runtimeLogs={runtimeLogs}
+              cluster={cluster}
+              locale={locale}
+              translations={translations}
+              onCommand={(cmd) => {
+                  const [command] = cmd.trim().split(' ');
+                  if (command === 'deploy' || command === 'chaos') {
+                      handleBackgroundAction(() => {
+                         if (command === 'deploy') {
+                             const deployConfig = parseDeployCommand(cmd);
+                             runDeployment('start', deployConfig || undefined);
+                         } else {
+                             const [, scenario = 'latency'] = cmd.trim().split(' ');
+                             runChaos(scenario);
+                         }
+                      });
+                      return '';
+                  }
+                  return null; // Let terminal handle built-in commands
+              }}
+            />
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card/80 backdrop-blur">
+          <CardHeader>
+            <CardTitle>Mission Control</CardTitle>
+            <CardDescription>Toggle automation and run curated macros without leaving the console.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <Alert>
+              <ShieldAlert className="h-4 w-4" />
+              <AlertTitle>Simulated Environment</AlertTitle>
+              <AlertDescription>
+                Actions stay inside a sandbox. Use them to demonstrate operating procedures without touching prod.
+              </AlertDescription>
+            </Alert>
+
+            <div className="flex items-center space-x-2 rounded-lg border px-4 py-3">
+              <Switch
+                id="auto-chaos-mode"
+                checked={isAutoChaosEnabled}
+                onCheckedChange={(checked) => handleBackgroundAction(() => toggleAutoChaos(checked))}
+                disabled={isDeploying}
+              />
+              <Label htmlFor="auto-chaos-mode" className="flex flex-col">
+                <span className="font-semibold">Auto-Chaos Monkey</span>
+                <span className="text-xs text-muted-foreground">Let scheduled chaos jobs validate self-healing.</span>
+              </Label>
+            </div>
+
+            <div className="space-y-4">
+              {missionPlaybook.map((macro) => (
+                <div key={macro.command} className="flex items-start justify-between gap-3 rounded-lg border border-white/10 px-3 py-2">
+                  <div>
+                    <p className="font-medium text-sm">{macro.label}</p>
+                    <p className="text-xs text-muted-foreground">{macro.description}</p>
+                  </div>
+                  <Button
+                    variant={macro.command.startsWith('chaos') ? 'destructive' : 'outline'}
+                    size="sm"
+                    onClick={() => executeMacro(macro.command)}
+                    disabled={isMacroDisabled(macro.command)}
+                    className="whitespace-nowrap"
+                  >
+                    <macro.icon className="mr-2 h-3 w-3" />
+                    run
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </section>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">CPU Usage</CardTitle>
                 <GaugeCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">{monitoringData.cpuData[monitoringData.cpuData.length - 1].usage}%</div>
+                <div className="text-2xl font-bold">{latestCpu}%</div>
                 <p className="text-xs text-muted-foreground">across 2 nodes (8 vCPU)</p>
-                <div className="h-[80px] w-full -ml-4">
+                 <div className="h-[80px] w-full -ml-4">
                   <CpuUsageChart data={monitoringData.cpuData} />
                 </div>
             </CardContent>
@@ -128,7 +310,7 @@ export function LabClientPage() {
                 <GanttChartSquare className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">{monitoringData.apiResponseData[monitoringData.apiResponseData.length - 1].p95}ms</div>
+                <div className="text-2xl font-bold">{latestLatency}ms</div>
                 <p className="text-xs text-muted-foreground">real-time</p>
                  <div className="h-[80px] w-full -ml-4">
                   <ApiResponseTimeChart data={monitoringData.apiResponseData}/>
@@ -141,16 +323,16 @@ export function LabClientPage() {
                 <Code className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">{monitoringData.deploymentData.filter(d => d.status === 'success').reduce((acc, d) => acc + d.count, 0)} Successful</div>
+                <div className="text-2xl font-bold">{successfulDeploys} Successful</div>
                 <p className="text-xs text-muted-foreground">in the last 7 days</p>
                  <div className="h-[80px] w-full -ml-4">
                   <DeploymentStatusChart data={monitoringData.deploymentData}/>
                 </div>
             </CardContent>
         </Card>
-      </div>
+      </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card className="lg:col-span-2">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -173,48 +355,9 @@ export function LabClientPage() {
             <KubernetesClusterViz cluster={cluster} />
           </CardContent>
         </Card>
+      </section>
         
-        <Card className="lg:col-span-2">
-          <CardHeader>
-              <CardTitle>Interactive Terminal</CardTitle>
-              <CardDescription>An interactive terminal to explore and control the lab environment. Try a quick action or type `help`.</CardDescription>
-              <div className="flex flex-wrap gap-2 pt-2">
-                  <Button variant="outline" size="sm" onClick={() => handleQuickAction('kubectl get pods')}>
-                      <FileTerminal className="mr-2 h-3 w-3" /> kubectl get pods
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => handleQuickAction('deploy --weight=20')}>
-                      <Zap className="mr-2 h-3 w-3" /> deploy canary (20%)
-                  </Button>
-                   <Button variant="outline" size="sm" onClick={() => handleBackgroundAction(() => runChaos('pod_failure'))}>
-                      <ShieldAlert className="mr-2 h-3 w-3" /> chaos pod_failure
-                  </Button>
-              </div>
-          </CardHeader>
-          <CardContent>
-              <InteractiveTerminal 
-                ref={terminalRef}
-                runtimeLogs={runtimeLogs}
-                cluster={cluster}
-                onCommand={(cmd) => {
-                    const [command] = cmd.trim().split(' ');
-                    if (command === 'deploy' || command === 'chaos') {
-                        handleBackgroundAction(() => {
-                           if (command === 'deploy') {
-                               const deployConfig = parseDeployCommand(cmd);
-                               runDeployment('start', deployConfig || undefined);
-                           } else {
-                               const [, scenario = 'latency'] = cmd.trim().split(' ');
-                               runChaos(scenario);
-                           }
-                        });
-                        return '';
-                    }
-                    return null; // Let terminal handle built-in commands
-                }}
-              />
-          </CardContent>
-        </Card>
-
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
          <Card className="lg:col-span-2">
             <CardHeader>
                 <CardTitle>Visual Deploy Pipeline</CardTitle>
@@ -255,55 +398,7 @@ export function LabClientPage() {
                 </div>
             </CardContent>
         </Card>
-
-        <Card className="lg:col-span-2">
-            <CardHeader>
-                <CardTitle>Chaos Engineering Controls</CardTitle>
-                <CardDescription>Manually trigger chaos experiments or enable the automated Chaos Monkey to test system resilience.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-                <Alert>
-                    <ShieldAlert className="h-4 w-4" />
-                    <AlertTitle>This is a Simulation</AlertTitle>
-                    <AlertDescription>
-                        Chaos experiments run in a sandboxed environment. They demonstrate resilience concepts without affecting any real infrastructure.
-                    </AlertDescription>
-                </Alert>
-
-                <div className="flex items-center space-x-2 p-4 border rounded-lg">
-                    <Switch id="auto-chaos-mode" checked={isAutoChaosEnabled} onCheckedChange={(checked) => handleBackgroundAction(() => toggleAutoChaos(checked))} disabled={isDeploying}/>
-                    <Label htmlFor="auto-chaos-mode" className="flex flex-col">
-                        <span className="font-semibold">Auto-Chaos Monkey</span>
-                        <span className="text-xs text-muted-foreground">Periodically triggers random failures to test continuous resilience.</span>
-                    </Label>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <FancyButton 
-                        onClick={() => handleBackgroundAction(() => runChaos('pod_failure'))}
-                        disabled={isDeploying || isAutoChaosEnabled}
-                        Icon={ShieldAlert}
-                        text="Simulate Pod Failure"
-                        variant="destructive"
-                    />
-                     <FancyButton 
-                        onClick={() => handleBackgroundAction(() => runChaos('latency'))}
-                        disabled={isDeploying || isAutoChaosEnabled}
-                        Icon={Zap}
-                        text="Simulate API Latency"
-                        variant="destructive"
-                    />
-                     <FancyButton 
-                        onClick={() => handleBackgroundAction(() => runChaos('cpu_spike'))}
-                        disabled={isDeploying || isAutoChaosEnabled}
-                        Icon={GaugeCircle}
-                        text="Simulate CPU Spike"
-                        variant="destructive"
-                    />
-                </div>
-            </CardContent>
-        </Card>
-      </div>
+      </section>
     </div>
   );
 }

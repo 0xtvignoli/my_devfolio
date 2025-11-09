@@ -14,7 +14,6 @@ import {
   Terminal, 
   Activity, 
   ShieldAlert, 
-  Zap, 
   PlayCircle,
   Forward,
   Undo,
@@ -25,9 +24,23 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import type { DeployConfig } from '@/lib/types';
+import type { DeployConfig, Locale, Translations } from '@/lib/types';
+import { translations as localeTable } from '@/data/locales';
 
-export function ImmersiveLabLayout() {
+const sidebarTabs = ['cluster', 'pipeline', 'metrics'] as const;
+type SidebarTab = typeof sidebarTabs[number];
+const isSidebarTab = (value: string): value is SidebarTab =>
+  sidebarTabs.includes(value as SidebarTab);
+
+interface ImmersiveLabLayoutProps {
+  locale?: Locale;
+  translations?: Translations;
+}
+
+export function ImmersiveLabLayout({
+  locale = 'en',
+  translations = localeTable.en,
+}: ImmersiveLabLayoutProps = {}) {
   const {
     runtimeLogs,
     monitoringData,
@@ -41,7 +54,7 @@ export function ImmersiveLabLayout() {
     runDeployment,
   } = useLabSimulation();
 
-  const [activeSidebar, setActiveSidebar] = useState<'cluster' | 'pipeline' | 'metrics'>('cluster');
+  const [activeSidebar, setActiveSidebar] = useState<SidebarTab>('cluster');
   const [isBottomPanelExpanded, setIsBottomPanelExpanded] = useState(true);
   const terminalRef = useRef<{ setCommand: (command: string) => void; setActiveTab: (tab: 'terminal' | 'logs') => void }>(null);
 
@@ -117,7 +130,15 @@ export function ImmersiveLabLayout() {
       <div className="flex h-[calc(100vh-3.5rem)]">
         {/* Left Sidebar - Visualization */}
         <div className="w-96 border-r border-gray-800 bg-black/30 backdrop-blur-sm overflow-y-auto">
-          <Tabs value={activeSidebar} onValueChange={(v) => setActiveSidebar(v as any)} className="w-full">
+          <Tabs
+            value={activeSidebar}
+            onValueChange={(value) => {
+              if (isSidebarTab(value)) {
+                setActiveSidebar(value);
+              }
+            }}
+            className="w-full"
+          >
             <TabsList className="w-full grid grid-cols-3 bg-black/50 rounded-none border-b border-gray-800">
               <TabsTrigger value="cluster" className="data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-400">
                 <Layers className="h-4 w-4 mr-2" />
@@ -219,6 +240,8 @@ export function ImmersiveLabLayout() {
               ref={terminalRef}
               runtimeLogs={runtimeLogs}
               cluster={cluster}
+              locale={locale}
+              translations={translations}
               onCommand={(cmd) => {
                 const [command] = cmd.trim().split(' ');
                 if (command === 'deploy' || command === 'chaos') {
@@ -340,4 +363,3 @@ function QuickAction({ onClick, label, variant = 'default' }: { onClick: () => v
     </button>
   );
 }
-

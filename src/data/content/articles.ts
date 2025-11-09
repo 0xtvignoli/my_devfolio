@@ -146,3 +146,7 @@ export function getArticle(slug: string, locale: Locale): Article | undefined {
     ...translations[slug][locale],
   };
 }
+
+export function getArticleSlugs(): string[] {
+  return articlesContent.map((article) => article.slug);
+}
