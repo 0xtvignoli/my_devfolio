@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useLabSimulation } from '@/contexts/lab-simulation-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -43,9 +43,19 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
     toggleAutoChaos 
   } = useLabSimulation();
 
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const totalMemoryGB = 32;
-  const currentMemoryUsagePercent = monitoringData.memoryData[monitoringData.memoryData.length - 1].usage as number;
-  const currentMemoryUsageGB = (currentMemoryUsagePercent / 100 * totalMemoryGB).toFixed(1);
+  const currentMemoryUsagePercent = mounted 
+    ? (monitoringData.memoryData[monitoringData.memoryData.length - 1]?.usage as number ?? 0)
+    : 0;
+  const currentMemoryUsageGB = mounted 
+    ? (currentMemoryUsagePercent / 100 * totalMemoryGB).toFixed(1)
+    : '0.0';
   const terminalRef = useRef<{ setCommand: (command: string) => void, setActiveTab: (tab: 'terminal' | 'logs') => void }>(null);
 
   const handleQuickAction = (command: string) => {
@@ -87,11 +97,13 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
       return config;
   }
 
-  const successfulDeploys = monitoringData.deploymentData
-    .filter((d) => d.status === 'success')
-    .reduce((acc, d) => acc + d.count, 0);
-  const latestCpu = monitoringData.cpuData.at(-1)?.usage ?? 0;
-  const latestLatency = monitoringData.apiResponseData.at(-1)?.p95 ?? 0;
+  const successfulDeploys = mounted 
+    ? monitoringData.deploymentData
+        .filter((d) => d.status === 'success')
+        .reduce((acc, d) => acc + d.count, 0)
+    : 0;
+  const latestCpu = mounted ? (monitoringData.cpuData.at(-1)?.usage ?? 0) : 0;
+  const latestLatency = mounted ? (monitoringData.apiResponseData.at(-1)?.p95 ?? 0) : 0;
   const missionPlaybook = [
     {
       label: 'Cluster pulse',
@@ -168,9 +180,9 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
           This is your mission console. Every visualization, chaos experiment, and deployment is driven from the terminal so you can reason like an operator.
         </p>
         <div className="flex flex-wrap justify-center gap-3 text-xs font-mono text-muted-foreground dark:text-muted-foreground">
-          <span className={`${chipSurface} px-3 py-1`}>CPU {latestCpu}%</span>
-          <span className={`${chipSurface} px-3 py-1`}>P95 {latestLatency}ms</span>
-          <span className={`${chipSurface} px-3 py-1`}>{successfulDeploys} deploys · 7d</span>
+          <span className={`${chipSurface} px-3 py-1`} suppressHydrationWarning>CPU {latestCpu}%</span>
+          <span className={`${chipSurface} px-3 py-1`} suppressHydrationWarning>P95 {latestLatency}ms</span>
+          <span className={`${chipSurface} px-3 py-1`} suppressHydrationWarning>{successfulDeploys} deploys · 7d</span>
         </div>
       </section>
 
@@ -315,7 +327,7 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
                 <GaugeCircle className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">{latestCpu}%</div>
+                <div className="text-2xl font-bold" suppressHydrationWarning>{latestCpu}%</div>
                 <p className="text-xs text-muted-foreground dark:text-muted-foreground">across 2 nodes (8 vCPU)</p>
                  <div className="h-[80px] w-full -ml-4">
                   <CpuUsageChart data={monitoringData.cpuData} />
@@ -328,8 +340,8 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
                 <GanttChartSquare className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">{currentMemoryUsageGB} / {totalMemoryGB} GB</div>
-                <p className="text-xs text-muted-foreground dark:text-muted-foreground">{currentMemoryUsagePercent}% utilization</p>
+                <div className="text-2xl font-bold" suppressHydrationWarning>{currentMemoryUsageGB} / {totalMemoryGB} GB</div>
+                <p className="text-xs text-muted-foreground dark:text-muted-foreground" suppressHydrationWarning>{currentMemoryUsagePercent}% utilization</p>
                  <div className="h-[80px] w-full -ml-4">
                   <MemoryUsageChart data={monitoringData.memoryData}/>
                 </div>
@@ -341,7 +353,7 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
                 <GanttChartSquare className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">{latestLatency}ms</div>
+                <div className="text-2xl font-bold" suppressHydrationWarning>{latestLatency}ms</div>
                 <p className="text-xs text-muted-foreground dark:text-muted-foreground">real-time</p>
                  <div className="h-[80px] w-full -ml-4">
                   <ApiResponseTimeChart data={monitoringData.apiResponseData}/>
@@ -354,7 +366,7 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
                 <Code className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">{successfulDeploys} Successful</div>
+                <div className="text-2xl font-bold" suppressHydrationWarning>{successfulDeploys} Successful</div>
                 <p className="text-xs text-muted-foreground dark:text-muted-foreground">in the last 7 days</p>
                  <div className="h-[80px] w-full -ml-4">
                   <DeploymentStatusChart data={monitoringData.deploymentData}/>
