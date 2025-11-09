@@ -29,14 +29,14 @@
     --chart-4: 175 40% 45%;
     --chart-5: 320 65% 55%;
     --radius: 0.75rem;
-    --bg-primary: #010b10;
-    --bg-secondary: #021d1b;
-    --neon-accent: #00f28a;
+    --bg-primary: #f0fdf4;
+    --bg-secondary: #e6f7ef;
+    --neon-accent: #00a86b;
     --neon-accent-muted: #04c267;
-    --text-primary-soft: #0dfd88;
-    --text-muted-soft: #7ad9b6;
-    --accent-gradient: linear-gradient(135deg, #00f28a, #00b4d8);
-    --glow-soft: 0 0 40px rgba(0, 242, 138, 0.25);
+    --text-primary-soft: #065f46;
+    --text-muted-soft: #047857;
+    --accent-gradient: linear-gradient(135deg, #00a86b, #00b4d8);
+    --glow-soft: 0 0 40px rgba(0, 168, 107, 0.15);
     --radius-pill: 999px;
   }
  

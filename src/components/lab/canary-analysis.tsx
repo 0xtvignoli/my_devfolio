@@ -14,7 +14,7 @@ const MetricRow = ({ name, baseline, canary }: { name: string, baseline: number,
     const isImproved = (name === "CPU Usage (%)") ? diff < 0 : diff <= 0
     const isWorse = (name === "CPU Usage (%)") ? diff > 0 : diff > 0
     const Icon = isImproved ? ArrowDown : isWorse ? ArrowUp : Minus
-    const color = isImproved ? "text-green-500" : isWorse ? "text-red-500" : "text-muted-foreground"
+    const color = isImproved ? "text-green-500" : isWorse ? "text-red-500" : "text-muted-foreground dark:text-muted-foreground"
 
     return (
         <TableRow>
@@ -56,7 +56,7 @@ export function CanaryAnalysis({ metrics }: CanaryAnalysisProps) {
                         </TableBody>
                     </Table>
                 </div>
-                <p className="text-xs text-muted-foreground mt-3">
+                <p className="text-xs text-muted-foreground dark:text-muted-foreground mt-3">
                     Lower is better for all metrics. Based on this data, decide whether to promote the canary or roll back.
                 </p>
             </CardContent>

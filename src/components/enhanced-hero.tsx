@@ -32,7 +32,7 @@ export function EnhancedHero({ title, subtitle, ctaPortfolio, ctaContact }: Enha
   return (
     <section
       id="hero"
-      className="relative py-32 md:py-40 overflow-hidden rounded-3xl border border-white/5 bg-[var(--bg-primary)] text-[var(--text-primary-soft)] shadow-[var(--glow-soft)]"
+      className="relative py-32 md:py-40 overflow-hidden rounded-3xl border border-border/50 dark:border-white/5 bg-[var(--bg-primary)] dark:bg-[#010b10] text-[var(--text-primary-soft)] dark:text-[#0dfd88] shadow-[var(--glow-soft)]"
     >
       {/* Animated background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-[var(--neon-accent)]/15 via-transparent to-[#00b4d8]/10 animate-pulse-slow" />
@@ -55,9 +55,9 @@ export function EnhancedHero({ title, subtitle, ctaPortfolio, ctaContact }: Enha
           transition={{ duration: 0.5 }}
           className="mb-6 flex justify-center"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 dark:bg-primary/10 border border-primary/20 dark:border-primary/20 backdrop-blur-sm">
             <Sparkles className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium">Senior DevOps Engineer</span>
+            <span className="text-sm font-medium text-foreground">Senior DevOps Engineer</span>
           </div>
         </motion.div>
 
@@ -65,7 +65,7 @@ export function EnhancedHero({ title, subtitle, ctaPortfolio, ctaContact }: Enha
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
-          className="font-headline text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground via-foreground to-foreground/70"
+          className="font-headline text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground via-foreground to-foreground/80 dark:from-foreground dark:via-foreground dark:to-foreground/70"
         >
           {title}
         </motion.h1>
@@ -74,7 +74,7 @@ export function EnhancedHero({ title, subtitle, ctaPortfolio, ctaContact }: Enha
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed"
+          className="text-lg md:text-xl text-muted-foreground dark:text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed"
         >
           {subtitle}
         </motion.p>

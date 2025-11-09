@@ -40,7 +40,7 @@ const StatsCard = ({
     </CardHeader>
     <CardContent>
       <div className="text-2xl font-bold">{value}</div>
-      <p className="text-xs text-muted-foreground">{subtitle}</p>
+      <p className="text-xs text-muted-foreground dark:text-muted-foreground">{subtitle}</p>
     </CardContent>
   </Card>
 );
@@ -70,7 +70,7 @@ const RecentActivity = () => {
       <CardContent>
         <div className="space-y-3">
           {recentActivities.length === 0 ? (
-            <div className="text-center py-6 text-muted-foreground">
+            <div className="text-center py-6 text-muted-foreground dark:text-muted-foreground">
               <p>No recent activity yet.</p>
               <p className="text-sm">Start using the lab to see your activities here!</p>
             </div>
@@ -83,7 +83,7 @@ const RecentActivity = () => {
                 className="flex items-center justify-between p-2 rounded-lg bg-muted/30"
               >
                 <span className="text-sm">{activity.message}</span>
-                <span className="text-xs text-muted-foreground">{formatTimeAgo(activity.timestamp)}</span>
+                <span className="text-xs text-muted-foreground dark:text-muted-foreground">{formatTimeAgo(activity.timestamp)}</span>
               </motion.div>
             ))
           )}
@@ -177,7 +177,7 @@ const QuickActions = () => {
             >
               <div>
                 <h4 className="font-medium">{action.title}</h4>
-                <p className="text-sm text-muted-foreground">{action.description}</p>
+                <p className="text-sm text-muted-foreground dark:text-muted-foreground">{action.description}</p>
               </div>
               <Badge variant="secondary">+{action.xp} XP</Badge>
             </motion.button>

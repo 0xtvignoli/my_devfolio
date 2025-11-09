@@ -17,11 +17,11 @@ const AchievementCard = ({ achievement }: { achievement: Achievement }) => {
   
   const getRarityColor = (rarity: Achievement['rarity']) => {
     switch (rarity) {
-      case 'legendary': return 'border-yellow-500 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400';
-      case 'epic': return 'border-purple-500 bg-purple-500/10 text-purple-600 dark:text-purple-400';
-      case 'rare': return 'border-blue-500 bg-blue-500/10 text-blue-600 dark:text-blue-400';
-      case 'common': return 'border-green-500 bg-green-500/10 text-green-600 dark:text-green-400';
-      default: return 'border-gray-500 bg-gray-500/10 text-gray-600 dark:text-gray-400';
+      case 'legendary': return 'border-yellow-500 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 dark:bg-yellow-500/10';
+      case 'epic': return 'border-purple-500 bg-purple-500/10 text-purple-700 dark:text-purple-400 dark:bg-purple-500/10';
+      case 'rare': return 'border-blue-500 bg-blue-500/10 text-blue-700 dark:text-blue-400 dark:bg-blue-500/10';
+      case 'common': return 'border-green-500 bg-green-500/10 text-green-700 dark:text-green-400 dark:bg-green-500/10';
+      default: return 'border-gray-500 bg-gray-500/10 text-gray-700 dark:text-gray-400 dark:bg-gray-500/10';
     }
   };
 
@@ -45,7 +45,7 @@ const AchievementCard = ({ achievement }: { achievement: Achievement }) => {
         
         {!isUnlocked && (
           <div className="absolute top-2 right-2">
-            <Lock className="h-4 w-4 text-muted-foreground" />
+            <Lock className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
           </div>
         )}
         
@@ -57,7 +57,7 @@ const AchievementCard = ({ achievement }: { achievement: Achievement }) => {
                 <h4 className={`font-semibold ${isUnlocked ? 'text-foreground' : 'text-muted-foreground'}`}>
                   {achievement.title}
                 </h4>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground dark:text-muted-foreground">
                   {achievement.description}
                 </p>
               </div>
@@ -77,15 +77,15 @@ const AchievementCard = ({ achievement }: { achievement: Achievement }) => {
               {!isUnlocked && maxProgress > 1 && (
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">Progress</span>
-                    <span className="text-muted-foreground">{progress}/{maxProgress}</span>
+                    <span className="text-muted-foreground dark:text-muted-foreground">Progress</span>
+                    <span className="text-muted-foreground dark:text-muted-foreground">{progress}/{maxProgress}</span>
                   </div>
                   <Progress value={progressPercentage} className="h-2" />
                 </div>
               )}
               
               {isUnlocked && achievement.unlockedAt && (
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground dark:text-muted-foreground">
                   Unlocked {(achievement.unlockedAt instanceof Date 
                     ? achievement.unlockedAt 
                     : new Date(achievement.unlockedAt)

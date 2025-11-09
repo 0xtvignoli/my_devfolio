@@ -39,7 +39,7 @@ export function KubernetesClusterViz({ cluster }: KubernetesClusterVizProps) {
                   <Server className="text-primary w-5 h-5" />
                   <span>{node.name}</span>
                 </CardTitle>
-                <div className="flex gap-4 text-xs text-muted-foreground pt-1">
+                <div className="flex gap-4 text-xs text-muted-foreground dark:text-muted-foreground pt-1">
                     <div className='flex items-center gap-1'><Cpu className="w-3 h-3"/> {node.cpu}</div>
                     <div className='flex items-center gap-1'><MemoryStick className="w-3 h-3"/> {node.memory}</div>
                 </div>
@@ -62,7 +62,7 @@ export function KubernetesClusterViz({ cluster }: KubernetesClusterVizProps) {
                         )}
                         <div className="flex justify-center mb-1">{statusIcons[pod.status]}</div>
                         <div className="font-semibold truncate">{pod.service}</div>
-                        <div className="text-muted-foreground truncate">{pod.name}</div>
+                        <div className="text-muted-foreground dark:text-muted-foreground truncate">{pod.name}</div>
                       </div>
                     </TooltipTrigger>
                     <TooltipContent className="font-code text-xs bg-card/80 backdrop-blur-sm">
@@ -71,8 +71,8 @@ export function KubernetesClusterViz({ cluster }: KubernetesClusterVizProps) {
                            {pod.isCanary && <Badge variant="outline" className="text-xs px-1.5 py-0.5 border-purple-500 text-purple-500">Canary</Badge>}
                         </div>
                         <div className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1">
-                          <span className="font-semibold text-muted-foreground">Service:</span> <span>{pod.service}</span>
-                          <span className="font-semibold text-muted-foreground">Status:</span> 
+                          <span className="font-semibold text-muted-foreground dark:text-muted-foreground">Service:</span> <span>{pod.service}</span>
+                          <span className="font-semibold text-muted-foreground dark:text-muted-foreground">Status:</span> 
                           <span className={cn({
                               'text-green-500': pod.status === 'Running',
                               'text-red-500': pod.status === 'Error',
@@ -82,18 +82,18 @@ export function KubernetesClusterViz({ cluster }: KubernetesClusterVizProps) {
                           </span>
                            {pod.traffic !== undefined && (
                                 <>
-                                 <span className="font-semibold text-muted-foreground">Traffic:</span> <span>{pod.traffic.toFixed(1)}%</span>
+                                 <span className="font-semibold text-muted-foreground dark:text-muted-foreground">Traffic:</span> <span>{pod.traffic.toFixed(1)}%</span>
                                 </>
                            )}
                         </div>
                         <hr className="my-2 border-border/50" />
                         <div className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1">
-                          <span className="font-semibold text-muted-foreground">CPU Req:</span> <span>{pod.cpu}</span>
-                          <span className="font-semibold text-muted-foreground">Memory Req:</span> <span>{pod.memory}</span>
-                          <span className="font-semibold text-muted-foreground">IP:</span> <span>{pod.ip}</span>
+                          <span className="font-semibold text-muted-foreground dark:text-muted-foreground">CPU Req:</span> <span>{pod.cpu}</span>
+                          <span className="font-semibold text-muted-foreground dark:text-muted-foreground">Memory Req:</span> <span>{pod.memory}</span>
+                          <span className="font-semibold text-muted-foreground dark:text-muted-foreground">IP:</span> <span>{pod.ip}</span>
                         </div>
                         <hr className="my-2 border-border/50" />
-                        <div className="text-muted-foreground">Type `kubectl describe pod {pod.name}` for more details.</div>
+                        <div className="text-muted-foreground dark:text-muted-foreground">Type `kubectl describe pod {pod.name}` for more details.</div>
                     </TooltipContent>
                   </Tooltip>
                 ))}

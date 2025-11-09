@@ -17,10 +17,10 @@ const ChallengeCard = ({ challenge }: { challenge: Challenge }) => {
   
   const getDifficultyColor = (difficulty: Challenge['difficulty']) => {
     switch (difficulty) {
-      case 'hard': return 'border-red-500 bg-red-500/10 text-red-600 dark:text-red-400';
-      case 'medium': return 'border-yellow-500 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400';
-      case 'easy': return 'border-green-500 bg-green-500/10 text-green-600 dark:text-green-400';
-      default: return 'border-gray-500 bg-gray-500/10 text-gray-600 dark:text-gray-400';
+      case 'hard': return 'border-red-500 bg-red-500/10 text-red-700 dark:text-red-400 dark:bg-red-500/10';
+      case 'medium': return 'border-yellow-500 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 dark:bg-yellow-500/10';
+      case 'easy': return 'border-green-500 bg-green-500/10 text-green-700 dark:text-green-400 dark:bg-green-500/10';
+      default: return 'border-gray-500 bg-gray-500/10 text-gray-700 dark:text-gray-400 dark:bg-gray-500/10';
     }
   };
 
@@ -77,14 +77,14 @@ const ChallengeCard = ({ challenge }: { challenge: Challenge }) => {
               </Badge>
             </div>
             
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground dark:text-muted-foreground">
               {challenge.description}
             </p>
             
             <div className="space-y-2">
               <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">Progress</span>
-                <span className="font-medium">{challenge.progress}/{challenge.maxProgress}</span>
+                <span className="text-muted-foreground dark:text-muted-foreground">Progress</span>
+                <span className="font-medium text-foreground">{challenge.progress}/{challenge.maxProgress}</span>
               </div>
               <Progress value={progressPercentage} className="h-2" />
             </div>
@@ -95,7 +95,7 @@ const ChallengeCard = ({ challenge }: { challenge: Challenge }) => {
                   +{challenge.xpReward} XP
                 </span>
                 {challenge.deadline && (
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs text-muted-foreground dark:text-muted-foreground">
                     {formatTimeRemaining(challenge.deadline)}
                   </span>
                 )}
@@ -138,7 +138,7 @@ export const ChallengesWidget = () => {
       <CardContent>
         <div className="space-y-3">
           {activeChallenges.length === 0 ? (
-            <div className="text-center py-6 text-muted-foreground">
+            <div className="text-center py-6 text-muted-foreground dark:text-muted-foreground">
               <CheckCircle className="h-8 w-8 mx-auto mb-2 text-green-500" />
               <p>All challenges completed!</p>
               <p className="text-sm">Come back tomorrow for new challenges.</p>

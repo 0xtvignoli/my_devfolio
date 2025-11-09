@@ -125,6 +125,10 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
     },
   ] as const;
 
+  const glassPanel = "supports-[backdrop-filter]:backdrop-blur-xl border border-slate-200/70 bg-white/95 shadow-[0_35px_120px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-card/80 dark:shadow-[0_35px_120px_rgba(0,0,0,0.55)]";
+  const blockSurface = "border border-slate-200/70 bg-white/90 shadow-[0_10px_40px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-card/70 dark:shadow-none";
+  const chipSurface = "rounded-full border border-slate-200/80 bg-white/90 text-slate-600 shadow-[0_10px_30px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-white/5 dark:text-muted-foreground";
+
   const executeMacro = (macroCommand: string) => {
     const trimmed = macroCommand.trim();
     const [command] = trimmed.split(' ');
@@ -154,24 +158,24 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
   return (
     <div className="container mx-auto px-4 py-16 space-y-12">
       <section className="text-center space-y-4">
-        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+        <div className={`inline-flex items-center gap-2 px-4 py-1 text-[0.65rem] uppercase tracking-[0.25em] ${chipSurface}`}>
           Live Control Room
         </div>
         <h1 className="font-headline text-4xl md:text-5xl font-bold tracking-tight">
           {translations.nav.lab}
         </h1>
-        <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+        <p className="text-lg text-muted-foreground dark:text-muted-foreground max-w-3xl mx-auto">
           This is your mission console. Every visualization, chaos experiment, and deployment is driven from the terminal so you can reason like an operator.
         </p>
-        <div className="flex flex-wrap justify-center gap-3 text-xs font-mono text-muted-foreground">
-          <span className="rounded-full border border-white/10 px-3 py-1">CPU {latestCpu}%</span>
-          <span className="rounded-full border border-white/10 px-3 py-1">P95 {latestLatency}ms</span>
-          <span className="rounded-full border border-white/10 px-3 py-1">{successfulDeploys} deploys · 7d</span>
+        <div className="flex flex-wrap justify-center gap-3 text-xs font-mono text-muted-foreground dark:text-muted-foreground">
+          <span className={`${chipSurface} px-3 py-1`}>CPU {latestCpu}%</span>
+          <span className={`${chipSurface} px-3 py-1`}>P95 {latestLatency}ms</span>
+          <span className={`${chipSurface} px-3 py-1`}>{successfulDeploys} deploys · 7d</span>
         </div>
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
-        <Card className="bg-card/80 backdrop-blur">
+        <Card className={glassPanel}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl">
               <FileTerminal className="h-5 w-5 text-primary" />
@@ -193,7 +197,7 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="rounded-lg border border-white/10 bg-background/60 p-3 text-xs font-mono text-muted-foreground flex items-center justify-between">
+            <div className={`flex items-center justify-between rounded-2xl p-3 text-xs font-mono text-muted-foreground dark:text-muted-foreground ${blockSurface}`}>
               <span>Connected · dev-cluster</span>
               <span className="flex items-center gap-1 text-emerald-400">
                 <span className="h-2 w-2 rounded-full bg-emerald-400" />
@@ -209,16 +213,43 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
               onCommand={(cmd) => {
                   const [command] = cmd.trim().split(' ');
                   if (command === 'deploy' || command === 'chaos') {
+                      const deployConfig = command === 'deploy' ? parseDeployCommand(cmd) : null;
+                      const scenario = command === 'chaos' ? cmd.trim().split(' ')[1] ?? 'latency' : null;
                       handleBackgroundAction(() => {
                          if (command === 'deploy') {
-                             const deployConfig = parseDeployCommand(cmd);
                              runDeployment('start', deployConfig || undefined);
                          } else {
-                             const [, scenario = 'latency'] = cmd.trim().split(' ');
-                             runChaos(scenario);
+                             runChaos(scenario || 'latency');
                          }
                       });
-                      return '';
+                      if (command === 'deploy') {
+                        return {
+                          output: [
+                            'Dispatching CI/CD pipeline via Mission Control...',
+                            `strategy: ${deployConfig?.strategy ?? 'canary'}  weight: ${deployConfig?.weight ?? 10}%  version: ${deployConfig?.version ?? 'auto'}`,
+                            'Follow the Visual Deploy Pipeline and Canary Analysis modules to watch each gate.',
+                          ],
+                          contextHint: 'All deployments here stay inside the sandbox but mirror production-grade workflows.',
+                          suggestion: 'Run `kubectl get pods` or `status` once stages flip green.',
+                          streamingSteps: [
+                            '[busy] queuing build jobs on GitHub Actions...',
+                            '[sync] generating manifests + signing artifacts...',
+                            '[ready] waiting for pods to report Ready...',
+                          ],
+                        };
+                      }
+                      return {
+                        output: [
+                          `Chaos scenario "${scenario}" injected. Observability panes will spike accordingly.`,
+                          'Monitor Incident History to confirm self-healing and auto-rollbacks.',
+                        ],
+                        contextHint: 'Faults are scoped to the simulated environment only.',
+                        suggestion: 'Use `status` or `kubectl get pods` to confirm recovery.',
+                        streamingSteps: [
+                          '[busy] priming chaos controller...',
+                          `[sync] applying ${scenario} disruption...`,
+                        ],
+                      };
                   }
                   return null; // Let terminal handle built-in commands
               }}
@@ -226,13 +257,13 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
           </CardContent>
         </Card>
 
-        <Card className="bg-card/80 backdrop-blur">
+        <Card className={glassPanel}>
           <CardHeader>
             <CardTitle>Mission Control</CardTitle>
             <CardDescription>Toggle automation and run curated macros without leaving the console.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <Alert>
+            <Alert className={`${blockSurface} rounded-2xl`}>
               <ShieldAlert className="h-4 w-4" />
               <AlertTitle>Simulated Environment</AlertTitle>
               <AlertDescription>
@@ -240,7 +271,7 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
               </AlertDescription>
             </Alert>
 
-            <div className="flex items-center space-x-2 rounded-lg border px-4 py-3">
+            <div className={`flex items-center space-x-2 rounded-2xl px-4 py-3 ${blockSurface}`}>
               <Switch
                 id="auto-chaos-mode"
                 checked={isAutoChaosEnabled}
@@ -249,16 +280,16 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
               />
               <Label htmlFor="auto-chaos-mode" className="flex flex-col">
                 <span className="font-semibold">Auto-Chaos Monkey</span>
-                <span className="text-xs text-muted-foreground">Let scheduled chaos jobs validate self-healing.</span>
+                <span className="text-xs text-muted-foreground dark:text-muted-foreground">Let scheduled chaos jobs validate self-healing.</span>
               </Label>
             </div>
 
             <div className="space-y-4">
               {missionPlaybook.map((macro) => (
-                <div key={macro.command} className="flex items-start justify-between gap-3 rounded-lg border border-white/10 px-3 py-2">
+                <div key={macro.command} className={`flex items-start justify-between gap-3 px-3 py-2 ${blockSurface} rounded-2xl`}>
                   <div>
                     <p className="font-medium text-sm">{macro.label}</p>
-                    <p className="text-xs text-muted-foreground">{macro.description}</p>
+                    <p className="text-xs text-muted-foreground dark:text-muted-foreground">{macro.description}</p>
                   </div>
                   <Button
                     variant={macro.command.startsWith('chaos') ? 'destructive' : 'outline'}
@@ -281,11 +312,11 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">CPU Usage</CardTitle>
-                <GaugeCircle className="h-4 w-4 text-muted-foreground" />
+                <GaugeCircle className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
             </CardHeader>
             <CardContent>
                 <div className="text-2xl font-bold">{latestCpu}%</div>
-                <p className="text-xs text-muted-foreground">across 2 nodes (8 vCPU)</p>
+                <p className="text-xs text-muted-foreground dark:text-muted-foreground">across 2 nodes (8 vCPU)</p>
                  <div className="h-[80px] w-full -ml-4">
                   <CpuUsageChart data={monitoringData.cpuData} />
                 </div>
@@ -294,11 +325,11 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Memory</CardTitle>
-                <GanttChartSquare className="h-4 w-4 text-muted-foreground" />
+                <GanttChartSquare className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
             </CardHeader>
             <CardContent>
                 <div className="text-2xl font-bold">{currentMemoryUsageGB} / {totalMemoryGB} GB</div>
-                <p className="text-xs text-muted-foreground">{currentMemoryUsagePercent}% utilization</p>
+                <p className="text-xs text-muted-foreground dark:text-muted-foreground">{currentMemoryUsagePercent}% utilization</p>
                  <div className="h-[80px] w-full -ml-4">
                   <MemoryUsageChart data={monitoringData.memoryData}/>
                 </div>
@@ -307,11 +338,11 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">API P95 Latency</CardTitle>
-                <GanttChartSquare className="h-4 w-4 text-muted-foreground" />
+                <GanttChartSquare className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
             </CardHeader>
             <CardContent>
                 <div className="text-2xl font-bold">{latestLatency}ms</div>
-                <p className="text-xs text-muted-foreground">real-time</p>
+                <p className="text-xs text-muted-foreground dark:text-muted-foreground">real-time</p>
                  <div className="h-[80px] w-full -ml-4">
                   <ApiResponseTimeChart data={monitoringData.apiResponseData}/>
                 </div>
@@ -320,11 +351,11 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Deployments</CardTitle>
-                <Code className="h-4 w-4 text-muted-foreground" />
+                <Code className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
             </CardHeader>
             <CardContent>
                 <div className="text-2xl font-bold">{successfulDeploys} Successful</div>
-                <p className="text-xs text-muted-foreground">in the last 7 days</p>
+                <p className="text-xs text-muted-foreground dark:text-muted-foreground">in the last 7 days</p>
                  <div className="h-[80px] w-full -ml-4">
                   <DeploymentStatusChart data={monitoringData.deploymentData}/>
                 </div>

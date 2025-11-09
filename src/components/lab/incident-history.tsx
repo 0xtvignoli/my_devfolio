@@ -17,7 +17,7 @@ const statusConfig = {
 export function IncidentHistory({ incidents }: IncidentHistoryProps) {
     if (incidents.length === 0) {
         return (
-            <div className="text-center text-muted-foreground py-8">
+            <div className="text-center text-muted-foreground dark:text-muted-foreground py-8">
                 <p>No incidents recorded yet.</p>
                 <p className="text-sm">Trigger a chaos experiment to see the system&apos;s resilience in action.</p>
             </div>
@@ -56,7 +56,7 @@ export function IncidentHistory({ incidents }: IncidentHistoryProps) {
                                     </TableCell>
                                     <TableCell className="font-medium">{incident.type}</TableCell>
                                     <TableCell>{incident.duration}</TableCell>
-                                    <TableCell className="text-right text-muted-foreground text-xs">
+                                    <TableCell className="text-right text-muted-foreground dark:text-muted-foreground text-xs">
                                         {incident.timestamp.toLocaleString()}
                                     </TableCell>
                                 </TableRow>
