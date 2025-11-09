@@ -827,12 +827,18 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
 
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-      <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="terminal">
+      <TabsList className="grid w-full grid-cols-2 bg-slate-900/60 dark:bg-slate-900/60">
+        <TabsTrigger 
+          value="terminal"
+          className="data-[state=active]:bg-slate-800/80 data-[state=active]:text-white data-[state=inactive]:bg-slate-900/40 data-[state=inactive]:text-slate-400"
+        >
           <FileTerminal className="mr-2 h-4 w-4" />
           Terminal Core
         </TabsTrigger>
-        <TabsTrigger value="logs">
+        <TabsTrigger 
+          value="logs"
+          className="data-[state=active]:bg-slate-800/80 data-[state=active]:text-white data-[state=inactive]:bg-slate-900/40 data-[state=inactive]:text-slate-400"
+        >
           <Power className="mr-2 h-4 w-4" />
           Runtime Logs
         </TabsTrigger>
@@ -927,9 +933,9 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
         </div>
       </TabsContent>
       <TabsContent value="logs">
-        <div className="bg-slate-950 text-slate-100 font-code p-4 rounded-b-md h-96 text-sm overflow-y-auto">
+        <div className="bg-slate-950 text-slate-100 font-mono p-4 rounded-b-md h-96 text-sm overflow-y-auto">
           {runtimeLogs.map((log, index) => (
-            <div key={`log-${index}`} className="whitespace-pre-wrap opacity-70">{log}</div>
+            <div key={`log-${index}`} className="whitespace-pre-wrap text-slate-100">{log}</div>
           ))}
           <div ref={endOfLogsRef} />
         </div>
