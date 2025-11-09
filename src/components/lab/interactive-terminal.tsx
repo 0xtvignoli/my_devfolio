@@ -262,13 +262,21 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
   const [storedCommands, setStoredCommands] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [suggestions, setSuggestions] = useState<Suggestion[]>(contextualSuggestions.default);
+  const [sessionMeta, setSessionMeta] = useState<SessionMeta | null>(null);
 
-  const sessionRef = useRef<SessionMeta>(createSessionMeta());
-  const promptRef = useRef(`[${sessionRef.current.user}@${sessionRef.current.host} ~]`);
+  const sessionRef = useRef<SessionMeta | null>(null);
+  const promptRef = useRef<string>('[infra@control-plane-1 ~]');
   const endOfHistoryRef = useRef<HTMLDivElement>(null);
   const endOfLogsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const systemIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const meta = createSessionMeta();
+    sessionRef.current = meta;
+    promptRef.current = `[${meta.user}@${meta.host} ~]`;
+    setSessionMeta(meta);
+  }, []);
 
   useImperativeHandle(ref, () => ({
     setCommand: (command: string) => {
@@ -852,8 +860,17 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
           }}
         >
           <div className="border-b border-slate-900/80 px-4 py-2 text-xs text-slate-400 flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
-            <span>Last login: {sessionRef.current.lastLogin} from {sessionRef.current.ip} on {sessionRef.current.tty}</span>
-            <span>{sessionRef.current.distro} • {sessionRef.current.kernel}</span>
+            {sessionMeta ? (
+              <>
+                <span suppressHydrationWarning>Last login: {sessionMeta.lastLogin} from {sessionMeta.ip} on {sessionMeta.tty}</span>
+                <span>{sessionMeta.distro} • {sessionMeta.kernel}</span>
+              </>
+            ) : (
+              <>
+                <span>Last login: Loading...</span>
+                <span>Ubuntu 24.04.1 LTS • 6.8.0-41-generic</span>
+              </>
+            )}
           </div>
 
           <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
@@ -865,7 +882,7 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
                 <div className="flex items-center justify-between text-xs text-slate-500">
                   <span className="flex items-center gap-2">
                     <span className={entry.isSystem ? 'text-cyan-300' : 'text-emerald-300'}>
-                      {entry.isSystem ? '[system]' : promptRef.current}
+                      {entry.isSystem ? '[system]' : (sessionMeta ? promptRef.current : '[infra@control-plane-1 ~]')}
                     </span>
                     <span>{entry.timestamp}</span>
                   </span>
@@ -909,7 +926,7 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
           <form onSubmit={(e) => e.preventDefault()} className="px-4 py-3 border-t border-slate-900/80">
             <label htmlFor="terminal-input" className="sr-only">Terminal input</label>
             <div className="flex items-center gap-2">
-              <span className="text-emerald-400">{promptRef.current}</span>
+              <span className="text-emerald-400">{sessionMeta ? promptRef.current : '[infra@control-plane-1 ~]'}</span>
               <div className="relative w-full">
                 <input
                   ref={inputRef}
