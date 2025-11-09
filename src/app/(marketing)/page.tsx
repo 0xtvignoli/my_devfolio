@@ -1,18 +1,17 @@
-'use client';
-
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ProjectCard } from '@/components/shared/project-card';
 import { projects } from '@/data/content/projects';
-import { useLocale } from '@/hooks/use-locale';
 import { ExperienceTimeline } from '@/components/experience-timeline';
 import { ArticleCard } from '@/components/shared/article-card';
 import { getArticles } from '@/data/content/articles';
 import { ArrowRight } from 'lucide-react';
 import { EnhancedHero } from '@/components/enhanced-hero';
+import { resolveLocale, getTranslations } from '@/lib/i18n/server';
 
-export default function Home() {
-  const { t, locale } = useLocale();
+export default async function Home() {
+  const locale = await resolveLocale();
+  const t = getTranslations(locale);
   const articles = getArticles(locale);
 
   const featuredProjects = projects.slice(0, 2);
@@ -52,14 +51,14 @@ export default function Home() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {featuredProjects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
+            <ProjectCard key={project.id} project={project} locale={locale} translations={t} />
           ))}
         </div>
       </section>
       
       <section id="experience" className="py-16">
          <h2 className="font-headline text-3xl font-bold text-center mb-12">{t.experience.title}</h2>
-         <ExperienceTimeline />
+         <ExperienceTimeline locale={locale} />
       </section>
 
       <section id="articles" className="py-16">
@@ -71,7 +70,7 @@ export default function Home() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {featuredArticles.map(article => (
-              <ArticleCard key={article.slug} article={article} />
+              <ArticleCard key={article.slug} article={article} locale={locale} translations={t} />
             ))}
         </div>
       </section>

@@ -1,31 +1,45 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { DEFAULT_LOCALE, isSupportedLocale, matchLocaleFromAcceptLanguage } from '@/lib/i18n/config';
 
-// Host-based routing: serve the Lab/Dashboard under dev.tvignoli.com
+// Host-based routing combined with locale cookie bootstrap
 export function middleware(req: NextRequest) {
-  const url = req.nextUrl;
+  const url = req.nextUrl.clone();
   const host = req.headers.get('host') || '';
   const isDevSubdomain = host.split(':')[0] === 'dev.tvignoli.com';
-
-  if (!isDevSubdomain) return NextResponse.next();
-
   const allowed = ['/lab', '/dashboard', '/_next', '/api', '/favicon.ico', '/assets', '/images'];
   const path = url.pathname;
 
-  // Redirect root of dev subdomain to /lab
-  if (path === '/') {
-    url.pathname = '/lab';
-    return NextResponse.rewrite(url);
+  let response: NextResponse;
+
+  if (isDevSubdomain) {
+    if (path === '/') {
+      url.pathname = '/lab';
+      response = NextResponse.rewrite(url);
+    } else {
+      const isAllowed = allowed.some((p) => path === p || path.startsWith(`${p}/`));
+      if (!isAllowed) {
+        url.pathname = '/lab';
+        response = NextResponse.rewrite(url);
+      } else {
+        response = NextResponse.next();
+      }
+    }
+  } else {
+    response = NextResponse.next();
   }
 
-  // Allow only lab and dashboard (and internal assets) on dev subdomain
-  const isAllowed = allowed.some((p) => path === p || path.startsWith(p + '/'));
-  if (!isAllowed) {
-    url.pathname = '/lab';
-    return NextResponse.rewrite(url);
+  const localeCookie = req.cookies.get('locale');
+  if (!localeCookie || !isSupportedLocale(localeCookie.value)) {
+    const detected = matchLocaleFromAcceptLanguage(req.headers.get('accept-language'));
+    response.cookies.set('locale', detected ?? DEFAULT_LOCALE, {
+      path: '/',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 365,
+    });
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {

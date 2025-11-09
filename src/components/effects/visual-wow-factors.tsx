@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { motion, useMotionValue, useSpring } from 'framer-motion';
+import { motion, useMotionValue, useSpring, useMotionTemplate } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 // Dynamic gradient that follows cursor
@@ -11,6 +11,7 @@ export function DynamicGradient({ className }: { className?: string }) {
 
   const smoothMouseX = useSpring(mouseX, { damping: 50, stiffness: 200 });
   const smoothMouseY = useSpring(mouseY, { damping: 50, stiffness: 200 });
+  const gradientBackground = useMotionTemplate`radial-gradient(600px circle at ${smoothMouseX}px ${smoothMouseY}px, rgba(59, 130, 246, 0.15), transparent 40%)`;
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -26,13 +27,7 @@ export function DynamicGradient({ className }: { className?: string }) {
   return (
     <motion.div
       className={cn('pointer-events-none fixed inset-0 opacity-30', className)}
-      style={{
-        background: useMotionValue(
-          'radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(59, 130, 246, 0.15), transparent 40%)'
-        ),
-        '--mouse-x': smoothMouseX,
-        '--mouse-y': smoothMouseY,
-      } as any}
+      style={{ background: gradientBackground }}
     />
   );
 }

@@ -98,6 +98,25 @@ const calculateLevelFromXP = (totalXp: number): number => {
   return level - 1;
 };
 
+// Helper functions for Date serialization/deserialization
+const serializeDate = (date: Date): string => {
+  return date.toISOString();
+};
+
+const deserializeDate = (dateString: string | Date): Date => {
+  if (dateString instanceof Date) return dateString;
+  return new Date(dateString);
+};
+
+// Helper function to generate UUID with fallback
+const generateId = (): string => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  // Fallback for environments without crypto.randomUUID
+  return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+};
+
 // Initial achievements data
 const INITIAL_ACHIEVEMENTS: Achievement[] = [
   {
@@ -147,33 +166,62 @@ const INITIAL_ACHIEVEMENTS: Achievement[] = [
   }
 ];
 
-// Initial challenges
-const generateDailyChallenges = (): Challenge[] => [
-  {
-    id: 'daily_deploy',
-    title: 'Daily Deployment',
-    description: 'Run at least one deployment today',
-    type: 'daily',
-    difficulty: 'easy',
-    xpReward: 25,
-    completed: false,
-    progress: 0,
-    maxProgress: 1,
-    deadline: new Date(Date.now() + 24 * 60 * 60 * 1000)
-  },
-  {
-    id: 'chaos_experiment',
-    title: 'Chaos Testing',
-    description: 'Run 3 different chaos experiments',
-    type: 'daily',
-    difficulty: 'medium',
-    xpReward: 50,
-    completed: false,
-    progress: 0,
-    maxProgress: 3,
-    deadline: new Date(Date.now() + 24 * 60 * 60 * 1000)
+// Initial challenges - generate with consistent deadline based on day
+const generateDailyChallenges = (existingChallenges?: Challenge[]): Challenge[] => {
+  // Get start of today in local time
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  
+  // If we have existing challenges, preserve their state
+  if (existingChallenges && existingChallenges.length > 0) {
+    return existingChallenges.map(challenge => {
+      // Only update deadline if challenge is expired or not completed
+      if (challenge.deadline && new Date(challenge.deadline) < today && !challenge.completed) {
+        return {
+          ...challenge,
+          deadline: tomorrow,
+          completed: false,
+          progress: 0
+        };
+      }
+      // Preserve existing deadline and state
+      return {
+        ...challenge,
+        deadline: challenge.deadline ? deserializeDate(challenge.deadline) : tomorrow
+      };
+    });
   }
-];
+  
+  // Generate new challenges
+  return [
+    {
+      id: 'daily_deploy',
+      title: 'Daily Deployment',
+      description: 'Run at least one deployment today',
+      type: 'daily',
+      difficulty: 'easy',
+      xpReward: 25,
+      completed: false,
+      progress: 0,
+      maxProgress: 1,
+      deadline: tomorrow
+    },
+    {
+      id: 'chaos_experiment',
+      title: 'Chaos Testing',
+      description: 'Run 3 different chaos experiments',
+      type: 'daily',
+      difficulty: 'medium',
+      xpReward: 50,
+      completed: false,
+      progress: 0,
+      maxProgress: 3,
+      deadline: tomorrow
+    }
+  ];
+};
 
 export const GamificationProvider = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast();
@@ -191,38 +239,125 @@ export const GamificationProvider = ({ children }: { children: React.ReactNode }
   });
   
   const [achievements, setAchievements] = useState<Achievement[]>(INITIAL_ACHIEVEMENTS);
-  const [challenges, setChallenges] = useState<Challenge[]>(generateDailyChallenges());
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [leaderboard] = useState<LeaderboardEntry[]>([]);
   const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
   const [isLoading] = useState(false);
+  const timeoutRefs = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
 
   // Load data from localStorage on mount
   useEffect(() => {
-    const savedProgress = localStorage.getItem('devfolio_user_progress');
-    const savedAchievements = localStorage.getItem('devfolio_achievements');
-    
-    if (savedProgress) {
-      setUserProgress(JSON.parse(savedProgress));
-    }
-    
-    if (savedAchievements) {
-      setAchievements(JSON.parse(savedAchievements));
+    try {
+      const savedProgress = localStorage.getItem('devfolio_user_progress');
+      const savedAchievements = localStorage.getItem('devfolio_achievements');
+      const savedChallenges = localStorage.getItem('devfolio_challenges');
+      const savedActivities = localStorage.getItem('devfolio_recent_activities');
+      
+      if (savedProgress) {
+        const parsed = JSON.parse(savedProgress);
+        setUserProgress({
+          ...parsed,
+          lastActivity: deserializeDate(parsed.lastActivity)
+        });
+      }
+      
+      if (savedAchievements) {
+        const parsed = JSON.parse(savedAchievements);
+        setAchievements(parsed.map((a: Achievement & { unlockedAt?: string }) => ({
+          ...a,
+          unlockedAt: a.unlockedAt ? deserializeDate(a.unlockedAt) : undefined
+        })));
+      }
+      
+      if (savedChallenges) {
+        const parsed = JSON.parse(savedChallenges);
+        const deserialized = parsed.map((c: Challenge & { deadline?: string }) => ({
+          ...c,
+          deadline: c.deadline ? deserializeDate(c.deadline) : undefined
+        }));
+        setChallenges(generateDailyChallenges(deserialized));
+      } else {
+        setChallenges(generateDailyChallenges());
+      }
+      
+      if (savedActivities) {
+        const parsed = JSON.parse(savedActivities);
+        setRecentActivities(parsed.map((a: RecentActivity & { timestamp: string }) => ({
+          ...a,
+          timestamp: deserializeDate(a.timestamp)
+        })));
+      }
+    } catch (error) {
+      console.error('Error loading gamification data from localStorage:', error);
+      // Initialize with defaults on error
+      setChallenges(generateDailyChallenges());
     }
   }, []);
 
   // Save to localStorage when data changes
   useEffect(() => {
-    localStorage.setItem('devfolio_user_progress', JSON.stringify(userProgress));
+    try {
+      localStorage.setItem('devfolio_user_progress', JSON.stringify({
+        ...userProgress,
+        lastActivity: serializeDate(userProgress.lastActivity)
+      }));
+    } catch (error) {
+      console.error('Error saving user progress:', error);
+    }
   }, [userProgress]);
 
   useEffect(() => {
-    localStorage.setItem('devfolio_achievements', JSON.stringify(achievements));
+    try {
+      localStorage.setItem('devfolio_achievements', JSON.stringify(
+        achievements.map(a => ({
+          ...a,
+          unlockedAt: a.unlockedAt ? serializeDate(a.unlockedAt) : undefined
+        }))
+      ));
+    } catch (error) {
+      console.error('Error saving achievements:', error);
+    }
   }, [achievements]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('devfolio_challenges', JSON.stringify(
+        challenges.map(c => ({
+          ...c,
+          deadline: c.deadline ? serializeDate(c.deadline) : undefined
+        }))
+      ));
+    } catch (error) {
+      console.error('Error saving challenges:', error);
+    }
+  }, [challenges]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('devfolio_recent_activities', JSON.stringify(
+        recentActivities.map(a => ({
+          ...a,
+          timestamp: serializeDate(a.timestamp)
+        }))
+      ));
+    } catch (error) {
+      console.error('Error saving recent activities:', error);
+    }
+  }, [recentActivities]);
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    const timers = timeoutRefs.current;
+    return () => {
+      timers.forEach(timeout => clearTimeout(timeout));
+      timers.clear();
+    };
+  }, []);
 
   // Helper function to add recent activity
   const addRecentActivity = useCallback((type: RecentActivity['type'], message: string) => {
     const newActivity: RecentActivity = {
-      id: `activity-${Date.now()}-${crypto.randomUUID()}`,
+      id: `activity-${Date.now()}-${generateId()}`,
       type,
       message,
       timestamp: new Date()
@@ -247,7 +382,7 @@ export const GamificationProvider = ({ children }: { children: React.ReactNode }
       const didLevelUp = newLevel > prev.level;
       
       // Schedule toast and activity logging for next tick to avoid state update during render
-      setTimeout(() => {
+      const timeout1 = setTimeout(() => {
         if (didLevelUp) {
           toast({
             title: `🎉 Level Up! You're now level ${newLevel}!`,
@@ -264,6 +399,7 @@ export const GamificationProvider = ({ children }: { children: React.ReactNode }
         }
         addRecentActivity('xp', `+${amount} XP from ${source}`);
       }, 0);
+      timeoutRefs.current.add(timeout1);
       
       const result = {
         ...prev,
@@ -275,9 +411,11 @@ export const GamificationProvider = ({ children }: { children: React.ReactNode }
       };
       
       // Reset the updating flag after state update
-      setTimeout(() => {
+      const timeout2 = setTimeout(() => {
         isUpdatingRef.current = false;
+        timeoutRefs.current.delete(timeout2);
       }, 100);
+      timeoutRefs.current.add(timeout2);
       
       return result;
     });
@@ -287,14 +425,16 @@ export const GamificationProvider = ({ children }: { children: React.ReactNode }
     setAchievements(prev => prev.map(achievement => {
       if (achievement.id === achievementId && !achievement.unlockedAt) {
         // Schedule toast and activity logging for next tick to avoid state update during render
-        setTimeout(() => {
+        const timeout = setTimeout(() => {
           toast({
             title: `🏆 Achievement Unlocked!`,
             description: `${achievement.icon} ${achievement.title}`,
             variant: "default",
           });
           addRecentActivity('achievement', `🏆 Unlocked "${achievement.title}"`);
+          timeoutRefs.current.delete(timeout);
         }, 0);
+        timeoutRefs.current.add(timeout);
         
         earnXP(achievement.points, `Achievement: ${achievement.title}`);
         
@@ -330,10 +470,12 @@ export const GamificationProvider = ({ children }: { children: React.ReactNode }
     setChallenges(prev => prev.map(challenge => {
       if (challenge.id === challengeId && !challenge.completed) {
         // Schedule XP earning and activity logging for next tick to avoid state update during render
-        setTimeout(() => {
+        const timeout = setTimeout(() => {
           earnXP(challenge.xpReward, `Challenge: ${challenge.title}`);
           addRecentActivity('challenge', `🎯 Completed "${challenge.title}"`);
+          timeoutRefs.current.delete(timeout);
         }, 0);
+        timeoutRefs.current.add(timeout);
         return { ...challenge, completed: true, progress: challenge.maxProgress };
       }
       return challenge;
@@ -342,7 +484,9 @@ export const GamificationProvider = ({ children }: { children: React.ReactNode }
 
   const updateStreak = useCallback(() => {
     const now = new Date();
-    const lastActivity = new Date(userProgress.lastActivity);
+    const lastActivity = userProgress.lastActivity instanceof Date 
+      ? userProgress.lastActivity 
+      : deserializeDate(userProgress.lastActivity);
     const daysDiff = Math.floor((now.getTime() - lastActivity.getTime()) / (1000 * 60 * 60 * 24));
     
     setUserProgress(prev => ({
@@ -383,9 +527,11 @@ export const GamificationProvider = ({ children }: { children: React.ReactNode }
         
         // Auto-complete if progress reaches maximum
         if (newProgress >= challenge.maxProgress && !challenge.completed) {
-          setTimeout(() => {
+          const timeout = setTimeout(() => {
             completeChallenge(challengeId);
+            timeoutRefs.current.delete(timeout);
           }, 0);
+          timeoutRefs.current.add(timeout);
         }
         
         return { ...challenge, progress: newProgress };
@@ -455,4 +601,3 @@ export const useGamification = (): GamificationContextType => {
   }
   return context;
 };
-

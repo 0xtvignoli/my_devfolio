@@ -12,18 +12,18 @@ export const UserProgressBar = () => {
   const { userProgress, getProgressPercentage } = useGamification();
   
   const getTitleColor = (level: number) => {
-    if (level >= 20) return 'text-purple-400';
-    if (level >= 15) return 'text-yellow-400';
-    if (level >= 10) return 'text-blue-400';
-    if (level >= 5) return 'text-green-400';
-    return 'text-gray-400';
+    if (level >= 20) return 'text-purple-600 dark:text-purple-400';
+    if (level >= 15) return 'text-yellow-600 dark:text-yellow-400';
+    if (level >= 10) return 'text-blue-600 dark:text-blue-400';
+    if (level >= 5) return 'text-green-600 dark:text-green-400';
+    return 'text-gray-600 dark:text-gray-400';
   };
 
   const getTitleIcon = (level: number) => {
-    if (level >= 20) return <Trophy className="h-4 w-4 text-purple-400" />;
-    if (level >= 15) return <Star className="h-4 w-4 text-yellow-400" />;
-    if (level >= 10) return <Zap className="h-4 w-4 text-blue-400" />;
-    return <Star className="h-4 w-4 text-gray-400" />;
+    if (level >= 20) return <Trophy className="h-4 w-4 text-purple-600 dark:text-purple-400" />;
+    if (level >= 15) return <Star className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />;
+    if (level >= 10) return <Zap className="h-4 w-4 text-blue-600 dark:text-blue-400" />;
+    return <Star className="h-4 w-4 text-gray-600 dark:text-gray-400" />;
   };
 
   return (
@@ -44,8 +44,8 @@ export const UserProgressBar = () => {
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Progress to Level {userProgress.level + 1}</span>
-            <span className="font-medium">{getProgressPercentage()}%</span>
+            <span className="text-muted-foreground dark:text-muted-foreground">Progress to Level {userProgress.level + 1}</span>
+            <span className="font-medium text-foreground">{getProgressPercentage()}%</span>
           </div>
           <motion.div
             initial={{ width: 0 }}
@@ -57,7 +57,7 @@ export const UserProgressBar = () => {
               className="h-3 bg-muted"
             />
           </motion.div>
-          <div className="flex justify-between text-xs text-muted-foreground">
+          <div className="flex justify-between text-xs text-muted-foreground dark:text-muted-foreground">
             <span>{userProgress.xp} XP</span>
             <span>{userProgress.xp + userProgress.xpToNextLevel} XP</span>
           </div>

@@ -3,10 +3,19 @@
 import { useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 
+type GtagEventParams = Record<string, string | number | boolean | undefined>;
+
+type GtagFunction = {
+  (command: 'js', date: Date): void;
+  (command: 'config', targetId: string, params?: GtagEventParams): void;
+  (command: 'event', eventName: string, params?: GtagEventParams): void;
+  (...args: Array<string | Date | GtagEventParams | undefined>): void;
+};
+
 declare global {
   interface Window {
-    gtag: (command: string, ...args: any[]) => void;
-    dataLayer: any[];
+    gtag: GtagFunction;
+    dataLayer: Array<Record<string, unknown>>;
   }
 }
 
@@ -17,7 +26,8 @@ export function GoogleAnalytics({ GA_MEASUREMENT_ID }: { GA_MEASUREMENT_ID: stri
   useEffect(() => {
     if (!GA_MEASUREMENT_ID) return;
 
-    const url = pathname + searchParams.toString();
+    const query = searchParams.toString();
+    const url = query ? `${pathname}?${query}` : pathname;
 
     // Track page views
     window.gtag('config', GA_MEASUREMENT_ID, {
@@ -53,13 +63,13 @@ export function GoogleAnalytics({ GA_MEASUREMENT_ID }: { GA_MEASUREMENT_ID: stri
 }
 
 // Helper functions for custom events
-export const trackEvent = (eventName: string, parameters?: Record<string, any>) => {
+export const trackEvent = (eventName: string, parameters?: GtagEventParams) => {
   if (typeof window !== 'undefined' && window.gtag) {
     window.gtag('event', eventName, parameters);
   }
 };
 
-export const trackLabInteraction = (action: string, details?: Record<string, any>) => {
+export const trackLabInteraction = (action: string, details?: GtagEventParams) => {
   trackEvent('lab_interaction', {
     action,
     ...details,
@@ -86,4 +96,3 @@ export const trackAchievement = (achievementId: string, title: string) => {
     achievement_title: title,
   });
 };
-

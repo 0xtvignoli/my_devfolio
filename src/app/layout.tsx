@@ -1,15 +1,11 @@
 import type {Metadata} from 'next';
 import './globals.css';
-import {ThemeProvider} from '@/components/providers/theme-provider';
-import {LocaleProvider} from '@/contexts/locale-context';
-import {GamificationProvider} from '@/contexts/gamification-context';
-import {Header} from '@/components/layout/header';
-import {Footer} from '@/components/layout/footer';
-import { Toaster } from "@/components/ui/toaster"
 import { inter, spaceGrotesk, sourceCodePro } from './fonts';
 import { cn } from '@/lib/utils';
 import { GoogleAnalytics } from '@/components/analytics/google-analytics';
 import { Suspense } from 'react';
+import { resolveLocale } from '@/lib/i18n/server';
+import { SiteProviders } from '@/components/providers/site-providers';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://tvignoli.com'),
@@ -61,13 +57,15 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await resolveLocale();
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         <Suspense fallback={null}>
           <GoogleAnalytics GA_MEASUREMENT_ID={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || ''} />
@@ -81,23 +79,9 @@ export default function RootLayout({
           sourceCodePro.variable
         )}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <LocaleProvider>
-            <GamificationProvider>
-              <div className="flex min-h-screen flex-col">
-                <Header />
-                <main className="flex-grow">{children}</main>
-                <Footer />
-              </div>
-              <Toaster />
-            </GamificationProvider>
-          </LocaleProvider>
-        </ThemeProvider>
+        <SiteProviders>
+          {children}
+        </SiteProviders>
       </body>
     </html>
   );

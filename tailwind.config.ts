@@ -62,11 +62,20 @@ export default {
           '4': 'hsl(var(--chart-4))',
           '5': 'hsl(var(--chart-5))',
         },
+        nexus: {
+          background: 'var(--bg-primary)',
+          panel: 'var(--bg-secondary)',
+          neon: 'var(--neon-accent)',
+          neonMuted: 'var(--neon-accent-muted)',
+          textSoft: 'var(--text-primary-soft)',
+          textMuted: 'var(--text-muted-soft)',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
+        pill: 'var(--radius-pill)',
       },
       keyframes: {
         'accordion-down': {

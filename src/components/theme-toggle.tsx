@@ -11,11 +11,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useLocale } from "@/hooks/use-locale"
+import type { Translations } from "@/lib/types"
 
-export function ThemeToggle() {
+interface ThemeToggleProps {
+  labels: Translations["theme"]
+}
+
+export function ThemeToggle({ labels }: ThemeToggleProps) {
   const { setTheme } = useTheme()
-  const { t } = useLocale()
 
   return (
     <DropdownMenu>
@@ -28,13 +31,13 @@ export function ThemeToggle() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => setTheme("light")}>
-          {t.theme.light}
+          {labels.light}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme("dark")}>
-          {t.theme.dark}
+          {labels.dark}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme("system")}>
-          {t.theme.system}
+          {labels.system}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
