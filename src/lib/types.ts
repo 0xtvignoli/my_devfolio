@@ -32,6 +32,10 @@ export interface Translations {
     title: string;
     description: string;
     email: string;
+    emailLabel: string;
+    openingEmailClient: string;
+    emailClientOpened: string;
+    buttonText: string;
   };
   footer: {
     copy: string;

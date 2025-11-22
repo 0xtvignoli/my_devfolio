@@ -12,6 +12,7 @@ import {
   Loader,
   CircleDashed,
   Forward,
+  Activity,
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { PipelineStage } from '@/lib/types';
@@ -32,18 +33,40 @@ interface VisualDeployPipelineProps {
 }
 
 export function VisualDeployPipeline({ pipelineStages }: VisualDeployPipelineProps) {
+  if (!pipelineStages || pipelineStages.length === 0) {
+    return (
+      <div className="text-center py-12 text-muted-foreground">
+        <Activity className="h-12 w-12 mx-auto mb-4 opacity-50" aria-hidden="true" />
+        <p className="text-base font-medium">No pipeline stages available</p>
+        <p className="text-sm mt-2">Start a deployment to see the CI/CD pipeline in action.</p>
+        <p className="text-xs mt-1 text-muted-foreground/70">Try running <code className="px-1 py-0.5 bg-muted rounded">deploy --strategy=canary</code> in the terminal.</p>
+      </div>
+    );
+  }
+
   return (
     <TooltipProvider>
       <div className="w-full">
-        <div className="flex h-2 w-full rounded-full overflow-hidden bg-muted mb-4 space-x-0.5">
+        <div 
+          className="flex h-2 w-full rounded-full overflow-hidden bg-muted mb-4 space-x-0.5"
+          role="progressbar"
+          aria-label="Pipeline progress"
+          aria-valuemin={0}
+          aria-valuemax={pipelineStages.length}
+          aria-valuenow={pipelineStages.filter(s => s.status === 'Success').length}
+        >
           {pipelineStages.map((stage) => {
             const isInProgress = stage.status === 'In Progress';
             return (
-              <div key={stage.name} className="flex-1 h-full transition-all duration-500">
+              <div 
+                key={stage.name} 
+                className="flex-1 h-full transition-all duration-500"
+                aria-label={`${stage.name}: ${stage.status}`}
+              >
                 <div 
                   className={cn('h-full w-full', {
-                    'bg-green-500': stage.status === 'Success',
-                    'bg-blue-500': isInProgress,
+                    'bg-green-600 dark:bg-green-500': stage.status === 'Success',
+                    'bg-blue-600 dark:bg-blue-500': isInProgress,
                     'bg-muted': stage.status === 'Queued' || stage.status === 'Failed'
                   })}
                   style={isInProgress ? {
@@ -61,9 +84,9 @@ export function VisualDeployPipeline({ pipelineStages }: VisualDeployPipelinePro
           {pipelineStages.map((stage) => {
             const Icon = stageIcons[stage.name];
             const statusConfig = {
-              'Success': 'text-green-500',
-              'In Progress': 'text-blue-500 animate-pulse',
-              'Failed': 'text-red-500',
+              'Success': 'text-green-600 dark:text-green-400',
+              'In Progress': 'text-blue-600 dark:text-blue-400 animate-pulse',
+              'Failed': 'text-red-600 dark:text-red-400',
               'Queued': 'text-muted-foreground dark:text-muted-foreground'
             }[stage.status];
 
@@ -74,11 +97,17 @@ export function VisualDeployPipeline({ pipelineStages }: VisualDeployPipelinePro
               'Queued': CircleDashed
             }[stage.status];
 
+            const ariaLabel = `Pipeline stage ${stage.name}, Status: ${stage.status}, Duration: ${stage.duration}`;
             return (
               <Tooltip key={stage.name}>
                 <TooltipTrigger asChild>
-                   <div className={cn('flex flex-col items-center', statusConfig)}>
-                      <Icon className="h-5 w-5 mb-1" />
+                   <div 
+                     className={cn('flex flex-col items-center', statusConfig)}
+                     role="button"
+                     tabIndex={0}
+                     aria-label={ariaLabel}
+                   >
+                      <Icon className="h-5 w-5 mb-1" aria-hidden="true" />
                       <span className="font-semibold text-center text-foreground">{stage.name}</span>
                       <span className="text-xs">{stage.duration}</span>
                     </div>

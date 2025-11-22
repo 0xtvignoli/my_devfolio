@@ -376,11 +376,11 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
                         });
 
                         setMonitoringData(prev => {
-                            const newDeploymentData = [...prev.deploymentData];
+                            const newDeploymentData = prev.deploymentData.map(d => ({ ...d }));
                             const today = new Date().toISOString().split('T')[0];
-                            const todayData = newDeploymentData.find(d => d.date === today && d.status === 'success');
-                            if (todayData) {
-                                todayData.count += 1;
+                            const todayIndex = newDeploymentData.findIndex(d => d.date === today && d.status === 'success');
+                            if (todayIndex !== -1) {
+                                newDeploymentData[todayIndex] = { ...newDeploymentData[todayIndex], count: newDeploymentData[todayIndex].count + 1 };
                             } else {
                                 newDeploymentData.push({ date: today, status: 'success' as const, count: 1 });
                             }

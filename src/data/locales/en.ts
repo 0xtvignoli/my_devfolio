@@ -34,6 +34,10 @@ export const en: Translations = {
     title: "Let's work together",
     description: "I'm always open to discussing new projects, creative ideas, or opportunities to be part of an ambitious vision. Feel free to reach out.",
     email: "thomas.vignoli@pm.me",
+    emailLabel: "Send email to {email}",
+    openingEmailClient: "Opening email client...",
+    emailClientOpened: "Email client should open shortly",
+    buttonText: "Get in touch",
   },
   footer: {
     copy: "© 2025 Thomas Vignoli. All rights reserved.",
