@@ -1,3 +1,4 @@
+// TODO: remove this file since middleware was deprecated
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { DEFAULT_LOCALE, isSupportedLocale, matchLocaleFromAcceptLanguage } from '@/lib/i18n/config';
