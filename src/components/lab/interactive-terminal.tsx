@@ -1011,27 +1011,33 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
       <TabsList className="grid w-full grid-cols-3 bg-slate-900/80 backdrop-blur-xl border border-cyan-500/20 rounded-t-lg rounded-b-none shadow-lg shadow-cyan-500/10" aria-label="Terminal view selection">
         <TabsTrigger 
           value="terminal"
-          className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500/20 data-[state=active]:to-blue-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 data-[state=inactive]:bg-slate-900/40 data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:text-slate-300 transition-all duration-300 focus-visible:ring-4 focus-visible:ring-cyan-500/50"
+          className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500/20 data-[state=active]:to-blue-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 data-[state=inactive]:bg-slate-900/40 data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:text-slate-300 transition-all duration-300 focus-visible:ring-4 focus-visible:ring-cyan-500/50 text-xs sm:text-sm gap-1 sm:gap-2"
           aria-label="Terminal Core tab"
+          title="Terminal"
         >
-          <FileTerminal className="mr-2 h-4 w-4" aria-hidden="true" />
-          Terminal
+          <FileTerminal className="h-3 w-3 sm:h-4 sm:w-4" aria-hidden="true" />
+          <span className="hidden sm:inline">Terminal</span>
+          <span className="sm:hidden">Cmd</span>
         </TabsTrigger>
         <TabsTrigger 
           value="logs"
-          className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500/20 data-[state=active]:to-blue-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 data-[state=inactive]:bg-slate-900/40 data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:text-slate-300 transition-all duration-300 focus-visible:ring-4 focus-visible:ring-cyan-500/50"
+          className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500/20 data-[state=active]:to-blue-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 data-[state=inactive]:bg-slate-900/40 data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:text-slate-300 transition-all duration-300 focus-visible:ring-4 focus-visible:ring-cyan-500/50 text-xs sm:text-sm gap-1 sm:gap-2"
           aria-label="Runtime Logs tab"
+          title="Logs"
         >
-          <Power className="mr-2 h-4 w-4" aria-hidden="true" />
-          Logs
+          <Power className="h-3 w-3 sm:h-4 sm:w-4" aria-hidden="true" />
+          <span className="hidden sm:inline">Logs</span>
+          <span className="sm:hidden">Log</span>
         </TabsTrigger>
         <TabsTrigger 
           value="playground"
-          className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500/20 data-[state=active]:to-blue-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 data-[state=inactive]:bg-slate-900/40 data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:text-slate-300 transition-all duration-300 focus-visible:ring-4 focus-visible:ring-cyan-500/50"
+          className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500/20 data-[state=active]:to-blue-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 data-[state=inactive]:bg-slate-900/40 data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:text-slate-300 transition-all duration-300 focus-visible:ring-4 focus-visible:ring-cyan-500/50 text-xs sm:text-sm gap-1 sm:gap-2"
           aria-label="Code Playground tab"
+          title="Playground"
         >
-          <Code2 className="mr-2 h-4 w-4" aria-hidden="true" />
-          Playground
+          <Code2 className="h-3 w-3 sm:h-4 sm:w-4" aria-hidden="true" />
+          <span className="hidden sm:inline">Playground</span>
+          <span className="sm:hidden">Play</span>
         </TabsTrigger>
       </TabsList>
       <TabsContent value="terminal">

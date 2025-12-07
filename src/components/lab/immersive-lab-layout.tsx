@@ -482,12 +482,12 @@ export function ImmersiveLabLayout({
       <AnimatePresence>
         {isBottomPanelExpanded && (
           <motion.div
-            initial={prefersReducedMotion ? { height: '150px' } : { height: 0 }}
-            animate={{ height: 'auto', maxHeight: ['150px', '300px'] }}
-            exit={prefersReducedMotion ? { height: '150px' } : { height: 0 }}
+            initial={prefersReducedMotion ? { height: '120px' } : { height: 0 }}
+            animate={{ height: 'auto', maxHeight: ['120px', '150px', '200px'] }}
+            exit={prefersReducedMotion ? { height: '120px' } : { height: 0 }}
             transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3, ease: 'easeInOut' }}
-            className={cn("overflow-y-auto rounded-3xl rounded-t-none max-h-[150px] lg:max-h-[200px]", bottomPanelSurface)}
-            style={prefersReducedMotion ? { height: '150px' } : undefined}
+            className={cn("overflow-y-auto rounded-3xl rounded-t-none max-h-[120px] sm:max-h-[150px] lg:max-h-[200px]", bottomPanelSurface)}
+            style={prefersReducedMotion ? { height: '120px' } : undefined}
           >
             <div className="h-full overflow-y-auto p-4">
               <div className="flex items-center justify-between mb-3">
@@ -604,10 +604,10 @@ export function ImmersiveLabLayout({
 function MetricBadge({ label, value, status }: { label: string; value: string; status: 'ok' | 'warning' }) {
   const ariaLabel = `${label}: ${value}, Status: ${status === 'ok' ? 'normal' : 'warning'}`;
   return (
-    <div className="flex flex-col lg:flex-row lg:items-center gap-0.5 lg:gap-2" aria-label={ariaLabel}>
-      <span className="text-xs lg:text-xs text-gray-700 dark:text-gray-400 font-mono uppercase tracking-wide whitespace-nowrap">{label}</span>
+    <div className="flex flex-col md:flex-row md:items-center gap-0.5 md:gap-1.5 min-w-0" aria-label={ariaLabel}>
+      <span className="text-xs md:text-xs text-gray-700 dark:text-gray-400 font-mono uppercase tracking-tight whitespace-nowrap flex-shrink-0">{label}</span>
       <span className={cn(
-        "text-xs lg:text-sm font-mono font-semibold",
+        "text-xs md:text-sm font-mono font-semibold truncate",
         status === 'ok' ? 'text-cyan-600 dark:text-cyan-400' : 'text-orange-500 dark:text-orange-400'
       )} title={ariaLabel}>
         {value}
@@ -687,15 +687,15 @@ function QuickAction({ onClick, label, variant = 'default', 'aria-label': ariaLa
       onClick={onClick}
       className={getInteractiveClasses(
         cn(
-          "px-3 py-1 rounded-full text-xs font-mono whitespace-nowrap focus-visible:outline-2 focus-visible:outline-primary focus-visible:ring-4 focus-visible:ring-primary/50 focus-visible:ring-offset-2",
+          "px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-mono whitespace-nowrap focus-visible:outline-2 focus-visible:outline-primary focus-visible:ring-4 focus-visible:ring-primary/50 focus-visible:ring-offset-2 transition-colors",
           baseVariants[variant]
         ),
         hoverVariants[variant],
-        "transition-colors",
         isTouchDevice,
         prefersReducedMotion
       )}
       aria-label={ariaLabel || `Execute command: ${label}`}
+      title={label}
       {...props}
     >
       {label}
