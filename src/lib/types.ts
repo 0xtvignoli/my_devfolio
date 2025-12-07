@@ -32,6 +32,10 @@ export interface Translations {
     title: string;
     description: string;
     email: string;
+    emailLabel: string;
+    openingEmailClient: string;
+    emailClientOpened: string;
+    buttonText: string;
   };
   footer: {
     copy: string;
@@ -49,7 +53,22 @@ export interface Translations {
   project: {
     github: string;
     demo: string;
-  }
+  };
+  codesandbox: {
+    title: string;
+    description: string;
+    tryIt: string;
+    openInSandbox: string;
+    copyLink: string;
+    linkCopied: string;
+    templates: {
+      eks: string;
+      vpc: string;
+      rds: string;
+      s3: string;
+      cicd: string;
+    };
+  };
 }
 
 export interface Project {
@@ -61,6 +80,7 @@ export interface Project {
   imageHint: string;
   githubUrl?: string;
   demoUrl?: string;
+  codesandboxId?: string;
 }
 
 export interface Experience {

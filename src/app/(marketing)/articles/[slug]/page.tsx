@@ -19,7 +19,7 @@ const renderContent = (article: ArticleType) =>
   article.content.map((item, index) => {
     switch (item.type) {
       case 'heading': {
-        const Tag = `h${item.level}` as keyof JSX.IntrinsicElements;
+        const Tag = `h${item.level}` as keyof React.JSX.IntrinsicElements;
         return (
           <Tag key={index} className="font-headline font-bold text-2xl mt-8 mb-4">
             {item.content}

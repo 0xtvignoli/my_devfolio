@@ -4,7 +4,7 @@ import React from "react";
 
 // Simple animated aurora/gradient background using Tailwind utilities
 // Renders behind page content (positioned absolutely with negative z-index)
-export function AuroraBackground(): JSX.Element {
+export function AuroraBackground(): React.JSX.Element {
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
       <div className="absolute -top-32 -left-32 h-[40rem] w-[40rem] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(99,102,241,0.25)_0%,rgba(99,102,241,0)_60%)] blur-2xl" />

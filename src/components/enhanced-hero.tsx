@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, useMotionTemplate } from 'framer-motion';
 import { Terminal, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { HeroCTAButton } from '@/components/shared/hero-cta-button';
@@ -12,41 +12,72 @@ interface EnhancedHeroProps {
   ctaContact: string;
 }
 
+const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+const generateRandomString = (length: number) => {
+  let result = "";
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  return result;
+};
+
 export function EnhancedHero({ title, subtitle, ctaPortfolio, ctaContact }: EnhancedHeroProps) {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+  const [randomString, setRandomString] = useState("");
+  
+  // Motion values per l'effetto hover evervault
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
 
   useEffect(() => {
     setIsClient(true);
+    setRandomString(generateRandomString(1500));
   }, []);
+
+  function onMouseMove({ currentTarget, clientX, clientY }: React.MouseEvent<HTMLElement>) {
+    let { left, top } = currentTarget.getBoundingClientRect();
+    const relativeX = clientX - left;
+    const relativeY = clientY - top;
+    
+    mouseX.set(relativeX);
+    mouseY.set(relativeY);
+    
+    // Rigenera stringa ad ogni movimento del mouse
+    setRandomString(generateRandomString(1500));
+  }
+
+  // Mask per l'effetto evervault hover
+  const maskImage = useMotionTemplate`radial-gradient(350px at ${mouseX}px ${mouseY}px, white, transparent)`;
+  const evervaultStyle = { maskImage, WebkitMaskImage: maskImage };
 
   return (
     <section
       id="hero"
-      className="relative py-32 md:py-40 overflow-hidden rounded-3xl border border-border/50 dark:border-white/5 bg-[var(--bg-primary)] dark:bg-[#010b10] text-[var(--text-primary-soft)] dark:text-[#0dfd88] shadow-[var(--glow-soft)]"
+      onMouseMove={onMouseMove}
+      className="group/hero relative py-32 md:py-40 overflow-hidden rounded-3xl border border-border/50 dark:border-white/5 bg-[var(--bg-primary)] dark:bg-[#010b10] text-[var(--text-primary-soft)] dark:text-[#0dfd88] shadow-[var(--glow-soft)]"
     >
       {/* Animated background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-[var(--neon-accent)]/15 via-transparent to-[#00b4d8]/10 animate-pulse-slow" />
       
-      {/* Interactive light effect */}
-      <motion.div
-        className="absolute inset-0 opacity-30"
-        style={{
-          background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(59, 130, 246, 0.15), transparent 40%)`,
-        }}
-      />
-
       {/* Grid pattern */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5" />
+
+      {/* Evervault hover effect - gradient overlay */}
+      <motion.div
+        className="absolute inset-0 rounded-3xl bg-gradient-to-r from-cyan-500 to-purple-600 opacity-0 group-hover/hero:opacity-20 backdrop-blur-xl transition-opacity duration-500 pointer-events-none"
+        style={evervaultStyle}
+      />
+
+      {/* Evervault hover effect - random string pattern */}
+      <motion.div
+        className="absolute inset-0 rounded-3xl opacity-0 mix-blend-overlay group-hover/hero:opacity-30 pointer-events-none"
+        style={evervaultStyle}
+      >
+        <p className="absolute inset-x-0 text-xs h-full break-words whitespace-pre-wrap text-foreground font-mono font-bold transition-opacity duration-500">
+          {randomString}
+        </p>
+      </motion.div>
 
       <div className="relative z-10 text-center px-4">
         <motion.div

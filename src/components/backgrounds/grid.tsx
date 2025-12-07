@@ -3,7 +3,7 @@
 import React from "react";
 
 // Subtle grid overlay with vignette mask
-export function GridBackground(): JSX.Element {
+export function GridBackground(): React.JSX.Element {
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
       <div

@@ -34,6 +34,10 @@ export const en: Translations = {
     title: "Let's work together",
     description: "I'm always open to discussing new projects, creative ideas, or opportunities to be part of an ambitious vision. Feel free to reach out.",
     email: "thomas.vignoli@pm.me",
+    emailLabel: "Send email to {email}",
+    openingEmailClient: "Opening email client...",
+    emailClientOpened: "Email client should open shortly",
+    buttonText: "Get in touch",
   },
   footer: {
     copy: "© 2025 Thomas Vignoli. All rights reserved.",
@@ -51,5 +55,20 @@ export const en: Translations = {
   project: {
     github: "Source Code",
     demo: "Live Demo"
+  },
+  codesandbox: {
+    title: "Code Playground",
+    description: "Explore production-ready Terraform modules and infrastructure code",
+    tryIt: "Try it Live",
+    openInSandbox: "Open in CodeSandbox",
+    copyLink: "Copy link",
+    linkCopied: "Link copied to clipboard",
+    templates: {
+      eks: "EKS Cluster",
+      vpc: "VPC Network",
+      rds: "RDS Database",
+      s3: "S3 Bucket",
+      cicd: "CI/CD Pipeline"
+    }
   }
 };

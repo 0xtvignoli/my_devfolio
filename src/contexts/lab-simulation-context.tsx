@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 
 // --- SIMULATION LOGIC ---
 const generateIp = () => `10.1.2.${Math.floor(Math.random() * 254) + 1}`;
-type PipelineStatus = 'idle' | 'deploying' | 'paused_canary' | 'failed';
+type PipelineStatus = 'idle' | 'deploying' | 'paused_canary' | 'failed' | 'completed';
 
 interface LabSimulationContextType {
     runtimeLogs: string[];
@@ -376,20 +376,21 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
                         });
 
                         setMonitoringData(prev => {
-                            const newDeploymentData = [...prev.deploymentData];
+                            const newDeploymentData = prev.deploymentData.map(d => ({ ...d }));
                             const today = new Date().toISOString().split('T')[0];
-                            const todayData = newDeploymentData.find(d => d.date === today && d.status === 'success');
-                            if (todayData) {
-                                todayData.count += 1;
+                            const todayIndex = newDeploymentData.findIndex(d => d.date === today && d.status === 'success');
+                            if (todayIndex !== -1) {
+                                newDeploymentData[todayIndex] = { ...newDeploymentData[todayIndex], count: newDeploymentData[todayIndex].count + 1 };
                             } else {
                                 newDeploymentData.push({ date: today, status: 'success' as const, count: 1 });
                             }
                             return {...prev, deploymentData: newDeploymentData.filter(d => d.status === 'success' || d.count > 0) };
                         });
                         
+                        setPipelineStatus('completed');
+                        setCanaryMetrics(null);
                         setTimeout(() => {
-                           setPipelineStatus('idle');
-                           setCanaryMetrics(null);
+                            setPipelineStatus('idle');
                         }, 0);
                     });
             }
