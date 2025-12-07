@@ -87,7 +87,7 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
   const currentMemoryUsageGB = mounted 
     ? (currentMemoryUsagePercent / 100 * totalMemoryGB).toFixed(1)
     : '0.0';
-  const terminalRef = useRef<{ setCommand: (command: string) => void, setActiveTab: (tab: 'terminal' | 'logs') => void }>(null);
+  const terminalRef = useRef<{ setCommand: (command: string) => void, setActiveTab: (tab: 'terminal' | 'logs' | 'playground') => void }>(null);
 
   const handleQuickAction = (command: string) => {
       if (terminalRef.current) {
@@ -169,8 +169,8 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
         .filter((d) => d.status === 'success')
         .reduce((acc, d) => acc + d.count, 0)
     : 0;
-  const latestCpu = mounted ? (monitoringData.cpuData.at(-1)?.usage ?? 0) : 0;
-  const latestLatency = mounted ? (monitoringData.apiResponseData.at(-1)?.p95 ?? 0) : 0;
+  const latestCpu = mounted ? Number(monitoringData.cpuData.at(-1)?.usage ?? 0) : 0;
+  const latestLatency = mounted ? Number(monitoringData.apiResponseData.at(-1)?.p95 ?? 0) : 0;
 
   // Announce pipeline status changes and show toast
   useEffect(() => {
@@ -365,8 +365,8 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
               aria-label="Terminal status: Connected to dev-cluster, live"
             >
               <span>Connected · dev-cluster</span>
-              <span className="flex items-center gap-1 text-emerald-400" aria-label="Live connection">
-                <span className="h-2 w-2 rounded-full bg-emerald-400" aria-hidden="true" />
+              <span className="flex items-center gap-1 text-cyan-400" aria-label="Live connection">
+                <span className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse" aria-hidden="true" />
                 live
               </span>
             </div>

@@ -82,7 +82,7 @@ export function ImmersiveLabLayout({
   const [pendingChaosScenario, setPendingChaosScenario] = useState<string | null>(null);
   const { isTouchDevice, prefersReducedMotion } = useDeviceDetection();
   const { toast } = useToast();
-  const terminalRef = useRef<{ setCommand: (command: string) => void; setActiveTab: (tab: 'terminal' | 'logs') => void }>(null);
+  const terminalRef = useRef<{ setCommand: (command: string) => void; setActiveTab: (tab: 'terminal' | 'logs' | 'playground') => void }>(null);
   const prevPipelineStatusRef = useRef(pipelineStatus);
   const prevIncidentsCountRef = useRef(incidents.length);
 
@@ -221,10 +221,10 @@ export function ImmersiveLabLayout({
       <div className={cn("h-14 flex items-center justify-between px-6", quickBarSurface)}>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <Terminal className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />
-            <span className="font-mono text-sm font-bold text-emerald-600 dark:text-emerald-400">dev.tvignoli.com</span>
+            <Terminal className="h-5 w-5 text-cyan-500 dark:text-cyan-400" />
+            <span className="font-mono text-sm font-bold text-cyan-600 dark:text-cyan-400">dev.tvignoli.com</span>
           </div>
-          <Badge variant="outline" className="border-emerald-500/30 text-emerald-600 text-xs dark:text-emerald-400">
+          <Badge variant="outline" className="border-cyan-500/30 text-cyan-600 text-xs dark:text-cyan-400">
             LIVE
           </Badge>
         </div>
@@ -259,7 +259,7 @@ export function ImmersiveLabLayout({
             <TabsList className="w-full grid grid-cols-3 rounded-2xl border-2 border-slate-300/70 dark:border-white/20 bg-white/80 dark:bg-white/10 text-slate-700 dark:text-white shadow-lg">
               <TabsTrigger 
                 value="cluster" 
-                className="data-[state=active]:bg-emerald-500/20 data-[state=active]:text-emerald-600 dark:data-[state=active]:text-emerald-400 data-[state=active]:font-semibold focus-visible:ring-2 focus-visible:ring-emerald-500/50"
+                className="data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-600 dark:data-[state=active]:text-cyan-400 data-[state=active]:font-semibold focus-visible:ring-2 focus-visible:ring-cyan-500/50"
                 aria-label="Cluster visualization tab"
               >
                 <Layers className="h-4 w-4 mr-2" aria-hidden="true" />
@@ -306,7 +306,7 @@ export function ImmersiveLabLayout({
                     <>
                       <Button 
                         onClick={() => handleBackgroundAction(() => runDeployment('promote'))}
-                        className="w-full bg-emerald-600 hover:bg-emerald-500"
+                        className="w-full bg-cyan-600 hover:bg-cyan-500"
                         aria-label="Promote canary deployment to production"
                       >
                         <Forward className="mr-2 h-4 w-4" aria-hidden="true" />
@@ -453,9 +453,9 @@ export function ImmersiveLabLayout({
       <AnimatePresence>
         {isBottomPanelExpanded && (
           <motion.div
-            initial={prefersReducedMotion ? false : { height: 0 }}
-            animate={prefersReducedMotion ? false : { height: '200px' }}
-            exit={prefersReducedMotion ? false : { height: 0 }}
+            initial={prefersReducedMotion ? { height: '200px' } : { height: 0 }}
+            animate={{ height: '200px' }}
+            exit={prefersReducedMotion ? { height: '200px' } : { height: 0 }}
             transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3, ease: 'easeInOut' }}
             className={cn("overflow-hidden rounded-3xl rounded-t-none", bottomPanelSurface)}
             style={prefersReducedMotion ? { height: '200px' } : undefined}
@@ -579,7 +579,7 @@ function MetricBadge({ label, value, status }: { label: string; value: string; s
       <span className="text-xs text-gray-700 dark:text-gray-400 font-mono uppercase tracking-wide">{label}</span>
       <span className={cn(
         "text-sm font-mono font-semibold",
-        status === 'ok' ? 'text-emerald-600 dark:text-emerald-400' : 'text-orange-500 dark:text-orange-400'
+        status === 'ok' ? 'text-cyan-600 dark:text-cyan-400' : 'text-orange-500 dark:text-orange-400'
       )}>
         {value}
       </span>
@@ -606,7 +606,7 @@ function MetricCard({ title, value, trend, tooltip }: { title: string; value: st
         <div className="text-2xl font-semibold text-slate-900 dark:text-white">{value}</div>
         <div className={cn(
           "text-xs font-mono",
-          isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'
+          isPositive ? 'text-cyan-600 dark:text-cyan-400' : 'text-rose-500 dark:text-rose-400'
         )}>
           {trend}
         </div>
@@ -643,13 +643,13 @@ function QuickAction({ onClick, label, variant = 'default', 'aria-label': ariaLa
   
   const baseVariants = {
     default: 'bg-white/80 border border-slate-200/70 text-slate-700 shadow-[0_10px_30px_rgba(15,23,42,0.08)] dark:bg-gray-800/60 dark:border-white/15 dark:text-white',
-    primary: 'bg-emerald-500/15 border border-emerald-200 text-emerald-700 dark:bg-emerald-500/20 dark:border-emerald-400/40 dark:text-emerald-100',
+    primary: 'bg-cyan-500/15 border border-cyan-200 text-cyan-700 dark:bg-cyan-500/20 dark:border-cyan-400/40 dark:text-cyan-100',
     danger: 'bg-rose-500/10 border border-rose-200 text-rose-600 dark:bg-red-600/20 dark:border-red-500/40 dark:text-red-100',
   };
 
   const hoverVariants = {
     default: 'hover:bg-white',
-    primary: 'hover:bg-emerald-500/25',
+    primary: 'hover:bg-cyan-500/25',
     danger: 'hover:bg-rose-500/20',
   };
 

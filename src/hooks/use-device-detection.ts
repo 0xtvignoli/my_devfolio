@@ -38,3 +38,5 @@ export function useDeviceDetection() {
   return { isTouchDevice, prefersReducedMotion, isMobile };
 }
 
+
+

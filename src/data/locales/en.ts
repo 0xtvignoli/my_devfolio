@@ -55,5 +55,20 @@ export const en: Translations = {
   project: {
     github: "Source Code",
     demo: "Live Demo"
+  },
+  codesandbox: {
+    title: "Code Playground",
+    description: "Explore production-ready Terraform modules and infrastructure code",
+    tryIt: "Try it Live",
+    openInSandbox: "Open in CodeSandbox",
+    copyLink: "Copy link",
+    linkCopied: "Link copied to clipboard",
+    templates: {
+      eks: "EKS Cluster",
+      vpc: "VPC Network",
+      rds: "RDS Database",
+      s3: "S3 Bucket",
+      cicd: "CI/CD Pipeline"
+    }
   }
 };

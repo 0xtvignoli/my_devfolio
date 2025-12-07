@@ -16,6 +16,7 @@ export const projects: Project[] = [
     imageHint: "cloud infrastructure diagram",
     githubUrl: "https://github.com",
     demoUrl: "https://example.com",
+    // codesandboxId: "your-eks-sandbox-id", // TODO: Add CodeSandbox ID after creating the sandbox
   },
   {
     id: "project-2",

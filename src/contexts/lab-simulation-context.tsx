@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 
 // --- SIMULATION LOGIC ---
 const generateIp = () => `10.1.2.${Math.floor(Math.random() * 254) + 1}`;
-type PipelineStatus = 'idle' | 'deploying' | 'paused_canary' | 'failed';
+type PipelineStatus = 'idle' | 'deploying' | 'paused_canary' | 'failed' | 'completed';
 
 interface LabSimulationContextType {
     runtimeLogs: string[];
@@ -387,9 +387,10 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
                             return {...prev, deploymentData: newDeploymentData.filter(d => d.status === 'success' || d.count > 0) };
                         });
                         
+                        setPipelineStatus('completed');
+                        setCanaryMetrics(null);
                         setTimeout(() => {
-                           setPipelineStatus('idle');
-                           setCanaryMetrics(null);
+                            setPipelineStatus('idle');
                         }, 0);
                     });
             }

@@ -65,7 +65,7 @@ export function EnhancedHero({ title, subtitle, ctaPortfolio, ctaContact }: Enha
 
       {/* Evervault hover effect - gradient overlay */}
       <motion.div
-        className="absolute inset-0 rounded-3xl bg-gradient-to-r from-green-500 to-blue-700 opacity-0 group-hover/hero:opacity-20 backdrop-blur-xl transition-opacity duration-500 pointer-events-none"
+        className="absolute inset-0 rounded-3xl bg-gradient-to-r from-cyan-500 to-purple-600 opacity-0 group-hover/hero:opacity-20 backdrop-blur-xl transition-opacity duration-500 pointer-events-none"
         style={evervaultStyle}
       />
 

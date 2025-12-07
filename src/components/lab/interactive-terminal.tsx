@@ -5,11 +5,13 @@ import { projects } from '@/data/content/projects';
 import { experiences } from '@/data/content/experiences';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import type { KubernetesCluster, Locale, Pod, Translations } from '@/lib/types';
-import { AlertTriangle, Check, Clipboard, FileTerminal, Loader2, Power, Sparkles } from 'lucide-react';
+import { AlertTriangle, Check, Clipboard, FileTerminal, Loader2, Power, Sparkles, Code2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useDeviceDetection } from '@/hooks/use-device-detection';
 import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
+import { CodePlayground } from './code-playground';
 
 type CommandOutput = string | string[] | null;
 type CommandStatus = 'running' | 'success' | 'error';
@@ -202,27 +204,39 @@ const getAllPods = (cluster: KubernetesCluster): Pod[] => {
 const StatusPill = ({ status }: { status?: CommandStatus }) => {
   if (status === 'running') {
     return (
-      <span className="flex items-center gap-1 text-xs text-amber-300">
+      <motion.span 
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 shadow-lg shadow-amber-500/20"
+      >
         <Loader2 className="h-3 w-3 animate-spin" />
         running
-      </span>
+      </motion.span>
     );
   }
 
   if (status === 'error') {
     return (
-      <span className="flex items-center gap-1 text-xs text-red-400">
+      <motion.span 
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full bg-red-500/20 border border-red-500/40 text-red-400 shadow-lg shadow-red-500/20"
+      >
         <AlertTriangle className="h-3 w-3" />
         error
-      </span>
+      </motion.span>
     );
   }
 
   return (
-    <span className="flex items-center gap-1 text-xs text-emerald-300">
+    <motion.span 
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+        className="flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 shadow-lg shadow-cyan-500/20"
+    >
       <Check className="h-3 w-3" />
       ok
-    </span>
+    </motion.span>
   );
 };
 
@@ -291,7 +305,7 @@ const CommandOutputDisplay = ({ output }: { output: CommandOutput }) => {
             href={part.content}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-cyan-400 hover:underline hover:text-cyan-300 transition-colors"
+            className="text-cyan-400 hover:underline hover:text-cyan-300 transition-colors font-semibold hover:bg-cyan-500/10 px-1 rounded"
           >
             {part.content}
           </a>
@@ -301,7 +315,7 @@ const CommandOutputDisplay = ({ output }: { output: CommandOutput }) => {
           <a
             key={index}
             href={`mailto:${part.content}`}
-            className="text-cyan-400 hover:underline hover:text-cyan-300 transition-colors"
+            className="text-cyan-400 hover:underline hover:text-cyan-300 transition-colors font-semibold hover:bg-cyan-500/10 px-1 rounded"
           >
             {part.content}
           </a>
@@ -312,18 +326,39 @@ const CommandOutputDisplay = ({ output }: { output: CommandOutput }) => {
   };
 
   return (
-    <div className="relative group mt-2 rounded border border-slate-800/80 bg-black/40 px-3 py-2 text-slate-200">
-      <Button
-        size="icon"
-        variant="ghost"
-        className="absolute top-1 right-1 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-        onClick={copyToClipboard}
-        type="button"
+    <motion.div 
+      initial={{ opacity: 0, y: 5 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2 }}
+      className="relative group mt-2 rounded-lg border border-emerald-500/30 bg-gradient-to-br from-slate-900/60 to-black/40 backdrop-blur-sm px-3 py-2.5 text-slate-200 shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/20 hover:border-emerald-500/50 transition-all duration-300"
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
       >
-        {hasCopied ? <Check className="h-4 w-4 text-emerald-400" /> : <Clipboard className="h-4 w-4" />}
-        <span className="sr-only">Copy output</span>
-      </Button>
-      <pre className="whitespace-pre-wrap text-xs leading-relaxed">
+        <Button
+          size="icon"
+          variant="ghost"
+          className="absolute top-1.5 right-1.5 h-7 w-7 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 hover:border-cyan-500/60 rounded-md"
+          onClick={copyToClipboard}
+          type="button"
+        >
+          {hasCopied ? (
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+            >
+              <Check className="h-4 w-4 text-cyan-400" />
+            </motion.div>
+          ) : (
+            <Clipboard className="h-4 w-4 text-slate-400 group-hover:text-cyan-400 transition-colors" />
+          )}
+          <span className="sr-only">Copy output</span>
+        </Button>
+      </motion.div>
+      <pre className="whitespace-pre-wrap text-xs leading-relaxed font-mono">
         {lines.map((line, lineIndex) => (
           <React.Fragment key={lineIndex}>
             {renderOutput(line)}
@@ -331,14 +366,14 @@ const CommandOutputDisplay = ({ output }: { output: CommandOutput }) => {
           </React.Fragment>
         ))}
       </pre>
-    </div>
+    </motion.div>
   );
 };
 
-export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) => void, setActiveTab: (tab: 'terminal' | 'logs') => void }, InteractiveTerminalProps>(({ runtimeLogs, cluster, onCommand, locale, translations }, ref) => {
+export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) => void, setActiveTab: (tab: 'terminal' | 'logs' | 'playground') => void }, InteractiveTerminalProps>(({ runtimeLogs, cluster, onCommand, locale, translations }, ref) => {
   const [input, setInput] = useState('');
   const [history, setHistory] = useState<TerminalEntry[]>([]);
-  const [activeTab, setActiveTab] = useState<'terminal' | 'logs'>('terminal');
+  const [activeTab, setActiveTab] = useState<'terminal' | 'logs' | 'playground'>('terminal');
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const [storedCommands, setStoredCommands] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
@@ -383,7 +418,7 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
       setInput(command);
       inputRef.current?.focus();
     },
-    setActiveTab: (tab: 'terminal' | 'logs') => {
+    setActiveTab: (tab: 'terminal' | 'logs' | 'playground') => {
       setActiveTab(tab);
     }
   }));
@@ -966,152 +1001,234 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
   };
 
   const handleTabChange = (value: string) => {
-    if (value === 'terminal' || value === 'logs') {
-      setActiveTab(value);
+    if (value === 'terminal' || value === 'logs' || value === 'playground') {
+      setActiveTab(value as 'terminal' | 'logs' | 'playground');
     }
   };
 
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-      <TabsList className="grid w-full grid-cols-2 bg-slate-900/60 dark:bg-slate-900/60" aria-label="Terminal view selection">
+      <TabsList className="grid w-full grid-cols-3 bg-slate-900/80 backdrop-blur-xl border border-cyan-500/20 rounded-t-lg rounded-b-none shadow-lg shadow-cyan-500/10" aria-label="Terminal view selection">
         <TabsTrigger 
           value="terminal"
-          className="data-[state=active]:bg-slate-800/80 data-[state=active]:text-white data-[state=inactive]:bg-slate-900/40 data-[state=inactive]:text-slate-400 focus-visible:ring-4 focus-visible:ring-primary/50"
+          className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500/20 data-[state=active]:to-blue-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 data-[state=inactive]:bg-slate-900/40 data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:text-slate-300 transition-all duration-300 focus-visible:ring-4 focus-visible:ring-cyan-500/50"
           aria-label="Terminal Core tab"
         >
           <FileTerminal className="mr-2 h-4 w-4" aria-hidden="true" />
-          Terminal Core
+          Terminal
         </TabsTrigger>
         <TabsTrigger 
           value="logs"
-          className="data-[state=active]:bg-slate-800/80 data-[state=active]:text-white data-[state=inactive]:bg-slate-900/40 data-[state=inactive]:text-slate-400 focus-visible:ring-4 focus-visible:ring-primary/50"
+          className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500/20 data-[state=active]:to-blue-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 data-[state=inactive]:bg-slate-900/40 data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:text-slate-300 transition-all duration-300 focus-visible:ring-4 focus-visible:ring-cyan-500/50"
           aria-label="Runtime Logs tab"
         >
           <Power className="mr-2 h-4 w-4" aria-hidden="true" />
-          Runtime Logs
+          Logs
+        </TabsTrigger>
+        <TabsTrigger 
+          value="playground"
+          className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500/20 data-[state=active]:to-blue-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 data-[state=inactive]:bg-slate-900/40 data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:text-slate-300 transition-all duration-300 focus-visible:ring-4 focus-visible:ring-cyan-500/50"
+          aria-label="Code Playground tab"
+        >
+          <Code2 className="mr-2 h-4 w-4" aria-hidden="true" />
+          Playground
         </TabsTrigger>
       </TabsList>
       <TabsContent value="terminal">
-        <div
+        <motion.div
           ref={terminalRef}
-          className="bg-slate-950 text-slate-100 font-mono rounded-b-md h-[28rem] text-sm border border-slate-900/70 shadow-inner flex flex-col cursor-text"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="relative bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100 font-mono rounded-b-lg h-[28rem] text-sm border border-cyan-500/30 shadow-2xl shadow-cyan-500/20 flex flex-col cursor-text overflow-hidden group"
           onClick={() => {
             setHasUserInteracted(true);
             inputRef.current?.focus();
           }}
         >
+          {/* Animated background gradient */}
+          <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-purple-500/5 opacity-50 pointer-events-none" />
+          
+          {/* Subtle grid pattern */}
+          <div 
+            className="absolute inset-0 opacity-[0.03] pointer-events-none"
+            style={{
+              backgroundImage: `
+                linear-gradient(to right, rgba(16,185,129,0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(16,185,129,0.1) 1px, transparent 1px)
+              `,
+              backgroundSize: '20px 20px',
+            }}
+          />
           {/* Terminal Header with Status Indicators */}
-          <div className="flex items-center gap-2 p-3 bg-slate-900/50 border-b border-slate-800/80 text-xs text-slate-400">
+          <div className="relative flex items-center gap-2 p-3 bg-gradient-to-r from-slate-900/90 via-slate-800/80 to-slate-900/90 backdrop-blur-sm border-b border-cyan-500/30 text-xs text-slate-300 z-10">
             <div className="flex gap-1.5">
-              <div 
-                className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-400 transition-colors cursor-pointer" 
+              <motion.div 
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-400 transition-colors cursor-pointer shadow-lg shadow-red-500/50" 
                 aria-label="Close terminal"
                 title="Close terminal"
               />
-              <div 
-                className="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-400 transition-colors cursor-pointer" 
+              <motion.div 
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-400 transition-colors cursor-pointer shadow-lg shadow-yellow-500/50" 
                 aria-label="Minimize terminal"
                 title="Minimize terminal"
               />
-              <div 
-                className="w-3 h-3 rounded-full bg-green-500 hover:bg-green-400 transition-colors cursor-pointer" 
+              <motion.div 
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-3 h-3 rounded-full bg-green-500 hover:bg-green-400 transition-colors cursor-pointer shadow-lg shadow-green-500/50" 
                 aria-label="Maximize terminal"
                 title="Maximize terminal"
               />
             </div>
-            <div className="flex-1 text-center font-semibold">
-              {sessionMeta ? `${sessionMeta.user}@${sessionMeta.host}:~$` : 'infra@control-plane:~$'} | DevOps Lab Terminal
+            <div className="flex-1 text-center font-semibold text-cyan-300 tracking-wide">
+              {sessionMeta ? `${sessionMeta.user}@${sessionMeta.host}:~$` : 'infra@control-plane:~$'} | <span className="text-purple-400">DevOps Lab Terminal</span>
             </div>
-            <div className="text-xs">
-              <span className="text-emerald-400">●</span> LIVE
+            <div className="flex items-center gap-1.5 text-xs">
+              <motion.span 
+                animate={{ opacity: [1, 0.5, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="text-cyan-400 text-lg leading-none"
+              >●</motion.span>
+              <span className="text-cyan-400 font-semibold">LIVE</span>
             </div>
           </div>
 
-          <div className="border-b border-slate-900/80 px-4 py-2 text-xs text-slate-400 flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
+          <div className="relative border-b border-cyan-500/20 px-4 py-2 text-xs text-slate-400 flex flex-col gap-1 md:flex-row md:items-center md:justify-between bg-slate-900/40 backdrop-blur-sm z-10">
             {sessionMeta ? (
               <>
-                <span suppressHydrationWarning>Last login: {sessionMeta.lastLogin} from {sessionMeta.ip} on {sessionMeta.tty}</span>
-                <span>{sessionMeta.distro} • {sessionMeta.kernel}</span>
+                <span suppressHydrationWarning className="text-slate-300">Last login: <span className="text-cyan-400">{sessionMeta.lastLogin}</span> from <span className="text-blue-400">{sessionMeta.ip}</span> on <span className="text-purple-400">{sessionMeta.tty}</span></span>
+                <span className="text-slate-300"><span className="text-cyan-400">{sessionMeta.distro}</span> • <span className="text-blue-400">{sessionMeta.kernel}</span></span>
               </>
             ) : (
               <>
-                <span>Last login: Loading...</span>
-                <span>Ubuntu 24.04.1 LTS • 6.8.0-41-generic</span>
+                <span className="text-slate-300">Last login: <span className="animate-pulse text-cyan-400">Loading...</span></span>
+                <span className="text-slate-300"><span className="text-cyan-400">Ubuntu 24.04.1 LTS</span> • <span className="text-blue-400">6.8.0-41-generic</span></span>
               </>
             )}
           </div>
 
-          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
-            {history.map(entry => (
-              <div
-                key={entry.id}
-                className={`rounded-lg border border-slate-900/60 px-3 py-2 ${entry.isSystem ? 'bg-slate-900/60' : 'bg-slate-950/40'}`}
-              >
-                <div className="flex items-center justify-between text-xs text-slate-500">
-                  <span className="flex items-center gap-2">
-                    <span className={entry.isSystem ? 'text-cyan-300' : 'text-emerald-300'}>
-                      {entry.isSystem ? '[system]' : (sessionMeta ? promptRef.current : '[infra@control-plane-1 ~]')}
+          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4 relative z-0">
+            <AnimatePresence mode="popLayout">
+              {history.map((entry, index) => (
+                <motion.div
+                  key={entry.id}
+                  initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  transition={{ duration: 0.2, delay: index * 0.02 }}
+                  className={cn(
+                    "rounded-lg border px-3 py-2 backdrop-blur-sm transition-all duration-300",
+                    entry.isSystem 
+                      ? 'border-cyan-500/30 bg-gradient-to-br from-cyan-500/10 to-transparent shadow-lg shadow-cyan-500/10' 
+                      : 'border-cyan-500/30 bg-gradient-to-br from-cyan-500/10 to-slate-950/40 shadow-lg shadow-cyan-500/10 hover:border-cyan-500/50 hover:shadow-cyan-500/20'
+                  )}
+                >
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="flex items-center gap-2">
+                      <span className={cn(
+                        "font-semibold",
+                        entry.isSystem ? 'text-cyan-400' : 'text-cyan-300'
+                      )}>
+                        {entry.isSystem ? '[system]' : (sessionMeta ? promptRef.current : '[infra@control-plane-1 ~]')}
+                      </span>
+                      <span className="text-slate-500">{entry.timestamp}</span>
                     </span>
-                    <span>{entry.timestamp}</span>
-                  </span>
-                  <StatusPill status={entry.status} />
-                </div>
-                {!entry.isSystem && entry.command && (
-                  <div className="mt-1 flex items-center gap-2 text-slate-100">
-                    <span className="text-emerald-400">❯</span>
-                    <span>{entry.command}</span>
+                    <StatusPill status={entry.status} />
                   </div>
-                )}
-                <CommandOutputDisplay output={entry.output} />
-                {entry.contextHint && (
-                  <p className="mt-2 text-xs text-slate-400">{entry.contextHint}</p>
-                )}
-                {entry.suggestion && (
-                  <p className="mt-1 text-xs text-emerald-400 flex items-center gap-1">
-                    <Sparkles className="h-3 w-3" />
-                    {entry.suggestion}
-                  </p>
-                )}
-              </div>
-            ))}
+                  {!entry.isSystem && entry.command && (
+                    <div className="mt-2 flex items-center gap-2 text-slate-100 font-medium">
+                      <motion.span 
+                        animate={{ opacity: [1, 0.5, 1] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                        className="text-cyan-400 text-lg"
+                      >❯</motion.span>
+                      <span className="text-cyan-300">{entry.command}</span>
+                    </div>
+                  )}
+                  <CommandOutputDisplay output={entry.output} />
+                  {entry.contextHint && (
+                    <motion.p 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.3 }}
+                      className="mt-2 text-xs text-slate-400 italic"
+                    >
+                      {entry.contextHint}
+                    </motion.p>
+                  )}
+                  {entry.suggestion && (
+                    <motion.p 
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.4 }}
+                      className="mt-2 text-xs text-purple-400 flex items-center gap-1.5 font-medium"
+                    >
+                      <Sparkles className="h-3.5 w-3.5 text-purple-400 animate-pulse" />
+                      <span>{entry.suggestion}</span>
+                    </motion.p>
+                  )}
+                </motion.div>
+              ))}
+            </AnimatePresence>
             <div ref={endOfHistoryRef} />
           </div>
 
           <div className={cn(
-            "border-t border-slate-900/70 px-4 py-2 text-xs text-slate-400 flex flex-wrap gap-3",
+            "relative border-t border-emerald-500/30 px-4 py-3 text-xs bg-gradient-to-r from-slate-900/80 via-slate-800/60 to-slate-900/80 backdrop-blur-sm flex flex-wrap gap-2 z-10",
             isMobile && "gap-2"
           )}>
-            {suggestions.map(suggestion => (
-              <button
+            {suggestions.map((suggestion, index) => (
+              <motion.button
                 key={suggestion.command}
                 type="button"
                 onClick={() => handleSuggestionClick(suggestion.command)}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: index * 0.05 }}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
                 className={cn(
-                  "flex flex-col rounded border border-slate-800/60 text-left transition",
+                  "relative flex flex-col rounded-lg border text-left transition-all duration-300 overflow-hidden group",
                   isTouchDevice 
-                    ? "px-4 py-3 min-h-[44px] text-sm border-emerald-500/40 hover:border-emerald-500/60 hover:text-slate-100" 
-                    : "px-3 py-2 hover:border-emerald-500/60 hover:text-slate-100",
-                  "focus-visible:outline-2 focus-visible:outline-primary focus-visible:ring-4 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 focus-visible:border-emerald-500/60"
+                    ? "px-4 py-3 min-h-[44px] text-sm" 
+                    : "px-3 py-2",
+                  "border-cyan-500/40 bg-gradient-to-br from-cyan-500/10 to-slate-900/40",
+                  "hover:border-cyan-400/80 hover:bg-gradient-to-br hover:from-cyan-500/20 hover:to-blue-500/10",
+                  "hover:shadow-lg hover:shadow-cyan-500/30",
+                  "focus-visible:outline-2 focus-visible:outline-cyan-500 focus-visible:ring-4 focus-visible:ring-cyan-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
                 )}
                 aria-label={`Use suggestion: ${suggestion.label}, ${suggestion.helper}`}
               >
+                {/* Glow effect on hover */}
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-400/20 to-cyan-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl" />
                 <span className={cn(
-                  "text-slate-100 font-semibold",
+                  "relative text-cyan-300 font-semibold group-hover:text-cyan-200 transition-colors",
                   isTouchDevice ? "text-sm" : "text-xs"
                 )}>{suggestion.label}</span>
                 <span className={cn(
-                  "text-slate-500",
+                  "relative text-slate-400 group-hover:text-slate-300 transition-colors",
                   isTouchDevice ? "text-xs" : "text-[10px]"
                 )}>{suggestion.helper}</span>
-              </button>
+              </motion.button>
             ))}
           </div>
 
-          <form onSubmit={(e) => e.preventDefault()} className="px-4 py-3 border-t border-slate-900/80">
+          <form onSubmit={(e) => e.preventDefault()} className="relative px-4 py-3 border-t border-cyan-500/30 bg-gradient-to-r from-slate-900/90 via-slate-800/80 to-slate-900/90 backdrop-blur-sm z-10">
             <label htmlFor="terminal-input" className="sr-only">Terminal input</label>
             <div className="flex items-center gap-2">
-              <span className="text-emerald-400">{sessionMeta ? promptRef.current : '[infra@control-plane-1 ~]'}</span>
-              <div className="relative w-full">
+              <motion.span 
+                className="text-cyan-400 font-semibold"
+                animate={{ opacity: [1, 0.7, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                {sessionMeta ? promptRef.current : '[infra@control-plane-1 ~]'}
+              </motion.span>
+              <div className="relative w-full group">
                 <input
                   ref={inputRef}
                   id="terminal-input"
@@ -1121,41 +1238,86 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleInputKeyDown}
                   className={cn(
-                    "bg-transparent border-none text-slate-100 focus-visible:outline-2 focus-visible:outline-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 w-full p-0",
+                    "bg-transparent border-none text-slate-100 font-medium w-full p-0",
+                    "focus-visible:outline-none focus-visible:ring-0",
+                    "placeholder:text-slate-600 placeholder:font-normal",
                     isTouchDevice && "text-base py-1 min-h-[44px]"
                   )}
                   autoComplete="off"
                   placeholder="Type a command..."
                   aria-label="Terminal command input"
                 />
-                <span className="absolute left-0 top-0 pointer-events-none">
-                  <span className="invisible">{input}</span>
-                  <span className="animate-pulse text-emerald-400">█</span>
+                <span className="absolute left-0 top-0 pointer-events-none flex items-center">
+                  <span className="invisible whitespace-pre">{input}</span>
+                  <motion.span 
+                    className="text-cyan-400 font-bold text-lg"
+                    animate={{ opacity: [1, 0, 1] }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    █
+                  </motion.span>
                 </span>
+                {/* Focus glow effect */}
+                <div className="absolute inset-0 -z-10 bg-cyan-500/0 group-focus-within:bg-cyan-500/10 rounded transition-all duration-300 blur-sm" />
               </div>
             </div>
           </form>
 
           {/* Terminal Footer with Hints */}
-          <div className="bg-slate-900/50 px-4 py-2 text-xs text-slate-500 border-t border-slate-800/80">
+          <div className="relative bg-gradient-to-r from-slate-900/90 via-slate-800/80 to-slate-900/90 backdrop-blur-sm px-4 py-2.5 text-xs text-slate-400 border-t border-cyan-500/20 z-10">
             <div className="flex justify-between items-center flex-wrap gap-2">
-              <span>
-                Type <kbd className="px-1.5 py-0.5 bg-slate-800 rounded text-slate-300">help</kbd> for available commands • Use ↑/↓ arrows for command history
+              <span className="text-slate-400">
+                Type <kbd className="px-2 py-0.5 bg-cyan-500/20 border border-cyan-500/40 rounded text-cyan-300 font-mono font-semibold shadow-lg shadow-cyan-500/20">help</kbd> for available commands • Use <kbd className="px-1.5 py-0.5 bg-slate-800/80 rounded text-purple-300">↑/↓</kbd> arrows for command history
               </span>
-              <span>
-                Press <kbd className="px-1.5 py-0.5 bg-slate-800 rounded text-slate-300">Tab</kbd> for autocomplete • <kbd className="px-1.5 py-0.5 bg-slate-800 rounded text-slate-300">Ctrl+C</kbd> to interrupt
+              <span className="text-slate-400">
+                Press <kbd className="px-1.5 py-0.5 bg-slate-800/80 rounded text-purple-300">Tab</kbd> for autocomplete • <kbd className="px-1.5 py-0.5 bg-slate-800/80 rounded text-purple-300">Ctrl+C</kbd> to interrupt
               </span>
             </div>
           </div>
-        </div>
+        </motion.div>
       </TabsContent>
       <TabsContent value="logs">
-        <div className="bg-slate-950 text-slate-100 font-mono p-4 rounded-b-md h-96 text-sm overflow-y-auto">
-          {runtimeLogs.map((log, index) => (
-            <div key={`log-${index}`} className="whitespace-pre-wrap text-slate-100">{log}</div>
-          ))}
-          <div ref={endOfLogsRef} />
-        </div>
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="relative bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100 font-mono p-4 rounded-b-lg h-96 text-sm overflow-y-auto border border-cyan-500/30 shadow-2xl shadow-cyan-500/20"
+        >
+          {/* Animated background gradient */}
+          <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-purple-500/5 opacity-50 pointer-events-none" />
+          
+          {/* Subtle grid pattern */}
+          <div 
+            className="absolute inset-0 opacity-[0.03] pointer-events-none"
+            style={{
+              backgroundImage: `
+                linear-gradient(to right, rgba(16,185,129,0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(16,185,129,0.1) 1px, transparent 1px)
+              `,
+              backgroundSize: '20px 20px',
+            }}
+          />
+          <div className="relative z-0 space-y-1">
+            <AnimatePresence mode="popLayout">
+              {runtimeLogs.map((log, index) => (
+                <motion.div 
+                  key={`log-${index}`} 
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2, delay: index * 0.01 }}
+                  className="whitespace-pre-wrap text-slate-200 font-mono text-xs leading-relaxed px-2 py-1 rounded hover:bg-emerald-500/5 transition-colors"
+                >
+                  {log}
+                </motion.div>
+              ))}
+            </AnimatePresence>
+            <div ref={endOfLogsRef} />
+          </div>
+        </motion.div>
+      </TabsContent>
+      <TabsContent value="playground">
+        <CodePlayground locale={locale} translations={translations} />
       </TabsContent>
     </Tabs>
   );

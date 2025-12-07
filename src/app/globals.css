@@ -4,75 +4,75 @@
 
 @layer base {
   :root {
-    --background: 148 60% 97%;
-    --foreground: 200 20% 10%;
-    --card: 148 45% 99%;
-    --card-foreground: 200 20% 8%;
-    --popover: 148 40% 98%;
-    --popover-foreground: 200 25% 8%;
-    --primary: 154 82% 38%;
+    --background: 220 30% 98%;
+    --foreground: 220 20% 10%;
+    --card: 220 25% 99%;
+    --card-foreground: 220 20% 8%;
+    --popover: 220 20% 98%;
+    --popover-foreground: 220 25% 8%;
+    --primary: 200 100% 50%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 151 32% 92%;
-    --secondary-foreground: 200 25% 15%;
-    --muted: 151 32% 92%;
-    --muted-foreground: 200 10% 35%;
-    --accent: 151 96% 38.8%;
+    --secondary: 220 30% 95%;
+    --secondary-foreground: 220 25% 15%;
+    --muted: 220 25% 95%;
+    --muted-foreground: 220 10% 35%;
+    --accent: 270 70% 60%;
     --accent-foreground: 0 0% 100%;
     --destructive: 2 84% 58%;
     --destructive-foreground: 0 0% 100%;
-    --border: 152 24% 85%;
-    --input: 152 24% 85%;
-    --ring: 154 82% 38%;
-    --chart-1: 154 100% 47%;
-    --chart-2: 157 55% 67%;
-    --chart-3: 200 88% 30%;
+    --border: 220 20% 88%;
+    --input: 220 20% 88%;
+    --ring: 200 100% 50%;
+    --chart-1: 200 100% 50%;
+    --chart-2: 270 70% 60%;
+    --chart-3: 154 100% 47%;
     --chart-4: 175 40% 45%;
     --chart-5: 320 65% 55%;
     --radius: 0.75rem;
-    --bg-primary: #f0fdf4;
-    --bg-secondary: #e6f7ef;
-    --neon-accent: #00a86b;
-    --neon-accent-muted: #04c267;
-    --text-primary-soft: #065f46;
-    --text-muted-soft: #047857;
-    --accent-gradient: linear-gradient(135deg, #00a86b, #00b4d8);
-    --glow-soft: 0 0 40px rgba(0, 168, 107, 0.15);
+    --bg-primary: #f0f4f8;
+    --bg-secondary: #e8edf2;
+    --neon-accent: #00b4d8;
+    --neon-accent-muted: #0077b6;
+    --text-primary-soft: #023e8a;
+    --text-muted-soft: #0077b6;
+    --accent-gradient: linear-gradient(135deg, #00b4d8, #7b2cbf);
+    --glow-soft: 0 0 40px rgba(0, 180, 216, 0.15);
     --radius-pill: 999px;
   }
  
   .dark {
-    --background: 200 88% 3.3%;
-    --foreground: 148 100% 95%;
-    --card: 175 87% 6%;
-    --card-foreground: 148 100% 90%;
-    --popover: 200 88% 4.5%;
-    --popover-foreground: 148 100% 95%;
-    --primary: 154 100% 47.5%;
-    --primary-foreground: 200 88% 3%;
-    --secondary: 175 50% 9%;
-    --secondary-foreground: 148 100% 90%;
-    --muted: 175 40% 12%;
-    --muted-foreground: 157 55% 66.5%;
-    --accent: 151 96% 38.8%;
-    --accent-foreground: 200 88% 3%;
+    --background: 220 30% 4%;
+    --foreground: 220 100% 95%;
+    --card: 220 25% 6%;
+    --card-foreground: 220 100% 90%;
+    --popover: 220 30% 5%;
+    --popover-foreground: 220 100% 95%;
+    --primary: 200 100% 60%;
+    --primary-foreground: 220 30% 4%;
+    --secondary: 220 20% 10%;
+    --secondary-foreground: 220 100% 90%;
+    --muted: 220 15% 12%;
+    --muted-foreground: 220 30% 70%;
+    --accent: 270 70% 65%;
+    --accent-foreground: 220 30% 4%;
     --destructive: 2 80% 40%;
     --destructive-foreground: 0 0% 100%;
-    --border: 175 40% 18%;
-    --input: 175 40% 18%;
-    --ring: 154 100% 47.5%;
-    --chart-1: 154 100% 47.5%;
-    --chart-2: 157 55% 66.5%;
-    --chart-3: 200 45% 40%;
+    --border: 220 20% 18%;
+    --input: 220 20% 18%;
+    --ring: 200 100% 60%;
+    --chart-1: 200 100% 60%;
+    --chart-2: 270 70% 65%;
+    --chart-3: 154 100% 47.5%;
     --chart-4: 320 65% 55%;
     --chart-5: 40 80% 60%;
-    --bg-primary: #010b10;
-    --bg-secondary: #021d1b;
-    --neon-accent: #00f28a;
-    --neon-accent-muted: #04c267;
-    --text-primary-soft: #e6fff2;
-    --text-muted-soft: #7ad9b6;
-    --accent-gradient: linear-gradient(135deg, #00f28a, #00b4d8);
-    --glow-soft: 0 0 40px rgba(0, 242, 138, 0.25);
+    --bg-primary: #0a0e1a;
+    --bg-secondary: #0f1419;
+    --neon-accent: #00d9ff;
+    --neon-accent-muted: #0096c7;
+    --text-primary-soft: #e0f2fe;
+    --text-muted-soft: #7dd3fc;
+    --accent-gradient: linear-gradient(135deg, #00d9ff, #a855f7);
+    --glow-soft: 0 0 40px rgba(0, 217, 255, 0.25);
     --radius-pill: 999px;
   }
 }
@@ -87,5 +87,22 @@
   
   ::selection {
     @apply bg-primary/80 text-primary-foreground;
+  }
+}
+
+@layer components {
+  .ui-btn {
+    @apply relative inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-300;
+    @apply bg-gradient-to-r from-cyan-600 to-blue-600 text-white;
+    @apply hover:from-cyan-500 hover:to-blue-500 hover:shadow-lg hover:shadow-cyan-500/50;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2;
+    @apply active:scale-95;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100;
+  }
+  
+  .ui-btn.destructive {
+    @apply bg-gradient-to-r from-red-600 to-rose-600;
+    @apply hover:from-red-500 hover:to-rose-500 hover:shadow-red-500/50;
+    @apply focus-visible:ring-red-500;
   }
 }
