@@ -20,12 +20,12 @@ export function LabLayoutSelector({ locale, translations }: LabLayoutSelectorPro
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
-    // Load saved preference from localStorage
+    // Load saved preference from localStorage ONLY on client
     const savedLayout = localStorage.getItem('lab-layout-preference') as LayoutType | null;
     if (savedLayout === 'standard' || savedLayout === 'immersive') {
       setLayout(savedLayout);
     }
+    setIsClient(true);
   }, []);
 
   const handleLayoutChange = (newLayout: LayoutType) => {
@@ -33,39 +33,42 @@ export function LabLayoutSelector({ locale, translations }: LabLayoutSelectorPro
     localStorage.setItem('lab-layout-preference', newLayout);
   };
 
+  // Don't render anything until client-side hydration is complete
   if (!isClient) {
-    return <LabClientPage locale={locale} translations={translations} />;
+    return null;
   }
 
   return (
-    <div className="relative">
+    <div className="relative" suppressHydrationWarning>
       {/* Layout Toggle - Fixed top right */}
-      <div className="fixed top-4 right-4 z-50 flex gap-2 bg-background/80 backdrop-blur-sm border border-border/50 rounded-lg p-1 shadow-lg">
+      <div className="fixed top-4 right-4 z-50 flex gap-1 sm:gap-2 bg-background/80 backdrop-blur-sm border border-border/50 rounded-lg p-1 shadow-lg" suppressHydrationWarning>
         <Button
           variant={layout === 'standard' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => handleLayoutChange('standard')}
           className={cn(
-            "gap-2",
+            "gap-1 sm:gap-2 px-2 sm:px-3",
             layout === 'standard' && "bg-primary text-primary-foreground"
           )}
           aria-label="Switch to standard layout"
+          title="Standard Layout"
         >
-          <LayoutGrid className="h-4 w-4" aria-hidden="true" />
-          <span className="hidden sm:inline">Standard</span>
+          <LayoutGrid className="h-3 w-3 sm:h-4 sm:w-4" aria-hidden="true" />
+          <span className="hidden sm:inline text-xs sm:text-sm">Standard</span>
         </Button>
         <Button
           variant={layout === 'immersive' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => handleLayoutChange('immersive')}
           className={cn(
-            "gap-2",
+            "gap-1 sm:gap-2 px-2 sm:px-3",
             layout === 'immersive' && "bg-primary text-primary-foreground"
           )}
           aria-label="Switch to immersive layout"
+          title="Immersive Layout"
         >
-          <Terminal className="h-4 w-4" aria-hidden="true" />
-          <span className="hidden sm:inline">Immersive</span>
+          <Terminal className="h-3 w-3 sm:h-4 sm:w-4" aria-hidden="true" />
+          <span className="hidden sm:inline text-xs sm:text-sm">Immersive</span>
         </Button>
       </div>
 

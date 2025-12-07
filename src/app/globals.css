@@ -105,4 +105,17 @@
     @apply hover:from-red-500 hover:to-rose-500 hover:shadow-red-500/50;
     @apply focus-visible:ring-red-500;
   }
+
+  /* Responsive text truncation utilities */
+  .truncate-responsive {
+    @apply truncate;
+    @apply lg:max-w-full;
+  }
+
+  /* Better ellipsis support */
+  .line-clamp-1-responsive {
+    @apply line-clamp-1;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
 }

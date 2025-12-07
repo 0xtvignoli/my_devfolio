@@ -93,16 +93,16 @@ export function KubernetesClusterViz({ cluster }: KubernetesClusterVizProps) {
                     </div>
                 </div>
               </CardHeader>
-              <CardContent className="p-4 pt-0 grid grid-cols-2 lg:grid-cols-3 gap-2">
+              <CardContent className="p-4 pt-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                 {node.pods.map((pod) => {
                   const ariaLabel = `Pod ${pod.name}, Service: ${pod.service}, Status: ${pod.status}${pod.isCanary ? ', Canary deployment' : ''}${pod.traffic !== undefined && pod.traffic > 0 ? `, Traffic: ${pod.traffic}%` : ''}`;
                   return (
                   <Tooltip key={pod.name}>
                     <TooltipTrigger asChild>
-                      <div 
+                      <button 
                         className={getInteractiveClasses(
                           cn(
-                            'border rounded-md p-2 text-center text-xs cursor-pointer relative', 
+                            'border rounded-md p-2 text-center text-xs cursor-pointer relative text-left w-full transition-colors', 
                             statusColors[pod.status],
                             pod.isCanary && 'border-purple-500/50 bg-purple-500/10 dark:bg-purple-900/20'
                           ),
@@ -113,21 +113,20 @@ export function KubernetesClusterViz({ cluster }: KubernetesClusterVizProps) {
                           isTouchDevice,
                           prefersReducedMotion
                         )}
-                        role="button"
-                        tabIndex={0}
+                        title={ariaLabel}
                         aria-label={ariaLabel}
                       >
                         {pod.isCanary && <Badge variant="outline" className="absolute -top-2 -right-2 text-xs px-1.5 py-0.5 border-purple-500 text-purple-500" aria-label="Canary deployment">Canary</Badge>}
                         {pod.traffic !== undefined && pod.traffic > 0 && (
                             <div className="absolute top-1 left-1 flex items-center gap-1 text-primary text-[10px]" aria-label={`Traffic: ${pod.traffic}%`}>
                                 <Waypoints className="w-3 h-3" aria-hidden="true"/>
-                                <span>{pod.traffic}%</span>
+                                <span className="font-semibold">{pod.traffic}%</span>
                             </div>
                         )}
                         <div className="flex justify-center mb-1" aria-hidden="true">{statusIcons[pod.status]}</div>
-                        <div className="font-semibold truncate">{pod.service}</div>
-                        <div className="text-muted-foreground dark:text-muted-foreground truncate">{pod.name}</div>
-                      </div>
+                        <div className="font-semibold truncate" title={pod.service}>{pod.service}</div>
+                        <div className="text-muted-foreground dark:text-muted-foreground truncate text-xs" title={pod.name}>{pod.name}</div>
+                      </button>
                     </TooltipTrigger>
                     <TooltipContent className="font-code text-xs bg-card/80 backdrop-blur-sm">
                         <div className='font-bold text-base mb-2 text-primary flex items-center gap-2'>
