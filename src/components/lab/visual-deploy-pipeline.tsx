@@ -80,7 +80,7 @@ export function VisualDeployPipeline({ pipelineStages }: VisualDeployPipelinePro
           })}
         </div>
 
-        <div className="grid grid-cols-3 gap-y-4 md:grid-cols-6 md:gap-y-0 text-xs">
+        <div className="grid grid-cols-2 gap-y-2 gap-x-1 sm:grid-cols-3 sm:gap-y-4 lg:grid-cols-6 lg:gap-y-0 text-xs">
           {pipelineStages.map((stage) => {
             const Icon = stageIcons[stage.name];
             const statusConfig = {
@@ -101,16 +101,15 @@ export function VisualDeployPipeline({ pipelineStages }: VisualDeployPipelinePro
             return (
               <Tooltip key={stage.name}>
                 <TooltipTrigger asChild>
-                   <div 
-                     className={cn('flex flex-col items-center', statusConfig)}
-                     role="button"
-                     tabIndex={0}
+                   <button 
+                     className={cn('flex flex-col items-center cursor-pointer transition-opacity hover:opacity-80', statusConfig)}
                      aria-label={ariaLabel}
+                     title={ariaLabel}
                    >
-                      <Icon className="h-5 w-5 mb-1" aria-hidden="true" />
-                      <span className="font-semibold text-center text-foreground">{stage.name}</span>
-                      <span className="text-xs">{stage.duration}</span>
-                    </div>
+                      <Icon className="h-4 sm:h-5 w-4 sm:w-5 mb-1 flex-shrink-0" aria-hidden="true" />
+                      <span className="font-semibold text-center text-foreground text-xs sm:text-sm break-words max-w-[60px]">{stage.name}</span>
+                      <span className="text-xs text-muted-foreground dark:text-muted-foreground">{stage.duration}</span>
+                    </button>
                 </TooltipTrigger>
                 <TooltipContent>
                     <div className="flex items-center gap-2 font-bold text-base mb-1">

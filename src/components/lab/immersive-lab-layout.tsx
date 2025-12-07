@@ -218,25 +218,54 @@ export function ImmersiveLabLayout({
   return (
     <div className="h-screen w-full overflow-hidden text-slate-900 dark:text-white bg-[radial-gradient(circle_at_top,_#f5fff8,_#e6f7ef_45%,_#d8f0ea_80%)] dark:bg-gradient-to-br dark:from-black dark:via-gray-950 dark:to-gray-900">
       {/* Header Bar */}
-      <div className={cn("h-14 flex items-center justify-between px-6", quickBarSurface)}>
-        <div className="flex items-center gap-4">
+      <div className={cn("sticky top-0 z-40 min-h-14 lg:h-14 flex flex-col lg:flex-row items-start lg:items-center justify-between px-4 lg:px-6 py-2 lg:py-0 gap-2 lg:gap-0", quickBarSurface)}>
+        <div className="flex items-center gap-2 lg:gap-4 flex-wrap">
           <div className="flex items-center gap-2">
-            <Terminal className="h-5 w-5 text-cyan-500 dark:text-cyan-400" />
-            <span className="font-mono text-sm font-bold text-cyan-600 dark:text-cyan-400">dev.tvignoli.com</span>
+            <Terminal className="h-4 w-4 lg:h-5 lg:w-5 text-cyan-500 dark:text-cyan-400 flex-shrink-0" aria-hidden="true" />
+            <span className="font-mono text-xs lg:text-sm font-bold text-cyan-600 dark:text-cyan-400 truncate">dev.tvignoli.com</span>
           </div>
           <Badge variant="outline" className="border-cyan-500/30 text-cyan-600 text-xs dark:text-cyan-400">
             LIVE
           </Badge>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-2 lg:gap-4 w-full lg:w-auto">
           {/* Real-time Metrics */}
-          <div className="flex items-center gap-6" aria-label="Real-time system metrics">
-            <MetricBadge label="CPU" value={`${cpuUsage}%`} status={cpuUsage > 70 ? 'warning' : 'ok'} />
-            <MetricBadge label="MEM" value={`${memoryUsage}%`} status={memoryUsage > 80 ? 'warning' : 'ok'} />
-            <MetricBadge label="P95" value={`${p95Latency}ms`} status={p95Latency > 200 ? 'warning' : 'ok'} />
-          </div>
-          <div className="flex items-center gap-2">
+          <TooltipProvider delayDuration={200}>
+            <div className="flex items-center gap-2 lg:gap-6 text-xs lg:text-sm" aria-label="Real-time system metrics">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    <MetricBadge label="CPU" value={`${cpuUsage}%`} status={cpuUsage > 70 ? 'warning' : 'ok'} />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-xs">CPU Usage: Percentage of CPU cores in use</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    <MetricBadge label="MEM" value={`${memoryUsage}%`} status={memoryUsage > 80 ? 'warning' : 'ok'} />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-xs">Memory Usage: Total memory allocation across nodes</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    <MetricBadge label="P95" value={`${p95Latency}ms`} status={p95Latency > 200 ? 'warning' : 'ok'} />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-xs">P95 Latency: 95th percentile API response time (target &lt;200ms)</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          </TooltipProvider>
+          <div className="flex items-center gap-1 lg:gap-2 flex-shrink-0">
             <HelpModal />
             <GuidedTour tourId="lab-tour-immersive" autoStart={false} />
           </div>
@@ -244,9 +273,9 @@ export function ImmersiveLabLayout({
       </div>
 
       {/* Main Layout */}
-      <div className="flex h-[calc(100vh-3.5rem)] gap-4 px-4 pb-4">
+      <div className="flex flex-col lg:flex-row h-[calc(100vh-3.5rem)] gap-4 px-2 lg:px-4 pb-4">
         {/* Left Sidebar - Visualization */}
-        <div className={cn("w-96 overflow-y-auto rounded-3xl p-3", glassPanel)}>
+        <div className={cn("w-full lg:w-96 h-full lg:h-auto overflow-y-auto rounded-3xl p-3", glassPanel)}>
           <Tabs
             value={activeSidebar}
             onValueChange={(value) => {
@@ -383,7 +412,7 @@ export function ImmersiveLabLayout({
         {/* Center - Terminal (Main Focus) */}
         <div className={cn("flex-1 flex flex-col rounded-3xl overflow-hidden", glassPanel)}>
           {/* Quick Actions Bar */}
-          <div className={cn("h-12 flex items-center px-4 gap-2 overflow-x-auto", quickBarSurface)} aria-label="Quick action commands">
+          <div className={cn("min-h-12 flex flex-wrap items-center px-4 gap-2", quickBarSurface)} aria-label="Quick action commands">
             <span className="text-xs text-gray-700 dark:text-gray-300 font-mono mr-2 uppercase tracking-[0.25em]">Quick</span>
             <QuickAction onClick={() => handleQuickAction('kubectl get pods')} label="get pods" aria-label="Execute command: kubectl get pods" />
             <QuickAction onClick={() => handleQuickAction('helm list')} label="helm list" aria-label="Execute command: helm list" />
@@ -394,7 +423,7 @@ export function ImmersiveLabLayout({
           </div>
 
           {/* Terminal Area */}
-          <div className="flex-1 overflow-hidden bg-black dark:bg-black">
+          <div className="flex-1 overflow-y-auto bg-black dark:bg-black">
             <InteractiveTerminal
               ref={terminalRef}
               runtimeLogs={runtimeLogs}
@@ -453,12 +482,12 @@ export function ImmersiveLabLayout({
       <AnimatePresence>
         {isBottomPanelExpanded && (
           <motion.div
-            initial={prefersReducedMotion ? { height: '200px' } : { height: 0 }}
-            animate={{ height: '200px' }}
-            exit={prefersReducedMotion ? { height: '200px' } : { height: 0 }}
+            initial={prefersReducedMotion ? { height: '150px' } : { height: 0 }}
+            animate={{ height: 'auto', maxHeight: ['150px', '300px'] }}
+            exit={prefersReducedMotion ? { height: '150px' } : { height: 0 }}
             transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3, ease: 'easeInOut' }}
-            className={cn("overflow-hidden rounded-3xl rounded-t-none", bottomPanelSurface)}
-            style={prefersReducedMotion ? { height: '200px' } : undefined}
+            className={cn("overflow-y-auto rounded-3xl rounded-t-none max-h-[150px] lg:max-h-[200px]", bottomPanelSurface)}
+            style={prefersReducedMotion ? { height: '150px' } : undefined}
           >
             <div className="h-full overflow-y-auto p-4">
               <div className="flex items-center justify-between mb-3">
@@ -575,12 +604,12 @@ export function ImmersiveLabLayout({
 function MetricBadge({ label, value, status }: { label: string; value: string; status: 'ok' | 'warning' }) {
   const ariaLabel = `${label}: ${value}, Status: ${status === 'ok' ? 'normal' : 'warning'}`;
   return (
-    <div className="flex items-center gap-2" aria-label={ariaLabel}>
-      <span className="text-xs text-gray-700 dark:text-gray-400 font-mono uppercase tracking-wide">{label}</span>
+    <div className="flex flex-col lg:flex-row lg:items-center gap-0.5 lg:gap-2" aria-label={ariaLabel}>
+      <span className="text-xs lg:text-xs text-gray-700 dark:text-gray-400 font-mono uppercase tracking-wide whitespace-nowrap">{label}</span>
       <span className={cn(
-        "text-sm font-mono font-semibold",
+        "text-xs lg:text-sm font-mono font-semibold",
         status === 'ok' ? 'text-cyan-600 dark:text-cyan-400' : 'text-orange-500 dark:text-orange-400'
-      )}>
+      )} title={ariaLabel}>
         {value}
       </span>
     </div>
