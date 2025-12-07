@@ -3,6 +3,7 @@
 import { Area, AreaChart, ResponsiveContainer } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import type { TimeSeriesData } from '@/lib/types';
+import { memo } from 'react';
 
 const chartConfig = {
   p95: {
@@ -15,15 +16,15 @@ interface ApiResponseTimeChartProps {
   data: TimeSeriesData[];
 }
 
-export function ApiResponseTimeChart({ data }: ApiResponseTimeChartProps) {
+export const ApiResponseTimeChart = memo(function ApiResponseTimeChart({ data }: ApiResponseTimeChartProps) {
   return (
-    <ChartContainer config={chartConfig} className="w-full h-auto min-h-[200px]">
-      <div className="w-full h-[200px] sm:h-[250px] lg:h-[300px] min-w-0">
+    <ChartContainer config={chartConfig} className="w-full h-auto">
+      <div style={{ width: '100%', height: '300px', minWidth: 0, display: 'flex' }} className="sm:h-[250px] lg:h-[300px]">
         <ResponsiveContainer width="100%" height="100%" minWidth={0}>
           <AreaChart
-            accessibilityLayer
             data={data}
-            margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
+            margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+            syncId="perf-sync"
           >
             <defs>
               <linearGradient id="colorApi" x1="0" y1="0" x2="0" y2="1">
@@ -49,4 +50,6 @@ export function ApiResponseTimeChart({ data }: ApiResponseTimeChartProps) {
       </div>
     </ChartContainer>
   );
-}
+}, (prev, next) => {
+  return prev.data === next.data;
+});

@@ -3,6 +3,7 @@
 import { Bar, BarChart, Cell, ResponsiveContainer } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import type { DeploymentData } from '@/lib/types';
+import { memo } from 'react';
 
 const chartConfig = {
   count: {
@@ -22,12 +23,16 @@ interface DeploymentStatusChartProps {
   data: DeploymentData[];
 }
 
-export function DeploymentStatusChart({ data }: DeploymentStatusChartProps) {
+export const DeploymentStatusChart = memo(function DeploymentStatusChart({ data }: DeploymentStatusChartProps) {
   return (
-    <ChartContainer config={chartConfig} className="w-full h-auto min-h-[200px]">
-      <div className="w-full h-[200px] sm:h-[250px] lg:h-[300px] min-w-0">
+    <ChartContainer config={chartConfig} className="w-full h-auto">
+      <div style={{ width: '100%', height: '300px', minWidth: 0, display: 'flex' }} className="sm:h-[250px] lg:h-[300px]">
         <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-          <BarChart accessibilityLayer data={data} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
+          <BarChart 
+            data={data} 
+            margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+            syncId="perf-sync"
+          >
             <ChartTooltip
                 content={<ChartTooltipContent hideLabel />}
                 cursor={false}
@@ -42,4 +47,6 @@ export function DeploymentStatusChart({ data }: DeploymentStatusChartProps) {
       </div>
     </ChartContainer>
   );
-}
+}, (prev, next) => {
+  return prev.data === next.data;
+});
