@@ -2,8 +2,8 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import { useLabSimulation } from '@/contexts/lab-simulation-context';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui-mui';
+import { Button } from '@/components/ui-mui';
 import { Zap, ShieldAlert, FileTerminal, History, Forward, Undo, PlayCircle } from 'lucide-react';
 import { CpuUsageChart } from '@/components/lab/cpu-chart';
 import { MemoryUsageChart } from '@/components/lab/memory-chart';

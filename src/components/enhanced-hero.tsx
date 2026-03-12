@@ -4,6 +4,7 @@ import { motion, useMotionValue, useMotionTemplate } from 'framer-motion';
 import { Terminal, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { HeroCTAButton } from '@/components/shared/hero-cta-button';
+import { GlassPanel } from '@/components/ui/glass-panel';
 
 interface EnhancedHeroProps {
   title: string;
@@ -55,8 +56,12 @@ export function EnhancedHero({ title, subtitle, ctaPortfolio, ctaContact }: Enha
     <section
       id="hero"
       onMouseMove={onMouseMove}
-      className="group/hero relative py-32 md:py-40 overflow-hidden rounded-3xl border border-border/50 dark:border-white/5 bg-[var(--bg-primary)] dark:bg-[#010b10] text-[var(--text-primary-soft)] dark:text-[#0dfd88] shadow-[var(--glow-soft)]"
+      className="group/hero relative py-32 md:py-40 overflow-hidden text-[var(--text-primary-soft)] dark:text-[#0dfd88]"
     >
+      <GlassPanel
+        strong
+        className="absolute inset-0 z-0 rounded-3xl border border-[var(--glass-border)] dark:border-white/10 shadow-[var(--glow-soft)]"
+      />
       {/* Animated background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-[var(--neon-accent)]/15 via-transparent to-[#00b4d8]/10 animate-pulse-slow" />
       
@@ -86,7 +91,7 @@ export function EnhancedHero({ title, subtitle, ctaPortfolio, ctaContact }: Enha
           transition={{ duration: 0.5 }}
           className="mb-6 flex justify-center"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 dark:bg-primary/10 border border-primary/20 dark:border-primary/20 backdrop-blur-sm">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel border border-primary/20 dark:border-primary/20 bg-[var(--glass-bg)]">
             <Sparkles className="h-4 w-4 text-primary" />
             <span className="text-sm font-medium text-foreground">Senior DevOps Engineer</span>
           </div>

@@ -1,9 +1,9 @@
 "use client";
 
 import React from 'react';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import LinearProgress from '@mui/material/LinearProgress';
+import Chip from '@mui/material/Chip';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui-mui';
 import { Trophy, Star, Zap } from 'lucide-react';
 import { useGamification } from '@/contexts/gamification-context';
 import { motion } from 'framer-motion';
@@ -36,9 +36,7 @@ export const UserProgressBar = () => {
               Level {userProgress.level}
             </span>
           </div>
-          <Badge variant="secondary" className="bg-primary/10 text-primary">
-            {userProgress.totalXp.toLocaleString()} XP
-          </Badge>
+          <Chip label={`${userProgress.totalXp.toLocaleString()} XP`} size="small" color="primary" variant="outlined" />
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -52,10 +50,7 @@ export const UserProgressBar = () => {
             animate={{ width: '100%' }}
             transition={{ duration: 0.5 }}
           >
-            <Progress 
-              value={getProgressPercentage()} 
-              className="h-3 bg-muted"
-            />
+            <LinearProgress variant="determinate" value={getProgressPercentage()} sx={{ height: 8, borderRadius: 4 }} />
           </motion.div>
           <div className="flex justify-between text-xs text-muted-foreground dark:text-muted-foreground">
             <span>{userProgress.xp} XP</span>

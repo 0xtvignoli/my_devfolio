@@ -1,7 +1,7 @@
 'use client';
 
 import { Server, Cpu, MemoryStick, CheckCircle2, AlertCircle, XCircle, Waypoints } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui-mui';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { KubernetesCluster } from '@/lib/types';
 import { cn } from '@/lib/utils';

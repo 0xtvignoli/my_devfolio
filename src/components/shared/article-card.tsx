@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import type { Article, Locale, Translations } from '@/lib/types';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui-mui';
 import { ArrowRight } from 'lucide-react';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
 
 interface ArticleCardProps {
   article: Article;
@@ -10,25 +12,27 @@ interface ArticleCardProps {
 }
 
 export function ArticleCard({ article, locale, translations }: ArticleCardProps) {
-    return (
-        <Link href={`/articles/${article.slug}`} className="block group">
-            <Card className="flex flex-col h-full overflow-hidden transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1">
-                <CardHeader>
-                    <CardTitle className="font-headline">{article.title}</CardTitle>
-                    <p className="text-sm text-muted-foreground pt-1">
-                      {translations.article.published} {new Date(article.date).toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' })}
-                    </p>
-                </CardHeader>
-                <CardContent className="flex-grow">
-                    <CardDescription>{article.description}</CardDescription>
-                </CardContent>
-                <CardFooter>
-                    <div className="text-sm font-medium text-primary flex items-center">
-                        {translations.articles.viewAll}
-                        <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                    </div>
-                </CardFooter>
-            </Card>
-        </Link>
-    );
+  return (
+    <Link href={`/articles/${article.slug}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+      <Card sx={{ height: '100%', transition: 'box-shadow 0.2s, transform 0.2s', '&:hover': { transform: 'translateY(-4px)' } }}>
+        <CardHeader
+          title={<CardTitle>{article.title}</CardTitle>}
+          subheader={
+            <Typography variant="body2" color="text.secondary" sx={{ pt: 0.5 }}>
+              {translations.article.published} {new Date(article.date).toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' })}
+            </Typography>
+          }
+        />
+        <CardContent sx={{ pt: 0 }}>
+          <CardDescription>{article.description}</CardDescription>
+        </CardContent>
+        <CardFooter sx={{ pt: 0 }}>
+          <Typography variant="body2" fontWeight={500} color="primary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {translations.articles.viewAll}
+            <ArrowRight style={{ width: 16, height: 16 }} />
+          </Typography>
+        </CardFooter>
+      </Card>
+    </Link>
+  );
 }

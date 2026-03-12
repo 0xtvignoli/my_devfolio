@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui-mui';
 import type { Locale } from "@/lib/types";
 import { setLocaleAction } from "@/actions/locale";
 

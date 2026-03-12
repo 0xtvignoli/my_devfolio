@@ -4,18 +4,16 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 import type { Locale, Project, Translations } from '@/lib/types';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui-mui';
+import { Button } from '@/components/ui-mui';
 import { Github, ExternalLink, Code2 } from 'lucide-react';
 import { CodeSandboxEmbed } from '@/components/shared/codesandbox-embed';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import Chip from '@mui/material/Chip';
+import Box from '@mui/material/Box';
 
 interface ProjectCardProps {
   project: Project;
@@ -28,71 +26,58 @@ export function ProjectCard({ project, locale, translations }: ProjectCardProps)
 
   return (
     <>
-      <Card className="flex flex-col h-full overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-        <CardHeader>
-          <div className="aspect-video relative mb-4">
-            <Image
-              src={project.imageUrl}
-              alt={project.title[locale]}
-              fill
-              className="object-cover rounded-md"
-              data-ai-hint={project.imageHint}
-            />
-          </div>
-          <CardTitle className="font-headline">{project.title[locale]}</CardTitle>
-          <CardDescription>{project.description[locale]}</CardDescription>
-        </CardHeader>
-        <CardContent className="flex-grow">
-          <div className="flex flex-wrap gap-2">
+      <Card sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+        <Box sx={{ position: 'relative', width: '100%', aspectRatio: '16/10' }}>
+          <Image
+            src={project.imageUrl}
+            alt={project.title[locale]}
+            fill
+            style={{ objectFit: 'cover' }}
+            data-ai-hint={project.imageHint}
+          />
+        </Box>
+        <CardHeader
+          title={<CardTitle>{project.title[locale]}</CardTitle>}
+          subheader={<CardDescription>{project.description[locale]}</CardDescription>}
+        />
+        <CardContent sx={{ flexGrow: 1, pt: 0 }}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
             {project.tags.map((tag) => (
-              <Badge key={tag} variant="secondary">{tag}</Badge>
+              <Chip key={tag} label={tag} size="small" variant="outlined" />
             ))}
-          </div>
+          </Box>
         </CardContent>
-        <CardFooter className="flex justify-end gap-2 flex-wrap">
+        <CardFooter sx={{ justifyContent: 'flex-end', gap: 1, flexWrap: 'wrap', pt: 0 }}>
           {project.githubUrl && (
-            <Button variant="outline" asChild size="sm">
-              <Link href={project.githubUrl} target="_blank" rel="noopener noreferrer">
-                <Github className="mr-2 h-4 w-4" />
-                {translations.project.github}
-              </Link>
+            <Button variant="outline" size="sm" component={Link} href={project.githubUrl} target="_blank" rel="noopener noreferrer" startIcon={<Github style={{ width: 16, height: 16 }} />}>
+              {translations.project.github}
             </Button>
           )}
           {project.codesandboxId && (
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setIsCodeSandboxOpen(true)}
-              className="border-cyan-500/40 hover:bg-cyan-500/10 hover:border-cyan-500/60"
-            >
-              <Code2 className="mr-2 h-4 w-4" />
+            <Button variant="outline" size="sm" onClick={() => setIsCodeSandboxOpen(true)}>
+              <Code2 style={{ width: 16, height: 16, marginRight: 8 }} />
               {translations.codesandbox.tryIt}
             </Button>
           )}
           {project.demoUrl && (
-            <Button asChild size="sm">
-              <Link href={project.demoUrl} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="mr-2 h-4 w-4" />
-                {translations.project.demo}
-              </Link>
+            <Button variant="default" size="sm" component={Link} href={project.demoUrl} target="_blank" rel="noopener noreferrer" startIcon={<ExternalLink style={{ width: 16, height: 16 }} />}>
+              {translations.project.demo}
             </Button>
           )}
         </CardFooter>
       </Card>
 
       {project.codesandboxId && (
-        <Dialog open={isCodeSandboxOpen} onOpenChange={setIsCodeSandboxOpen}>
-          <DialogContent className="max-w-6xl h-[90vh] p-0 bg-slate-950 border-cyan-500/30">
-            <DialogHeader className="p-6 border-b border-cyan-500/30">
-              <DialogTitle className="text-cyan-300 flex items-center gap-2">
-                <Code2 className="h-5 w-5" />
-                {project.title[locale]}
-              </DialogTitle>
-              <DialogDescription className="text-slate-400">
-                {project.description[locale]}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="flex-1 p-6 overflow-hidden">
+        <Dialog open={isCodeSandboxOpen} onClose={() => setIsCodeSandboxOpen(false)} maxWidth="lg" fullWidth PaperProps={{ sx: { height: '90vh' } }}>
+          <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, borderBottom: 1, borderColor: 'divider', py: 2 }}>
+            <Code2 style={{ width: 20, height: 20 }} />
+            {project.title[locale]}
+          </DialogTitle>
+          <DialogContent sx={{ p: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <DialogContentText component="div" sx={{ px: 3, py: 2, color: 'text.secondary' }}>
+              {project.description[locale]}
+            </DialogContentText>
+            <Box sx={{ flex: 1, p: 2, overflow: 'hidden', minHeight: 0 }}>
               <CodeSandboxEmbed
                 sandboxId={project.codesandboxId}
                 title={project.title[locale]}
@@ -100,7 +85,7 @@ export function ProjectCard({ project, locale, translations }: ProjectCardProps)
                 variant="full"
                 className="h-full"
               />
-            </div>
+            </Box>
           </DialogContent>
         </Dialog>
       )}

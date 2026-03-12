@@ -1,7 +1,7 @@
 'use client';
 
 import { FileQuestion } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui-mui';
 import type { ReactNode } from 'react';
 
 interface EmptyStateProps {

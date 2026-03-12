@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import type { Article as ArticleType } from '@/lib/types';
 import { getArticle, getArticleSlugs } from '@/data/content/articles';
 import { CodeBlock } from '@/components/shared/code-block';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui-mui';
 import { ArrowLeft } from 'lucide-react';
 import { resolveLocale, getTranslations } from '@/lib/i18n/server';
 

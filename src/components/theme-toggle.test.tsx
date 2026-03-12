@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen, cleanup } from '@testing-library/react';
 import { describe, test, expect, mock, afterEach } from 'bun:test';
 import '@testing-library/jest-dom';
+import { MuiTestWrapper } from '@/test-utils';
 
 const setThemeMock = mock(() => {});
 
@@ -17,7 +18,7 @@ afterEach(cleanup);
 
 describe('ThemeToggle', () => {
   test('renders toggle button with accessible name', () => {
-    render(<ThemeToggle labels={defaultLabels} />);
+    render(<ThemeToggle labels={defaultLabels} />, { wrapper: MuiTestWrapper });
     expect(screen.getByRole('button', { name: /toggle theme/i })).toBeInTheDocument();
   });
 });

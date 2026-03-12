@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen, cleanup } from '@testing-library/react';
 import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
 import '@testing-library/jest-dom';
+import { MuiTestWrapper } from '@/test-utils';
 import { ErrorBoundary } from './error-boundary';
 
 function Thrower({ shouldThrow }: { shouldThrow: boolean }) {
@@ -29,7 +30,8 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary>
         <span>Child content</span>
-      </ErrorBoundary>
+      </ErrorBoundary>,
+      { wrapper: MuiTestWrapper }
     );
     expect(screen.getByText(/child content/i)).toBeInTheDocument();
   });
@@ -38,7 +40,8 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary>
         <Thrower shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
+      { wrapper: MuiTestWrapper }
     );
     expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /reload page/i })).toBeInTheDocument();
@@ -56,7 +59,8 @@ describe('ErrorBoundary', () => {
         }}
       >
         <Thrower shouldThrow={true} />
-      </ErrorBoundary>
+      </ErrorBoundary>,
+      { wrapper: MuiTestWrapper }
     );
     expect(screen.getByText(/custom title/i)).toBeInTheDocument();
     expect(screen.getByText(/custom description/i)).toBeInTheDocument();

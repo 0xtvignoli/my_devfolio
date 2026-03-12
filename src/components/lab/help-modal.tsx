@@ -1,7 +1,7 @@
 'use client';
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui-mui';
 import { HelpCircle, Terminal, Code, Zap, ShieldAlert, GitBranch } from 'lucide-react';
 import { useState } from 'react';
 

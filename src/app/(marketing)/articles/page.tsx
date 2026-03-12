@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArticleCard } from "@/components/shared/article-card";
 import { EmptyState } from "@/components/shared/empty-state";
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui-mui';
 import { getArticles } from "@/data/content/articles";
 import { resolveLocale, getTranslations } from "@/lib/i18n/server";
 

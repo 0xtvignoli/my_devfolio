@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { LabClientPage } from '@/components/lab/lab-client-page';
 import { ImmersiveLabLayout } from '@/components/lab/immersive-lab-layout';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui-mui';
 import { LayoutGrid, Terminal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Locale, Translations } from '@/lib/types';

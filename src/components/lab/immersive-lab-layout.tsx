@@ -7,7 +7,7 @@ import { KubernetesClusterViz } from '@/components/lab/kubernetes-cluster-viz';
 import { VisualDeployPipeline } from '@/components/lab/visual-deploy-pipeline';
 import { IncidentHistory } from '@/components/lab/incident-history';
 import { CanaryAnalysis } from '@/components/lab/canary-analysis';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui-mui';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
