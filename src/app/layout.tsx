@@ -79,7 +79,14 @@ export default async function RootLayout({
           spaceGrotesk.variable, 
           sourceCodePro.variable
         )}
+        suppressHydrationWarning
       >
+        {/* Strip data-cursor-ref injected by Cursor IDE browser/extension to avoid hydration mismatch */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var strip=function(){var r=document.querySelectorAll("[data-cursor-ref]");for(var i=0;i<r.length;i++)r[i].removeAttribute("data-cursor-ref");};strip();var o=new MutationObserver(strip);o.observe(document.documentElement,{attributes:true,attributeFilter:["data-cursor-ref"],subtree:true});})();`,
+          }}
+        />
         <SiteProviders skipLabel={t.a11y.skipToContent}>
           {children}
         </SiteProviders>
