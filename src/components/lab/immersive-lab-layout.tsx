@@ -691,6 +691,7 @@ function QuickAction({ onClick, label, variant = 'default', 'aria-label': ariaLa
           baseVariants[variant]
         ),
         hoverVariants[variant],
+        "transition-colors",
         isTouchDevice,
         prefersReducedMotion
       )}

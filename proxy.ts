@@ -1,10 +1,9 @@
-// TODO: remove this file since middleware was deprecated
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { DEFAULT_LOCALE, isSupportedLocale, matchLocaleFromAcceptLanguage } from '@/lib/i18n/config';
 
 // Host-based routing combined with locale cookie bootstrap
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const url = req.nextUrl.clone();
   const host = req.headers.get('host') || '';
   const isDevSubdomain = host.split(':')[0] === 'dev.tvignoli.com';

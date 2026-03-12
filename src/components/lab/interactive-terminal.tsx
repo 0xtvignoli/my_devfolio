@@ -1245,7 +1245,7 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
                   onKeyDown={handleInputKeyDown}
                   className={cn(
                     "bg-transparent border-none text-slate-100 font-medium w-full p-0",
-                    "focus-visible:outline-none focus-visible:ring-0",
+                    "focus-visible:outline-hidden focus-visible:ring-0",
                     "placeholder:text-slate-600 placeholder:font-normal",
                     isTouchDevice && "text-base py-1 min-h-[44px]"
                   )}

@@ -1,139 +1,230 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "tailwindcss-animate";
 
-@layer base {
-  :root {
-    --background: 220 30% 98%;
-    --foreground: 220 20% 10%;
-    --card: 220 25% 99%;
-    --card-foreground: 220 20% 8%;
-    --popover: 220 20% 98%;
-    --popover-foreground: 220 25% 8%;
-    --primary: 200 100% 50%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 220 30% 95%;
-    --secondary-foreground: 220 25% 15%;
-    --muted: 220 25% 95%;
-    --muted-foreground: 220 10% 35%;
-    --accent: 270 70% 60%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 2 84% 58%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 220 20% 88%;
-    --input: 220 20% 88%;
-    --ring: 200 100% 50%;
-    --chart-1: 200 100% 50%;
-    --chart-2: 270 70% 60%;
-    --chart-3: 154 100% 47%;
-    --chart-4: 175 40% 45%;
-    --chart-5: 320 65% 55%;
-    --radius: 0.75rem;
-    --bg-primary: #f0f4f8;
-    --bg-secondary: #e8edf2;
-    --neon-accent: #00b4d8;
-    --neon-accent-muted: #0077b6;
-    --text-primary-soft: #023e8a;
-    --text-muted-soft: #0077b6;
-    --accent-gradient: linear-gradient(135deg, #00b4d8, #7b2cbf);
-    --glow-soft: 0 0 40px rgba(0, 180, 216, 0.15);
-    --radius-pill: 999px;
+/* ---------------------------------------------------------------------------
+   Design tokens (light/dark) – keep first so @theme inline can reference them
+   --------------------------------------------------------------------------- */
+:root {
+  --background: 220 30% 98%;
+  --foreground: 220 20% 10%;
+  --card: 220 25% 99%;
+  --card-foreground: 220 20% 8%;
+  --popover: 220 20% 98%;
+  --popover-foreground: 220 25% 8%;
+  --primary: 200 100% 50%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 220 30% 95%;
+  --secondary-foreground: 220 25% 15%;
+  --muted: 220 25% 95%;
+  --muted-foreground: 220 10% 35%;
+  --accent: 270 70% 60%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 2 84% 58%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 220 20% 88%;
+  --input: 220 20% 88%;
+  --ring: 200 100% 50%;
+  --chart-1: 200 100% 50%;
+  --chart-2: 270 70% 60%;
+  --chart-3: 154 100% 47%;
+  --chart-4: 175 40% 45%;
+  --chart-5: 320 65% 55%;
+  --radius: 0.75rem;
+  --bg-primary: #f0f4f8;
+  --bg-secondary: #e8edf2;
+  --neon-accent: #00b4d8;
+  --neon-accent-muted: #0077b6;
+  --text-primary-soft: #023e8a;
+  --text-muted-soft: #0077b6;
+  --accent-gradient: linear-gradient(135deg, #00b4d8, #7b2cbf);
+  --glow-soft: 0 0 40px rgba(0, 180, 216, 0.15);
+  --radius-pill: 999px;
+}
+
+.dark {
+  --background: 220 30% 4%;
+  --foreground: 220 100% 95%;
+  --card: 220 25% 6%;
+  --card-foreground: 220 100% 90%;
+  --popover: 220 30% 5%;
+  --popover-foreground: 220 100% 95%;
+  --primary: 200 100% 60%;
+  --primary-foreground: 220 30% 4%;
+  --secondary: 220 20% 10%;
+  --secondary-foreground: 220 100% 90%;
+  --muted: 220 15% 12%;
+  --muted-foreground: 220 30% 70%;
+  --accent: 270 70% 65%;
+  --accent-foreground: 220 30% 4%;
+  --destructive: 2 80% 40%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 220 20% 18%;
+  --input: 220 20% 18%;
+  --ring: 200 100% 60%;
+  --chart-1: 200 100% 60%;
+  --chart-2: 270 70% 65%;
+  --chart-3: 154 100% 47.5%;
+  --chart-4: 320 65% 55%;
+  --chart-5: 40 80% 60%;
+  --bg-primary: #0a0e1a;
+  --bg-secondary: #0f1419;
+  --neon-accent: #00d9ff;
+  --neon-accent-muted: #0096c7;
+  --text-primary-soft: #e0f2fe;
+  --text-muted-soft: #7dd3fc;
+  --accent-gradient: linear-gradient(135deg, #00d9ff, #a855f7);
+  --glow-soft: 0 0 40px rgba(0, 217, 255, 0.25);
+  --radius-pill: 999px;
+}
+
+/* ---------------------------------------------------------------------------
+   Tailwind v4 theme: map semantic vars to --color-* so utilities (bg-background, etc.) work
+   --------------------------------------------------------------------------- */
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-pill: var(--radius-pill);
+  /* Accordion (from tailwind.config) */
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  @keyframes accordion-down {
+    from { height: 0; }
+    to { height: var(--radix-accordion-content-height); }
   }
- 
-  .dark {
-    --background: 220 30% 4%;
-    --foreground: 220 100% 95%;
-    --card: 220 25% 6%;
-    --card-foreground: 220 100% 90%;
-    --popover: 220 30% 5%;
-    --popover-foreground: 220 100% 95%;
-    --primary: 200 100% 60%;
-    --primary-foreground: 220 30% 4%;
-    --secondary: 220 20% 10%;
-    --secondary-foreground: 220 100% 90%;
-    --muted: 220 15% 12%;
-    --muted-foreground: 220 30% 70%;
-    --accent: 270 70% 65%;
-    --accent-foreground: 220 30% 4%;
-    --destructive: 2 80% 40%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 220 20% 18%;
-    --input: 220 20% 18%;
-    --ring: 200 100% 60%;
-    --chart-1: 200 100% 60%;
-    --chart-2: 270 70% 65%;
-    --chart-3: 154 100% 47.5%;
-    --chart-4: 320 65% 55%;
-    --chart-5: 40 80% 60%;
-    --bg-primary: #0a0e1a;
-    --bg-secondary: #0f1419;
-    --neon-accent: #00d9ff;
-    --neon-accent-muted: #0096c7;
-    --text-primary-soft: #e0f2fe;
-    --text-muted-soft: #7dd3fc;
-    --accent-gradient: linear-gradient(135deg, #00d9ff, #a855f7);
-    --glow-soft: 0 0 40px rgba(0, 217, 255, 0.25);
-    --radius-pill: 999px;
+  @keyframes accordion-up {
+    from { height: var(--radix-accordion-content-height); }
+    to { height: 0; }
   }
 }
- 
+
+/* ---------------------------------------------------------------------------
+   Base layer (plain CSS – v4 @apply in base/components has limitations)
+   --------------------------------------------------------------------------- */
 @layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
   body {
-    @apply bg-background text-foreground;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
   }
-  
   ::selection {
-    @apply bg-primary/80 text-primary-foreground;
+    background-color: hsl(var(--primary) / 0.8);
+    color: hsl(var(--primary-foreground));
   }
 }
 
+/* ---------------------------------------------------------------------------
+   Component-style classes (plain CSS)
+   --------------------------------------------------------------------------- */
 @layer components {
   .ui-btn {
-    @apply relative inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-300;
-    @apply bg-gradient-to-r from-cyan-600 to-blue-600 text-white;
-    @apply hover:from-cyan-500 hover:to-blue-500 hover:shadow-lg hover:shadow-cyan-500/50;
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2;
-    @apply active:scale-95;
-    @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.3s;
+    background: linear-gradient(to right, #0891b2, #2563eb);
+    color: white;
   }
-  
+  .ui-btn:hover {
+    background: linear-gradient(to right, #06b6d4, #3b82f6);
+    box-shadow: 0 10px 15px -3px rgb(6 182 212 / 0.5);
+  }
+  .ui-btn:focus-visible {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px #06b6d4;
+  }
+  .ui-btn:active {
+    transform: scale(0.95);
+  }
+  .ui-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .ui-btn:disabled:hover {
+    transform: none;
+  }
   .ui-btn.destructive {
-    @apply bg-gradient-to-r from-red-600 to-rose-600;
-    @apply hover:from-red-500 hover:to-rose-500 hover:shadow-red-500/50;
-    @apply focus-visible:ring-red-500;
+    background: linear-gradient(to right, #dc2626, #e11d48);
+  }
+  .ui-btn.destructive:hover {
+    background: linear-gradient(to right, #ef4444, #f43f5e);
+    box-shadow: 0 10px 15px -3px rgb(239 68 68 / 0.5);
+  }
+  .ui-btn.destructive:focus-visible {
+    box-shadow: 0 0 0 2px #ef4444;
   }
 
-  /* Responsive text truncation utilities */
   .truncate-responsive {
-    @apply truncate;
-    @apply lg:max-w-full;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  @media (min-width: 1024px) {
+    .truncate-responsive {
+      max-width: 100%;
+    }
   }
 
-  /* Better ellipsis support */
   .line-clamp-1-responsive {
-    @apply line-clamp-1;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
     overflow-wrap: break-word;
     word-break: break-word;
   }
 
-  /* Touch target sizes (minimum 44x44px per Apple HIG) */
   button {
-    @apply min-h-[44px] min-w-[44px] focus-visible:ring-2 focus-visible:ring-offset-2;
+    min-height: 44px;
+    min-width: 44px;
   }
-
+  button:focus-visible {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
   a {
-    @apply min-h-[44px] inline-flex items-center;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
   }
-
-  /* Active state for touch */
   @media (hover: none) and (pointer: coarse) {
     button:active,
     a:active,
     [role="button"]:active {
-      @apply opacity-75;
+      opacity: 0.75;
     }
   }
 }

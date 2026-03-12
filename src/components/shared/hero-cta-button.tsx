@@ -21,7 +21,7 @@ export function HeroCTAButton({
   icon: Icon,
   className,
 }: HeroCTAButtonProps) {
-  const baseStyles = "group relative overflow-hidden rounded-[var(--radius-pill)] px-8 font-semibold shadow-[var(--glow-soft)] transition-all duration-300 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2";
+  const baseStyles = "group relative overflow-hidden rounded-[var(--radius-pill)] px-8 font-semibold shadow-[var(--glow-soft)] transition-all duration-300 hover:-translate-y-0.5 focus-visible:outline-hidden focus-visible:ring-2";
   
   const variantStyles = {
     primary: cn(

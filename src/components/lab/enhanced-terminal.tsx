@@ -284,7 +284,7 @@ export function EnhancedTerminal({ onCommand, initialHistory = [] }: EnhancedTer
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="flex-1 bg-transparent outline-none text-blue-400"
+            className="flex-1 bg-transparent outline-hidden text-blue-400"
             placeholder="Type a command or press Tab for suggestions..."
             autoFocus
           />
