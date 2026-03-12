@@ -1,9 +1,10 @@
 import { MetadataRoute } from 'next';
+import { getArticleSlugs, getArticle } from '@/data/content/articles';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://tvignoli.com';
 
-  return [
+  const staticEntries: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
       lastModified: new Date(),
@@ -41,5 +42,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
     },
   ];
+
+  const articleSlugs = getArticleSlugs();
+  const articleEntries: MetadataRoute.Sitemap = articleSlugs.map((slug) => {
+    const article = getArticle(slug, 'en');
+    return {
+      url: `${baseUrl}/articles/${slug}`,
+      lastModified: article ? new Date(article.date) : new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    };
+  });
+
+  return [...staticEntries, ...articleEntries];
 }
 

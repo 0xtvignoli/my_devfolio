@@ -2,6 +2,7 @@ import type { Translations } from "@/lib/types";
 
 export const en: Translations = {
   nav: {
+    dashboard: "Dashboard",
     portfolio: "Portfolio",
     experience: "Experience",
     articles: "Articles",
@@ -28,7 +29,9 @@ export const en: Translations = {
   },
   articles: {
     title: "Latest Articles",
-    viewAll: "Read all articles"
+    viewAll: "Read all articles",
+    emptyTitle: "No articles yet",
+    emptyDescription: "Articles will appear here when published.",
   },
   contact: {
     title: "Let's work together",
@@ -46,6 +49,15 @@ export const en: Translations = {
     light: "Light",
     dark: "Dark",
     system: "System",
+  },
+  a11y: {
+    skipToContent: "Skip to main content",
+  },
+  errorBoundary: {
+    title: "Something went wrong",
+    description: "The Lab encountered an unexpected error. Don't worry, your data is safe.",
+    reload: "Reload Page",
+    goHome: "Go to Lab Home",
   },
   article: {
     back: "Back to articles",

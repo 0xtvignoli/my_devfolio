@@ -2,6 +2,7 @@ export type Locale = 'en' | 'it';
 
 export interface Translations {
   nav: {
+    dashboard: string;
     portfolio: string;
     experience: string;
     articles: string;
@@ -27,6 +28,8 @@ export interface Translations {
   articles: {
     title: string;
     viewAll: string;
+    emptyTitle?: string;
+    emptyDescription?: string;
   };
   contact: {
     title: string;
@@ -44,6 +47,15 @@ export interface Translations {
     light: string;
     dark: string;
     system: string;
+  };
+  a11y: {
+    skipToContent: string;
+  };
+  errorBoundary: {
+    title: string;
+    description: string;
+    reload: string;
+    goHome: string;
   };
   article: {
     back: string;

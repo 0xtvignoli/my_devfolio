@@ -12,7 +12,7 @@ export default async function LabLayout({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen flex-col bg-[var(--bg-primary)]">
       <Header locale={locale} translations={translations} />
       <LabProviders>
-        <main className="flex-1">{children}</main>
+        <main id="main-content" className="flex-1">{children}</main>
       </LabProviders>
       <Footer />
     </div>

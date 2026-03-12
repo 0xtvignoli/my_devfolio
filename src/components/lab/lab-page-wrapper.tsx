@@ -11,7 +11,14 @@ interface LabPageWrapperProps {
 
 export function LabPageWrapper({ locale, translations }: LabPageWrapperProps) {
   return (
-    <ErrorBoundary>
+    <ErrorBoundary
+      messages={{
+        title: translations.errorBoundary.title,
+        description: translations.errorBoundary.description,
+        reloadLabel: translations.errorBoundary.reload,
+        goHomeLabel: translations.errorBoundary.goHome,
+      }}
+    >
       <LabLayoutSelector locale={locale} translations={translations} />
     </ErrorBoundary>
   );

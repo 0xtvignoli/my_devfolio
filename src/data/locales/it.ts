@@ -2,6 +2,7 @@ import type { Translations } from "@/lib/types";
 
 export const it: Translations = {
   nav: {
+    dashboard: "Dashboard",
     portfolio: "Portfolio",
     experience: "Esperienza",
     articles: "Articoli",
@@ -28,7 +29,9 @@ export const it: Translations = {
   },
   articles: {
     title: "Ultimi Articoli",
-    viewAll: "Leggi tutti gli articoli"
+    viewAll: "Leggi tutti gli articoli",
+    emptyTitle: "Nessun articolo",
+    emptyDescription: "Gli articoli appariranno qui quando pubblicati.",
   },
   contact: {
     title: "Lavoriamo insieme",
@@ -46,6 +49,15 @@ export const it: Translations = {
     light: "Chiaro",
     dark: "Scuro",
     system: "Sistema",
+  },
+  a11y: {
+    skipToContent: "Vai al contenuto principale",
+  },
+  errorBoundary: {
+    title: "Qualcosa è andato storto",
+    description: "Il Lab ha riscontrato un errore imprevisto. I tuoi dati sono al sicuro.",
+    reload: "Ricarica pagina",
+    goHome: "Torna al Lab",
   },
   article: {
     back: "Torna agli articoli",

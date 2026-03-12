@@ -1,4 +1,7 @@
+import Link from "next/link";
 import { ArticleCard } from "@/components/shared/article-card";
+import { EmptyState } from "@/components/shared/empty-state";
+import { Button } from "@/components/ui/button";
 import { getArticles } from "@/data/content/articles";
 import { resolveLocale, getTranslations } from "@/lib/i18n/server";
 
@@ -17,11 +20,23 @@ export default async function ArticlesPage() {
                     Deep dives into cloud technologies, automation, and best practices.
                 </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {articles.map((article) => (
-                    <ArticleCard key={article.slug} article={article} locale={locale} translations={t} />
-                ))}
-            </div>
+            {articles.length === 0 ? (
+                <EmptyState
+                    title={t.articles.emptyTitle ?? "No articles yet"}
+                    description={t.articles.emptyDescription}
+                    action={
+                        <Button asChild variant="outline">
+                            <Link href="/">{locale === "it" ? "Torna alla home" : "Back to home"}</Link>
+                        </Button>
+                    }
+                />
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {articles.map((article) => (
+                        <ArticleCard key={article.slug} article={article} locale={locale} translations={t} />
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

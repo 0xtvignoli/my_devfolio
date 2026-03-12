@@ -19,7 +19,7 @@ export function Header({ locale, translations }: HeaderProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const navLinks = [
-    { href: '/dashboard', label: 'Dashboard', icon: Trophy },
+    { href: '/dashboard', label: translations.nav.dashboard, icon: Trophy },
     { href: '/portfolio', label: translations.nav.portfolio, icon: LayoutGrid },
     { href: '/experience', label: translations.nav.experience, icon: Briefcase },
     { href: '/articles', label: translations.nav.articles, icon: BookOpen },

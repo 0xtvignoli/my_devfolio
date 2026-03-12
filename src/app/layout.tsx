@@ -4,7 +4,7 @@ import { inter, spaceGrotesk, sourceCodePro } from './fonts';
 import { cn } from '@/lib/utils';
 import { GoogleAnalytics } from '@/components/analytics/google-analytics';
 import { Suspense } from 'react';
-import { resolveLocale } from '@/lib/i18n/server';
+import { resolveLocale, getTranslations } from '@/lib/i18n/server';
 import { SiteProviders } from '@/components/providers/site-providers';
 
 export const metadata: Metadata = {
@@ -63,6 +63,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const locale = await resolveLocale();
+  const t = getTranslations(locale);
 
   return (
     <html lang={locale} suppressHydrationWarning>
@@ -79,7 +80,7 @@ export default async function RootLayout({
           sourceCodePro.variable
         )}
       >
-        <SiteProviders>
+        <SiteProviders skipLabel={t.a11y.skipToContent}>
           {children}
         </SiteProviders>
       </body>
