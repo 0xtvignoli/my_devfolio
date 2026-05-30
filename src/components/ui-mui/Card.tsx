@@ -23,7 +23,7 @@ export function CardHeader({ title, subheader, ...props }: CardHeaderProps) {
 /** Alias for CardHeader title slot with typography variant */
 export function CardTitle({ children, ...props }: { children?: React.ReactNode; className?: string }) {
   return (
-    <Typography variant="h6" component="div" fontWeight={600} {...props}>
+    <Typography variant="h6" component="div" sx={{ fontWeight: 600 }} {...props}>
       {children}
     </Typography>
   );

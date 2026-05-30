@@ -76,24 +76,9 @@ export function CodePlayground({ locale, translations }: CodePlaygroundProps) {
   const [selectedTemplate, setSelectedTemplate] = useState<TerraformTemplate | null>(null);
 
   return (
-    <div className="relative bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 rounded-b-lg h-[28rem] text-sm border border-cyan-500/30 shadow-2xl shadow-cyan-500/20 flex flex-col overflow-hidden">
-      {/* Animated background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-purple-500/5 opacity-50 pointer-events-none" />
-      
-      {/* Subtle grid pattern */}
-      <div 
-        className="absolute inset-0 opacity-[0.03] pointer-events-none"
-        style={{
-          backgroundImage: `
-            linear-gradient(to right, rgba(6,182,212,0.1) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(6,182,212,0.1) 1px, transparent 1px)
-          `,
-          backgroundSize: '20px 20px',
-        }}
-      />
-
+    <div className="relative bg-slate-950 rounded-b-lg h-[28rem] text-sm border border-cyan-500/30 flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="relative flex items-center gap-2 p-3 bg-gradient-to-r from-slate-900/90 via-slate-800/80 to-slate-900/90 backdrop-blur-sm border-b border-cyan-500/30 text-xs text-slate-300 z-10">
+      <div className="relative flex items-center gap-2 p-3 bg-slate-900 border-b border-cyan-500/30 text-xs text-slate-300 z-10">
         <Code2 className="h-4 w-4 text-cyan-400" aria-hidden="true" />
         <h3 className="font-semibold text-cyan-300">{translations.codesandbox.title}</h3>
         <span className="text-xs text-slate-500 ml-auto">{translations.codesandbox.description}</span>
@@ -117,11 +102,10 @@ export function CodePlayground({ locale, translations }: CodePlaygroundProps) {
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setSelectedTemplate(template)}
                     className={cn(
-                      "w-full text-left rounded-lg border px-4 py-3 backdrop-blur-sm transition-all duration-300",
-                      "border-cyan-500/30 bg-gradient-to-br from-cyan-500/10 to-slate-950/40",
-                      "hover:border-cyan-500/50 hover:bg-gradient-to-br hover:from-cyan-500/20 hover:to-blue-500/10",
-                      "hover:shadow-lg hover:shadow-cyan-500/20",
-                      "focus-visible:outline-2 focus-visible:outline-cyan-500 focus-visible:ring-4 focus-visible:ring-cyan-500/50"
+                      "w-full text-left rounded-lg border px-4 py-3 transition-colors duration-200",
+                      "border-cyan-500/30 bg-slate-800/80",
+                      "hover:border-cyan-400/50 hover:bg-slate-700/80",
+                      "focus-visible:outline-2 focus-visible:outline-cyan-500 focus-visible:ring-2 focus-visible:ring-cyan-500/50"
                     )}
                     aria-label={`Select template: ${template.name}`}
                   >
@@ -160,7 +144,7 @@ export function CodePlayground({ locale, translations }: CodePlaygroundProps) {
           /* CodeSandbox Embed View */
           <div className="flex-1 flex flex-col relative z-0">
             {/* Back button */}
-            <div className="p-3 bg-gradient-to-r from-slate-900/90 via-slate-800/80 to-slate-900/90 backdrop-blur-sm border-b border-cyan-500/30">
+            <div className="p-3 bg-slate-900 border-b border-cyan-500/30">
               <motion.button
                 whileHover={{ x: -2 }}
                 whileTap={{ scale: 0.95 }}

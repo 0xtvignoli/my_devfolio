@@ -12,18 +12,18 @@ export const UserProgressBar = () => {
   const { userProgress, getProgressPercentage } = useGamification();
   
   const getTitleColor = (level: number) => {
-    if (level >= 20) return 'text-purple-600 dark:text-purple-400';
-    if (level >= 15) return 'text-yellow-600 dark:text-yellow-400';
-    if (level >= 10) return 'text-blue-600 dark:text-blue-400';
-    if (level >= 5) return 'text-green-600 dark:text-green-400';
-    return 'text-gray-600 dark:text-gray-400';
+    if (level >= 20) return 'text-primary';
+    if (level >= 15) return 'text-amber-600 dark:text-amber-400';
+    if (level >= 10) return 'text-primary';
+    if (level >= 5) return 'text-emerald-600 dark:text-emerald-400';
+    return 'text-muted-foreground';
   };
 
   const getTitleIcon = (level: number) => {
-    if (level >= 20) return <Trophy className="h-4 w-4 text-purple-600 dark:text-purple-400" />;
-    if (level >= 15) return <Star className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />;
-    if (level >= 10) return <Zap className="h-4 w-4 text-blue-600 dark:text-blue-400" />;
-    return <Star className="h-4 w-4 text-gray-600 dark:text-gray-400" />;
+    if (level >= 20) return <Trophy className="h-4 w-4 text-primary" />;
+    if (level >= 15) return <Star className="h-4 w-4 text-amber-600 dark:text-amber-400" />;
+    if (level >= 10) return <Zap className="h-4 w-4 text-primary" />;
+    return <Star className="h-4 w-4 text-muted-foreground" />;
   };
 
   return (

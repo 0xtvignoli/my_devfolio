@@ -2,97 +2,133 @@
 @plugin "tailwindcss-animate";
 
 /* ---------------------------------------------------------------------------
-   Design tokens (light/dark) – keep first so @theme inline can reference them
+   Design tokens – Material Design 3 inspired (minimal, neutral surfaces)
+   Primary: Blue  |  Secondary: neutral gray  |  Surfaces: #FAFAFA / #121212
+   Ref: m3.material.io/styles/color/roles
    --------------------------------------------------------------------------- */
 :root {
-  --background: 220 30% 98%;
-  --foreground: 220 20% 10%;
-  --card: 220 25% 99%;
-  --card-foreground: 220 20% 8%;
-  --popover: 220 20% 98%;
-  --popover-foreground: 220 25% 8%;
-  --primary: 200 100% 50%;
+  --background: 0 0% 98%;
+  --foreground: 0 0% 13%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 13%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 13%;
+  --primary: 217 87% 51%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 220 30% 95%;
-  --secondary-foreground: 220 25% 15%;
-  --muted: 220 25% 95%;
-  --muted-foreground: 220 10% 35%;
-  --accent: 270 70% 60%;
-  --accent-foreground: 0 0% 100%;
-  --destructive: 2 84% 58%;
+  --secondary: 220 6% 46%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 220 14% 96%;
+  --muted-foreground: 220 6% 40%;
+  --accent: 217 87% 96%;
+  --accent-foreground: 217 87% 35%;
+  --destructive: 0 72% 42%;
   --destructive-foreground: 0 0% 100%;
-  --border: 220 20% 88%;
-  --input: 220 20% 88%;
-  --ring: 200 100% 50%;
-  --chart-1: 200 100% 50%;
-  --chart-2: 270 70% 60%;
-  --chart-3: 154 100% 47%;
-  --chart-4: 175 40% 45%;
-  --chart-5: 320 65% 55%;
+  --border: 220 9% 88%;
+  --input: 220 9% 88%;
+  --ring: 217 87% 51%;
+  --chart-1: 217 87% 51%;
+  --chart-2: 220 6% 46%;
+  --chart-3: 174 58% 39%;
+  --chart-4: 36 100% 50%;
+  --chart-5: 0 72% 42%;
   --radius: 0.75rem;
-  --bg-primary: #f0f4f8;
-  --bg-secondary: #e8edf2;
-  --neon-accent: #00b4d8;
-  --neon-accent-muted: #0077b6;
-  --text-primary-soft: #023e8a;
-  --text-muted-soft: #0077b6;
-  --accent-gradient: linear-gradient(135deg, #00b4d8, #7b2cbf);
-  --glow-soft: 0 0 40px rgba(0, 180, 216, 0.15);
+  --md-primary: #1a73e8;
+  --md-on-primary: #ffffff;
+  --md-primary-container: #d3e3fd;
+  --md-surface: #fafafa;
+  --md-surface-container: #f0f0f0;
+  --md-on-surface: #1f1f1f;
+  --md-on-surface-variant: #5f6368;
+  --md-outline: #e0e0e0;
+  --bg-primary: var(--md-surface);
+  --bg-secondary: var(--md-surface-container);
+  --accent-primary: var(--md-primary);
+  --accent-muted: #4285f4;
+  --text-primary-soft: var(--md-on-surface);
+  --text-muted-soft: var(--md-on-surface-variant);
+  --accent-gradient: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);
+  --elevation-soft: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
   --radius-pill: 999px;
-  /* Glassmorphism tokens */
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-bg-strong: rgba(255, 255, 255, 0.85);
-  --glass-border: rgba(0, 0, 0, 0.08);
-  --glass-blur: 12px;
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  /* Legacy aliases */
+  --neon-accent: var(--accent-primary);
+  --neon-accent-muted: var(--accent-muted);
+  --glow-soft: var(--elevation-soft);
+  /* Spacing scale (4px base) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  /* Surfaces – subtle, no heavy glass tint */
+  --glass-bg: rgba(255, 255, 255, 0.92);
+  --glass-bg-strong: rgba(255, 255, 255, 0.98);
+  --glass-border: var(--md-outline);
+  --glass-blur: 8px;
+  --glass-shadow: var(--elevation-soft);
 }
 
 .dark {
-  --background: 220 30% 4%;
-  --foreground: 220 100% 95%;
-  --card: 220 25% 6%;
-  --card-foreground: 220 100% 90%;
-  --popover: 220 30% 5%;
-  --popover-foreground: 220 100% 95%;
-  --primary: 200 100% 60%;
-  --primary-foreground: 220 30% 4%;
-  --secondary: 220 20% 10%;
-  --secondary-foreground: 220 100% 90%;
-  --muted: 220 15% 12%;
-  --muted-foreground: 220 30% 70%;
-  --accent: 270 70% 65%;
-  --accent-foreground: 220 30% 4%;
-  --destructive: 2 80% 40%;
+  --background: 0 0% 7%;
+  --foreground: 0 0% 90%;
+  --card: 0 0% 10%;
+  --card-foreground: 0 0% 90%;
+  --popover: 0 0% 10%;
+  --popover-foreground: 0 0% 90%;
+  --primary: 217 89% 76%;
+  --primary-foreground: 217 100% 12%;
+  --secondary: 220 5% 65%;
+  --secondary-foreground: 0 0% 7%;
+  --muted: 0 0% 14%;
+  --muted-foreground: 220 5% 65%;
+  --accent: 217 50% 18%;
+  --accent-foreground: 217 89% 76%;
+  --destructive: 0 75% 58%;
   --destructive-foreground: 0 0% 100%;
-  --border: 220 20% 18%;
-  --input: 220 20% 18%;
-  --ring: 200 100% 60%;
-  --chart-1: 200 100% 60%;
-  --chart-2: 270 70% 65%;
-  --chart-3: 154 100% 47.5%;
-  --chart-4: 320 65% 55%;
-  --chart-5: 40 80% 60%;
-  --bg-primary: #0a0e1a;
-  --bg-secondary: #0f1419;
-  --neon-accent: #00d9ff;
-  --neon-accent-muted: #0096c7;
-  --text-primary-soft: #e0f2fe;
-  --text-muted-soft: #7dd3fc;
-  --accent-gradient: linear-gradient(135deg, #00d9ff, #a855f7);
-  --glow-soft: 0 0 40px rgba(0, 217, 255, 0.25);
-  --radius-pill: 999px;
-  /* Glassmorphism tokens (dark) */
-  --glass-bg: rgba(15, 20, 25, 0.6);
-  --glass-bg-strong: rgba(15, 20, 25, 0.85);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-blur: 16px;
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --border: 0 0% 22%;
+  --input: 0 0% 22%;
+  --ring: 217 89% 76%;
+  --chart-1: 217 89% 76%;
+  --chart-2: 220 5% 65%;
+  --chart-3: 174 45% 55%;
+  --chart-4: 36 90% 60%;
+  --chart-5: 0 75% 58%;
+  --md-primary: #8ab4f8;
+  --md-on-primary: #062e6f;
+  --md-primary-container: #1a3a5c;
+  --md-surface: #121212;
+  --md-surface-container: #1e1e1e;
+  --md-on-surface: #e3e3e3;
+  --md-on-surface-variant: #9aa0a6;
+  --md-outline: #424242;
+  --bg-primary: var(--md-surface);
+  --bg-secondary: var(--md-surface-container);
+  --accent-primary: var(--md-primary);
+  --accent-muted: #669df6;
+  --text-primary-soft: var(--md-on-surface);
+  --text-muted-soft: var(--md-on-surface-variant);
+  --accent-gradient: linear-gradient(135deg, #669df6 0%, #8ab4f8 100%);
+  --elevation-soft: 0 1px 3px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.25);
+  --neon-accent: var(--accent-primary);
+  --neon-accent-muted: var(--accent-muted);
+  --glow-soft: var(--elevation-soft);
+  --glass-bg: rgba(30, 30, 30, 0.88);
+  --glass-bg-strong: rgba(30, 30, 30, 0.96);
+  --glass-border: var(--md-outline);
+  --glass-blur: 8px;
+  --glass-shadow: var(--elevation-soft);
 }
 
 /* ---------------------------------------------------------------------------
    Tailwind v4 theme: map semantic vars to --color-* so utilities (bg-background, etc.) work
    --------------------------------------------------------------------------- */
 @theme inline {
+  /* Typography – headline, body, mono (from layout font variables) */
+  --font-family-headline: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-family-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-family-mono: var(--font-source-code-pro), ui-monospace, monospace;
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
   --color-card: hsl(var(--card));
@@ -174,21 +210,20 @@
     border-radius: 0.5rem;
     font-size: 0.875rem;
     font-weight: 600;
-    transition: all 0.3s;
-    background: linear-gradient(to right, #0891b2, #2563eb);
+    transition: all 0.2s ease;
+    background-color: hsl(var(--primary));
     color: white;
   }
   .ui-btn:hover {
-    background: linear-gradient(to right, #06b6d4, #3b82f6);
-    box-shadow: 0 10px 15px -3px rgb(6 182 212 / 0.5);
+    filter: brightness(1.08);
+    box-shadow: 0 4px 12px hsl(var(--primary) / 0.4);
   }
   .ui-btn:focus-visible {
-    outline: 2px solid transparent;
+    outline: 2px solid hsl(var(--ring));
     outline-offset: 2px;
-    box-shadow: 0 0 0 2px #06b6d4;
   }
   .ui-btn:active {
-    transform: scale(0.95);
+    transform: scale(0.98);
   }
   .ui-btn:disabled {
     opacity: 0.5;
@@ -198,14 +233,14 @@
     transform: none;
   }
   .ui-btn.destructive {
-    background: linear-gradient(to right, #dc2626, #e11d48);
+    background-color: hsl(var(--destructive));
   }
   .ui-btn.destructive:hover {
-    background: linear-gradient(to right, #ef4444, #f43f5e);
-    box-shadow: 0 10px 15px -3px rgb(239 68 68 / 0.5);
+    filter: brightness(1.1);
+    box-shadow: 0 4px 12px hsl(var(--destructive) / 0.4);
   }
   .ui-btn.destructive:focus-visible {
-    box-shadow: 0 0 0 2px #ef4444;
+    outline-color: hsl(var(--destructive));
   }
 
   /* Glassmorphism utility – respect reduced motion (no blur) */
@@ -267,5 +302,60 @@
     [role="button"]:active {
       opacity: 0.75;
     }
+  }
+
+  /* Lab – terminal surfaces (MD3 dark + muted primary accent) */
+  .lab-terminal-theme {
+    --lab-bg: #121212;
+    --lab-surface: #1e1e1e;
+    --lab-border: #424242;
+    --lab-text: #e3e3e3;
+    --lab-text-muted: #9aa0a6;
+    --lab-primary: #8ab4f8;
+    --lab-primary-dark: #669df6;
+    --lab-accent: #81c995;
+    --lab-accent-violet: #9aa0a6;
+    --lab-accent-violet-dark: #bdc1c6;
+    --lab-accent-cyan: #8ab4f8;
+    --lab-accent-amber: #fdd663;
+    --lab-accent-red: #f28b82;
+    --lab-radius: var(--radius);
+    --lab-radius-pill: var(--radius-pill);
+  }
+  .dark .lab-terminal-theme {
+    --lab-primary: #8ab4f8;
+    --lab-accent-violet: #9aa0a6;
+  }
+  .lab-terminal-theme {
+    background-color: var(--lab-bg);
+    color: var(--lab-text);
+    font-family: var(--font-family-mono), ui-monospace, monospace;
+  }
+  .lab-terminal-theme .lab-tty-frame {
+    border: 1px solid var(--lab-border);
+    background-color: var(--lab-surface);
+    border-radius: var(--lab-radius);
+  }
+  .lab-terminal-theme .lab-tty-titlebar {
+    border-bottom: 1px solid var(--lab-border);
+    padding: var(--space-2) var(--space-3);
+    font-size: 0.75rem;
+    color: var(--lab-text-muted);
+    background-color: var(--lab-bg);
+    border-radius: var(--lab-radius) var(--lab-radius) 0 0;
+  }
+  .lab-terminal-theme .lab-prompt {
+    color: var(--lab-accent);
+  }
+  /* Immersive (geek) – full-screen TUI palette */
+  .lab-immersive-theme {
+    --lab-bg: #121212;
+    --lab-surface: #1e1e1e;
+    --lab-border: #424242;
+    --lab-text: #e3e3e3;
+    --lab-text-muted: #9aa0a6;
+    --lab-accent: #81c995;
+    --lab-accent-amber: #fdd663;
+    --lab-accent-red: #f28b82;
   }
 }

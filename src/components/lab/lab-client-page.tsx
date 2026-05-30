@@ -14,7 +14,6 @@ import { InteractiveTerminal } from '@/components/lab/interactive-terminal';
 import { KubernetesClusterViz } from '@/components/lab/kubernetes-cluster-viz';
 import { VisualDeployPipeline } from '@/components/lab/visual-deploy-pipeline';
 import type { DeployConfig, Locale, Translations } from '@/lib/types';
-import { FancyButton } from '@/components/lab/fancy-button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -266,9 +265,8 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
     },
   ] as const;
 
-  const glassPanel = "supports-[backdrop-filter]:backdrop-blur-xl border border-slate-200/70 bg-white/95 shadow-[0_35px_120px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-card/80 dark:shadow-[0_35px_120px_rgba(0,0,0,0.55)]";
-  const blockSurface = "border border-slate-200/70 bg-white/90 shadow-[0_10px_40px_rgba(15,23,42,0.06)] dark:border-white/10 dark:bg-card/70 dark:shadow-none";
-  const chipSurface = "rounded-full border border-slate-200/80 bg-white/90 text-slate-600 shadow-[0_10px_30px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-white/5 dark:text-muted-foreground";
+  const panelSurface = "lab-tty-frame rounded border-[var(--lab-border)] bg-[var(--lab-surface)]";
+  const blockSurface = "border border-[var(--lab-border)] bg-[var(--lab-bg)]";
 
   const executeMacro = (macroCommand: string) => {
     const trimmed = macroCommand.trim();
@@ -297,76 +295,81 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
   };
 
   return (
-    <div className="container mx-auto px-4 py-16 space-y-12">
-      <section className="text-center space-y-4">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <div className={`inline-flex items-center gap-2 px-4 py-1 text-[0.65rem] uppercase tracking-[0.25em] ${chipSurface}`}>
-            Live Control Room
+    <div className="lab-terminal-theme min-h-screen">
+      <div className="container mx-auto px-4 py-6 sm:py-8 space-y-8 max-w-[1400px]">
+        {/* Hero: Live Control Room – single compact block */}
+        <section className="space-y-3" aria-labelledby="lab-heading">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-[var(--lab-text-muted)] font-mono" aria-hidden="true">
+              <span className="text-[var(--lab-accent)]">$</span> lab --mode=control-room --live
+            </p>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-2 py-1 border border-[var(--lab-border)] text-[var(--lab-accent)] text-[0.65rem] uppercase tracking-widest font-mono rounded-[var(--lab-radius-pill)] min-h-[28px]">
+                <span className="h-1.5 w-1.5 rounded-full bg-[var(--lab-accent)] animate-pulse" aria-hidden />
+                LIVE
+              </span>
+              <HelpModal />
+              <GuidedTour tourId="lab-tour" autoStart={false} />
+            </div>
           </div>
-          <HelpModal />
-          <GuidedTour tourId="lab-tour" autoStart={false} />
-        </div>
-        <h1 className="font-headline text-4xl md:text-5xl font-bold tracking-tight">
-          {translations.nav.lab}
-        </h1>
-        <p className="text-lg text-muted-foreground dark:text-muted-foreground max-w-3xl mx-auto">
-          This is your mission console. Every visualization, chaos experiment, and deployment is driven from the terminal so you can reason like an operator.
-        </p>
-        <div className="flex flex-wrap justify-center gap-3 text-xs font-mono text-muted-foreground dark:text-muted-foreground">
-          <span className={`${chipSurface} px-3 py-1`} suppressHydrationWarning>CPU {latestCpu}%</span>
-          <span className={`${chipSurface} px-3 py-1`} suppressHydrationWarning>P95 {latestLatency}ms</span>
-          <span className={`${chipSurface} px-3 py-1`} suppressHydrationWarning>{successfulDeploys} deploys · 7d</span>
-        </div>
-      </section>
+          <h1 id="lab-heading" className="font-mono text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-[var(--lab-text)]">
+            Live Control Room
+          </h1>
+          <p className="text-sm text-[var(--lab-text-muted)] max-w-3xl font-mono">
+            {translations.nav.lab}. This is your mission console. Every visualization and deployment is driven from the terminal.
+          </p>
+          <div className="flex flex-wrap gap-2 text-xs font-mono text-[var(--lab-text-muted)]" role="group" aria-label="Live metrics">
+            <span className="px-3 py-1.5 border border-[var(--lab-border)] rounded-[var(--lab-radius)]" suppressHydrationWarning>CPU <span className="text-[var(--lab-accent)]">{latestCpu}%</span></span>
+            <span className="px-3 py-1.5 border border-[var(--lab-border)] rounded-[var(--lab-radius)]" suppressHydrationWarning>P95 <span className="text-[var(--lab-accent-cyan)]">{latestLatency}ms</span></span>
+            <span className="px-3 py-1.5 border border-[var(--lab-border)] rounded-[var(--lab-radius)]" suppressHydrationWarning><span className="text-[var(--lab-accent)]">{successfulDeploys}</span> deploys · 7d</span>
+          </div>
+        </section>
 
-      <section className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
-        <Card className={glassPanel}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-xl">
-              <FileTerminal className="h-5 w-5 text-primary" />
-              Command-first Interface
-            </CardTitle>
-            <CardDescription>
+      <section className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]" aria-label="Terminal and Mission Control">
+        <Card className={panelSurface}>
+          <h2 className="lab-tty-titlebar flex items-center gap-2 text-[var(--lab-text-muted)] font-mono text-xs font-medium">
+            <span className="text-[var(--lab-accent)]" aria-hidden>&gt;</span>
+            Command-first Interface
+          </h2>
+          <CardHeader className="border-b border-[var(--lab-border)] pb-4">
+            <CardDescription className="text-[var(--lab-text-muted)] text-xs font-mono">
               Every interaction flows through the terminal. Trigger rollouts, interrogate Kubernetes, or chaos-test resilience.
             </CardDescription>
             <div className="flex flex-wrap gap-2 pt-2 quick-actions-bar">
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <button
+                type="button"
                 onClick={() => handleQuickAction('kubectl get pods')}
                 aria-label="Execute command: kubectl get pods"
-                className="focus-visible:ring-4 focus-visible:ring-primary/50"
+                className="inline-flex items-center gap-1.5 px-2 py-1.5 text-xs font-mono border border-[var(--lab-border)] bg-[var(--lab-bg)] text-[var(--lab-text)] hover:bg-[var(--lab-surface)] hover:border-[var(--lab-accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--lab-accent)]"
               >
-                <FileTerminal className="mr-2 h-3 w-3" aria-hidden="true" /> kubectl get pods
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
+                <span className="text-[var(--lab-accent)]">$</span> kubectl get pods
+              </button>
+              <button
+                type="button"
                 onClick={() => handleQuickAction('kubectl describe pod api')}
                 aria-label="Execute command: kubectl describe pod api"
-                className="focus-visible:ring-4 focus-visible:ring-primary/50"
+                className="inline-flex items-center gap-1.5 px-2 py-1.5 text-xs font-mono border border-[var(--lab-border)] bg-[var(--lab-bg)] text-[var(--lab-text)] hover:bg-[var(--lab-surface)] hover:border-[var(--lab-accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--lab-accent)]"
               >
-                <FileTerminal className="mr-2 h-3 w-3" aria-hidden="true" /> describe pod api
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
+                <span className="text-[var(--lab-accent)]">$</span> describe pod api
+              </button>
+              <button
+                type="button"
                 onClick={() => handleQuickAction('cat contact.txt')}
                 aria-label="Execute command: cat contact.txt"
-                className="focus-visible:ring-4 focus-visible:ring-primary/50"
+                className="inline-flex items-center gap-1.5 px-2 py-1.5 text-xs font-mono border border-[var(--lab-border)] bg-[var(--lab-bg)] text-[var(--lab-text)] hover:bg-[var(--lab-surface)] hover:border-[var(--lab-accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--lab-accent)]"
               >
-                <FileTerminal className="mr-2 h-3 w-3" aria-hidden="true" /> cat contact.txt
-              </Button>
+                <span className="text-[var(--lab-accent)]">$</span> cat contact.txt
+              </button>
             </div>
           </CardHeader>
           <CardContent className="space-y-4 terminal-container">
             <div 
-              className={`flex items-center justify-between rounded-2xl p-3 text-xs font-mono text-muted-foreground dark:text-muted-foreground ${blockSurface}`}
+              className={`flex items-center justify-between p-2.5 text-xs font-mono rounded-sm ${blockSurface}`}
               aria-label="Terminal status: Connected to dev-cluster, live"
             >
-              <span>Connected · dev-cluster</span>
-              <span className="flex items-center gap-1 text-cyan-400" aria-label="Live connection">
-                <span className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse" aria-hidden="true" />
+              <span className="text-[var(--lab-text-muted)]">[ CONNECTED ] dev-cluster</span>
+              <span className="flex items-center gap-1 text-[var(--lab-accent)]" aria-label="Live connection">
+                <span className="h-1.5 w-1.5 rounded-full bg-[var(--lab-accent)] animate-pulse" aria-hidden />
                 live
               </span>
             </div>
@@ -423,49 +426,54 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
           </CardContent>
         </Card>
 
-        <Card className={glassPanel}>
-          <CardHeader>
-            <CardTitle>Mission Control</CardTitle>
-            <CardDescription>Toggle automation and run curated macros without leaving the console.</CardDescription>
+        <Card className={panelSurface}>
+          <h2 className="lab-tty-titlebar flex items-center gap-2 text-[var(--lab-text-muted)] font-mono text-xs font-medium">
+            <span className="text-[var(--lab-accent)]" aria-hidden>&gt;</span>
+            Mission Control
+          </h2>
+          <CardHeader className="border-b border-[var(--lab-border)] pb-4">
+            <CardDescription className="text-[var(--lab-text-muted)] text-xs font-mono">
+              Toggle automation and run curated macros without leaving the console.
+            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <Alert className={`${blockSurface} rounded-2xl`}>
-              <ShieldAlert className="h-4 w-4" />
-              <AlertTitle>Simulated Environment</AlertTitle>
-              <AlertDescription>
-                Actions stay inside a sandbox. Use them to demonstrate operating procedures without touching prod.
-              </AlertDescription>
-            </Alert>
+          <CardContent className="space-y-4">
+            <div className={`flex items-start gap-2 p-3 rounded-sm ${blockSurface} border-l-2 border-l-[var(--lab-accent-amber)]`}>
+              <ShieldAlert className="h-4 w-4 text-[var(--lab-accent-amber)] shrink-0 mt-0.5" />
+              <div>
+                <p className="font-mono text-xs font-medium text-[var(--lab-text)]">Simulated Environment</p>
+                <p className="font-mono text-[11px] text-[var(--lab-text-muted)] mt-0.5">Actions stay inside a sandbox. No prod touch.</p>
+              </div>
+            </div>
 
-            <div className={`flex items-center space-x-2 rounded-2xl px-4 py-3 ${blockSurface} chaos-controls`}>
+            <div className={`flex items-center gap-3 p-3 rounded-sm ${blockSurface} chaos-controls`}>
               <Switch
                 id="auto-chaos-mode"
                 checked={isAutoChaosEnabled}
                 onCheckedChange={(checked) => handleBackgroundAction(() => toggleAutoChaos(checked))}
                 disabled={isDeploying}
               />
-              <Label htmlFor="auto-chaos-mode" className="flex flex-col">
-                <span className="font-semibold">Auto-Chaos Monkey</span>
-                <span className="text-xs text-muted-foreground dark:text-muted-foreground">Let scheduled chaos jobs validate self-healing.</span>
+              <Label htmlFor="auto-chaos-mode" className="flex flex-col font-mono">
+                <span className="text-xs font-medium text-[var(--lab-text)]">Auto-Chaos Monkey</span>
+                <span className="text-[11px] text-[var(--lab-text-muted)]">Scheduled chaos validates self-healing.</span>
               </Label>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-2">
               {missionPlaybook.map((macro) => (
-                <div key={macro.command} className={`flex items-start justify-between gap-3 px-3 py-2 ${blockSurface} rounded-2xl`}>
-                  <div>
-                    <p className="font-medium text-sm">{macro.label}</p>
-                    <p className="text-xs text-muted-foreground dark:text-muted-foreground">{macro.description}</p>
+                <div key={macro.command} className={`flex items-center justify-between gap-3 p-2.5 rounded-sm ${blockSurface}`}>
+                  <div className="min-w-0">
+                    <p className="font-mono text-xs text-[var(--lab-text)]">{macro.label}</p>
+                    <p className="font-mono text-[11px] text-[var(--lab-text-muted)] truncate">{macro.description}</p>
                   </div>
                   <Button
                     variant={macro.command.startsWith('chaos') ? 'destructive' : 'outline'}
                     size="sm"
                     onClick={() => executeMacro(macro.command)}
                     disabled={isMacroDisabled(macro.command)}
-                    className="whitespace-nowrap focus-visible:ring-4 focus-visible:ring-primary/50"
-                    aria-label={`Execute macro: ${macro.label} - ${macro.description}`}
+                    className="shrink-0 font-mono text-xs border-[var(--lab-border)]"
+                    aria-label={`Execute macro: ${macro.label}`}
                   >
-                    <macro.icon className="mr-2 h-3 w-3" aria-hidden="true" />
+                    <macro.icon className="mr-1.5 h-3 w-3" aria-hidden />
                     run
                   </Button>
                 </div>
@@ -475,27 +483,27 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
         </Card>
       </section>
       
-      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 metrics-dashboard">
-        <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center gap-1.5 cursor-help">
-                        <CardTitle className="text-sm font-medium">CPU Usage</CardTitle>
-                        <Info className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="max-w-xs">Percentage of CPU cores in use across the cluster. Normal range: 0-70%. Values above 70% may indicate resource constraints.</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                <GaugeCircle className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" aria-hidden="true" />
-            </CardHeader>
-            <CardContent>
-                <div className="text-2xl font-bold" suppressHydrationWarning aria-label={`CPU Usage: ${latestCpu}%`}>{latestCpu}%</div>
-                <p className="text-xs text-muted-foreground dark:text-muted-foreground">across 2 nodes (8 vCPU)</p>
+      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 metrics-dashboard" aria-labelledby="metrics-heading">
+        <h2 id="metrics-heading" className="col-span-full lab-tty-titlebar text-[var(--lab-text-muted)] font-mono text-xs font-medium">## METRICS</h2>
+        <Card className={panelSurface}>
+            <div className="lab-tty-titlebar flex items-center justify-between">
+              <span className="text-[var(--lab-accent)]">[</span>
+              <span>CPU</span>
+              <span className="text-[var(--lab-accent)]">]</span>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-3.5 w-3.5 text-[var(--lab-text-muted)] cursor-help" aria-hidden />
+                  </TooltipTrigger>
+                  <TooltipContent className="font-mono text-xs max-w-xs">
+                    <p>Percentage of CPU cores in use. Normal: 0-70%.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            <CardContent className="pt-3">
+                <div className="font-mono text-2xl font-bold text-[var(--lab-accent)]" suppressHydrationWarning aria-label={`CPU Usage: ${latestCpu}%`}>{latestCpu}%</div>
+                <p className="text-[11px] text-[var(--lab-text-muted)] font-mono">2 nodes · 8 vCPU</p>
                  <div className={cn(
                   "w-full -ml-4",
                   isMobile ? "h-[100px]" : "h-[80px]"
@@ -504,26 +512,25 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
                 </div>
             </CardContent>
         </Card>
-        <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center gap-1.5 cursor-help">
-                        <CardTitle className="text-sm font-medium">Memory</CardTitle>
-                        <Info className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="max-w-xs">Total memory usage across all cluster nodes. Includes container memory, system overhead, and buffers. Monitor for memory leaks or insufficient resources.</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                <GanttChartSquare className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" aria-hidden="true" />
-            </CardHeader>
-            <CardContent>
-                <div className="text-2xl font-bold" suppressHydrationWarning aria-label={`Memory Usage: ${currentMemoryUsageGB} GB out of ${totalMemoryGB} GB, ${currentMemoryUsagePercent}% utilization`}>{currentMemoryUsageGB} / {totalMemoryGB} GB</div>
-                <p className="text-xs text-muted-foreground dark:text-muted-foreground" suppressHydrationWarning>{currentMemoryUsagePercent}% utilization</p>
+        <Card className={panelSurface}>
+            <div className="lab-tty-titlebar flex items-center justify-between">
+              <span className="text-[var(--lab-accent)]">[</span>
+              <span>MEM</span>
+              <span className="text-[var(--lab-accent)]">]</span>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-3.5 w-3.5 text-[var(--lab-text-muted)] cursor-help" aria-hidden />
+                  </TooltipTrigger>
+                  <TooltipContent className="font-mono text-xs max-w-xs">
+                    <p>Total memory usage across cluster nodes.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            <CardContent className="pt-3">
+                <div className="font-mono text-2xl font-bold text-[var(--lab-accent-cyan)]" suppressHydrationWarning aria-label={`Memory: ${currentMemoryUsageGB} GB / ${totalMemoryGB} GB`}>{currentMemoryUsageGB} / {totalMemoryGB} GB</div>
+                <p className="text-[11px] text-[var(--lab-text-muted)] font-mono" suppressHydrationWarning>{currentMemoryUsagePercent}% util</p>
                  <div className={cn(
                   "w-full -ml-4",
                   isMobile ? "h-[100px]" : "h-[80px]"
@@ -532,26 +539,25 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
                 </div>
             </CardContent>
         </Card>
-        <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center gap-1.5 cursor-help">
-                        <CardTitle className="text-sm font-medium">API P95 Latency</CardTitle>
-                        <Info className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="max-w-xs">95th percentile response time for API requests. P95 means 95% of requests are faster than this value. Target: &lt;200ms. Higher values may indicate performance issues.</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                <GanttChartSquare className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" aria-hidden="true" />
-            </CardHeader>
-            <CardContent>
-                <div className="text-2xl font-bold" suppressHydrationWarning aria-label={`API P95 Latency: ${latestLatency} milliseconds, real-time`}>{latestLatency}ms</div>
-                <p className="text-xs text-muted-foreground dark:text-muted-foreground">real-time</p>
+        <Card className={panelSurface}>
+            <div className="lab-tty-titlebar flex items-center justify-between">
+              <span className="text-[var(--lab-accent)]">[</span>
+              <span>P95</span>
+              <span className="text-[var(--lab-accent)]">]</span>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-3.5 w-3.5 text-[var(--lab-text-muted)] cursor-help" aria-hidden />
+                  </TooltipTrigger>
+                  <TooltipContent className="font-mono text-xs max-w-xs">
+                    <p>95th percentile API response time. Target &lt;200ms.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            <CardContent className="pt-3">
+                <div className="font-mono text-2xl font-bold text-[var(--lab-accent-amber)]" suppressHydrationWarning aria-label={`P95: ${latestLatency}ms`}>{latestLatency}ms</div>
+                <p className="text-[11px] text-[var(--lab-text-muted)] font-mono">real-time</p>
                  <div className={cn(
                   "w-full -ml-4",
                   isMobile ? "h-[100px]" : "h-[80px]"
@@ -560,26 +566,25 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
                 </div>
             </CardContent>
         </Card>
-        <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center gap-1.5 cursor-help">
-                        <CardTitle className="text-sm font-medium">Deployments</CardTitle>
-                        <Info className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="max-w-xs">Number of successful deployments in the last 7 days. Includes canary, blue-green, and rolling updates. Failed deployments are tracked separately in Incident History.</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                <Code className="h-4 w-4 text-muted-foreground dark:text-muted-foreground" aria-hidden="true" />
-            </CardHeader>
-            <CardContent>
-                <div className="text-2xl font-bold" suppressHydrationWarning aria-label={`Deployments: ${successfulDeploys} successful in the last 7 days`}>{successfulDeploys} Successful</div>
-                <p className="text-xs text-muted-foreground dark:text-muted-foreground">in the last 7 days</p>
+        <Card className={panelSurface}>
+            <div className="lab-tty-titlebar flex items-center justify-between">
+              <span className="text-[var(--lab-accent)]">[</span>
+              <span>DEPLOYS</span>
+              <span className="text-[var(--lab-accent)]">]</span>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-3.5 w-3.5 text-[var(--lab-text-muted)] cursor-help" aria-hidden />
+                  </TooltipTrigger>
+                  <TooltipContent className="font-mono text-xs max-w-xs">
+                    <p>Successful deploys in the last 7 days.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            <CardContent className="pt-3">
+                <div className="font-mono text-2xl font-bold text-[var(--lab-accent)]" suppressHydrationWarning aria-label={`Deployments: ${successfulDeploys} in 7d`}>{successfulDeploys}</div>
+                <p className="text-[11px] text-[var(--lab-text-muted)] font-mono">successful · 7d</p>
                  <div className={cn(
                   "w-full -ml-4",
                   isMobile ? "h-[100px]" : "h-[80px]"
@@ -590,38 +595,37 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
         </Card>
       </section>
 
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card className="lg:col-span-2">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <History className="h-5 w-5" />
-                    Incident History
-                </CardTitle>
-                <CardDescription>A log of the most recent resilience tests and simulated system events.</CardDescription>
-            </CardHeader>
-            <CardContent>
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-8" aria-labelledby="incident-history-heading">
+        <Card className={`lg:col-span-2 ${panelSurface}`}>
+            <h2 id="incident-history-heading" className="lab-tty-titlebar flex items-center gap-2 text-[var(--lab-text-muted)] font-mono text-xs font-medium">
+              <span className="text-[var(--lab-accent)]" aria-hidden>&gt;</span>
+              Incident History
+              <span className="text-[11px] font-normal">— resilience tests &amp; system events</span>
+            </h2>
+            <CardContent className="pt-4">
                 <IncidentHistory incidents={incidents} />
             </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2 cluster-visualization">
-          <CardHeader>
-            <CardTitle>Container Orchestration</CardTitle>
-            <CardDescription>Visualize the Kubernetes cluster running this portfolio. Click on a pod for more details.</CardDescription>
-          </CardHeader>
-          <CardContent className="p-4 rounded-lg bg-card/50">
+        <Card className={`lg:col-span-2 cluster-visualization ${panelSurface}`} aria-labelledby="cluster-heading">
+          <h2 id="cluster-heading" className="lab-tty-titlebar flex items-center gap-2 text-[var(--lab-text-muted)] font-mono text-xs font-medium">
+            <span className="text-[var(--lab-accent)]" aria-hidden>&gt;</span>
+            Container Orchestration
+          </h2>
+          <CardContent className="p-4 bg-[var(--lab-bg)]">
             <KubernetesClusterViz cluster={cluster} />
           </CardContent>
         </Card>
       </section>
         
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-         <Card className="lg:col-span-2 deploy-pipeline">
-            <CardHeader>
-                <CardTitle>Visual Deploy Pipeline</CardTitle>
-                <CardDescription>See the CI/CD pipeline that builds and deploys this application. A Canary stage is included for safe rollouts.</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center gap-6">
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-8" aria-labelledby="pipeline-heading">
+         <Card className={`lg:col-span-2 deploy-pipeline ${panelSurface}`}>
+            <h2 id="pipeline-heading" className="lab-tty-titlebar flex items-center gap-2 text-[var(--lab-text-muted)] font-mono text-xs font-medium">
+              <span className="text-[var(--lab-accent)]" aria-hidden>&gt;</span>
+              Visual Deploy Pipeline
+              <span className="text-[11px] font-normal">— CI/CD · Canary</span>
+            </h2>
+            <CardContent className="flex flex-col items-center gap-6 pt-4">
                  <div className="w-full px-4 pt-4">
                     <VisualDeployPipeline pipelineStages={pipeline} />
                 </div>
@@ -631,31 +635,34 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
                  <div className="flex justify-center items-center gap-4 flex-wrap">
                     {pipelineStatus === 'paused_canary' ? (
                         <>
-                            <FancyButton 
-                                onClick={() => handleBackgroundAction(() => runDeployment('promote'))} 
-                                Icon={Forward}
-                                text="Promote Canary"
-                                variant="primary"
+                            <Button
+                                variant="default"
+                                startIcon={<Forward className="h-4 w-4" />}
+                                onClick={() => handleBackgroundAction(() => runDeployment('promote'))}
                                 aria-label="Promote canary deployment to production"
-                            />
-                            <FancyButton 
-                                onClick={handleRollbackClick}
-                                Icon={isDeploying ? Loader2 : Undo}
-                                text={isDeploying ? "Rolling back..." : "Rollback"}
+                            >
+                                Promote Canary
+                            </Button>
+                            <Button
                                 variant="destructive"
+                                startIcon={isDeploying ? <Loader2 className="h-4 w-4 animate-spin" /> : <Undo className="h-4 w-4" />}
+                                onClick={handleRollbackClick}
                                 disabled={isDeploying}
                                 aria-label="Rollback deployment to previous version"
-                            />
+                            >
+                                {isDeploying ? 'Rolling back...' : 'Rollback'}
+                            </Button>
                         </>
                     ) : (
-                        <FancyButton 
-                            onClick={() => handleBackgroundAction(() => runDeployment('start'))} 
+                        <Button
+                            variant="default"
+                            startIcon={isDeploying ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
+                            onClick={() => handleBackgroundAction(() => runDeployment('start'))}
                             disabled={isDeploying}
-                            Icon={isDeploying ? Loader2 : PlayCircle}
-                            text={isDeploying ? "Deploying..." : "Run Deployment"}
-                            variant="primary"
-                            aria-label={isDeploying ? "Deployment in progress" : "Start new deployment"}
-                        />
+                            aria-label={isDeploying ? 'Deployment in progress' : 'Start new deployment'}
+                        >
+                            {isDeploying ? 'Deploying...' : 'Run Deployment'}
+                        </Button>
                     )}
                 </div>
             </CardContent>
@@ -713,6 +720,7 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      </div>
     </div>
   );
 }

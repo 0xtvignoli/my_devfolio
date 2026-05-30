@@ -1,10 +1,10 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { MuiThemeProviderWrapper } from "@/components/providers/mui-theme-provider";
 import { SnackbarProvider } from "@/contexts/snackbar-context";
-import { GamificationProvider } from "@/contexts/gamification-context";
 import { WebVitalsTracker } from "@/components/analytics/web-vitals";
 import { SkipLink } from "@/components/shared/skip-link";
 
@@ -15,16 +15,16 @@ interface SiteProvidersProps {
 
 export function SiteProviders({ children, skipLabel }: SiteProvidersProps) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-      <MuiThemeProviderWrapper>
-        <SnackbarProvider>
-          <GamificationProvider>
+    <AppRouterCacheProvider>
+      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+        <MuiThemeProviderWrapper>
+          <SnackbarProvider>
             {skipLabel ? <SkipLink label={skipLabel} /> : null}
             <WebVitalsTracker />
             {children}
-          </GamificationProvider>
-        </SnackbarProvider>
-      </MuiThemeProviderWrapper>
-    </ThemeProvider>
+          </SnackbarProvider>
+        </MuiThemeProviderWrapper>
+      </ThemeProvider>
+    </AppRouterCacheProvider>
   );
 }

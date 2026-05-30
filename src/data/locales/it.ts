@@ -2,17 +2,30 @@ import type { Translations } from "@/lib/types";
 
 export const it: Translations = {
   nav: {
-    dashboard: "Dashboard",
     portfolio: "Portfolio",
     experience: "Esperienza",
     articles: "Articoli",
     lab: "Lab",
+    missionProgress: "Progressi Missione",
+  },
+  mobileNav: {
+    home: "Home",
+    portfolio: "Lavori",
+    contact: "Contatti",
+    ariaLabel: "Navigazione principale",
   },
   hero: {
     title: "Senior DevOps Engineer & Cloud Architect",
     subtitle: "Costruisco e scalo infrastrutture resilienti, sicure ed efficienti sul cloud. Appassionato di IaC, Kubernetes e Automazione.",
+    badge: "Senior DevOps Engineer",
     ctaPortfolio: "Vedi Progetti",
+    ctaLab: "Esplora il Lab",
     ctaContact: "Contattami",
+    labPreviewTitle: "LAB INTERATTIVO",
+    labPreviewSubtitle: "Cluster Kubernetes simulato — deploy, monitoraggio e chaos-test dal browser.",
+    tryLabTitle: "Prova il Lab",
+    tryLabDescription: "Mission console interattiva: deploy, chaos-test e gestione di un cluster Kubernetes simulato dal terminale.",
+    tryLabCta: "Apri Lab →",
   },
   skills: {
     title: "Tecnologie Principali",
@@ -22,14 +35,17 @@ export const it: Translations = {
   },
   portfolio: {
     title: "Progetti in Evidenza",
-    viewAll: "Vedi tutti i progetti"
+    viewAll: "Vedi tutti i progetti",
+    pageSubtitle: "Una raccolta dei miei lavori, dall'automazione infrastrutturale al deployment di applicazioni.",
   },
   experience: {
     title: "Percorso Professionale",
+    pageSubtitle: "Il mio percorso professionale nel mondo DevOps e Cloud.",
   },
   articles: {
     title: "Ultimi Articoli",
     viewAll: "Leggi tutti gli articoli",
+    pageSubtitle: "Approfondimenti su cloud, automazione e best practice.",
     emptyTitle: "Nessun articolo",
     emptyDescription: "Gli articoli appariranno qui quando pubblicati.",
   },
@@ -43,7 +59,7 @@ export const it: Translations = {
     buttonText: "Contattami",
   },
   footer: {
-    copy: "© 2025 Thomas Vignoli. Tutti i diritti riservati.",
+    copy: "© 2026 Thomas Vignoli. Tutti i diritti riservati.",
   },
   theme: {
     light: "Chiaro",
@@ -66,7 +82,8 @@ export const it: Translations = {
   },
   project: {
     github: "Codice Sorgente",
-    demo: "Demo Live"
+    demo: "Demo Live",
+    metricsLabel: "Impatto",
   },
   codesandbox: {
     title: "Code Playground",

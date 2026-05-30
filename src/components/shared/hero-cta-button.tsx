@@ -36,10 +36,10 @@ export function HeroCTAButton({
       sx={{
         borderRadius: 9999,
         px: 3,
-        boxShadow: 'var(--glow-soft)',
+        boxShadow: 'var(--elevation-soft)',
         '&:hover': {
-          transform: 'translateY(-2px)',
-          boxShadow: '0 0 20px rgba(0, 217, 255, 0.3)',
+          transform: 'translateY(-1px)',
+          boxShadow: '0 4px 12px rgba(26, 115, 232, 0.2)',
         },
       }}
     >

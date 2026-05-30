@@ -66,14 +66,9 @@ export function VisualDeployPipeline({ pipelineStages }: VisualDeployPipelinePro
                 <div 
                   className={cn('h-full w-full', {
                     'bg-green-600 dark:bg-green-500': stage.status === 'Success',
-                    'bg-blue-600 dark:bg-blue-500': isInProgress,
+                    'bg-blue-600 dark:bg-blue-500 animate-pulse': isInProgress,
                     'bg-muted': stage.status === 'Queued' || stage.status === 'Failed'
                   })}
-                  style={isInProgress ? {
-                    backgroundImage: 'linear-gradient(45deg, hsla(0,0%,100%,.15) 25%, transparent 25%, transparent 50%, hsla(0,0%,100%,.15) 50%, hsla(0,0%,100%,.15) 75%, transparent 75%, transparent)',
-                    backgroundSize: '40px 40px',
-                    animation: 'progress-stripes 2s linear infinite'
-                  } : {}}
                 />
               </div>
             )

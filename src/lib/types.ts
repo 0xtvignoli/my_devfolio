@@ -2,17 +2,30 @@ export type Locale = 'en' | 'it';
 
 export interface Translations {
   nav: {
-    dashboard: string;
     portfolio: string;
     experience: string;
     articles: string;
     lab: string;
+    missionProgress: string;
+  };
+  mobileNav: {
+    home: string;
+    portfolio: string;
+    contact: string;
+    ariaLabel: string;
   };
   hero: {
     title: string;
     subtitle: string;
+    badge: string;
     ctaPortfolio: string;
+    ctaLab: string;
     ctaContact: string;
+    labPreviewTitle: string;
+    labPreviewSubtitle: string;
+    tryLabTitle?: string;
+    tryLabDescription?: string;
+    tryLabCta?: string;
   };
   skills: {
     title: string;
@@ -21,13 +34,16 @@ export interface Translations {
   portfolio: {
     title: string;
     viewAll: string;
+    pageSubtitle?: string;
   };
   experience: {
     title: string;
+    pageSubtitle?: string;
   };
   articles: {
     title: string;
     viewAll: string;
+    pageSubtitle?: string;
     emptyTitle?: string;
     emptyDescription?: string;
   };
@@ -65,6 +81,7 @@ export interface Translations {
   project: {
     github: string;
     demo: string;
+    metricsLabel: string;
   };
   codesandbox: {
     title: string;
@@ -93,6 +110,7 @@ export interface Project {
   githubUrl?: string;
   demoUrl?: string;
   codesandboxId?: string;
+  metrics?: { label: Record<Locale, string>; value: string }[];
 }
 
 export interface Experience {

@@ -330,7 +330,7 @@ const CommandOutputDisplay = ({ output }: { output: CommandOutput }) => {
       initial={{ opacity: 0, y: 5 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      className="relative group mt-2 rounded-lg border border-emerald-500/30 bg-gradient-to-br from-slate-900/60 to-black/40 backdrop-blur-sm px-3 py-2.5 text-slate-200 shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/20 hover:border-emerald-500/50 transition-all duration-300"
+      className="relative group mt-2 rounded-lg border border-emerald-500/30 bg-slate-800 px-3 py-2.5 text-slate-200 hover:border-emerald-500/50 transition-colors duration-200"
     >
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
@@ -1008,36 +1008,36 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
 
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-      <TabsList className="grid w-full grid-cols-3 bg-slate-900/80 backdrop-blur-xl border border-cyan-500/20 rounded-t-lg rounded-b-none shadow-lg shadow-cyan-500/10" aria-label="Terminal view selection">
+      <TabsList className="grid w-full grid-cols-3 bg-slate-900 border border-cyan-500/30 rounded-t-lg rounded-b-none p-0 gap-0 font-mono text-xs sm:text-sm" aria-label="Terminal view selection">
         <TabsTrigger 
           value="terminal"
-          className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500/20 data-[state=active]:to-blue-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 data-[state=inactive]:bg-slate-900/40 data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:text-slate-300 transition-all duration-300 focus-visible:ring-4 focus-visible:ring-cyan-500/50 text-xs sm:text-sm gap-1 sm:gap-2"
+          className="rounded-tl-lg rounded-tr-none data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 data-[state=inactive]:bg-slate-800 data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:bg-slate-700 data-[state=inactive]:hover:text-slate-300 transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-cyan-500 gap-1 sm:gap-1.5 py-2 px-2 border-0 border-r border-slate-700 last:border-r-0"
           aria-label="Terminal Core tab"
           title="Terminal"
         >
-          <FileTerminal className="h-3 w-3 sm:h-4 sm:w-4" aria-hidden="true" />
-          <span className="hidden sm:inline">Terminal</span>
-          <span className="sm:hidden">Cmd</span>
+          <FileTerminal className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" aria-hidden />
+          <span className="hidden sm:inline">[ Terminal ]</span>
+          <span className="sm:hidden">[ Cmd ]</span>
         </TabsTrigger>
         <TabsTrigger 
           value="logs"
-          className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500/20 data-[state=active]:to-blue-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 data-[state=inactive]:bg-slate-900/40 data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:text-slate-300 transition-all duration-300 focus-visible:ring-4 focus-visible:ring-cyan-500/50 text-xs sm:text-sm gap-1 sm:gap-2"
+          className="rounded-none data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 data-[state=inactive]:bg-slate-800 data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:bg-slate-700 data-[state=inactive]:hover:text-slate-300 transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-cyan-500 gap-1 sm:gap-1.5 py-2 px-2 border-0 border-r border-slate-700 last:border-r-0"
           aria-label="Runtime Logs tab"
           title="Logs"
         >
-          <Power className="h-3 w-3 sm:h-4 sm:w-4" aria-hidden="true" />
-          <span className="hidden sm:inline">Logs</span>
-          <span className="sm:hidden">Log</span>
+          <Power className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" aria-hidden />
+          <span className="hidden sm:inline">[ Logs ]</span>
+          <span className="sm:hidden">[ Log ]</span>
         </TabsTrigger>
         <TabsTrigger 
           value="playground"
-          className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500/20 data-[state=active]:to-blue-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 data-[state=inactive]:bg-slate-900/40 data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:text-slate-300 transition-all duration-300 focus-visible:ring-4 focus-visible:ring-cyan-500/50 text-xs sm:text-sm gap-1 sm:gap-2"
+          className="rounded-tl-none rounded-tr-lg data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 data-[state=inactive]:bg-slate-800 data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:bg-slate-700 data-[state=inactive]:hover:text-slate-300 transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-cyan-500 gap-1 sm:gap-1.5 py-2 px-2 border-0"
           aria-label="Code Playground tab"
           title="Playground"
         >
-          <Code2 className="h-3 w-3 sm:h-4 sm:w-4" aria-hidden="true" />
-          <span className="hidden sm:inline">Playground</span>
-          <span className="sm:hidden">Play</span>
+          <Code2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" aria-hidden />
+          <span className="hidden sm:inline">[ Playground ]</span>
+          <span className="sm:hidden">[ Play ]</span>
         </TabsTrigger>
       </TabsList>
       <TabsContent value="terminal">
@@ -1046,28 +1046,22 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="relative bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100 font-mono rounded-b-lg h-[28rem] text-sm border border-cyan-500/30 shadow-2xl shadow-cyan-500/20 flex flex-col cursor-text overflow-hidden group"
+          className="relative bg-slate-950 text-slate-100 font-mono rounded-b-lg h-[28rem] text-sm border border-cyan-500/30 flex flex-col cursor-text overflow-hidden group"
           onClick={() => {
             setHasUserInteracted(true);
             inputRef.current?.focus();
           }}
         >
-          {/* Animated background gradient */}
-          <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-purple-500/5 opacity-50 pointer-events-none" />
-          
-          {/* Subtle grid pattern */}
+          {/* Subtle grid – solid line pattern (no fill gradient) */}
           <div 
-            className="absolute inset-0 opacity-[0.03] pointer-events-none"
+            className="absolute inset-0 opacity-[0.06] pointer-events-none"
             style={{
-              backgroundImage: `
-                linear-gradient(to right, rgba(16,185,129,0.1) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(16,185,129,0.1) 1px, transparent 1px)
-              `,
+              backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(34,211,238,0.15) 19px, rgba(34,211,238,0.15) 20px), repeating-linear-gradient(90deg, transparent, transparent 19px, rgba(34,211,238,0.15) 19px, rgba(34,211,238,0.15) 20px)',
               backgroundSize: '20px 20px',
             }}
           />
           {/* Terminal Header with Status Indicators */}
-          <div className="relative flex items-center gap-2 p-3 bg-gradient-to-r from-slate-900/90 via-slate-800/80 to-slate-900/90 backdrop-blur-sm border-b border-cyan-500/30 text-xs text-slate-300 z-10">
+          <div className="relative flex items-center gap-2 p-3 bg-slate-900 border-b border-cyan-500/30 text-xs text-slate-300 z-10">
             <div className="flex gap-1.5">
               <motion.div 
                 whileHover={{ scale: 1.1 }}
@@ -1128,10 +1122,10 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
                   exit={{ opacity: 0, scale: 0.98 }}
                   transition={{ duration: 0.2, delay: index * 0.02 }}
                   className={cn(
-                    "rounded-lg border px-3 py-2 backdrop-blur-sm transition-all duration-300",
+                    "rounded-lg border px-3 py-2 transition-colors duration-200",
                     entry.isSystem 
-                      ? 'border-cyan-500/30 bg-gradient-to-br from-cyan-500/10 to-transparent shadow-lg shadow-cyan-500/10' 
-                      : 'border-cyan-500/30 bg-gradient-to-br from-cyan-500/10 to-slate-950/40 shadow-lg shadow-cyan-500/10 hover:border-cyan-500/50 hover:shadow-cyan-500/20'
+                      ? 'border-cyan-500/30 bg-slate-800/80' 
+                      : 'border-cyan-500/30 bg-slate-800/80 hover:bg-slate-700/80 hover:border-cyan-400/50'
                   )}
                 >
                   <div className="flex items-center justify-between text-xs">
@@ -1185,7 +1179,7 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
           </div>
 
           <div className={cn(
-            "relative border-t border-emerald-500/30 px-4 py-3 text-xs bg-gradient-to-r from-slate-900/80 via-slate-800/60 to-slate-900/80 backdrop-blur-sm flex flex-wrap gap-2 z-10",
+            "relative border-t border-cyan-500/30 px-4 py-3 text-xs bg-slate-900 flex flex-wrap gap-2 z-10",
             isMobile && "gap-2"
           )}>
             {suggestions.map((suggestion, index) => (
@@ -1196,22 +1190,19 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.05 }}
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.02, y: -1 }}
+                whileTap={{ scale: 0.98 }}
                 className={cn(
-                  "relative flex flex-col rounded-lg border text-left transition-all duration-300 overflow-hidden group",
+                  "relative flex flex-col rounded-lg border text-left transition-colors duration-200 overflow-hidden group",
                   isTouchDevice 
                     ? "px-4 py-3 min-h-[44px] text-sm" 
                     : "px-3 py-2",
-                  "border-cyan-500/40 bg-gradient-to-br from-cyan-500/10 to-slate-900/40",
-                  "hover:border-cyan-400/80 hover:bg-gradient-to-br hover:from-cyan-500/20 hover:to-blue-500/10",
-                  "hover:shadow-lg hover:shadow-cyan-500/30",
-                  "focus-visible:outline-2 focus-visible:outline-cyan-500 focus-visible:ring-4 focus-visible:ring-cyan-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                  "border-cyan-500/40 bg-slate-800",
+                  "hover:border-cyan-400 hover:bg-slate-700",
+                  "focus-visible:outline-2 focus-visible:outline-cyan-500 focus-visible:ring-2 focus-visible:ring-cyan-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
                 )}
                 aria-label={`Use suggestion: ${suggestion.label}, ${suggestion.helper}`}
               >
-                {/* Glow effect on hover */}
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-400/20 to-cyan-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl" />
                 <span className={cn(
                   "relative text-cyan-300 font-semibold group-hover:text-cyan-200 transition-colors",
                   isTouchDevice ? "text-sm" : "text-xs"
@@ -1224,7 +1215,7 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
             ))}
           </div>
 
-          <form onSubmit={(e) => e.preventDefault()} className="relative px-4 py-3 border-t border-cyan-500/30 bg-gradient-to-r from-slate-900/90 via-slate-800/80 to-slate-900/90 backdrop-blur-sm z-10">
+          <form onSubmit={(e) => e.preventDefault()} className="relative px-4 py-3 border-t border-cyan-500/30 bg-slate-900 z-10">
             <label htmlFor="terminal-input" className="sr-only">Terminal input</label>
             <div className="flex items-center gap-2">
               <motion.span 
@@ -1270,7 +1261,7 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
           </form>
 
           {/* Terminal Footer with Hints */}
-          <div className="relative bg-gradient-to-r from-slate-900/90 via-slate-800/80 to-slate-900/90 backdrop-blur-sm px-4 py-2.5 text-xs text-slate-400 border-t border-cyan-500/20 z-10">
+          <div className="relative bg-slate-900 px-4 py-2.5 text-xs text-slate-400 border-t border-cyan-500/20 z-10">
             <div className="flex justify-between items-center flex-wrap gap-2">
               <span className="text-slate-400">
                 Type <kbd className="px-2 py-0.5 bg-cyan-500/20 border border-cyan-500/40 rounded text-cyan-300 font-mono font-semibold shadow-lg shadow-cyan-500/20">help</kbd> for available commands • Use <kbd className="px-1.5 py-0.5 bg-slate-800/80 rounded text-purple-300">↑/↓</kbd> arrows for command history
@@ -1287,19 +1278,12 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="relative bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100 font-mono p-4 rounded-b-lg h-96 text-sm overflow-y-auto border border-cyan-500/30 shadow-2xl shadow-cyan-500/20"
+          className="relative bg-slate-950 text-slate-100 font-mono p-4 rounded-b-lg h-96 text-sm overflow-y-auto border border-cyan-500/30"
         >
-          {/* Animated background gradient */}
-          <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-purple-500/5 opacity-50 pointer-events-none" />
-          
-          {/* Subtle grid pattern */}
           <div 
-            className="absolute inset-0 opacity-[0.03] pointer-events-none"
+            className="absolute inset-0 opacity-[0.06] pointer-events-none"
             style={{
-              backgroundImage: `
-                linear-gradient(to right, rgba(16,185,129,0.1) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(16,185,129,0.1) 1px, transparent 1px)
-              `,
+              backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(34,211,238,0.12) 19px, rgba(34,211,238,0.12) 20px), repeating-linear-gradient(90deg, transparent, transparent 19px, rgba(34,211,238,0.12) 19px, rgba(34,211,238,0.12) 20px)',
               backgroundSize: '20px 20px',
             }}
           />

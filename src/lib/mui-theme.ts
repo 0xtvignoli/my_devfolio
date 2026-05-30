@@ -1,32 +1,38 @@
 import { createTheme } from '@mui/material/styles';
 
-/**
- * MUI theme aligned with existing design tokens (globals.css).
- * Design moderno: elevation moderata, spacing 8px, typography scale, WCAG AA.
- */
+/** Material Design 3 inspired palette – minimal blue primary, neutral surfaces */
+const md3 = {
+  light: {
+    primary: { main: '#1A73E8', light: '#4285F4', dark: '#1557B0', contrastText: '#FFFFFF' },
+    secondary: { main: '#5F6368', contrastText: '#FFFFFF' },
+    error: { main: '#B3261E' },
+    background: { default: '#FAFAFA', paper: '#FFFFFF' },
+    text: { primary: '#1F1F1F', secondary: '#5F6368' },
+    divider: '#E0E0E0',
+  },
+  dark: {
+    primary: { main: '#8AB4F8', light: '#AECBFA', dark: '#669DF6', contrastText: '#062E6F' },
+    secondary: { main: '#9AA0A6', contrastText: '#121212' },
+    error: { main: '#F2B8B5' },
+    background: { default: '#121212', paper: '#1E1E1E' },
+    text: { primary: '#E3E3E3', secondary: '#9AA0A6' },
+    divider: '#424242',
+  },
+} as const;
+
 export function createAppTheme(mode: 'light' | 'dark') {
+  const tokens = md3[mode];
   const isDark = mode === 'dark';
+
   return createTheme({
     palette: {
       mode,
-      primary: {
-        main: isDark ? '#00d9ff' : '#0891b2',
-        contrastText: isDark ? '#0a0e1a' : '#fff',
-      },
-      secondary: {
-        main: isDark ? '#a855f7' : '#7b2cbf',
-      },
-      error: {
-        main: isDark ? '#f87171' : '#dc2626',
-      },
-      background: {
-        default: isDark ? '#0a0e1a' : 'hsl(220 30% 98%)',
-        paper: isDark ? '#0f1419' : 'hsl(220 25% 99%)',
-      },
-      text: {
-        primary: isDark ? '#e0f2fe' : 'hsl(220 20% 10%)',
-        secondary: isDark ? '#7dd3fc' : 'hsl(220 10% 35%)',
-      },
+      primary: tokens.primary,
+      secondary: tokens.secondary,
+      error: tokens.error,
+      background: tokens.background,
+      text: tokens.text,
+      divider: tokens.divider,
     },
     shape: {
       borderRadius: 12,
@@ -76,21 +82,24 @@ export function createAppTheme(mode: 'light' | 'dark') {
           root: {
             borderRadius: 16,
             border: '1px solid',
-            borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+            borderColor: tokens.divider,
             transition: 'box-shadow 0.2s ease',
             '&:hover': {
-              boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.4)' : '0 8px 32px rgba(0,0,0,0.08)',
+              boxShadow: isDark
+                ? '0 2px 8px rgba(0,0,0,0.4)'
+                : '0 2px 8px rgba(0,0,0,0.08)',
             },
           },
         },
       },
       MuiPaper: {
         defaultProps: {
-          elevation: 1,
+          elevation: 0,
         },
         styleOverrides: {
           root: {
-            borderRadius: 16,
+            borderRadius: 12,
+            backgroundImage: 'none',
           },
         },
       },
@@ -104,8 +113,7 @@ export function createAppTheme(mode: 'light' | 'dark') {
             background: 'var(--glass-bg)',
             backdropFilter: 'blur(var(--glass-blur))',
             WebkitBackdropFilter: 'blur(var(--glass-blur))',
-            borderBottom: '1px solid var(--glass-border)',
-            // Use text.primary so navbar is visible in both light and dark (glass background overrides default primary contrast)
+            borderBottom: `1px solid ${tokens.divider}`,
             color: theme.palette.text.primary,
           }),
         },
@@ -114,7 +122,7 @@ export function createAppTheme(mode: 'light' | 'dark') {
         styleOverrides: {
           paper: {
             borderRadius: 0,
-            borderRight: '1px solid var(--glass-border)',
+            borderRight: `1px solid ${tokens.divider}`,
           },
         },
       },
@@ -132,7 +140,7 @@ export function createAppTheme(mode: 'light' | 'dark') {
         },
         styleOverrides: {
           root: {
-            borderRadius: 9999,
+            borderRadius: 8,
           },
         },
       },
@@ -152,6 +160,39 @@ export function createAppTheme(mode: 'light' | 'dark') {
       MuiLink: {
         defaultProps: {
           underline: 'hover',
+        },
+      },
+      MuiBottomNavigation: {
+        styleOverrides: {
+          root: {
+            height: 64,
+            bgcolor: 'transparent',
+          },
+        },
+      },
+      MuiBottomNavigationAction: {
+        styleOverrides: {
+          root: {
+            minWidth: 56,
+            '&.Mui-selected': {
+              color: tokens.primary.main,
+            },
+          },
+          label: {
+            fontSize: '0.7rem',
+            '&.Mui-selected': {
+              fontSize: '0.75rem',
+            },
+          },
+        },
+      },
+      MuiFab: {
+        styleOverrides: {
+          root: {
+            borderRadius: 16,
+            textTransform: 'none',
+            fontWeight: 600,
+          },
         },
       },
     },

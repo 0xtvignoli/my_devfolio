@@ -11,3 +11,8 @@ export const matchLocaleFromAcceptLanguage = (value: string | null): Locale | nu
   const primary = value.split(',')[0]?.split('-')[0];
   return isSupportedLocale(primary) ? primary : null;
 };
+
+export const resolveLocaleParam = (param: string | undefined): Locale => {
+  if (isSupportedLocale(param)) return param;
+  return DEFAULT_LOCALE;
+};

@@ -1,12 +1,13 @@
-import { resolveLocale, getTranslations } from '@/lib/i18n/server';
-import { Github, Linkedin, Twitter } from 'lucide-react';
+import { getTranslations } from '@/lib/i18n/server';
+import { GithubIcon, LinkedinIcon, TwitterIcon } from '@/components/icons/brand-icons';
+import { SOCIAL_LINKS } from '@/lib/seo/constants';
+import type { Locale } from '@/lib/types';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Link from '@mui/material/Link';
 
-export async function Footer() {
-  const locale = await resolveLocale();
+export async function Footer({ locale }: { locale: Locale }) {
   const t = getTranslations(locale);
 
   return (
@@ -33,34 +34,34 @@ export async function Footer() {
           </Typography>
           <Box sx={{ display: 'flex', gap: 2 }}>
             <Link
-              href="https://twitter.com"
+              href={SOCIAL_LINKS.twitter}
               target="_blank"
               rel="noopener noreferrer"
               color="text.secondary"
               sx={{ display: 'flex', alignItems: 'center', '&:hover': { color: 'text.primary' } }}
               aria-label="Twitter"
             >
-              <Twitter style={{ height: 20, width: 20 }} />
+              <TwitterIcon width={20} height={20} />
             </Link>
             <Link
-              href="https://github.com"
+              href={SOCIAL_LINKS.github}
               target="_blank"
               rel="noopener noreferrer"
               color="text.secondary"
               sx={{ display: 'flex', alignItems: 'center', '&:hover': { color: 'text.primary' } }}
               aria-label="GitHub"
             >
-              <Github style={{ height: 20, width: 20 }} />
+              <GithubIcon width={20} height={20} />
             </Link>
             <Link
-              href="https://linkedin.com"
+              href={SOCIAL_LINKS.linkedin}
               target="_blank"
               rel="noopener noreferrer"
               color="text.secondary"
               sx={{ display: 'flex', alignItems: 'center', '&:hover': { color: 'text.primary' } }}
               aria-label="LinkedIn"
             >
-              <Linkedin style={{ height: 20, width: 20 }} />
+              <LinkedinIcon width={20} height={20} />
             </Link>
           </Box>
         </Box>
