@@ -41,11 +41,6 @@ export const metadata: Metadata = {
     title: `${AUTHOR_NAME} - Senior DevOps Engineer`,
     description: DEFAULT_DESCRIPTION,
   },
-  twitter: {
-    card: 'summary_large_image',
-    title: `${AUTHOR_NAME} - Senior DevOps Engineer`,
-    description: 'Senior DevOps Engineer specializing in Kubernetes, Cloud Infrastructure, and CI/CD',
-  },
   ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
     ? { verification: { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION } }
     : {}),

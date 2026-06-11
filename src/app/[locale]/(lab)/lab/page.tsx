@@ -42,9 +42,9 @@ export default async function LabPage({ params }: LabPageProps) {
           ]),
         ]}
       />
-      <div className="min-h-screen bg-background">
+      <div className="lab-md3-theme min-h-screen bg-[var(--md-sys-color-surface)]">
         <div className="container mx-auto px-4 pt-4 pb-2" aria-label="Breadcrumb region">
-          <Breadcrumbs items={[{ label: 'Lab' }]} />
+          <Breadcrumbs items={[{ label: translations.nav.lab }]} />
         </div>
         <LabPageWrapper locale={locale} translations={translations} />
       </div>

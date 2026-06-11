@@ -1,12 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import Box from '@mui/material/Box';
+import Paper from '@mui/material/Paper';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import Typography from '@mui/material/Typography';
 import { LabClientPage } from '@/components/lab/lab-client-page';
 import { ImmersiveLabLayout } from '@/components/lab/immersive-lab-layout';
-import Link from 'next/link';
-import { LayoutGrid, Terminal, Trophy } from 'lucide-react';
 import { LabPageSkeleton } from '@/components/lab/lab-page-skeleton';
-import { cn } from '@/lib/utils';
+import { LayoutGrid, Maximize2, Trophy } from 'lucide-react';
 import { localizedPath } from '@/lib/i18n/paths';
 import type { Locale, Translations } from '@/lib/types';
 
@@ -17,12 +21,13 @@ interface LabLayoutSelectorProps {
 
 export type LayoutType = 'standard' | 'immersive';
 
-const LAYOUTS: { id: LayoutType; label: string; icon: typeof LayoutGrid; title: string }[] = [
-  { id: 'standard', label: 'Standard', icon: LayoutGrid, title: 'Mission console – cards and sections' },
-  { id: 'immersive', label: 'Immersive', icon: Terminal, title: 'Tiled terminal – cluster, pipeline, status line' },
+const LAYOUTS: { id: LayoutType; labelKey: 'standard' | 'immersive'; hintKey: 'standardHint' | 'immersiveHint'; icon: typeof LayoutGrid }[] = [
+  { id: 'standard', labelKey: 'standard', hintKey: 'standardHint', icon: LayoutGrid },
+  { id: 'immersive', labelKey: 'immersive', hintKey: 'immersiveHint', icon: Maximize2 },
 ];
 
 export function LabLayoutSelector({ locale, translations }: LabLayoutSelectorProps) {
+  const t = translations.lab.layout;
   const [layout, setLayout] = useState<LayoutType>('standard');
   const [isClient, setIsClient] = useState(false);
 
@@ -37,7 +42,8 @@ export function LabLayoutSelector({ locale, translations }: LabLayoutSelectorPro
     setIsClient(true);
   }, []);
 
-  const handleLayoutChange = (newLayout: LayoutType) => {
+  const handleLayoutChange = (_: React.MouseEvent<HTMLElement>, newLayout: LayoutType | null) => {
+    if (!newLayout) return;
     setLayout(newLayout);
     localStorage.setItem('lab-layout-preference', newLayout);
   };
@@ -47,55 +53,110 @@ export function LabLayoutSelector({ locale, translations }: LabLayoutSelectorPro
   }
 
   return (
-    <div className="relative" suppressHydrationWarning>
-      <div
-        className="fixed top-4 right-4 z-50 flex items-center gap-2 bg-background/95 backdrop-blur-sm border border-border rounded-[var(--radius)] pl-2 pr-2 py-2 shadow-lg"
+    <Box className="lab-md3-theme" sx={{ position: 'relative' }} suppressHydrationWarning>
+      <Paper
+        elevation={0}
         role="radiogroup"
-        aria-label="Layout selection"
+        aria-label={t.ariaLabel}
+        sx={{
+          position: 'fixed',
+          top: { xs: 72, md: 80 },
+          right: { xs: 12, md: 16 },
+          zIndex: 50,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          px: 1.5,
+          py: 1,
+          borderRadius: 'var(--lab-radius-lg)',
+          bgcolor: 'var(--md-sys-color-surface-container-highest)',
+          border: '1px solid var(--md-sys-color-outline-variant)',
+          boxShadow: 'var(--lab-elevation-2)',
+        }}
         suppressHydrationWarning
       >
-        <Link
+        <Box
+          component={Link}
           href={localizedPath(locale, '/dashboard')}
-          className="inline-flex items-center gap-1.5 min-h-[44px] px-2 sm:px-3 rounded-md text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+          sx={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 1,
+            px: 1.5,
+            py: 1,
+            borderRadius: 'var(--lab-radius-md)',
+            color: 'var(--md-sys-color-on-surface-variant)',
+            textDecoration: 'none',
+            fontSize: '0.8125rem',
+            fontWeight: 600,
+            minHeight: 44,
+            '&:hover': { bgcolor: 'var(--md-sys-color-surface-container-high)', color: 'var(--md-sys-color-on-surface)' },
+          }}
           title={translations.nav.missionProgress}
         >
-          <Trophy className="h-4 w-4 shrink-0" aria-hidden />
-          <span className="hidden md:inline">{translations.nav.missionProgress}</span>
-        </Link>
-        <span className="w-px h-6 bg-border hidden sm:block" aria-hidden />
-        <span id="lab-layout-label" className="text-xs font-medium text-muted-foreground uppercase tracking-wider hidden sm:inline">
-          Layout
-        </span>
-        <div className="flex gap-1" role="none">
-          {LAYOUTS.map(({ id, label, icon: Icon, title }) => (
-            <button
+          <Trophy size={16} aria-hidden />
+          <Typography component="span" variant="body2" sx={{ display: { xs: 'none', md: 'inline' }, fontWeight: 600 }}>
+            {translations.nav.missionProgress}
+          </Typography>
+        </Box>
+
+        <Box sx={{ width: 1, height: 28, bgcolor: 'var(--md-sys-color-outline-variant)', display: { xs: 'none', sm: 'block' } }} />
+
+        <Typography variant="caption" sx={{ color: 'var(--md-sys-color-on-surface-variant)', fontWeight: 600, display: { xs: 'none', sm: 'block' }, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          {t.label}
+        </Typography>
+
+        <ToggleButtonGroup
+          exclusive
+          size="small"
+          value={layout}
+          onChange={handleLayoutChange}
+          aria-labelledby="lab-layout-label"
+        >
+          {LAYOUTS.map(({ id, labelKey, hintKey, icon: Icon }) => (
+            <ToggleButton
               key={id}
-              type="button"
-              onClick={() => handleLayoutChange(id)}
-              className={cn(
-                'inline-flex items-center justify-center gap-2 min-h-[44px] min-w-[44px] sm:min-w-0 sm:px-3 rounded-md text-xs sm:text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
-                layout === id
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50'
-              )}
-              role="radio"
-              aria-checked={layout === id}
-              aria-label={`${label} layout: ${title}`}
-              title={title}
+              value={id}
+              aria-label={`${t[labelKey]}: ${t[hintKey]}`}
+              title={t[hintKey]}
+              sx={{
+                px: { xs: 1, sm: 1.5 },
+                minHeight: 44,
+                minWidth: 44,
+                gap: 0.75,
+                textTransform: 'none',
+                fontWeight: 600,
+                borderColor: 'var(--md-sys-color-outline-variant) !important',
+                color: 'var(--md-sys-color-on-surface-variant)',
+                '&.Mui-selected': {
+                  bgcolor: 'var(--md-sys-color-primary-container) !important',
+                  color: 'var(--md-sys-color-on-primary-container) !important',
+                },
+              }}
             >
-              <Icon className="h-4 w-4 shrink-0" aria-hidden />
-              <span className="hidden sm:inline">{label}</span>
-            </button>
+              <Icon size={16} aria-hidden />
+              <Typography component="span" variant="caption" sx={{ display: { xs: 'none', sm: 'inline' }, fontWeight: 600 }}>
+                {t[labelKey]}
+              </Typography>
+            </ToggleButton>
           ))}
-        </div>
-      </div>
+        </ToggleButtonGroup>
+      </Paper>
 
       {layout === 'standard' && <LabClientPage locale={locale} translations={translations} />}
       {layout === 'immersive' && (
-        <div className="fixed inset-0 z-40 bg-[#0d1117] lab-immersive-theme" aria-hidden="false">
+        <Box
+          sx={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 40,
+            bgcolor: 'var(--md-sys-color-surface)',
+          }}
+          aria-hidden="false"
+        >
           <ImmersiveLabLayout locale={locale} translations={translations} />
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }

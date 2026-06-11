@@ -1,5 +1,5 @@
 import { getTranslations } from '@/lib/i18n/server';
-import { GithubIcon, LinkedinIcon, TwitterIcon } from '@/components/icons/brand-icons';
+import { GithubIcon, LinkedinIcon } from '@/components/icons/brand-icons';
 import { SOCIAL_LINKS } from '@/lib/seo/constants';
 import type { Locale } from '@/lib/types';
 import Box from '@mui/material/Box';
@@ -33,16 +33,6 @@ export async function Footer({ locale }: { locale: Locale }) {
             {t.footer.copy}
           </Typography>
           <Box sx={{ display: 'flex', gap: 2 }}>
-            <Link
-              href={SOCIAL_LINKS.twitter}
-              target="_blank"
-              rel="noopener noreferrer"
-              color="text.secondary"
-              sx={{ display: 'flex', alignItems: 'center', '&:hover': { color: 'text.primary' } }}
-              aria-label="Twitter"
-            >
-              <TwitterIcon width={20} height={20} />
-            </Link>
             <Link
               href={SOCIAL_LINKS.github}
               target="_blank"

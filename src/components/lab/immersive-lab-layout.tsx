@@ -1,6 +1,13 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
+import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Stack';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import Typography from '@mui/material/Typography';
 import { useLabSimulation } from '@/contexts/lab-simulation-context';
 import { InteractiveTerminal } from '@/components/lab/interactive-terminal';
 import { KubernetesClusterViz } from '@/components/lab/kubernetes-cluster-viz';
@@ -12,17 +19,14 @@ import { MemoryUsageChart } from '@/components/lab/memory-chart';
 import { ApiResponseTimeChart } from '@/components/lab/api-response-chart';
 import { Button } from '@/components/ui-mui';
 import {
-  ShieldAlert,
   PlayCircle,
   Forward,
   Undo,
   Loader2,
-  Keyboard,
-  GanttChartSquare,
   History,
   BarChart3,
+  Route,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import type { DeployConfig, Locale, Translations } from '@/lib/types';
 import { translations as localeTable } from '@/data/locales';
 import { AriaLiveRegion } from '@/components/shared/aria-live-region';
@@ -45,16 +49,13 @@ interface ImmersiveLabLayoutProps {
   translations?: Translations;
 }
 
-const IMMERSIVE_BG = 'bg-[#0d1117]';
-const IMMERSIVE_TEXT = 'text-[#c9d1d9]';
-const IMMERSIVE_TEXT_MUTED = 'text-[#8b949e]';
-const IMMERSIVE_ACCENT_OK = 'text-[#3fb950]';
-const IMMERSIVE_ACCENT_WARN = 'text-[#d29922]';
+type SidePanel = 'pipeline' | 'incidents' | 'metrics';
 
 export function ImmersiveLabLayout({
   locale = 'en',
   translations = localeTable.en,
 }: ImmersiveLabLayoutProps = {}) {
+  const t = translations.lab;
   const {
     runtimeLogs,
     monitoringData,
@@ -73,9 +74,12 @@ export function ImmersiveLabLayout({
   const [showRollbackConfirm, setShowRollbackConfirm] = useState(false);
   const [showChaosConfirm, setShowChaosConfirm] = useState(false);
   const [pendingChaosScenario, setPendingChaosScenario] = useState<string | null>(null);
-  const [rightPanelTab, setRightPanelTab] = useState<'pipeline' | 'incidents' | 'metrics'>('pipeline');
+  const [sidePanel, setSidePanel] = useState<SidePanel>('pipeline');
   const { toast } = useToast();
-  const terminalRef = useRef<{ setCommand: (c: string) => void; setActiveTab: (tab: 'terminal' | 'logs' | 'playground') => void }>(null);
+  const terminalRef = useRef<{
+    setCommand: (c: string) => void;
+    setActiveTab: (tab: 'terminal' | 'logs' | 'playground') => void;
+  }>(null);
   const prevPipelineStatusRef = useRef(pipelineStatus);
   const prevIncidentsCountRef = useRef(incidents.length);
 
@@ -84,7 +88,7 @@ export function ImmersiveLabLayout({
   const p95Latency = Number(monitoringData.apiResponseData[monitoringData.apiResponseData.length - 1]?.p95 || 0);
   const totalPods = cluster.nodes.reduce((acc, n) => acc + (n.pods?.length ?? 0), 0);
   const chaosActive = incidents.filter((i) => i.status === 'Investigating').length;
-  const deployState = isDeploying ? 'running' : pipelineStatus === 'paused_canary' ? 'paused_canary' : 'idle';
+  const deployState = isDeploying ? 'running' : pipelineStatus === 'paused_canary' ? 'paused' : 'idle';
 
   const handleQuickAction = (command: string) => {
     terminalRef.current?.setActiveTab('terminal');
@@ -102,7 +106,7 @@ export function ImmersiveLabLayout({
     setShowRollbackConfirm(false);
     handleBackgroundAction(() => {
       runDeployment('rollback');
-      toast({ title: 'Rollback Initiated', description: 'Rolling back to previous version.', duration: 4000 });
+      toast({ title: t.actions.rollback, duration: 4000 });
     });
   };
 
@@ -115,7 +119,7 @@ export function ImmersiveLabLayout({
       setShowChaosConfirm(false);
       handleBackgroundAction(() => {
         runChaos(pendingChaosScenario);
-        toast({ title: 'Chaos Experiment Started', description: `Injecting ${pendingChaosScenario} fault.`, duration: 4000 });
+        toast({ title: t.dialogs.chaosTitle, duration: 4000 });
       });
       setPendingChaosScenario(null);
     }
@@ -123,28 +127,20 @@ export function ImmersiveLabLayout({
 
   useEffect(() => {
     if (prevPipelineStatusRef.current !== pipelineStatus) {
-      if (pipelineStatus === 'paused_canary') {
-        setPipelineAnnouncement('Pipeline paused at canary stage.');
-        toast({ title: 'Pipeline Paused at Canary', description: 'Review metrics to promote or rollback.', duration: 5000 });
-      } else if (pipelineStatus === 'completed') {
-        setPipelineAnnouncement('Pipeline deployment completed successfully.');
-        toast({ title: '✅ Deployment Successful', description: 'All pods are healthy.', duration: 5000 });
-      } else if (pipelineStatus === 'failed') {
-        setPipelineAnnouncement('Pipeline deployment failed.');
-        toast({ title: '❌ Deployment Failed', variant: 'destructive', duration: 5000 });
-      }
+      if (pipelineStatus === 'paused_canary') setPipelineAnnouncement('Pipeline paused at canary.');
+      else if (pipelineStatus === 'completed') setPipelineAnnouncement('Deployment completed.');
+      else if (pipelineStatus === 'failed') setPipelineAnnouncement('Deployment failed.');
       prevPipelineStatusRef.current = pipelineStatus;
     }
-  }, [pipelineStatus, toast]);
+  }, [pipelineStatus]);
 
   useEffect(() => {
     if (incidents.length > prevIncidentsCountRef.current) {
       const newIncident = incidents[0];
-      setIncidentAnnouncement(`New incident: ${newIncident.type}, Status: ${newIncident.status}`);
-      toast({ title: '🔥 Chaos Experiment Triggered', description: `${newIncident.type} injected.`, duration: 5000 });
+      setIncidentAnnouncement(`New incident: ${newIncident.type}`);
       prevIncidentsCountRef.current = incidents.length;
     }
-  }, [incidents, toast]);
+  }, [incidents]);
 
   const parseDeployCommand = (cmd: string): DeployConfig | null => {
     const parts = cmd.split(' ');
@@ -162,281 +158,234 @@ export function ImmersiveLabLayout({
     const [command] = cmd.trim().split(' ');
     if (command === 'deploy' || command === 'chaos') {
       const deployConfig = command === 'deploy' ? parseDeployCommand(cmd) : null;
-      const scenario = command === 'chaos' ? cmd.trim().split(' ')[1] ?? 'latency' : null;
+      const scenario = command === 'chaos' ? (cmd.trim().split(' ')[1] ?? 'latency') : null;
       handleBackgroundAction(() => {
         if (command === 'deploy') runDeployment('start', deployConfig ?? undefined);
         else runChaos(scenario ?? 'latency');
       });
       if (command === 'deploy') {
         return {
-          output: [`strategy: ${deployConfig?.strategy ?? 'canary'}  weight: ${deployConfig?.weight ?? 10}%`, 'Track progress in the Pipeline panel.'],
-          contextHint: 'Visual cues sync with this command.',
+          output: [`strategy: ${deployConfig?.strategy ?? 'canary'}  weight: ${deployConfig?.weight ?? 10}%`],
+          contextHint: 'Track progress in the Pipeline panel.',
           suggestion: 'Run `kubectl get pods` to verify.',
-          streamingSteps: ['[busy] queuing build...', '[sync] applying rollout...', '[ready] waiting for pods...'],
+          streamingSteps: ['[busy] queuing build…', '[sync] applying rollout…'],
         };
       }
       return {
         output: [`Chaos scenario "${scenario}" armed.`],
         contextHint: 'Faults stay inside this lab.',
         suggestion: 'Use `status` to confirm recovery.',
-        streamingSteps: ['[busy] priming chaos...', `[sync] issuing ${scenario}...`],
+        streamingSteps: ['[busy] priming chaos…'],
       };
     }
     return null;
   };
 
+  const quickActions = [
+    { label: 'get pods', cmd: 'kubectl get pods' },
+    { label: 'helm list', cmd: 'helm list' },
+    { label: 'deploy', cmd: 'deploy --weight=20', color: 'primary' as const },
+    { label: 'chaos:pod', cmd: 'chaos pod_failure', color: 'error' as const },
+    { label: 'chaos:latency', cmd: 'chaos latency', color: 'error' as const },
+  ];
+
   return (
-    <div className={cn('h-screen w-full overflow-hidden font-mono text-sm', IMMERSIVE_BG, IMMERSIVE_TEXT)}>
-      <header
-        className={cn('flex items-center justify-between h-14 min-h-[56px] px-4 border-b border-[#30363d] text-xs', IMMERSIVE_TEXT_MUTED)}
-        aria-label="Lab status bar"
+    <Box className="lab-md3-theme" sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <Paper
+        elevation={0}
+        component="header"
+        sx={{
+          px: 2,
+          py: 1.5,
+          borderRadius: 0,
+          borderBottom: '1px solid var(--md-sys-color-outline-variant)',
+          bgcolor: 'var(--md-sys-color-surface-container)',
+        }}
       >
-        <div className="flex items-center gap-3">
-          <span aria-hidden>╭─</span>
-          <span className={IMMERSIVE_ACCENT_OK}>&gt;</span>
-          <span>dev.tvignoli.com</span>
-          <span className={cn('border border-[#3fb950] px-2 py-1 text-[#3fb950]')}>LIVE</span>
-          <span aria-hidden>─</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <span suppressHydrationWarning aria-label={`CPU ${cpuUsage}%`}>cpu:{cpuUsage}%</span>
-          <span suppressHydrationWarning aria-label={`Memory ${memoryUsage}%`}>mem:{memoryUsage}%</span>
-          <span className={p95Latency > 200 ? IMMERSIVE_ACCENT_WARN : undefined} suppressHydrationWarning aria-label={`P95 ${p95Latency}ms`}>p95:{p95Latency}ms</span>
-          <span className="hidden sm:inline" suppressHydrationWarning>{new Date().toISOString().slice(11, 19)} UTC</span>
-          <div className="flex items-center gap-1 min-h-[44px]">
+        <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+          <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+              {t.title}
+            </Typography>
+            <Chip size="small" label={t.live} sx={{ bgcolor: 'var(--md-sys-color-tertiary-container)', fontWeight: 600 }} />
+          </Stack>
+          <Stack direction="row" spacing={2} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+            <Typography variant="caption" suppressHydrationWarning>CPU {cpuUsage}%</Typography>
+            <Typography variant="caption" suppressHydrationWarning>Mem {memoryUsage}%</Typography>
+            <Typography variant="caption" color={p95Latency > 200 ? 'warning.main' : 'inherit'} suppressHydrationWarning>
+              P95 {p95Latency}ms
+            </Typography>
             <HelpModal />
             <GuidedTour tourId="lab-tour" autoStart={false} />
-          </div>
-          <span className="hidden sm:inline flex items-center gap-1 min-h-[44px] items-center" title="Command palette (shortcut)">
-            <Keyboard className="h-3 w-3" aria-hidden /> ⌘K
-          </span>
-        </div>
-      </header>
+          </Stack>
+        </Stack>
+      </Paper>
 
-      <div className="flex flex-1 flex-col lg:flex-row h-[calc(100vh-3.5rem)]">
-        <div className={cn('flex flex-col flex-1 min-w-0 border-r border-[#30363d]')}>
-          <section className={cn('border-b border-[#30363d] p-2', IMMERSIVE_TEXT_MUTED)} aria-label="Cluster">
-            <div className="mb-2 text-xs uppercase tracking-wider flex items-center gap-2">
-              <span aria-hidden>├─</span> cluster
-            </div>
-            <div className="min-h-[120px] overflow-auto">
+      <Box sx={{ flex: 1, display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, minHeight: 0 }}>
+        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, borderRight: { lg: '1px solid var(--md-sys-color-outline-variant)' } }}>
+          <Box sx={{ p: 2, borderBottom: '1px solid var(--md-sys-color-outline-variant)', bgcolor: 'var(--md-sys-color-surface-container-low)' }}>
+            <Typography variant="overline" sx={{ color: 'var(--md-sys-color-on-surface-variant)', mb: 1, display: 'block' }}>
+              {t.sections.cluster}
+            </Typography>
+            <Box sx={{ minHeight: 120, maxHeight: 180, overflow: 'auto' }}>
               <KubernetesClusterViz cluster={cluster} />
-            </div>
-          </section>
-          <section className="flex-1 flex flex-col min-h-0 border-t border-[#30363d]" aria-label="Terminal">
-            <div className="flex items-center justify-between border-b border-[#30363d] px-2 py-1 text-xs text-[#8b949e]">
-              <span><span className="text-[#3fb950]" aria-hidden>$</span> kubectl get pods</span>
-              <span className={cn('flex items-center gap-1', IMMERSIVE_ACCENT_OK)}>
-                <span className="h-1.5 w-1.5 rounded-full bg-[#3fb950] animate-pulse" aria-hidden /> live
-              </span>
-            </div>
-            <div className="flex-1 overflow-hidden bg-black">
-              <InteractiveTerminal
-                ref={terminalRef}
-                runtimeLogs={runtimeLogs}
-                cluster={cluster}
-                locale={locale}
-                translations={translations}
-                onCommand={onCommand}
-              />
-            </div>
-          </section>
-        </div>
+            </Box>
+          </Box>
+          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, p: 2 }}>
+            <InteractiveTerminal
+              ref={terminalRef}
+              runtimeLogs={runtimeLogs}
+              cluster={cluster}
+              locale={locale}
+              translations={translations}
+              visualVariant="md3"
+              onCommand={onCommand}
+            />
+          </Box>
+        </Box>
 
-        <div className={cn('flex flex-col lg:w-[380px] xl:w-[420px] min-w-0 border-l border-[#30363d]')}>
-          <div role="tablist" aria-label="Sidebar panels" className="flex border-b border-[#30363d]">
-            {[
-              { id: 'pipeline' as const, label: 'Pipeline', icon: GanttChartSquare },
-              { id: 'incidents' as const, label: 'Incidents', icon: History },
-              { id: 'metrics' as const, label: 'Metrics', icon: BarChart3 },
-            ].map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                type="button"
-                role="tab"
-                aria-selected={rightPanelTab === id}
-                aria-controls={`panel-${id}`}
-                id={`tab-${id}`}
-                onClick={() => setRightPanelTab(id)}
-                className={cn(
-                  'flex items-center gap-2 px-3 py-2.5 text-xs uppercase tracking-wider min-h-[44px] border-b-2 -mb-px transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-[#3fb950]',
-                  rightPanelTab === id
-                    ? 'border-[#3fb950] text-[#c9d1d9]'
-                    : 'border-transparent text-[#8b949e] hover:text-[#c9d1d9]'
-                )}
-              >
-                <Icon className="h-3 w-3" aria-hidden />
-                {label}
-              </button>
-            ))}
-          </div>
-          <div className="flex-1 overflow-auto min-h-0">
-            <section
-              id="panel-pipeline"
-              role="tabpanel"
-              aria-labelledby="tab-pipeline"
-              hidden={rightPanelTab !== 'pipeline'}
-              className={cn('p-2', IMMERSIVE_TEXT_MUTED, rightPanelTab !== 'pipeline' && 'hidden')}
-            >
-              <div className="mb-2 text-xs uppercase tracking-wider flex items-center gap-2">
-                <span aria-hidden>├─</span> pipeline
-              </div>
-              <VisualDeployPipeline pipelineStages={pipeline} />
-              {pipelineStatus === 'paused_canary' && canaryMetrics && (
-                <div className="mt-2">
-                  <CanaryAnalysis metrics={canaryMetrics} />
-                </div>
-              )}
-              <div className="mt-2 flex flex-col gap-2">
+        <Box
+          sx={{
+            width: { xs: '100%', lg: 400 },
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: 0,
+            bgcolor: 'var(--md-sys-color-surface-container-low)',
+          }}
+        >
+          <Tabs
+            value={sidePanel}
+            onChange={(_, v) => setSidePanel(v)}
+            variant="fullWidth"
+            sx={{
+              borderBottom: '1px solid var(--md-sys-color-outline-variant)',
+              minHeight: 48,
+              '& .MuiTab-root': { minHeight: 48, textTransform: 'none', fontWeight: 600 },
+            }}
+          >
+            <Tab value="pipeline" label={t.sections.pipeline} icon={<Route size={16} />} iconPosition="start" />
+            <Tab value="incidents" label={t.sections.incidents} icon={<History size={16} />} iconPosition="start" />
+            <Tab value="metrics" label={t.metrics.title} icon={<BarChart3 size={16} />} iconPosition="start" />
+          </Tabs>
+
+          <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
+            {sidePanel === 'pipeline' && (
+              <Stack spacing={2}>
+                <VisualDeployPipeline pipelineStages={pipeline} />
+                {pipelineStatus === 'paused_canary' && canaryMetrics && <CanaryAnalysis metrics={canaryMetrics} />}
                 {pipelineStatus === 'paused_canary' ? (
-                  <>
-                    <Button size="sm" onClick={() => handleBackgroundAction(() => runDeployment('promote'))} className="w-full font-mono bg-[#238636] hover:bg-[#2ea043] text-white border-0 min-h-[44px]">
-                      <Forward className="mr-2 h-3 w-3" /> Promote Canary
+                  <Stack spacing={1}>
+                    <Button fullWidth onClick={() => handleBackgroundAction(() => runDeployment('promote'))} startIcon={<Forward size={16} />}>
+                      {t.actions.promote}
                     </Button>
-                    <Button size="sm" variant="destructive" onClick={handleRollbackClick} disabled={isDeploying} className="w-full font-mono min-h-[44px]">
-                      {isDeploying ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <Undo className="mr-2 h-3 w-3" />}
-                      {isDeploying ? 'Rolling back...' : 'Rollback'}
+                    <Button fullWidth variant="destructive" onClick={handleRollbackClick} disabled={isDeploying} startIcon={<Undo size={16} />}>
+                      {isDeploying ? t.actions.rollingBack : t.actions.rollback}
                     </Button>
-                  </>
+                  </Stack>
                 ) : (
                   <Button
-                    size="sm"
+                    fullWidth
                     onClick={() => handleBackgroundAction(() => runDeployment('start'))}
                     disabled={isDeploying}
-                    className="w-full font-mono bg-[#238636] hover:bg-[#2ea043] text-white border-0 min-h-[44px]"
+                    startIcon={isDeploying ? <Loader2 size={16} className="animate-spin" /> : <PlayCircle size={16} />}
                   >
-                    {isDeploying ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <PlayCircle className="mr-2 h-3 w-3" />}
-                    {isDeploying ? 'Deploying...' : 'Run Deployment'}
+                    {isDeploying ? t.actions.deploying : t.actions.deploy}
                   </Button>
                 )}
-              </div>
-            </section>
-            <section
-              id="panel-incidents"
-              role="tabpanel"
-              aria-labelledby="tab-incidents"
-              hidden={rightPanelTab !== 'incidents'}
-              className={cn('p-2', IMMERSIVE_TEXT_MUTED, rightPanelTab !== 'incidents' && 'hidden')}
-            >
-              <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-wider">
-                <span aria-hidden>├─</span>
-                <ShieldAlert className="h-3 w-3" aria-hidden /> incidents
-              </div>
-              <IncidentHistory incidents={incidents} />
-            </section>
-            <section
-              id="panel-metrics"
-              role="tabpanel"
-              aria-labelledby="tab-metrics"
-              hidden={rightPanelTab !== 'metrics'}
-              className={cn('p-2', IMMERSIVE_TEXT_MUTED, rightPanelTab !== 'metrics' && 'hidden')}
-            >
-              <div className="mb-2 text-xs uppercase tracking-wider flex items-center gap-2">
-                <span aria-hidden>├─</span> metrics
-              </div>
-              <div className="space-y-3">
-                <div>
-                  <p className="text-[#3fb950] font-medium">CPU {cpuUsage}%</p>
-                  <div className="h-20 -ml-2">
-                    <CpuUsageChart data={monitoringData.cpuData} />
-                  </div>
-                </div>
-                <div>
-                  <p className="text-[#58a6ff] font-medium">Mem {memoryUsage}%</p>
-                  <div className="h-20 -ml-2">
-                    <MemoryUsageChart data={monitoringData.memoryData} />
-                  </div>
-                </div>
-                <div>
-                  <p className={cn('font-medium', p95Latency > 200 ? 'text-[#d29922]' : 'text-[#c9d1d9]')}>P95 {p95Latency}ms</p>
-                  <div className="h-20 -ml-2">
-                    <ApiResponseTimeChart data={monitoringData.apiResponseData} />
-                  </div>
-                </div>
-              </div>
-            </section>
-          </div>
-        </div>
-      </div>
+              </Stack>
+            )}
+            {sidePanel === 'incidents' && <IncidentHistory incidents={incidents} />}
+            {sidePanel === 'metrics' && (
+              <Stack spacing={2}>
+                <Box>
+                  <Typography variant="subtitle2" color="primary">{t.metrics.cpu} {cpuUsage}%</Typography>
+                  <Box sx={{ height: 80 }}><CpuUsageChart data={monitoringData.cpuData} compact /></Box>
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2">{t.metrics.memory} {memoryUsage}%</Typography>
+                  <Box sx={{ height: 80 }}><MemoryUsageChart data={monitoringData.memoryData} compact /></Box>
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2">{t.metrics.latency} {p95Latency}ms</Typography>
+                  <Box sx={{ height: 80 }}><ApiResponseTimeChart data={monitoringData.apiResponseData} compact /></Box>
+                </Box>
+              </Stack>
+            )}
+          </Box>
+        </Box>
+      </Box>
 
-      <div
-        className={cn('flex items-center gap-2 px-3 py-2 border-t border-[#30363d] text-xs', IMMERSIVE_TEXT_MUTED)}
-        aria-label="Quick action commands"
+      <Paper
+        elevation={0}
+        component="footer"
+        sx={{
+          px: 2,
+          py: 1,
+          borderTop: '1px solid var(--md-sys-color-outline-variant)',
+          bgcolor: 'var(--md-sys-color-surface-container)',
+        }}
       >
-        <span aria-hidden>├─</span>
-        <button type="button" onClick={() => handleQuickAction('kubectl get pods')} className="min-h-[44px] min-w-[44px] sm:min-w-0 px-2 hover:text-[#c9d1d9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#3fb950] rounded">
-          get pods
-        </button>
-        <span aria-hidden>|</span>
-        <button type="button" onClick={() => handleQuickAction('helm list')} className="min-h-[44px] min-w-[44px] sm:min-w-0 px-2 hover:text-[#c9d1d9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#3fb950] rounded">
-          helm list
-        </button>
-        <span aria-hidden>|</span>
-        <button type="button" onClick={() => handleQuickAction('deploy --weight=20')} className={cn('min-h-[44px] min-w-[44px] sm:min-w-0 px-2 text-[#3fb950] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#3fb950] rounded')}>
-          deploy
-        </button>
-        <span aria-hidden>|</span>
-        <button type="button" onClick={() => handleChaosClick('pod_failure')} className={cn('min-h-[44px] min-w-[44px] sm:min-w-0 px-2 text-[#f85149] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#f85149] rounded')}>
-          chaos:pod
-        </button>
-        <span aria-hidden>|</span>
-        <button type="button" onClick={() => handleChaosClick('latency')} className={cn('min-h-[44px] min-w-[44px] sm:min-w-0 px-2 text-[#f85149] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#f85149] rounded')}>
-          chaos:latency
-        </button>
-        <span aria-hidden>|</span>
-        <button type="button" onClick={() => handleChaosClick('cpu_spike')} className={cn('min-h-[44px] min-w-[44px] sm:min-w-0 px-2 text-[#f85149] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#f85149] rounded')}>
-          chaos:cpu
-        </button>
-      </div>
-
-      <footer
-        className={cn('flex items-center gap-3 px-3 py-1 border-t border-[#30363d] text-xs', IMMERSIVE_TEXT_MUTED)}
-        aria-label="Status"
-      >
-        <span aria-hidden>╰─</span>
-        <span># dev-cluster</span>
-        <span aria-hidden>|</span>
-        <span>{totalPods} pods</span>
-        <span aria-hidden>|</span>
-        <span>{cluster.nodes.length} nodes</span>
-        <span aria-hidden>|</span>
-        <span>deploy: {deployState}</span>
-        <span aria-hidden>|</span>
-        <span className={chaosActive > 0 ? IMMERSIVE_ACCENT_WARN : undefined}>chaos: {chaosActive} active</span>
-      </footer>
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap', mb: 1 }}>
+          {quickActions.map((action) => (
+            <Chip
+              key={action.cmd}
+              label={action.label}
+              size="small"
+              clickable
+              onClick={() => (action.cmd.startsWith('chaos') ? handleChaosClick(action.cmd.split(' ')[1]) : handleQuickAction(action.cmd))}
+              sx={{
+                fontWeight: 600,
+                ...(action.color === 'error'
+                  ? { color: 'var(--md-sys-color-error)', borderColor: 'var(--md-sys-color-error)' }
+                  : {}),
+              }}
+              variant="outlined"
+            />
+          ))}
+        </Stack>
+        <Stack direction="row" spacing={2} sx={{ flexWrap: 'wrap' }}>
+          <Typography variant="caption" color="text.secondary">dev-cluster</Typography>
+          <Typography variant="caption" color="text.secondary">{totalPods} pods</Typography>
+          <Typography variant="caption" color="text.secondary">{cluster.nodes.length} nodes</Typography>
+          <Typography variant="caption" color="text.secondary">deploy: {deployState}</Typography>
+          <Typography variant="caption" color={chaosActive > 0 ? 'warning.main' : 'text.secondary'}>
+            chaos: {chaosActive} active
+          </Typography>
+        </Stack>
+      </Paper>
 
       <AriaLiveRegion message={pipelineAnnouncement} priority="polite" id="immersive-pipeline-announcement" />
       <AriaLiveRegion message={incidentAnnouncement} priority="assertive" id="immersive-incident-announcement" />
 
       <AlertDialog open={showRollbackConfirm} onOpenChange={setShowRollbackConfirm}>
-        <AlertDialogContent className="font-mono">
+        <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Rollback</AlertDialogTitle>
-            <AlertDialogDescription>Rollback to previous version. This cannot be undone.</AlertDialogDescription>
+            <AlertDialogTitle>{t.dialogs.rollbackTitle}</AlertDialogTitle>
+            <AlertDialogDescription>{t.dialogs.rollbackDescription}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t.dialogs.cancel}</AlertDialogCancel>
             <AlertDialogAction onClick={handleRollbackConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Rollback
+              {t.actions.rollback}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
       <AlertDialog open={showChaosConfirm} onOpenChange={setShowChaosConfirm}>
-        <AlertDialogContent className="font-mono">
+        <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Chaos Experiment</AlertDialogTitle>
-            <AlertDialogDescription>Inject {pendingChaosScenario} fault. Simulated failures will occur.</AlertDialogDescription>
+            <AlertDialogTitle>{t.dialogs.chaosTitle}</AlertDialogTitle>
+            <AlertDialogDescription>{t.dialogs.chaosDescription}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setPendingChaosScenario(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => setPendingChaosScenario(null)}>{t.dialogs.cancel}</AlertDialogCancel>
             <AlertDialogAction onClick={handleChaosConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Run Chaos Experiment
+              {t.dialogs.chaosTitle}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </Box>
   );
 }

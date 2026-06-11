@@ -51,10 +51,5 @@ export function createPageMetadata({
       description,
       ...(publishedTime && type === 'article' ? { publishedTime } : {}),
     },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-    },
   };
 }

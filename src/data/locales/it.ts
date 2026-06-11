@@ -99,5 +99,71 @@ export const it: Translations = {
       s3: "Bucket S3",
       cicd: "Pipeline CI/CD"
     }
-  }
+  },
+  lab: {
+    title: "Mission Console DevOps",
+    subtitle: "Deploy, osservabilità e chaos-test su un cluster Kubernetes simulato — ogni azione replica workflow di produzione.",
+    live: "Live",
+    terminal: {
+      title: "Interfaccia comandi",
+      description: "Esegui kubectl, strategie di deploy ed esperimenti chaos da un'unica console.",
+      connected: "Connesso a dev-cluster",
+    },
+    missionControl: {
+      title: "Mission Control",
+      description: "Automazione e macro per le operazioni più comuni.",
+      sandboxTitle: "Ambiente simulato",
+      sandboxDescription: "Tutte le azioni restano in sandbox. Nessun sistema di produzione è coinvolto.",
+      autoChaos: "Auto-Chaos Monkey",
+      autoChaosDescription: "Fault injection programmata per validare self-healing e rollback.",
+    },
+    metrics: {
+      title: "Osservabilità",
+      cpu: "Utilizzo CPU",
+      memory: "Memoria",
+      latency: "Latenza API",
+      deploys: "Deploy",
+      cpuHint: "Utilizzo CPU del cluster. Range normale: 0–70%.",
+      memoryHint: "Memoria totale su tutti i nodi.",
+      latencyHint: "Tempo di risposta al 95° percentile. Obiettivo sotto 200ms.",
+      deploysHint: "Deploy riusciti negli ultimi 7 giorni.",
+    },
+    sections: {
+      incidents: "Storico incidenti",
+      incidentsSubtitle: "Test di resilienza ed eventi di sistema",
+      cluster: "Topologia cluster",
+      pipeline: "Pipeline di deploy",
+      pipelineSubtitle: "Stage CI/CD e gate canary",
+    },
+    actions: {
+      promote: "Promuovi canary",
+      rollback: "Rollback",
+      deploy: "Avvia deploy",
+      deploying: "Deploy in corso…",
+      rollingBack: "Rollback in corso…",
+      run: "Esegui",
+    },
+    layout: {
+      label: "Vista",
+      standard: "Dashboard",
+      immersive: "Focus",
+      standardHint: "Console a schede con griglia metriche",
+      immersiveHint: "Vista operatore full-screen con pannelli laterali",
+      ariaLabel: "Selezione layout lab",
+    },
+    macros: {
+      clusterPulse: { label: "Cluster pulse", description: "Elenca pod e stato rollout" },
+      canary: { label: "Canary 20%", description: "Instrada il 20% del traffico al nuovo build" },
+      blueGreen: { label: "Blue / Green", description: "Avvia green prima del cutover" },
+      chaosPod: { label: "Chaos · pod", description: "Elimina un pod per testare auto-healing" },
+      chaosLatency: { label: "Chaos · latenza", description: "Spike latenza API per 60s" },
+    },
+    dialogs: {
+      rollbackTitle: "Conferma rollback",
+      rollbackDescription: "Torna alla versione precedente. Azione irreversibile.",
+      chaosTitle: "Conferma chaos experiment",
+      chaosDescription: "Inietta un fault simulato. Monitora lo storico incidenti per il recovery.",
+      cancel: "Annulla",
+    },
+  },
 };

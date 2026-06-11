@@ -99,5 +99,71 @@ export const en: Translations = {
       s3: "S3 Bucket",
       cicd: "CI/CD Pipeline"
     }
-  }
+  },
+  lab: {
+    title: "DevOps Mission Console",
+    subtitle: "Deploy, observe, and chaos-test a simulated Kubernetes cluster — every action mirrors production-grade workflows.",
+    live: "Live",
+    terminal: {
+      title: "Command Interface",
+      description: "Run kubectl, deploy strategies, and chaos experiments from a single console.",
+      connected: "Connected to dev-cluster",
+    },
+    missionControl: {
+      title: "Mission Control",
+      description: "Automation toggles and curated macros for common operations.",
+      sandboxTitle: "Simulated environment",
+      sandboxDescription: "All actions stay inside a sandbox. No production systems are touched.",
+      autoChaos: "Auto-Chaos Monkey",
+      autoChaosDescription: "Scheduled fault injection validates self-healing and rollback paths.",
+    },
+    metrics: {
+      title: "Observability",
+      cpu: "CPU usage",
+      memory: "Memory",
+      latency: "API latency",
+      deploys: "Deployments",
+      cpuHint: "Cluster CPU utilization. Normal range: 0–70%.",
+      memoryHint: "Total memory usage across all nodes.",
+      latencyHint: "95th percentile response time. Target under 200ms.",
+      deploysHint: "Successful deployments in the last 7 days.",
+    },
+    sections: {
+      incidents: "Incident history",
+      incidentsSubtitle: "Resilience tests and system events",
+      cluster: "Cluster topology",
+      pipeline: "Deploy pipeline",
+      pipelineSubtitle: "CI/CD stages and canary gates",
+    },
+    actions: {
+      promote: "Promote canary",
+      rollback: "Rollback",
+      deploy: "Run deployment",
+      deploying: "Deploying…",
+      rollingBack: "Rolling back…",
+      run: "Run",
+    },
+    layout: {
+      label: "View",
+      standard: "Dashboard",
+      immersive: "Focus",
+      standardHint: "Card-based mission console with metrics grid",
+      immersiveHint: "Full-screen operator view with side panels",
+      ariaLabel: "Lab layout selection",
+    },
+    macros: {
+      clusterPulse: { label: "Cluster pulse", description: "List pods and rollout status" },
+      canary: { label: "Canary 20%", description: "Route 20% traffic to the new build" },
+      blueGreen: { label: "Blue / Green", description: "Spin up green before cutover" },
+      chaosPod: { label: "Chaos · pods", description: "Drop a pod to test auto-healing" },
+      chaosLatency: { label: "Chaos · latency", description: "Spike API latency for 60s" },
+    },
+    dialogs: {
+      rollbackTitle: "Confirm rollback",
+      rollbackDescription: "This rolls back to the previous version. This action cannot be undone.",
+      chaosTitle: "Confirm chaos experiment",
+      chaosDescription: "This injects a simulated fault. Monitor incident history for recovery.",
+      cancel: "Cancel",
+    },
+  },
 };

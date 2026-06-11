@@ -7,5 +7,4 @@ export const DEFAULT_DESCRIPTION =
 export const SOCIAL_LINKS = {
   linkedin: 'https://linkedin.com/in/thomas-vignoli',
   github: 'https://github.com/tvignoli',
-  twitter: 'https://twitter.com/tvignoli',
 } as const;

@@ -60,6 +60,7 @@ interface InteractiveTerminalProps {
   onCommand: (command: string) => CommandOutput | CommandExecutionResult | null;
   locale: Locale;
   translations: Translations;
+  visualVariant?: 'cyber' | 'md3';
 }
 
 const HISTORY_STORAGE_KEY = 'lab_terminal_history';
@@ -370,7 +371,8 @@ const CommandOutputDisplay = ({ output }: { output: CommandOutput }) => {
   );
 };
 
-export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) => void, setActiveTab: (tab: 'terminal' | 'logs' | 'playground') => void }, InteractiveTerminalProps>(({ runtimeLogs, cluster, onCommand, locale, translations }, ref) => {
+export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) => void, setActiveTab: (tab: 'terminal' | 'logs' | 'playground') => void }, InteractiveTerminalProps>(({ runtimeLogs, cluster, onCommand, locale, translations, visualVariant = 'cyber' }, ref) => {
+  const isMd3 = visualVariant === 'md3';
   const [input, setInput] = useState('');
   const [history, setHistory] = useState<TerminalEntry[]>([]);
   const [activeTab, setActiveTab] = useState<'terminal' | 'logs' | 'playground'>('terminal');
@@ -1008,36 +1010,59 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
 
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-      <TabsList className="grid w-full grid-cols-3 bg-slate-900 border border-cyan-500/30 rounded-t-lg rounded-b-none p-0 gap-0 font-mono text-xs sm:text-sm" aria-label="Terminal view selection">
+      <TabsList
+        className={cn(
+          'grid w-full grid-cols-3 rounded-t-lg rounded-b-none p-0 gap-0 text-xs sm:text-sm',
+          isMd3
+            ? 'bg-[var(--md-sys-color-surface-container-high)] border border-[var(--md-sys-color-outline-variant)] font-sans'
+            : 'bg-slate-900 border border-cyan-500/30 font-mono'
+        )}
+        aria-label="Terminal view selection"
+      >
         <TabsTrigger 
           value="terminal"
-          className="rounded-tl-lg rounded-tr-none data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 data-[state=inactive]:bg-slate-800 data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:bg-slate-700 data-[state=inactive]:hover:text-slate-300 transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-cyan-500 gap-1 sm:gap-1.5 py-2 px-2 border-0 border-r border-slate-700 last:border-r-0"
+          className={cn(
+            'rounded-tl-lg rounded-tr-none gap-1 sm:gap-1.5 py-2 px-2 border-0 border-r last:border-r-0 transition-colors duration-200 focus-visible:ring-2',
+            isMd3
+              ? 'border-[var(--md-sys-color-outline-variant)] data-[state=active]:bg-[var(--md-sys-color-primary-container)] data-[state=active]:text-[var(--md-sys-color-on-primary-container)] data-[state=active]:border-b-2 data-[state=active]:border-[var(--md-sys-color-primary)] data-[state=inactive]:text-[var(--md-sys-color-on-surface-variant)] data-[state=inactive]:hover:bg-[var(--md-sys-color-surface-container)] focus-visible:ring-[var(--md-sys-color-primary)]'
+              : 'border-slate-700 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 data-[state=inactive]:bg-slate-800 data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:bg-slate-700 data-[state=inactive]:hover:text-slate-300 focus-visible:ring-cyan-500'
+          )}
           aria-label="Terminal Core tab"
           title="Terminal"
         >
           <FileTerminal className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" aria-hidden />
-          <span className="hidden sm:inline">[ Terminal ]</span>
-          <span className="sm:hidden">[ Cmd ]</span>
+          <span className="hidden sm:inline">{isMd3 ? 'Terminal' : '[ Terminal ]'}</span>
+          <span className="sm:hidden">{isMd3 ? 'Cmd' : '[ Cmd ]'}</span>
         </TabsTrigger>
         <TabsTrigger 
           value="logs"
-          className="rounded-none data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 data-[state=inactive]:bg-slate-800 data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:bg-slate-700 data-[state=inactive]:hover:text-slate-300 transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-cyan-500 gap-1 sm:gap-1.5 py-2 px-2 border-0 border-r border-slate-700 last:border-r-0"
+          className={cn(
+            'rounded-none gap-1 sm:gap-1.5 py-2 px-2 border-0 border-r last:border-r-0 transition-colors duration-200 focus-visible:ring-2',
+            isMd3
+              ? 'border-[var(--md-sys-color-outline-variant)] data-[state=active]:bg-[var(--md-sys-color-primary-container)] data-[state=active]:text-[var(--md-sys-color-on-primary-container)] data-[state=active]:border-b-2 data-[state=active]:border-[var(--md-sys-color-primary)] data-[state=inactive]:text-[var(--md-sys-color-on-surface-variant)] data-[state=inactive]:hover:bg-[var(--md-sys-color-surface-container)] focus-visible:ring-[var(--md-sys-color-primary)]'
+              : 'border-slate-700 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 data-[state=inactive]:bg-slate-800 data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:bg-slate-700 data-[state=inactive]:hover:text-slate-300 focus-visible:ring-cyan-500'
+          )}
           aria-label="Runtime Logs tab"
           title="Logs"
         >
           <Power className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" aria-hidden />
-          <span className="hidden sm:inline">[ Logs ]</span>
-          <span className="sm:hidden">[ Log ]</span>
+          <span className="hidden sm:inline">{isMd3 ? 'Logs' : '[ Logs ]'}</span>
+          <span className="sm:hidden">{isMd3 ? 'Log' : '[ Log ]'}</span>
         </TabsTrigger>
         <TabsTrigger 
           value="playground"
-          className="rounded-tl-none rounded-tr-lg data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 data-[state=inactive]:bg-slate-800 data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:bg-slate-700 data-[state=inactive]:hover:text-slate-300 transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-cyan-500 gap-1 sm:gap-1.5 py-2 px-2 border-0"
+          className={cn(
+            'rounded-tl-none rounded-tr-lg gap-1 sm:gap-1.5 py-2 px-2 border-0 transition-colors duration-200 focus-visible:ring-2',
+            isMd3
+              ? 'data-[state=active]:bg-[var(--md-sys-color-primary-container)] data-[state=active]:text-[var(--md-sys-color-on-primary-container)] data-[state=active]:border-b-2 data-[state=active]:border-[var(--md-sys-color-primary)] data-[state=inactive]:text-[var(--md-sys-color-on-surface-variant)] data-[state=inactive]:hover:bg-[var(--md-sys-color-surface-container)] focus-visible:ring-[var(--md-sys-color-primary)]'
+              : 'data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 data-[state=inactive]:bg-slate-800 data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:bg-slate-700 data-[state=inactive]:hover:text-slate-300 focus-visible:ring-cyan-500'
+          )}
           aria-label="Code Playground tab"
           title="Playground"
         >
           <Code2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" aria-hidden />
-          <span className="hidden sm:inline">[ Playground ]</span>
-          <span className="sm:hidden">[ Play ]</span>
+          <span className="hidden sm:inline">{isMd3 ? 'Playground' : '[ Playground ]'}</span>
+          <span className="sm:hidden">{isMd3 ? 'Play' : '[ Play ]'}</span>
         </TabsTrigger>
       </TabsList>
       <TabsContent value="terminal">
@@ -1046,13 +1071,19 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="relative bg-slate-950 text-slate-100 font-mono rounded-b-lg h-[28rem] text-sm border border-cyan-500/30 flex flex-col cursor-text overflow-hidden group"
+          className={cn(
+            'relative font-mono rounded-b-lg h-[28rem] text-sm flex flex-col cursor-text overflow-hidden group',
+            isMd3
+              ? 'bg-[var(--md-sys-color-surface-container-lowest)] text-[var(--md-sys-color-on-surface)] border border-[var(--md-sys-color-outline-variant)]'
+              : 'bg-slate-950 text-slate-100 border border-cyan-500/30'
+          )}
           onClick={() => {
             setHasUserInteracted(true);
             inputRef.current?.focus();
           }}
         >
           {/* Subtle grid – solid line pattern (no fill gradient) */}
+          {!isMd3 && (
           <div 
             className="absolute inset-0 opacity-[0.06] pointer-events-none"
             style={{
@@ -1060,8 +1091,14 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
               backgroundSize: '20px 20px',
             }}
           />
+          )}
           {/* Terminal Header with Status Indicators */}
-          <div className="relative flex items-center gap-2 p-3 bg-slate-900 border-b border-cyan-500/30 text-xs text-slate-300 z-10">
+          <div className={cn(
+            'relative flex items-center gap-2 p-3 border-b text-xs z-10',
+            isMd3
+              ? 'bg-[var(--md-sys-color-surface-container)] border-[var(--md-sys-color-outline-variant)] text-[var(--md-sys-color-on-surface-variant)]'
+              : 'bg-slate-900 border-cyan-500/30 text-slate-300'
+          )}>
             <div className="flex gap-1.5">
               <motion.div 
                 whileHover={{ scale: 1.1 }}

@@ -25,7 +25,7 @@ export function buildPersonSchema() {
       'Monitoring',
       'Observability',
     ],
-    sameAs: [SOCIAL_LINKS.linkedin, SOCIAL_LINKS.github, SOCIAL_LINKS.twitter],
+    sameAs: [SOCIAL_LINKS.linkedin, SOCIAL_LINKS.github],
   };
 }
 

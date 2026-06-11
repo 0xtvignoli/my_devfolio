@@ -98,6 +98,72 @@ export interface Translations {
       cicd: string;
     };
   };
+  lab: {
+    title: string;
+    subtitle: string;
+    live: string;
+    terminal: {
+      title: string;
+      description: string;
+      connected: string;
+    };
+    missionControl: {
+      title: string;
+      description: string;
+      sandboxTitle: string;
+      sandboxDescription: string;
+      autoChaos: string;
+      autoChaosDescription: string;
+    };
+    metrics: {
+      title: string;
+      cpu: string;
+      memory: string;
+      latency: string;
+      deploys: string;
+      cpuHint: string;
+      memoryHint: string;
+      latencyHint: string;
+      deploysHint: string;
+    };
+    sections: {
+      incidents: string;
+      incidentsSubtitle: string;
+      cluster: string;
+      pipeline: string;
+      pipelineSubtitle: string;
+    };
+    actions: {
+      promote: string;
+      rollback: string;
+      deploy: string;
+      deploying: string;
+      rollingBack: string;
+      run: string;
+    };
+    layout: {
+      label: string;
+      standard: string;
+      immersive: string;
+      standardHint: string;
+      immersiveHint: string;
+      ariaLabel: string;
+    };
+    macros: {
+      clusterPulse: { label: string; description: string };
+      canary: { label: string; description: string };
+      blueGreen: { label: string; description: string };
+      chaosPod: { label: string; description: string };
+      chaosLatency: { label: string; description: string };
+    };
+    dialogs: {
+      rollbackTitle: string;
+      rollbackDescription: string;
+      chaosTitle: string;
+      chaosDescription: string;
+      cancel: string;
+    };
+  };
 }
 
 export interface Project {
