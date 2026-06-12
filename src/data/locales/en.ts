@@ -165,5 +165,143 @@ export const en: Translations = {
       chaosDescription: "This injects a simulated fault. Monitor incident history for recovery.",
       cancel: "Cancel",
     },
+    toasts: {
+      pipelinePausedTitle: "Pipeline paused",
+      pipelinePausedDescription: "Review canary metrics to promote or roll back.",
+      deploySuccessTitle: "Deployment successful",
+      deploySuccessDescription: "All pods are healthy.",
+      deployFailedTitle: "Deployment failed",
+      rollbackStartedDescription: "Rolling back to the previous version.",
+      chaosInjectedDescription: "Injecting {scenario} fault.",
+    },
+    announcements: {
+      pipelinePaused: "Pipeline paused at canary stage.",
+      pipelineCompleted: "Pipeline deployment completed successfully.",
+      pipelineFailed: "Pipeline deployment failed.",
+      newIncident: "New incident: {type}, status: {status}",
+      cpuChanged: "CPU usage changed to {value}%",
+      latencyChanged: "API latency changed to {value}ms",
+    },
+    empty: {
+      incidentsTitle: "No incidents yet",
+      incidentsDescription: "Incidents appear here when chaos experiments run.",
+      tryCommand: "Try {command} in the terminal.",
+    },
+    incidentTable: {
+      status: "Status",
+      type: "Type",
+      duration: "Duration",
+      timestamp: "Timestamp",
+      ariaLabel: "Incident history",
+    },
+    help: {
+      buttonLabel: "Help",
+      title: "Available commands",
+      description: "Complete list of commands available in the Lab terminal. Use Tab for autocomplete, ↑/↓ for history.",
+      tipLabel: "Tip:",
+      tip: "Type `help` in the terminal for a quick reference, or use Tab to autocomplete commands.",
+      categories: [
+        {
+          key: "system",
+          title: "System commands",
+          commands: [
+            { cmd: "help", desc: "Show this help panel" },
+            { cmd: "ls [path]", desc: "List workspace directories" },
+            { cmd: "cat <file>", desc: "Inspect a file" },
+            { cmd: "pwd", desc: "Print current workspace path" },
+            { cmd: "history", desc: "Command log (use history -c to clear)" },
+            { cmd: "clear", desc: "Clear the viewport" },
+            { cmd: "uptime", desc: "Show session uptime" },
+          ],
+        },
+        {
+          key: "lab",
+          title: "Lab commands",
+          commands: [
+            { cmd: "deploy [--strategy] [--weight] [--version]", desc: "Trigger CI/CD pipeline" },
+            { cmd: "chaos <scenario>", desc: "Run chaos experiment (pod_failure, latency, cpu_spike)" },
+            { cmd: "status", desc: "Show control-plane vitals" },
+          ],
+        },
+        {
+          key: "kubernetes",
+          title: "Kubernetes commands",
+          commands: [
+            { cmd: "kubectl get pods", desc: "List all pods" },
+            { cmd: "kubectl get nodes", desc: "List cluster nodes" },
+            { cmd: "kubectl get services", desc: "List services" },
+            { cmd: "kubectl describe pod <name>", desc: "Describe a pod" },
+            { cmd: "kubectl logs <pod>", desc: "View pod logs" },
+          ],
+        },
+        {
+          key: "helm",
+          title: "Helm commands",
+          commands: [
+            { cmd: "helm list", desc: "List releases" },
+            { cmd: "helm status <release>", desc: "Check release status" },
+          ],
+        },
+        {
+          key: "git",
+          title: "Git commands",
+          commands: [
+            { cmd: "git status", desc: "Check git status" },
+            { cmd: "git log", desc: "View commit history" },
+            { cmd: "git branch", desc: "List branches" },
+            { cmd: "git remote -v", desc: "Show remote repositories" },
+          ],
+        },
+      ],
+    },
+    tour: {
+      start: "Tour",
+      restart: "Restart tour",
+      previous: "Previous",
+      next: "Next",
+      finish: "Finish",
+      close: "Close tour",
+      stepOf: "{current} of {total}",
+      steps: {
+        welcome: {
+          title: "👋 Welcome to the DevOps Lab!",
+          description: "An interactive environment to explore DevOps practices, Kubernetes, CI/CD pipelines, and chaos engineering. Let me show you around!",
+          action: "Start tour",
+        },
+        terminal: {
+          title: "💻 Interactive terminal",
+          description: "Execute commands like kubectl, helm, and git. Type \"help\" to see all available commands. Press ↑/↓ for history, Tab for autocomplete.",
+        },
+        quickActions: {
+          title: "⚡ Quick actions",
+          description: "Use these shortcuts for common operations. Perfect for rapid experimentation without typing commands.",
+        },
+        missionControl: {
+          title: "🎛️ Mission Control",
+          description: "Toggle Auto-Chaos and run curated macros: canary deploys, blue/green cutovers, and chaos experiments.",
+        },
+        metrics: {
+          title: "📊 Real-time metrics",
+          description: "Monitor CPU, memory, latency, and deployment stats. All data updates live as you interact with the lab.",
+        },
+        cluster: {
+          title: "☸️ Kubernetes cluster",
+          description: "Visualize the cluster in real time. Click on pods to see details and monitor their health status.",
+        },
+        pipeline: {
+          title: "🚀 CI/CD pipeline",
+          description: "Deploy with canary or blue-green strategies and watch the rollout progress through each stage.",
+        },
+        incidents: {
+          title: "🔥 Incident history",
+          description: "Chaos experiments and system events are logged here, including recovery times.",
+        },
+        complete: {
+          title: "🎉 You're all set!",
+          description: "Start exploring at your own pace. Type \"help\" in the terminal anytime, or hover over elements for tooltips.",
+          action: "Start exploring",
+        },
+      },
+    },
   },
 };

@@ -570,3 +570,13 @@
     --lab-accent-red: #f28b82;
   }
 }
+
+/* Immersive lab mode: hide site chrome so the overlay is truly fullscreen.
+   !important is required to beat MUI's unlayered emotion styles. */
+body.lab-immersive-active {
+  overflow: hidden !important;
+}
+body.lab-immersive-active header.MuiAppBar-root,
+body.lab-immersive-active [data-lab-breadcrumb] {
+  display: none !important;
+}

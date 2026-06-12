@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
@@ -12,6 +12,7 @@ import { ImmersiveLabLayout } from '@/components/lab/immersive-lab-layout';
 import { LabPageSkeleton } from '@/components/lab/lab-page-skeleton';
 import { LayoutGrid, Maximize2, Trophy } from 'lucide-react';
 import { localizedPath } from '@/lib/i18n/paths';
+import { trackLabLayoutSwitch, trackLabView } from '@/lib/lab-telemetry';
 import type { Locale, Translations } from '@/lib/types';
 
 interface LabLayoutSelectorProps {
@@ -33,20 +34,45 @@ export function LabLayoutSelector({ locale, translations }: LabLayoutSelectorPro
 
   useEffect(() => {
     const saved = localStorage.getItem('lab-layout-preference') as string | null;
+    let initial: LayoutType = 'standard';
     if (saved === 'geek') {
       localStorage.setItem('lab-layout-preference', 'immersive');
-      setLayout('immersive');
+      initial = 'immersive';
     } else if (saved === 'standard' || saved === 'immersive') {
-      setLayout(saved);
+      initial = saved;
     }
+    setLayout(initial);
     setIsClient(true);
+    trackLabView(initial);
+  }, []);
+
+  const applyLayout = useCallback((newLayout: LayoutType) => {
+    setLayout(newLayout);
+    localStorage.setItem('lab-layout-preference', newLayout);
+    trackLabLayoutSwitch(newLayout);
   }, []);
 
   const handleLayoutChange = (_: React.MouseEvent<HTMLElement>, newLayout: LayoutType | null) => {
     if (!newLayout) return;
-    setLayout(newLayout);
-    localStorage.setItem('lab-layout-preference', newLayout);
+    applyLayout(newLayout);
   };
+
+  // Fullscreen immersive mode: hide site chrome, lock scroll, exit with Escape.
+  useEffect(() => {
+    if (!isClient || layout !== 'immersive') return;
+    document.body.classList.add('lab-immersive-active');
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      // Let open dialogs/tour consume Escape first.
+      if (document.querySelector('[role="dialog"][data-state="open"], [role="alertdialog"][data-state="open"]')) return;
+      applyLayout('standard');
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.classList.remove('lab-immersive-active');
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [isClient, layout, applyLayout]);
 
   if (!isClient) {
     return <LabPageSkeleton />;
@@ -60,9 +86,9 @@ export function LabLayoutSelector({ locale, translations }: LabLayoutSelectorPro
         aria-label={t.ariaLabel}
         sx={{
           position: 'fixed',
-          top: { xs: 72, md: 80 },
+          top: layout === 'immersive' ? { xs: 8, md: 10 } : { xs: 72, md: 80 },
           right: { xs: 12, md: 16 },
-          zIndex: 50,
+          zIndex: 60,
           display: 'flex',
           alignItems: 'center',
           gap: 1,
@@ -79,7 +105,7 @@ export function LabLayoutSelector({ locale, translations }: LabLayoutSelectorPro
           component={Link}
           href={localizedPath(locale, '/dashboard')}
           sx={{
-            display: 'inline-flex',
+            display: layout === 'immersive' ? 'none' : 'inline-flex',
             alignItems: 'center',
             gap: 1,
             px: 1.5,
@@ -100,9 +126,9 @@ export function LabLayoutSelector({ locale, translations }: LabLayoutSelectorPro
           </Typography>
         </Box>
 
-        <Box sx={{ width: 1, height: 28, bgcolor: 'var(--md-sys-color-outline-variant)', display: { xs: 'none', sm: 'block' } }} />
+        <Box sx={{ width: 1, height: 28, bgcolor: 'var(--md-sys-color-outline-variant)', display: layout === 'immersive' ? 'none' : { xs: 'none', sm: 'block' } }} />
 
-        <Typography variant="caption" sx={{ color: 'var(--md-sys-color-on-surface-variant)', fontWeight: 600, display: { xs: 'none', sm: 'block' }, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+        <Typography variant="caption" sx={{ color: 'var(--md-sys-color-on-surface-variant)', fontWeight: 600, display: layout === 'immersive' ? 'none' : { xs: 'none', sm: 'block' }, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           {t.label}
         </Typography>
 
@@ -135,7 +161,7 @@ export function LabLayoutSelector({ locale, translations }: LabLayoutSelectorPro
               }}
             >
               <Icon size={16} aria-hidden />
-              <Typography component="span" variant="caption" sx={{ display: { xs: 'none', sm: 'inline' }, fontWeight: 600 }}>
+              <Typography component="span" variant="caption" sx={{ display: layout === 'immersive' ? 'none' : { xs: 'none', sm: 'inline' }, fontWeight: 600 }}>
                 {t[labelKey]}
               </Typography>
             </ToggleButton>

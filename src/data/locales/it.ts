@@ -165,5 +165,143 @@ export const it: Translations = {
       chaosDescription: "Inietta un fault simulato. Monitora lo storico incidenti per il recovery.",
       cancel: "Annulla",
     },
+    toasts: {
+      pipelinePausedTitle: "Pipeline in pausa",
+      pipelinePausedDescription: "Analizza le metriche canary per promuovere o fare rollback.",
+      deploySuccessTitle: "Deploy completato",
+      deploySuccessDescription: "Tutti i pod sono in salute.",
+      deployFailedTitle: "Deploy fallito",
+      rollbackStartedDescription: "Rollback alla versione precedente in corso.",
+      chaosInjectedDescription: "Iniezione fault {scenario} in corso.",
+    },
+    announcements: {
+      pipelinePaused: "Pipeline in pausa allo stage canary.",
+      pipelineCompleted: "Deploy della pipeline completato con successo.",
+      pipelineFailed: "Deploy della pipeline fallito.",
+      newIncident: "Nuovo incidente: {type}, stato: {status}",
+      cpuChanged: "Utilizzo CPU cambiato a {value}%",
+      latencyChanged: "Latenza API cambiata a {value}ms",
+    },
+    empty: {
+      incidentsTitle: "Nessun incidente",
+      incidentsDescription: "Gli incidenti appaiono qui quando vengono eseguiti esperimenti chaos.",
+      tryCommand: "Prova {command} nel terminale.",
+    },
+    incidentTable: {
+      status: "Stato",
+      type: "Tipo",
+      duration: "Durata",
+      timestamp: "Data e ora",
+      ariaLabel: "Storico incidenti",
+    },
+    help: {
+      buttonLabel: "Aiuto",
+      title: "Comandi disponibili",
+      description: "Elenco completo dei comandi disponibili nel terminale del Lab. Usa Tab per l'autocomplete, ↑/↓ per la cronologia.",
+      tipLabel: "Suggerimento:",
+      tip: "Digita `help` nel terminale per un riferimento rapido, oppure usa Tab per completare i comandi.",
+      categories: [
+        {
+          key: "system",
+          title: "Comandi di sistema",
+          commands: [
+            { cmd: "help", desc: "Mostra questo pannello di aiuto" },
+            { cmd: "ls [path]", desc: "Elenca le directory del workspace" },
+            { cmd: "cat <file>", desc: "Ispeziona un file" },
+            { cmd: "pwd", desc: "Mostra il percorso corrente" },
+            { cmd: "history", desc: "Log dei comandi (history -c per pulire)" },
+            { cmd: "clear", desc: "Pulisce la schermata" },
+            { cmd: "uptime", desc: "Mostra l'uptime della sessione" },
+          ],
+        },
+        {
+          key: "lab",
+          title: "Comandi Lab",
+          commands: [
+            { cmd: "deploy [--strategy] [--weight] [--version]", desc: "Avvia la pipeline CI/CD" },
+            { cmd: "chaos <scenario>", desc: "Esperimento chaos (pod_failure, latency, cpu_spike)" },
+            { cmd: "status", desc: "Vitali del control plane" },
+          ],
+        },
+        {
+          key: "kubernetes",
+          title: "Comandi Kubernetes",
+          commands: [
+            { cmd: "kubectl get pods", desc: "Elenca tutti i pod" },
+            { cmd: "kubectl get nodes", desc: "Elenca i nodi del cluster" },
+            { cmd: "kubectl get services", desc: "Elenca i servizi" },
+            { cmd: "kubectl describe pod <name>", desc: "Dettagli di un pod" },
+            { cmd: "kubectl logs <pod>", desc: "Log di un pod" },
+          ],
+        },
+        {
+          key: "helm",
+          title: "Comandi Helm",
+          commands: [
+            { cmd: "helm list", desc: "Elenca le release" },
+            { cmd: "helm status <release>", desc: "Stato di una release" },
+          ],
+        },
+        {
+          key: "git",
+          title: "Comandi Git",
+          commands: [
+            { cmd: "git status", desc: "Stato del working tree" },
+            { cmd: "git log", desc: "Cronologia dei commit" },
+            { cmd: "git branch", desc: "Elenca i branch" },
+            { cmd: "git remote -v", desc: "Mostra i repository remoti" },
+          ],
+        },
+      ],
+    },
+    tour: {
+      start: "Tour",
+      restart: "Riavvia tour",
+      previous: "Indietro",
+      next: "Avanti",
+      finish: "Fine",
+      close: "Chiudi tour",
+      stepOf: "{current} di {total}",
+      steps: {
+        welcome: {
+          title: "👋 Benvenuto nel DevOps Lab!",
+          description: "Un ambiente interattivo per esplorare pratiche DevOps, Kubernetes, pipeline CI/CD e chaos engineering. Ti faccio fare un giro!",
+          action: "Inizia il tour",
+        },
+        terminal: {
+          title: "💻 Terminale interattivo",
+          description: "Esegui comandi come kubectl, helm e git. Digita \"help\" per vedere tutti i comandi disponibili. ↑/↓ per la cronologia, Tab per l'autocomplete.",
+        },
+        quickActions: {
+          title: "⚡ Azioni rapide",
+          description: "Scorciatoie per le operazioni più comuni. Perfette per sperimentare senza digitare i comandi.",
+        },
+        missionControl: {
+          title: "🎛️ Mission Control",
+          description: "Attiva l'Auto-Chaos ed esegui le macro: deploy canary, cutover blue/green ed esperimenti chaos.",
+        },
+        metrics: {
+          title: "📊 Metriche in tempo reale",
+          description: "Monitora CPU, memoria, latenza e statistiche di deploy. I dati si aggiornano live mentre interagisci col lab.",
+        },
+        cluster: {
+          title: "☸️ Cluster Kubernetes",
+          description: "Visualizza il cluster in tempo reale. Clicca sui pod per vedere i dettagli e monitorarne lo stato.",
+        },
+        pipeline: {
+          title: "🚀 Pipeline CI/CD",
+          description: "Esegui deploy con strategie canary o blue-green e osserva il rollout avanzare stage per stage.",
+        },
+        incidents: {
+          title: "🔥 Storico incidenti",
+          description: "Gli esperimenti chaos e gli eventi di sistema vengono registrati qui, con i tempi di recovery.",
+        },
+        complete: {
+          title: "🎉 Tutto pronto!",
+          description: "Esplora al tuo ritmo. Digita \"help\" nel terminale in qualsiasi momento, o passa il mouse sugli elementi per i tooltip.",
+          action: "Inizia a esplorare",
+        },
+      },
+    },
   },
 };

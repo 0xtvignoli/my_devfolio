@@ -163,6 +163,67 @@ export interface Translations {
       chaosDescription: string;
       cancel: string;
     };
+    toasts: {
+      pipelinePausedTitle: string;
+      pipelinePausedDescription: string;
+      deploySuccessTitle: string;
+      deploySuccessDescription: string;
+      deployFailedTitle: string;
+      rollbackStartedDescription: string;
+      chaosInjectedDescription: string;
+    };
+    announcements: {
+      pipelinePaused: string;
+      pipelineCompleted: string;
+      pipelineFailed: string;
+      newIncident: string;
+      cpuChanged: string;
+      latencyChanged: string;
+    };
+    empty: {
+      incidentsTitle: string;
+      incidentsDescription: string;
+      tryCommand: string;
+    };
+    incidentTable: {
+      status: string;
+      type: string;
+      duration: string;
+      timestamp: string;
+      ariaLabel: string;
+    };
+    help: {
+      buttonLabel: string;
+      title: string;
+      description: string;
+      tipLabel: string;
+      tip: string;
+      categories: {
+        key: 'system' | 'lab' | 'kubernetes' | 'helm' | 'git';
+        title: string;
+        commands: { cmd: string; desc: string }[];
+      }[];
+    };
+    tour: {
+      start: string;
+      restart: string;
+      previous: string;
+      next: string;
+      finish: string;
+      close: string;
+      stepOf: string;
+      steps: {
+        welcome: { title: string; description: string; action: string };
+        terminal: { title: string; description: string };
+        quickActions: { title: string; description: string };
+        missionControl: { title: string; description: string };
+        metrics: { title: string; description: string };
+        cluster: { title: string; description: string };
+        pipeline: { title: string; description: string };
+        incidents: { title: string; description: string };
+        complete: { title: string; description: string; action: string };
+      };
+    };
   };
 }
 
