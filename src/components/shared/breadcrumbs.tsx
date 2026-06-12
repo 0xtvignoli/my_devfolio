@@ -1,8 +1,11 @@
 'use client';
 
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { ChevronRight, Home } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { localizedPath } from '@/lib/i18n/paths';
+import { resolveLocaleParam } from '@/lib/i18n/config';
 
 interface BreadcrumbItem {
   label: string;
@@ -15,12 +18,16 @@ interface BreadcrumbsProps {
 }
 
 export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
+  const params = useParams();
+  const locale = resolveLocaleParam(params?.locale as string | undefined);
+  const homeHref = localizedPath(locale);
+
   return (
     <nav aria-label="Breadcrumb" className={cn("flex items-center space-x-2 text-sm text-muted-foreground", className)}>
       <ol className="flex items-center space-x-2">
         <li>
-          <Link 
-            href="/" 
+          <Link
+            href={homeHref}
             className="hover:text-foreground transition-colors flex items-center gap-1"
             aria-label="Home"
           >
@@ -38,10 +45,7 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
                   {item.label}
                 </span>
               ) : item.href ? (
-                <Link 
-                  href={item.href} 
-                  className="hover:text-foreground transition-colors"
-                >
+                <Link href={item.href} className="hover:text-foreground transition-colors">
                   {item.label}
                 </Link>
               ) : (
@@ -54,6 +58,3 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
     </nav>
   );
 }
-
-
-

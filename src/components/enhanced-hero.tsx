@@ -1,159 +1,181 @@
 'use client';
 
 import { motion, useMotionValue, useMotionTemplate } from 'framer-motion';
+import Link from 'next/link';
 import { Terminal, Sparkles } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { HeroCTAButton } from '@/components/shared/hero-cta-button';
+import { GlassPanel } from '@/components/ui/glass-panel';
+import { LabPreviewPanel } from '@/components/hero/lab-preview-panel';
+import type { Locale } from '@/lib/types';
+import { localizedPath } from '@/lib/i18n/paths';
+import Box from '@mui/material/Box';
 
 interface EnhancedHeroProps {
+  locale: Locale;
   title: string;
   subtitle: string;
+  badge: string;
   ctaPortfolio: string;
+  ctaLab: string;
   ctaContact: string;
+  labPreviewTitle: string;
+  labPreviewSubtitle: string;
 }
 
-const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+const PARTICLE_COUNT = 8;
 
-const generateRandomString = (length: number) => {
-  let result = "";
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return result;
-};
-
-export function EnhancedHero({ title, subtitle, ctaPortfolio, ctaContact }: EnhancedHeroProps) {
+export function EnhancedHero({
+  locale,
+  title,
+  subtitle,
+  badge,
+  ctaPortfolio,
+  ctaLab,
+  ctaContact,
+  labPreviewTitle,
+  labPreviewSubtitle,
+}: EnhancedHeroProps) {
   const [isClient, setIsClient] = useState(false);
-  const [randomString, setRandomString] = useState("");
-  
-  // Motion values per l'effetto hover evervault
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
   useEffect(() => {
     setIsClient(true);
-    setRandomString(generateRandomString(1500));
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
   }, []);
 
-  function onMouseMove({ currentTarget, clientX, clientY }: React.MouseEvent<HTMLElement>) {
-    let { left, top } = currentTarget.getBoundingClientRect();
-    const relativeX = clientX - left;
-    const relativeY = clientY - top;
-    
-    mouseX.set(relativeX);
-    mouseY.set(relativeY);
-    
-    // Rigenera stringa ad ogni movimento del mouse
-    setRandomString(generateRandomString(1500));
-  }
+  const onMouseMove = useCallback(
+    ({ currentTarget, clientX, clientY }: React.MouseEvent<HTMLElement>) => {
+      if (prefersReducedMotion) return;
+      const { left, top } = currentTarget.getBoundingClientRect();
+      mouseX.set(clientX - left);
+      mouseY.set(clientY - top);
+    },
+    [mouseX, mouseY, prefersReducedMotion]
+  );
 
-  // Mask per l'effetto evervault hover
   const maskImage = useMotionTemplate`radial-gradient(350px at ${mouseX}px ${mouseY}px, white, transparent)`;
-  const evervaultStyle = { maskImage, WebkitMaskImage: maskImage };
+  const evervaultStyle = prefersReducedMotion ? undefined : { maskImage, WebkitMaskImage: maskImage };
 
   return (
     <section
       id="hero"
       onMouseMove={onMouseMove}
-      className="group/hero relative py-32 md:py-40 overflow-hidden rounded-3xl border border-border/50 dark:border-white/5 bg-[var(--bg-primary)] dark:bg-[#010b10] text-[var(--text-primary-soft)] dark:text-[#0dfd88] shadow-[var(--glow-soft)]"
+      className="group/hero relative py-16 md:py-24 lg:py-28 overflow-hidden text-foreground"
     >
-      {/* Animated background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[var(--neon-accent)]/15 via-transparent to-[#00b4d8]/10 animate-pulse-slow" />
-      
-      {/* Grid pattern */}
+      <GlassPanel
+        strong
+        className="absolute inset-0 z-0 rounded-3xl border border-[var(--glass-border)] shadow-[var(--elevation-soft)]"
+      />
+      <div className={`absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-primary/5 ${prefersReducedMotion ? '' : 'animate-pulse-slow'}`} />
       <div className="absolute inset-0 bg-grid-pattern opacity-5" />
 
-      {/* Evervault hover effect - gradient overlay */}
-      <motion.div
-        className="absolute inset-0 rounded-3xl bg-gradient-to-r from-cyan-500 to-purple-600 opacity-0 group-hover/hero:opacity-20 backdrop-blur-xl transition-opacity duration-500 pointer-events-none"
-        style={evervaultStyle}
-      />
+      {!prefersReducedMotion && (
+        <>
+          <motion.div
+            className="absolute inset-0 rounded-3xl bg-gradient-to-r from-primary/10 to-primary/5 opacity-0 group-hover/hero:opacity-100 transition-opacity duration-500 pointer-events-none"
+            style={evervaultStyle}
+          />
+          <motion.div
+            className="absolute inset-0 rounded-3xl opacity-0 group-hover/hero:opacity-5 pointer-events-none bg-primary/10"
+            style={evervaultStyle}
+          />
+        </>
+      )}
 
-      {/* Evervault hover effect - random string pattern */}
-      <motion.div
-        className="absolute inset-0 rounded-3xl opacity-0 mix-blend-overlay group-hover/hero:opacity-30 pointer-events-none"
-        style={evervaultStyle}
-      >
-        <p className="absolute inset-x-0 text-xs h-full break-words whitespace-pre-wrap text-foreground font-mono font-bold transition-opacity duration-500">
-          {randomString}
-        </p>
-      </motion.div>
-
-      <div className="relative z-10 text-center px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-6 flex justify-center"
+      <Box className="relative z-10 px-4">
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' },
+            gap: 4,
+            alignItems: 'center',
+          }}
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 dark:bg-primary/10 border border-primary/20 dark:border-primary/20 backdrop-blur-sm">
-            <Sparkles className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium text-foreground">Senior DevOps Engineer</span>
-          </div>
-        </motion.div>
+          <Box sx={{ textAlign: { xs: 'center', lg: 'left' } }}>
+              <motion.div
+                initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="mb-6 flex justify-center lg:justify-start"
+              >
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel border border-primary/20 bg-[var(--glass-bg)]">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium text-foreground">{badge}</span>
+                </div>
+              </motion.div>
 
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="font-headline text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground via-foreground to-foreground/80 dark:from-foreground dark:via-foreground dark:to-foreground/70"
-        >
-          {title}
-        </motion.h1>
+              <motion.h1
+                initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                className="font-headline text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground via-foreground to-foreground/80"
+              >
+                {title}
+              </motion.h1>
 
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="text-lg md:text-xl text-muted-foreground dark:text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed"
-        >
-          {subtitle}
-        </motion.p>
+              <motion.p
+                initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0 mb-10 leading-relaxed"
+              >
+                {subtitle}
+              </motion.p>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="flex flex-col sm:flex-row justify-center items-center gap-4"
-        >
-          <HeroCTAButton href="/portfolio" variant="primary">
-            {ctaPortfolio}
-          </HeroCTAButton>
+              <motion.div
+                initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="flex flex-col sm:flex-row justify-center lg:justify-start items-center gap-4"
+              >
+                <HeroCTAButton href={localizedPath(locale, '/portfolio')} variant="primary">
+                  {ctaPortfolio}
+                </HeroCTAButton>
+                <HeroCTAButton href={localizedPath(locale, '/lab')} variant="secondary" icon={Terminal}>
+                  {ctaLab}
+                </HeroCTAButton>
+                <HeroCTAButton href="#contact" variant="outline">
+                  {ctaContact}
+                </HeroCTAButton>
+              </motion.div>
+          </Box>
 
-          <HeroCTAButton href="/lab" variant="secondary" icon={Terminal}>
-            Explore Lab
-          </HeroCTAButton>
+          <Box>
+            <Link
+              href={`${localizedPath(locale, '/lab')}?cmd=${encodeURIComponent('kubectl get pods')}`}
+              aria-label={ctaLab}
+              className="hidden lg:block rounded-3xl transition-transform duration-300 hover:scale-[1.015] focus-visible:outline-2 focus-visible:outline-primary"
+            >
+              <LabPreviewPanel title={labPreviewTitle} subtitle={labPreviewSubtitle} />
+            </Link>
+          </Box>
+        </Box>
 
-          <HeroCTAButton href="#contact" variant="outline">
-            {ctaContact}
-          </HeroCTAButton>
-        </motion.div>
-
-        {/* Floating particles */}
-        {isClient && (
+        {isClient && !prefersReducedMotion && (
           <div className="absolute inset-0 -z-10 pointer-events-none">
-            {Array.from({ length: 20 }).map((_, i) => (
+            {Array.from({ length: PARTICLE_COUNT }).map((_, i) => (
               <motion.div
                 key={i}
                 className="absolute w-1 h-1 bg-primary/30 rounded-full"
-                initial={{
-                  x: Math.random() * 1200,
-                  y: Math.random() * 600,
-                }}
+                initial={{ x: (i * 137) % 800, y: (i * 89) % 400 }}
                 animate={{
-                  y: [null, Math.random() * 600],
+                  y: [(i * 89) % 400, ((i * 89) + 200) % 400],
                   opacity: [0, 1, 0],
                 }}
-                transition={{
-                  duration: 3 + Math.random() * 2,
-                  repeat: Infinity,
-                  delay: Math.random() * 2,
-                }}
+                transition={{ duration: 4 + (i % 3), repeat: Infinity, delay: i * 0.4 }}
               />
             ))}
           </div>
         )}
-      </div>
+      </Box>
     </section>
   );
 }

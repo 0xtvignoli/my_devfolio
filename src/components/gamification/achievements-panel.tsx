@@ -1,9 +1,9 @@
 "use client";
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui-mui';
+import Chip from '@mui/material/Chip';
+import LinearProgress from '@mui/material/LinearProgress';
 import { useGamification } from '@/contexts/gamification-context';
 import { motion } from 'framer-motion';
 import { Lock, CheckCircle } from 'lucide-react';
@@ -63,12 +63,12 @@ const AchievementCard = ({ achievement }: { achievement: Achievement }) => {
               </div>
               
               <div className="flex items-center justify-between">
-                <Badge 
-                  variant="outline" 
+                <Chip 
+                  label={achievement.rarity.toUpperCase()} 
+                  size="small" 
+                  variant="outlined"
                   className={getRarityColor(achievement.rarity)}
-                >
-                  {achievement.rarity.toUpperCase()}
-                </Badge>
+                />
                 <span className="text-sm font-medium text-primary">
                   {achievement.points} XP
                 </span>
@@ -80,7 +80,7 @@ const AchievementCard = ({ achievement }: { achievement: Achievement }) => {
                     <span className="text-muted-foreground dark:text-muted-foreground">Progress</span>
                     <span className="text-muted-foreground dark:text-muted-foreground">{progress}/{maxProgress}</span>
                   </div>
-                  <Progress value={progressPercentage} className="h-2" />
+                  <LinearProgress variant="determinate" value={progressPercentage} sx={{ height: 8, borderRadius: 4 }} />
                 </div>
               )}
               
@@ -112,9 +112,7 @@ export const AchievementsPanel = () => {
           <span className="flex items-center gap-2">
             🏆 Achievements
           </span>
-          <Badge variant="secondary">
-            {unlockedCount}/{totalCount}
-          </Badge>
+          <Chip label={`${unlockedCount}/${totalCount}`} size="small" variant="outlined" />
         </CardTitle>
       </CardHeader>
       <CardContent>

@@ -6,8 +6,8 @@ import { useRouter } from 'next/navigation';
 import { UserProgressBar } from './progress-bar';
 import { AchievementsPanel } from './achievements-panel';
 import { ChallengesWidget } from './challenges-widget';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui-mui';
+import Chip from '@mui/material/Chip';
 import { useGamification } from '@/contexts/gamification-context';
 import { TrendingUp, Award, Target, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -179,7 +179,7 @@ const QuickActions = () => {
                 <h4 className="font-medium">{action.title}</h4>
                 <p className="text-sm text-muted-foreground dark:text-muted-foreground">{action.description}</p>
               </div>
-              <Badge variant="secondary">+{action.xp} XP</Badge>
+              <Chip label={`+${action.xp} XP`} size="small" variant="outlined" />
             </motion.button>
           ))}
         </div>

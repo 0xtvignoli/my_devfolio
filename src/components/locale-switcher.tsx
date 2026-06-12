@@ -2,9 +2,9 @@
 
 import { useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui-mui';
 import type { Locale } from "@/lib/types";
-import { setLocaleAction } from "@/actions/locale";
+import { switchLocaleInPath } from "@/lib/i18n/paths";
 
 interface LocaleSwitcherProps {
   locale: Locale;
@@ -17,9 +17,9 @@ export function LocaleSwitcher({ locale }: LocaleSwitcherProps) {
 
   const toggleLocale = () => {
     const nextLocale: Locale = locale === "en" ? "it" : "en";
-    startTransition(async () => {
-      await setLocaleAction(nextLocale, pathname);
-      router.refresh();
+    const nextPath = switchLocaleInPath(pathname, nextLocale);
+    startTransition(() => {
+      router.push(nextPath);
     });
   };
 

@@ -1,29 +1,32 @@
 'use client';
 
-import { Line, LineChart, ResponsiveContainer } from 'recharts';
+import { Line, LineChart } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { LabChartShell } from '@/components/lab/md3/lab-chart-shell';
 import type { TimeSeriesData } from '@/lib/types';
+import { memo } from 'react';
 
 const chartConfig = {
   usage: {
-    label: "CPU Usage (%)",
-    color: "hsl(var(--primary))",
+    label: 'CPU Usage (%)',
+    color: 'var(--md-sys-color-primary)',
   },
 };
 
 interface CpuUsageChartProps {
   data: TimeSeriesData[];
+  compact?: boolean;
 }
 
-export function CpuUsageChart({ data }: CpuUsageChartProps) {
-  return (
-    <ChartContainer config={chartConfig} className="w-full h-auto min-h-[200px]">
-      <div className="w-full h-[200px] sm:h-[250px] lg:h-[300px] min-w-0">
-        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-          <LineChart accessibilityLayer data={data} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
+export const CpuUsageChart = memo(
+  function CpuUsageChart({ data, compact = false }: CpuUsageChartProps) {
+    return (
+      <LabChartShell compact={compact} aria-label="CPU usage chart">
+        <ChartContainer config={chartConfig} className="h-full w-full min-h-0 aspect-auto">
+          <LineChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }} syncId="perf-sync">
             <ChartTooltip
               content={<ChartTooltipContent indicator="dot" hideLabel />}
-              cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '3 3' }}
+              cursor={{ stroke: 'var(--md-sys-color-primary)', strokeWidth: 1, strokeDasharray: '3 3' }}
             />
             <Line
               type="monotone"
@@ -34,8 +37,9 @@ export function CpuUsageChart({ data }: CpuUsageChartProps) {
               isAnimationActive={false}
             />
           </LineChart>
-        </ResponsiveContainer>
-      </div>
-    </ChartContainer>
-  );
-}
+        </ChartContainer>
+      </LabChartShell>
+    );
+  },
+  (prev, next) => prev.data === next.data && prev.compact === next.compact
+);

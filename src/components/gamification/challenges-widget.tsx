@@ -1,10 +1,10 @@
 "use client";
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui-mui';
+import { Button } from '@/components/ui-mui';
+import Chip from '@mui/material/Chip';
+import LinearProgress from '@mui/material/LinearProgress';
 import { useGamification } from '@/contexts/gamification-context';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, CheckCircle, Target } from 'lucide-react';
@@ -69,12 +69,12 @@ const ChallengeCard = ({ challenge }: { challenge: Challenge }) => {
                 </h4>
                 {isCompleted && <CheckCircle className="h-4 w-4 text-green-500" />}
               </div>
-              <Badge 
-                variant="outline" 
+              <Chip 
+                label={challenge.difficulty} 
+                size="small" 
+                variant="outlined"
                 className={getDifficultyColor(challenge.difficulty)}
-              >
-                {challenge.difficulty}
-              </Badge>
+              />
             </div>
             
             <p className="text-sm text-muted-foreground dark:text-muted-foreground">
@@ -86,7 +86,7 @@ const ChallengeCard = ({ challenge }: { challenge: Challenge }) => {
                 <span className="text-muted-foreground dark:text-muted-foreground">Progress</span>
                 <span className="font-medium text-foreground">{challenge.progress}/{challenge.maxProgress}</span>
               </div>
-              <Progress value={progressPercentage} className="h-2" />
+              <LinearProgress variant="determinate" value={progressPercentage} sx={{ height: 8, borderRadius: 4 }} />
             </div>
             
             <div className="flex items-center justify-between">
@@ -130,9 +130,7 @@ export const ChallengesWidget = () => {
           <span className="flex items-center gap-2">
             🎯 Daily Challenges
           </span>
-          <Badge variant="secondary">
-            {completedToday}/{challenges.filter(c => c.type === 'daily').length}
-          </Badge>
+          <Chip label={`${completedToday}/${challenges.filter(c => c.type === 'daily').length}`} size="small" variant="outlined" />
         </CardTitle>
       </CardHeader>
       <CardContent>

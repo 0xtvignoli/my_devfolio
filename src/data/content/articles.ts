@@ -4,17 +4,17 @@ const articlesContent: Omit<Article, 'title' | 'description' | 'content'>[] = [
   {
     slug: 'aws-rag-etl-pipeline',
     date: '2024-09-15',
-    author: 'DevOps Folio',
+    author: 'Thomas Vignoli',
   },
   {
     slug: 'infrastructure-as-code-guide',
     date: '2024-08-30',
-    author: 'DevOps Folio',
+    author: 'Thomas Vignoli',
   },
   {
     slug: 'github-actions-vs-vercel-ci',
     date: '2024-07-12',
-    author: 'DevOps Folio',
+    author: 'Thomas Vignoli',
   },
 ];
 

@@ -6,12 +6,26 @@ export const en: Translations = {
     experience: "Experience",
     articles: "Articles",
     lab: "Lab",
+    missionProgress: "Mission Progress",
+  },
+  mobileNav: {
+    home: "Home",
+    portfolio: "Work",
+    contact: "Contact",
+    ariaLabel: "Main navigation",
   },
   hero: {
     title: "Senior DevOps Engineer & Cloud Architect",
     subtitle: "I build and scale resilient, secure, and cost-effective infrastructures on the cloud. Passionate about IaC, Kubernetes, and Automation.",
+    badge: "Senior DevOps Engineer",
     ctaPortfolio: "View Projects",
+    ctaLab: "Explore Lab",
     ctaContact: "Get in Touch",
+    labPreviewTitle: "INTERACTIVE LAB",
+    labPreviewSubtitle: "Simulated Kubernetes cluster — deploy, monitor, and chaos-test from your browser.",
+    tryLabTitle: "Try the Lab",
+    tryLabDescription: "Interactive mission console: deploy, chaos-test, and operate a simulated Kubernetes cluster from the terminal.",
+    tryLabCta: "Open Lab →",
   },
   skills: {
     title: "Core Technologies",
@@ -21,14 +35,19 @@ export const en: Translations = {
   },
   portfolio: {
     title: "Featured Projects",
-    viewAll: "View all projects"
+    viewAll: "View all projects",
+    pageSubtitle: "A collection of my work, from infrastructure automation to application deployment.",
   },
   experience: {
     title: "Career Journey",
+    pageSubtitle: "My professional journey and evolution in the world of DevOps and Cloud.",
   },
   articles: {
     title: "Latest Articles",
-    viewAll: "Read all articles"
+    viewAll: "Read all articles",
+    pageSubtitle: "Deep dives into cloud technologies, automation, and best practices.",
+    emptyTitle: "No articles yet",
+    emptyDescription: "Articles will appear here when published.",
   },
   contact: {
     title: "Let's work together",
@@ -40,21 +59,31 @@ export const en: Translations = {
     buttonText: "Get in touch",
   },
   footer: {
-    copy: "© 2025 Thomas Vignoli. All rights reserved.",
+    copy: "© 2026 Thomas Vignoli. All rights reserved.",
   },
   theme: {
     light: "Light",
     dark: "Dark",
     system: "System",
   },
+  a11y: {
+    skipToContent: "Skip to main content",
+  },
+  errorBoundary: {
+    title: "Something went wrong",
+    description: "The Lab encountered an unexpected error. Don't worry, your data is safe.",
+    reload: "Reload Page",
+    goHome: "Go to Lab Home",
+  },
   article: {
     back: "Back to articles",
-    author: "By tvignoli",
+    author: "By Thomas Vignoli",
     published: "Published on",
   },
   project: {
     github: "Source Code",
-    demo: "Live Demo"
+    demo: "Live Demo",
+    metricsLabel: "Impact",
   },
   codesandbox: {
     title: "Code Playground",
@@ -70,5 +99,287 @@ export const en: Translations = {
       s3: "S3 Bucket",
       cicd: "CI/CD Pipeline"
     }
-  }
+  },
+  lab: {
+    title: "DevOps Mission Console",
+    subtitle: "Deploy, observe, and chaos-test a simulated Kubernetes cluster — every action mirrors production-grade workflows.",
+    live: "Live",
+    terminal: {
+      title: "Command Interface",
+      description: "Run kubectl, deploy strategies, and chaos experiments from a single console.",
+      connected: "Connected to dev-cluster",
+    },
+    missionControl: {
+      title: "Mission Control",
+      description: "Automation toggles and curated macros for common operations.",
+      sandboxTitle: "Simulated environment",
+      sandboxDescription: "All actions stay inside a sandbox. No production systems are touched.",
+      autoChaos: "Auto-Chaos Monkey",
+      autoChaosDescription: "Scheduled fault injection validates self-healing and rollback paths.",
+    },
+    metrics: {
+      title: "Observability",
+      cpu: "CPU usage",
+      memory: "Memory",
+      latency: "API latency",
+      deploys: "Deployments",
+      cpuHint: "Cluster CPU utilization. Normal range: 0–70%.",
+      memoryHint: "Total memory usage across all nodes.",
+      latencyHint: "95th percentile response time. Target under 200ms.",
+      deploysHint: "Successful deployments in the last 7 days.",
+    },
+    sections: {
+      incidents: "Incident history",
+      incidentsSubtitle: "Resilience tests and system events",
+      cluster: "Cluster topology",
+      pipeline: "Deploy pipeline",
+      pipelineSubtitle: "CI/CD stages and canary gates",
+    },
+    actions: {
+      promote: "Promote canary",
+      rollback: "Rollback",
+      deploy: "Run deployment",
+      deploying: "Deploying…",
+      rollingBack: "Rolling back…",
+      run: "Run",
+    },
+    layout: {
+      label: "View",
+      standard: "Dashboard",
+      immersive: "Focus",
+      standardHint: "Card-based mission console with metrics grid",
+      immersiveHint: "Full-screen operator view with side panels",
+      ariaLabel: "Lab layout selection",
+    },
+    macros: {
+      clusterPulse: { label: "Cluster pulse", description: "List pods and rollout status" },
+      canary: { label: "Canary 20%", description: "Route 20% traffic to the new build" },
+      blueGreen: { label: "Blue / Green", description: "Spin up green before cutover" },
+      chaosPod: { label: "Chaos · pods", description: "Drop a pod to test auto-healing" },
+      chaosLatency: { label: "Chaos · latency", description: "Spike API latency for 60s" },
+    },
+    dialogs: {
+      rollbackTitle: "Confirm rollback",
+      rollbackDescription: "This rolls back to the previous version. This action cannot be undone.",
+      chaosTitle: "Confirm chaos experiment",
+      chaosDescription: "This injects a simulated fault. Monitor incident history for recovery.",
+      cancel: "Cancel",
+    },
+    toasts: {
+      pipelinePausedTitle: "Pipeline paused",
+      pipelinePausedDescription: "Review canary metrics to promote or roll back.",
+      deploySuccessTitle: "Deployment successful",
+      deploySuccessDescription: "All pods are healthy.",
+      deployFailedTitle: "Deployment failed",
+      rollbackStartedDescription: "Rolling back to the previous version.",
+      chaosInjectedDescription: "Injecting {scenario} fault.",
+    },
+    announcements: {
+      pipelinePaused: "Pipeline paused at canary stage.",
+      pipelineCompleted: "Pipeline deployment completed successfully.",
+      pipelineFailed: "Pipeline deployment failed.",
+      newIncident: "New incident: {type}, status: {status}",
+      cpuChanged: "CPU usage changed to {value}%",
+      latencyChanged: "API latency changed to {value}ms",
+    },
+    empty: {
+      incidentsTitle: "No incidents yet",
+      incidentsDescription: "Incidents appear here when chaos experiments run.",
+      tryCommand: "Try {command} in the terminal.",
+    },
+    incidentTable: {
+      status: "Status",
+      type: "Type",
+      duration: "Duration",
+      timestamp: "Timestamp",
+      ariaLabel: "Incident history",
+    },
+    help: {
+      buttonLabel: "Help",
+      title: "Available commands",
+      description: "Complete list of commands available in the Lab terminal. Use Tab for autocomplete, ↑/↓ for history.",
+      tipLabel: "Tip:",
+      tip: "Type `help` in the terminal for a quick reference, or use Tab to autocomplete commands.",
+      categories: [
+        {
+          key: "system",
+          title: "System commands",
+          commands: [
+            { cmd: "help", desc: "Show this help panel" },
+            { cmd: "ls [path]", desc: "List workspace directories" },
+            { cmd: "cat <file>", desc: "Inspect a file" },
+            { cmd: "pwd", desc: "Print current workspace path" },
+            { cmd: "history", desc: "Command log (use history -c to clear)" },
+            { cmd: "clear", desc: "Clear the viewport" },
+            { cmd: "uptime", desc: "Show session uptime" },
+          ],
+        },
+        {
+          key: "lab",
+          title: "Lab commands",
+          commands: [
+            { cmd: "deploy [--strategy] [--weight] [--version]", desc: "Trigger CI/CD pipeline" },
+            { cmd: "chaos <scenario>", desc: "Run chaos experiment (pod_failure, latency, cpu_spike)" },
+            { cmd: "status", desc: "Show control-plane vitals" },
+          ],
+        },
+        {
+          key: "kubernetes",
+          title: "Kubernetes commands",
+          commands: [
+            { cmd: "kubectl get pods", desc: "List all pods" },
+            { cmd: "kubectl get nodes", desc: "List cluster nodes" },
+            { cmd: "kubectl get services", desc: "List services" },
+            { cmd: "kubectl describe pod <name>", desc: "Describe a pod" },
+            { cmd: "kubectl logs <pod>", desc: "View pod logs" },
+          ],
+        },
+        {
+          key: "helm",
+          title: "Helm commands",
+          commands: [
+            { cmd: "helm list", desc: "List releases" },
+            { cmd: "helm status <release>", desc: "Check release status" },
+          ],
+        },
+        {
+          key: "git",
+          title: "Git commands",
+          commands: [
+            { cmd: "git status", desc: "Check git status" },
+            { cmd: "git log", desc: "View commit history" },
+            { cmd: "git branch", desc: "List branches" },
+            { cmd: "git remote -v", desc: "Show remote repositories" },
+          ],
+        },
+      ],
+    },
+    missions: {
+      cardTitle: "Guided missions",
+      cardSubtitle: "Learn real DevOps workflows hands-on, one mission at a time.",
+      start: "Start",
+      runForMe: "Run it for me",
+      completedTitle: "Mission completed!",
+      xpBadge: "+50 XP",
+      doneBadge: "Completed",
+      items: {
+        canary: {
+          title: "Canary release",
+          description: "Run a progressive release end to end, in three steps.",
+          completedDescription: "You ran a full canary release: deploy, gate analysis, and decision.",
+          steps: {
+            deploy: {
+              title: "Launch a canary deploy",
+              description: "Run {command} in the terminal, or use the button.",
+            },
+            analyze: {
+              title: "Wait for the canary gate",
+              description: "The pipeline pauses at the canary stage. Compare baseline vs canary metrics.",
+            },
+            decide: {
+              title: "Promote or roll back",
+              description: "Use the buttons in the Deploy pipeline section to make the call.",
+            },
+          },
+        },
+        chaos: {
+          title: "Chaos engineering",
+          description: "Break something on purpose and watch the system heal itself.",
+          completedDescription: "You injected a fault and verified the self-healing recovery.",
+          steps: {
+            inject: {
+              title: "Inject a pod failure",
+              description: "Run {command} in the terminal, or use the button.",
+            },
+            observe: {
+              title: "Watch the self-healing",
+              description: "The cluster reschedules the pod. A resolved incident appears in Incident history.",
+            },
+          },
+        },
+        bluegreen: {
+          title: "Blue/Green deploy",
+          description: "Ship a zero-downtime release with an instant cutover.",
+          completedDescription: "You ran a blue/green deployment with a clean production cutover.",
+          steps: {
+            deploy: {
+              title: "Launch a blue/green deploy",
+              description: "Run {command} in the terminal, or use the button.",
+            },
+            cutover: {
+              title: "Wait for the cutover",
+              description: "The green environment spins up and traffic switches over with zero downtime.",
+            },
+          },
+        },
+      },
+    },
+    palette: {
+      buttonLabel: "Command palette",
+      placeholder: "Type a command or search actions…",
+      noResults: "No matching actions",
+      groups: {
+        commands: "Terminal commands",
+        actions: "Actions",
+        navigate: "Go to",
+      },
+    },
+    demo: {
+      banner: "Auto-demo running — interact anywhere to take control.",
+      takeControl: "Take control",
+    },
+    beacon: {
+      pipelineRunning: "Pipeline running",
+      newIncident: "New incident",
+    },
+    tour: {
+      start: "Tour",
+      restart: "Restart tour",
+      previous: "Previous",
+      next: "Next",
+      finish: "Finish",
+      close: "Close tour",
+      stepOf: "{current} of {total}",
+      steps: {
+        welcome: {
+          title: "👋 Welcome to the DevOps Lab!",
+          description: "An interactive environment to explore DevOps practices, Kubernetes, CI/CD pipelines, and chaos engineering. Let me show you around!",
+          action: "Start tour",
+        },
+        terminal: {
+          title: "💻 Interactive terminal",
+          description: "Execute commands like kubectl, helm, and git. Type \"help\" to see all available commands. Press ↑/↓ for history, Tab for autocomplete.",
+        },
+        quickActions: {
+          title: "⚡ Quick actions",
+          description: "Use these shortcuts for common operations. Perfect for rapid experimentation without typing commands.",
+        },
+        missionControl: {
+          title: "🎛️ Mission Control",
+          description: "Toggle Auto-Chaos and run curated macros: canary deploys, blue/green cutovers, and chaos experiments.",
+        },
+        metrics: {
+          title: "📊 Real-time metrics",
+          description: "Monitor CPU, memory, latency, and deployment stats. All data updates live as you interact with the lab.",
+        },
+        cluster: {
+          title: "☸️ Kubernetes cluster",
+          description: "Visualize the cluster in real time. Click on pods to see details and monitor their health status.",
+        },
+        pipeline: {
+          title: "🚀 CI/CD pipeline",
+          description: "Deploy with canary or blue-green strategies and watch the rollout progress through each stage.",
+        },
+        incidents: {
+          title: "🔥 Incident history",
+          description: "Chaos experiments and system events are logged here, including recovery times.",
+        },
+        complete: {
+          title: "🎉 You're all set!",
+          description: "Start exploring at your own pace. Type \"help\" in the terminal anytime, or hover over elements for tooltips.",
+          action: "Start exploring",
+        },
+      },
+    },
+  },
 };
