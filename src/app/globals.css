@@ -569,6 +569,19 @@
     --lab-accent-amber: #fdd663;
     --lab-accent-red: #f28b82;
   }
+
+  /* Responsive text truncation utilities */
+  .truncate-responsive {
+    @apply truncate;
+    @apply lg:max-w-full;
+  }
+
+  /* Better ellipsis support */
+  .line-clamp-1-responsive {
+    @apply line-clamp-1;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
 }
 
 /* Immersive lab mode: hide site chrome so the overlay is truly fullscreen.
