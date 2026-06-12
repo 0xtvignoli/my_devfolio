@@ -204,6 +204,59 @@ export interface Translations {
         commands: { cmd: string; desc: string }[];
       }[];
     };
+    missions: {
+      cardTitle: string;
+      cardSubtitle: string;
+      start: string;
+      runForMe: string;
+      completedTitle: string;
+      xpBadge: string;
+      doneBadge: string;
+      items: {
+        canary: {
+          title: string;
+          description: string;
+          completedDescription: string;
+          steps: {
+            deploy: { title: string; description: string };
+            analyze: { title: string; description: string };
+            decide: { title: string; description: string };
+          };
+        };
+        chaos: {
+          title: string;
+          description: string;
+          completedDescription: string;
+          steps: {
+            inject: { title: string; description: string };
+            observe: { title: string; description: string };
+          };
+        };
+        bluegreen: {
+          title: string;
+          description: string;
+          completedDescription: string;
+          steps: {
+            deploy: { title: string; description: string };
+            cutover: { title: string; description: string };
+          };
+        };
+      };
+    };
+    palette: {
+      buttonLabel: string;
+      placeholder: string;
+      noResults: string;
+      groups: { commands: string; actions: string; navigate: string };
+    };
+    demo: {
+      banner: string;
+      takeControl: string;
+    };
+    beacon: {
+      pipelineRunning: string;
+      newIncident: string;
+    };
     tour: {
       start: string;
       restart: string;

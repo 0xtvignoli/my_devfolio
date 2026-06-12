@@ -13,6 +13,7 @@ import type { DeployConfig, Translations } from '@/lib/types';
 
 export interface TerminalHandle {
   setCommand: (command: string) => void;
+  runCommand: (command: string) => void;
   setActiveTab: (tab: 'terminal' | 'logs' | 'playground') => void;
 }
 
@@ -112,6 +113,12 @@ export function useLabActions(translations: Translations) {
     terminalRef.current?.setCommand(command);
   }, []);
 
+  /** Executes a command in the terminal as if typed by the user. */
+  const runTerminalCommand = useCallback((command: string) => {
+    trackLabCommand(command);
+    terminalRef.current?.runCommand(command);
+  }, []);
+
   const handleBackgroundAction = useCallback((action: () => void) => {
     trackLabFirstInteraction('background_action');
     terminalRef.current?.setActiveTab('logs');
@@ -121,13 +128,19 @@ export function useLabActions(translations: Translations) {
     );
   }, []);
 
+  /** Domain events consumed by guided missions (and ignored by gamification). */
+  const emitLabEvent = useCallback((type: string, data: Record<string, unknown> = {}) => {
+    window.dispatchEvent(new CustomEvent('lab_activity', { detail: { type, data } }));
+  }, []);
+
   // --- Deploy / rollback ---
   const startDeployment = useCallback(
     (config?: DeployConfig) => {
       trackLabDeploy('start', config?.strategy);
+      emitLabEvent('deploy_started', { strategy: config?.strategy ?? 'canary' });
       handleBackgroundAction(() => runDeployment('start', config));
     },
-    [handleBackgroundAction, runDeployment]
+    [handleBackgroundAction, runDeployment, emitLabEvent]
   );
 
   const promoteCanary = useCallback(() => {
@@ -160,6 +173,7 @@ export function useLabActions(translations: Translations) {
     if (!pendingChaosScenario) return;
     setShowChaosConfirm(false);
     trackLabChaos(pendingChaosScenario);
+    emitLabEvent('chaos_started', { scenario: pendingChaosScenario });
     handleBackgroundAction(() => {
       runChaos(pendingChaosScenario);
       toast({
@@ -185,6 +199,7 @@ export function useLabActions(translations: Translations) {
       if (command === 'deploy') {
         const deployConfig = parseDeployCommand(trimmed);
         trackLabDeploy('start', deployConfig?.strategy);
+        emitLabEvent('deploy_started', { strategy: deployConfig?.strategy ?? 'canary' });
         handleBackgroundAction(() => runDeployment('start', deployConfig ?? undefined));
         return {
           output: [
@@ -199,6 +214,7 @@ export function useLabActions(translations: Translations) {
 
       const scenario = trimmed.split(' ')[1] ?? 'latency';
       trackLabChaos(scenario);
+      emitLabEvent('chaos_started', { scenario });
       handleBackgroundAction(() => runChaos(scenario));
       return {
         output: [`Chaos scenario "${scenario}" injected.`],
@@ -207,7 +223,7 @@ export function useLabActions(translations: Translations) {
         streamingSteps: ['[busy] priming chaos controller…'],
       };
     },
-    [handleBackgroundAction, runDeployment, runChaos]
+    [handleBackgroundAction, runDeployment, runChaos, emitLabEvent]
   );
 
   // --- Aria announcements + localized toasts ---
@@ -286,6 +302,7 @@ export function useLabActions(translations: Translations) {
     isDeploying,
     // handlers
     handleQuickAction,
+    runTerminalCommand,
     handleBackgroundAction,
     startDeployment,
     promoteCanary,

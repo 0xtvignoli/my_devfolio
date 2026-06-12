@@ -371,7 +371,7 @@ const CommandOutputDisplay = ({ output }: { output: CommandOutput }) => {
   );
 };
 
-export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) => void, setActiveTab: (tab: 'terminal' | 'logs' | 'playground') => void }, InteractiveTerminalProps>(({ runtimeLogs, cluster, onCommand, locale, translations, visualVariant = 'cyber' }, ref) => {
+export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) => void, runCommand: (command: string) => void, setActiveTab: (tab: 'terminal' | 'logs' | 'playground') => void }, InteractiveTerminalProps>(({ runtimeLogs, cluster, onCommand, locale, translations, visualVariant = 'cyber' }, ref) => {
   const isMd3 = visualVariant === 'md3';
   const [input, setInput] = useState('');
   const [history, setHistory] = useState<TerminalEntry[]>([]);
@@ -419,6 +419,12 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
     setCommand: (command: string) => {
       setInput(command);
       inputRef.current?.focus();
+    },
+    runCommand: (command: string) => {
+      // Runs the full submission pipeline (streaming, latency, history),
+      // as if the user typed the command and pressed Enter.
+      setActiveTab('terminal');
+      handleCommandExecutionRef.current?.(command);
     },
     setActiveTab: (tab: 'terminal' | 'logs' | 'playground') => {
       setActiveTab(tab);
@@ -956,6 +962,12 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
     setInput('');
     setHistoryIndex(-1);
   }, [appendOutput, executeCommand, finalizeEntry, getLatency, pushEntry, pushSystemMessage]);
+
+  // Keeps the imperative runCommand handle pointing at the latest closure.
+  const handleCommandExecutionRef = useRef(handleCommandExecution);
+  useEffect(() => {
+    handleCommandExecutionRef.current = handleCommandExecution;
+  }, [handleCommandExecution]);
 
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'ArrowUp') {

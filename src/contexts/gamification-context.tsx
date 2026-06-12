@@ -563,6 +563,9 @@ export const GamificationProvider = ({ children }: { children: React.ReactNode }
           earnXP(5, 'Terminal Usage');
           updateAchievementProgress('terminal_master');
           break;
+        case 'mission_completed':
+          earnXP(50, 'Guided Mission');
+          break;
       }
     };
 

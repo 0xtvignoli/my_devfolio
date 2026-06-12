@@ -44,10 +44,10 @@ export function buildLabTourSteps(translations: Translations): TourStep[] {
     { id: 'terminal', title: s.terminal.title, description: s.terminal.description, target: '#lab-terminal', position: 'bottom' },
     { id: 'quick-actions', title: s.quickActions.title, description: s.quickActions.description, target: '#lab-quick-actions', position: 'bottom' },
     { id: 'mission-control', title: s.missionControl.title, description: s.missionControl.description, target: '#mission-control', position: 'bottom' },
-    { id: 'metrics', title: s.metrics.title, description: s.metrics.description, target: '#lab-metrics', position: 'top' },
-    { id: 'incidents', title: s.incidents.title, description: s.incidents.description, target: '#incident-history', position: 'top' },
-    { id: 'cluster', title: s.cluster.title, description: s.cluster.description, target: '#cluster', position: 'top' },
     { id: 'pipeline', title: s.pipeline.title, description: s.pipeline.description, target: '#pipeline', position: 'top' },
+    { id: 'metrics', title: s.metrics.title, description: s.metrics.description, target: '#lab-metrics', position: 'top' },
+    { id: 'cluster', title: s.cluster.title, description: s.cluster.description, target: '#cluster', position: 'top' },
+    { id: 'incidents', title: s.incidents.title, description: s.incidents.description, target: '#incident-history', position: 'top' },
     { id: 'complete', title: s.complete.title, description: s.complete.description, action: s.complete.action },
   ];
 }

@@ -279,11 +279,90 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
             `Sending build context to Docker daemon... 128kB\nStep 1/5 : FROM node:18-alpine\n ---> a1b2c3d4e5f6\nStep 2/5 : WORKDIR /app\n ---> Using cache\n ---> g7h8i9j0k1l2\nStep 3/5 : COPY package*.json ./\n ---> Using cache\n ---> m3n4o5p6q7r8\nStep 4/5 : RUN npm install\n ---> Running in 9s0t1u2v3w4x\nSuccessfully built a1b2c3d4`,
             `\nPASS  ./__tests__/components/Header.test.tsx\nPASS  ./__tests__/utils/helpers.test.ts\n\nTest Suites: 2 passed, 2 total\nTests:       12 passed, 12 total\nSnapshots:   0 total\nTime:        2.345s`,
             `Release "devops-folio-staging" has been upgraded. Happy Helming!\nNAME: devops-folio-staging\nLAST DEPLOYED: ${new Date().toUTCString()}\nNAMESPACE: staging\nSTATUS: deployed\nREVISION: 5\nTEST SUITE: None`,
-            `Release "devops-folio-canary" has been deployed. Traffic is being split ${deployConfig.weight}% to canary.\nNAME: devops-folio-canary\nLAST DEPLOYED: ${new Date().toUTCString()}\nNAMESPACE: production\nSTATUS: deployed\nREVISION: 9`,
+            deployConfig.strategy === 'canary'
+                ? `Release "devops-folio-canary" has been deployed. Traffic is being split ${deployConfig.weight}% to canary.\nNAME: devops-folio-canary\nLAST DEPLOYED: ${new Date().toUTCString()}\nNAMESPACE: production\nSTATUS: deployed\nREVISION: 9`
+                : `Release "devops-folio-green" has been deployed. Green environment standing by (0% traffic).\nNAME: devops-folio-green\nLAST DEPLOYED: ${new Date().toUTCString()}\nNAMESPACE: production\nSTATUS: deployed\nREVISION: 9`,
             `Release "devops-folio-prod" has been upgraded. Happy Helming!\nNAME: devops-folio-prod\nLAST DEPLOYED: ${new Date().toUTCString()}\nNAMESPACE: production\nSTATUS: deployed\nREVISION: 8\nTEST SUITE: Run "helm test devops-folio-prod --namespace production"`,
         ];
 
+        const finalizeProduction = () => {
+            addRuntimeLog("✅ Deployment successful!");
+            toast({
+                variant: "default",
+                title: "Deployment Complete",
+                description: `Version ${deployConfig.version} has been successfully rolled out.`,
+            });
+
+            // Trigger gamification event for successful deployment
+            window.dispatchEvent(new CustomEvent('lab_activity', {
+                detail: {
+                    type: 'deployment_completed',
+                    data: {
+                        strategy: deployConfig.strategy,
+                        version: deployConfig.version,
+                        weight: deployConfig.weight
+                    }
+                }
+            }));
+
+            setCluster(prev => {
+                const newProdPod: Omit<Pod, 'ip' | 'name'> = { service: 'Homepage', status: 'Running', cpu: '250m', memory: '512Mi', isCanary: false };
+
+                const newNodes = prev.nodes.map(node => ({
+                    ...node,
+                    pods: node.pods.filter(p => p.service !== 'Homepage')
+                }));
+
+                const totalProdPods = Math.max(1, prev.nodes.flatMap(n => n.pods).filter(p => p.service === 'Homepage' && !p.isCanary).length);
+
+                for(let i=0; i<totalProdPods; i++) {
+                    const targetNodeIndex = i % newNodes.length;
+                    newNodes[targetNodeIndex].pods.push({
+                        ...newProdPod,
+                        name: `frontend-webapp-${deployConfig.version}-${i}`,
+                        ip: generateIp(),
+                        traffic: 100 / totalProdPods,
+                    });
+                }
+
+                return { ...prev, nodes: newNodes };
+            });
+
+            setMonitoringData(prev => {
+                const newDeploymentData = prev.deploymentData.map(d => ({ ...d }));
+                const today = new Date().toISOString().split('T')[0];
+                const todayIndex = newDeploymentData.findIndex(d => d.date === today && d.status === 'success');
+                if (todayIndex !== -1) {
+                    newDeploymentData[todayIndex] = { ...newDeploymentData[todayIndex], count: newDeploymentData[todayIndex].count + 1 };
+                } else {
+                    newDeploymentData.push({ date: today, status: 'success' as const, count: 1 });
+                }
+                return {...prev, deploymentData: newDeploymentData.filter(d => d.status === 'success' || d.count > 0) };
+            });
+
+            setPipelineStatus('completed');
+            setCanaryMetrics(null);
+            setTimeout(() => {
+                setPipelineStatus('idle');
+            }, 0);
+        };
+
         const executeDeployment = (start: 'start' | 'promote') => {
+            if (start === 'start' && deployConfig.strategy !== 'canary') {
+                // Blue/green: no canary gate — green env spins up, then instant cutover.
+                pipelinePromiseChain.current = runStage(initialPipeline[0], commandOutputs[0])
+                    .then(() => runStage(initialPipeline[1], commandOutputs[1]))
+                    .then(() => runStage(initialPipeline[2], commandOutputs[2]))
+                    .then(() => runStage(initialPipeline[3], commandOutputs[3]))
+                    .then(() => runStage(initialPipeline[4], commandOutputs[4]))
+                    .then(() => {
+                        addRuntimeLog("🟢 Green environment ready. Switching production traffic...");
+                        return runStage(initialPipeline[5], commandOutputs[5]);
+                    })
+                    .then(finalizeProduction);
+                return;
+            }
+
             if (start === 'start') {
                 pipelinePromiseChain.current = runStage(initialPipeline[0], commandOutputs[0])
                     .then(() => runStage(initialPipeline[1], commandOutputs[1]))
@@ -332,67 +411,7 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
             } else if (start === 'promote') {
                  pipelinePromiseChain.current = pipelinePromiseChain.current
                     .then(() => runStage(initialPipeline[5], commandOutputs[5]))
-                    .then(() => {
-                        addRuntimeLog("✅ Deployment successful!");
-                        toast({
-                            variant: "default",
-                            title: "Deployment Complete",
-                            description: `Version ${deployConfig.version} has been successfully rolled out.`,
-                        });
-
-                        // Trigger gamification event for successful deployment
-                        window.dispatchEvent(new CustomEvent('lab_activity', {
-                            detail: { 
-                                type: 'deployment_completed', 
-                                data: { 
-                                    strategy: deployConfig.strategy, 
-                                    version: deployConfig.version,
-                                    weight: deployConfig.weight
-                                } 
-                            }
-                        }));
-
-                        setCluster(prev => {
-                            const newProdPod: Omit<Pod, 'ip' | 'name'> = { service: 'Homepage', status: 'Running', cpu: '250m', memory: '512Mi', isCanary: false };
-                            
-                            const newNodes = prev.nodes.map(node => ({
-                                ...node,
-                                pods: node.pods.filter(p => p.service !== 'Homepage')
-                            }));
-
-                            const totalProdPods = prev.nodes.flatMap(n => n.pods).filter(p => p.service === 'Homepage' && !p.isCanary).length;
-
-                            for(let i=0; i<totalProdPods; i++) {
-                                const targetNodeIndex = i % newNodes.length;
-                                newNodes[targetNodeIndex].pods.push({
-                                    ...newProdPod,
-                                    name: `frontend-webapp-${deployConfig.version}-${i}`,
-                                    ip: generateIp(),
-                                    traffic: 100 / totalProdPods,
-                                });
-                            }
-                            
-                            return { ...prev, nodes: newNodes };
-                        });
-
-                        setMonitoringData(prev => {
-                            const newDeploymentData = prev.deploymentData.map(d => ({ ...d }));
-                            const today = new Date().toISOString().split('T')[0];
-                            const todayIndex = newDeploymentData.findIndex(d => d.date === today && d.status === 'success');
-                            if (todayIndex !== -1) {
-                                newDeploymentData[todayIndex] = { ...newDeploymentData[todayIndex], count: newDeploymentData[todayIndex].count + 1 };
-                            } else {
-                                newDeploymentData.push({ date: today, status: 'success' as const, count: 1 });
-                            }
-                            return {...prev, deploymentData: newDeploymentData.filter(d => d.status === 'success' || d.count > 0) };
-                        });
-                        
-                        setPipelineStatus('completed');
-                        setCanaryMetrics(null);
-                        setTimeout(() => {
-                            setPipelineStatus('idle');
-                        }, 0);
-                    });
+                    .then(finalizeProduction);
             }
         };
 

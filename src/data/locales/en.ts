@@ -254,6 +254,84 @@ export const en: Translations = {
         },
       ],
     },
+    missions: {
+      cardTitle: "Guided missions",
+      cardSubtitle: "Learn real DevOps workflows hands-on, one mission at a time.",
+      start: "Start",
+      runForMe: "Run it for me",
+      completedTitle: "Mission completed!",
+      xpBadge: "+50 XP",
+      doneBadge: "Completed",
+      items: {
+        canary: {
+          title: "Canary release",
+          description: "Run a progressive release end to end, in three steps.",
+          completedDescription: "You ran a full canary release: deploy, gate analysis, and decision.",
+          steps: {
+            deploy: {
+              title: "Launch a canary deploy",
+              description: "Run {command} in the terminal, or use the button.",
+            },
+            analyze: {
+              title: "Wait for the canary gate",
+              description: "The pipeline pauses at the canary stage. Compare baseline vs canary metrics.",
+            },
+            decide: {
+              title: "Promote or roll back",
+              description: "Use the buttons in the Deploy pipeline section to make the call.",
+            },
+          },
+        },
+        chaos: {
+          title: "Chaos engineering",
+          description: "Break something on purpose and watch the system heal itself.",
+          completedDescription: "You injected a fault and verified the self-healing recovery.",
+          steps: {
+            inject: {
+              title: "Inject a pod failure",
+              description: "Run {command} in the terminal, or use the button.",
+            },
+            observe: {
+              title: "Watch the self-healing",
+              description: "The cluster reschedules the pod. A resolved incident appears in Incident history.",
+            },
+          },
+        },
+        bluegreen: {
+          title: "Blue/Green deploy",
+          description: "Ship a zero-downtime release with an instant cutover.",
+          completedDescription: "You ran a blue/green deployment with a clean production cutover.",
+          steps: {
+            deploy: {
+              title: "Launch a blue/green deploy",
+              description: "Run {command} in the terminal, or use the button.",
+            },
+            cutover: {
+              title: "Wait for the cutover",
+              description: "The green environment spins up and traffic switches over with zero downtime.",
+            },
+          },
+        },
+      },
+    },
+    palette: {
+      buttonLabel: "Command palette",
+      placeholder: "Type a command or search actions…",
+      noResults: "No matching actions",
+      groups: {
+        commands: "Terminal commands",
+        actions: "Actions",
+        navigate: "Go to",
+      },
+    },
+    demo: {
+      banner: "Auto-demo running — interact anywhere to take control.",
+      takeControl: "Take control",
+    },
+    beacon: {
+      pipelineRunning: "Pipeline running",
+      newIncident: "New incident",
+    },
     tour: {
       start: "Tour",
       restart: "Restart tour",

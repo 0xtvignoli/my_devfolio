@@ -254,6 +254,84 @@ export const it: Translations = {
         },
       ],
     },
+    missions: {
+      cardTitle: "Missioni guidate",
+      cardSubtitle: "Impara workflow DevOps reali con la pratica, una missione alla volta.",
+      start: "Inizia",
+      runForMe: "Eseguilo per me",
+      completedTitle: "Missione completata!",
+      xpBadge: "+50 XP",
+      doneBadge: "Completata",
+      items: {
+        canary: {
+          title: "Canary release",
+          description: "Esegui una release progressiva end-to-end, in tre passi.",
+          completedDescription: "Hai eseguito una canary release completa: deploy, analisi del gate e decisione.",
+          steps: {
+            deploy: {
+              title: "Avvia un deploy canary",
+              description: "Esegui {command} nel terminale, oppure usa il pulsante.",
+            },
+            analyze: {
+              title: "Attendi il gate canary",
+              description: "La pipeline si ferma allo stage canary. Confronta le metriche baseline e canary.",
+            },
+            decide: {
+              title: "Promuovi o fai rollback",
+              description: "Usa i pulsanti nella sezione Pipeline di deploy per decidere.",
+            },
+          },
+        },
+        chaos: {
+          title: "Chaos engineering",
+          description: "Rompi qualcosa di proposito e osserva il sistema auto-ripararsi.",
+          completedDescription: "Hai iniettato un guasto e verificato il recovery automatico.",
+          steps: {
+            inject: {
+              title: "Inietta un pod failure",
+              description: "Esegui {command} nel terminale, oppure usa il pulsante.",
+            },
+            observe: {
+              title: "Osserva l'auto-healing",
+              description: "Il cluster ripianifica il pod. Un incidente risolto appare nello storico incidenti.",
+            },
+          },
+        },
+        bluegreen: {
+          title: "Deploy Blue/Green",
+          description: "Rilascia senza downtime con un cutover istantaneo.",
+          completedDescription: "Hai eseguito un deployment blue/green con cutover pulito in produzione.",
+          steps: {
+            deploy: {
+              title: "Avvia un deploy blue/green",
+              description: "Esegui {command} nel terminale, oppure usa il pulsante.",
+            },
+            cutover: {
+              title: "Attendi il cutover",
+              description: "L'ambiente green si avvia e il traffico passa senza interruzioni.",
+            },
+          },
+        },
+      },
+    },
+    palette: {
+      buttonLabel: "Palette comandi",
+      placeholder: "Digita un comando o cerca un'azione…",
+      noResults: "Nessuna azione trovata",
+      groups: {
+        commands: "Comandi terminale",
+        actions: "Azioni",
+        navigate: "Vai a",
+      },
+    },
+    demo: {
+      banner: "Demo automatica in corso — interagisci per prendere il controllo.",
+      takeControl: "Prendi il controllo",
+    },
+    beacon: {
+      pipelineRunning: "Pipeline in esecuzione",
+      newIncident: "Nuovo incidente",
+    },
     tour: {
       start: "Tour",
       restart: "Riavvia tour",

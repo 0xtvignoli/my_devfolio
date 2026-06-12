@@ -16,6 +16,7 @@ import {
   CircleDashed,
   Forward,
   Activity,
+  Layers,
 } from 'lucide-react';
 import type { PipelineStage } from '@/lib/types';
 import { LabEmptyState, LabCodeHint } from '@/components/lab/md3/lab-empty-state';
@@ -27,6 +28,7 @@ const stageIcons: Record<string, React.ElementType> = {
   Test: Beaker,
   'Deploy Staging': Server,
   'Deploy Canary': Forward,
+  'Deploy Green': Layers,
   'Deploy Prod': Rocket,
 };
 

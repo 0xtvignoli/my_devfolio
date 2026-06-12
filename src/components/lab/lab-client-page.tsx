@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import Container from '@mui/material/Container';
@@ -37,6 +37,10 @@ import { LabHeroHeader } from '@/components/lab/md3/lab-hero-header';
 import { LabMetricCard } from '@/components/lab/md3/lab-metric-card';
 import { LabSectionCard } from '@/components/lab/md3/lab-section-card';
 import { LabConfirmDialogs } from '@/components/lab/lab-confirm-dialogs';
+import { LabMissions, type MissionId } from '@/components/lab/lab-missions';
+import { LabAutoDemo } from '@/components/lab/lab-auto-demo';
+import { LabActivityBeacon } from '@/components/lab/lab-activity-beacon';
+import { LabCommandPalette } from '@/components/lab/lab-command-palette';
 import { useLabActions, parseDeployCommand } from '@/hooks/use-lab-actions';
 
 interface LabClientPageProps {
@@ -72,6 +76,7 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
     totalMemoryGB,
     successfulDeploys,
     handleQuickAction,
+    runTerminalCommand,
     handleBackgroundAction,
     startDeployment,
     promoteCanary,
@@ -79,6 +84,46 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
     handleChaosClick,
     onTerminalCommand,
   } = lab;
+
+  // --- Progressive disclosure: secondary sections start collapsed ---
+  const [clusterExpanded, setClusterExpanded] = useState(false);
+  const [incidentsExpanded, setIncidentsExpanded] = useState(false);
+  const prevIncidentsRef = React.useRef(incidents.length);
+
+  // Auto-expand incidents when a new one arrives (action → feedback).
+  useEffect(() => {
+    if (incidents.length > prevIncidentsRef.current) setIncidentsExpanded(true);
+    prevIncidentsRef.current = incidents.length;
+  }, [incidents.length]);
+
+  // --- Deep links: /lab?cmd=<command> and /lab?mission=canary|chaos|bluegreen ---
+  const [missionAutoStart, setMissionAutoStart] = useState<MissionId | null>(null);
+  const [hasDeepLink, setHasDeepLink] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const cmd = params.get('cmd');
+    const mission = params.get('mission');
+    if (!cmd && !mission) return;
+    setHasDeepLink(true);
+    if (mission === 'canary' || mission === 'chaos' || mission === 'bluegreen') {
+      setMissionAutoStart(mission);
+      document.getElementById('lab-mission')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    if (cmd) {
+      // Small delay so the terminal is mounted and the session banner is shown.
+      const timer = setTimeout(() => runTerminalCommand(cmd), 800);
+      return () => clearTimeout(timer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Palette navigation: expand collapsed sections before scrolling to them.
+  const handlePaletteNavigate = (sectionId: string) => {
+    if (sectionId === 'cluster') setClusterExpanded(true);
+    if (sectionId === 'incident-history') setIncidentsExpanded(true);
+    document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
 
   const missionPlaybook = [
     { label: t.macros.clusterPulse.label, description: t.macros.clusterPulse.description, command: 'kubectl get pods', icon: FileTerminal, destructive: false },
@@ -118,6 +163,12 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
           liveLabel={t.live}
           actions={
             <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
+              <LabCommandPalette
+                translations={translations}
+                onRunCommand={runTerminalCommand}
+                onChaos={handleChaosClick}
+                onNavigate={handlePaletteNavigate}
+              />
               <HelpModal translations={translations} />
               <GuidedTour
                 tourId="lab-tour"
@@ -132,6 +183,14 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
             { label: 'P95', value: `${latestLatency}ms`, accent: 'var(--md-sys-color-warning)' },
             { label: t.metrics.deploys, value: successfulDeploys, accent: 'var(--md-sys-color-tertiary)' },
           ]}
+        />
+
+        <LabMissions
+          translations={translations}
+          pipelineStatus={pipelineStatus}
+          incidentsCount={incidents.length}
+          onRunCommand={runTerminalCommand}
+          autoStartMission={missionAutoStart}
         />
 
         <Box
@@ -280,6 +339,49 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
           </LabSectionCard>
         </Box>
 
+        <LabSectionCard
+          id="pipeline"
+          title={t.sections.pipeline}
+          subtitle={t.sections.pipelineSubtitle}
+        >
+          <Stack spacing={3} sx={{ alignItems: 'center' }}>
+            <Box sx={{ width: '100%', px: { xs: 0, md: 2 } }}>
+              <VisualDeployPipeline pipelineStages={pipeline} />
+            </Box>
+            {pipelineStatus === 'paused_canary' && canaryMetrics && <CanaryAnalysis metrics={canaryMetrics} />}
+            <Stack direction="row" spacing={2} sx={{ flexWrap: 'wrap', justifyContent: 'center' }}>
+              {pipelineStatus === 'paused_canary' ? (
+                <>
+                  <Button
+                    variant="default"
+                    startIcon={<Forward size={16} />}
+                    onClick={promoteCanary}
+                  >
+                    {t.actions.promote}
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    startIcon={isDeploying ? <Loader2 size={16} className="animate-spin" /> : <Undo size={16} />}
+                    onClick={handleRollbackClick}
+                    disabled={isDeploying}
+                  >
+                    {isDeploying ? t.actions.rollingBack : t.actions.rollback}
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  variant="default"
+                  startIcon={isDeploying ? <Loader2 size={16} className="animate-spin" /> : <PlayCircle size={16} />}
+                  onClick={() => startDeployment()}
+                  disabled={isDeploying}
+                >
+                  {isDeploying ? t.actions.deploying : t.actions.deploy}
+                </Button>
+              )}
+            </Stack>
+          </Stack>
+        </LabSectionCard>
+
         <Box id="lab-metrics" aria-labelledby="metrics-heading">
           <Typography id="metrics-heading" variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
             {t.metrics.title}
@@ -346,62 +448,40 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
         </Box>
 
         <LabSectionCard
-          id="incident-history"
-          title={t.sections.incidents}
-          subtitle={t.sections.incidentsSubtitle}
+          id="cluster"
+          title={t.sections.cluster}
+          noPadding
+          collapsible
+          expanded={clusterExpanded}
+          onExpandedChange={setClusterExpanded}
         >
-          <IncidentHistory incidents={incidents} translations={translations} />
-        </LabSectionCard>
-
-        <LabSectionCard id="cluster" title={t.sections.cluster} noPadding>
           <Box sx={{ p: 2, bgcolor: 'var(--md-sys-color-surface-container-lowest)' }}>
             <KubernetesClusterViz cluster={cluster} />
           </Box>
         </LabSectionCard>
 
         <LabSectionCard
-          id="pipeline"
-          title={t.sections.pipeline}
-          subtitle={t.sections.pipelineSubtitle}
+          id="incident-history"
+          title={t.sections.incidents}
+          subtitle={t.sections.incidentsSubtitle}
+          collapsible
+          expanded={incidentsExpanded}
+          onExpandedChange={setIncidentsExpanded}
         >
-          <Stack spacing={3} sx={{ alignItems: 'center' }}>
-            <Box sx={{ width: '100%', px: { xs: 0, md: 2 } }}>
-              <VisualDeployPipeline pipelineStages={pipeline} />
-            </Box>
-            {pipelineStatus === 'paused_canary' && canaryMetrics && <CanaryAnalysis metrics={canaryMetrics} />}
-            <Stack direction="row" spacing={2} sx={{ flexWrap: 'wrap', justifyContent: 'center' }}>
-              {pipelineStatus === 'paused_canary' ? (
-                <>
-                  <Button
-                    variant="default"
-                    startIcon={<Forward size={16} />}
-                    onClick={promoteCanary}
-                  >
-                    {t.actions.promote}
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    startIcon={isDeploying ? <Loader2 size={16} className="animate-spin" /> : <Undo size={16} />}
-                    onClick={handleRollbackClick}
-                    disabled={isDeploying}
-                  >
-                    {isDeploying ? t.actions.rollingBack : t.actions.rollback}
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  variant="default"
-                  startIcon={isDeploying ? <Loader2 size={16} className="animate-spin" /> : <PlayCircle size={16} />}
-                  onClick={() => startDeployment()}
-                  disabled={isDeploying}
-                >
-                  {isDeploying ? t.actions.deploying : t.actions.deploy}
-                </Button>
-              )}
-            </Stack>
-          </Stack>
+          <IncidentHistory incidents={incidents} translations={translations} />
         </LabSectionCard>
       </Container>
+
+      <LabAutoDemo
+        translations={translations}
+        runCommand={runTerminalCommand}
+        disabled={hasDeepLink}
+      />
+      <LabActivityBeacon
+        translations={translations}
+        isDeploying={isDeploying}
+        incidentsCount={incidents.length}
+      />
 
       <AriaLiveRegion message={lab.pipelineAnnouncement} priority="polite" id="lab-pipeline-announcement" />
       <AriaLiveRegion message={lab.incidentAnnouncement} priority="assertive" id="lab-incident-announcement" />

@@ -59,3 +59,19 @@ export function trackLabLayoutSwitch(layout: string) {
 export function trackLabTour(status: 'started' | 'completed' | 'skipped', step?: number) {
   gtagEvent('lab_tour', { status, step });
 }
+
+export function trackLabMission(
+  mission: string,
+  status: 'started' | 'step_completed' | 'completed',
+  step?: string
+) {
+  gtagEvent('lab_mission', { mission, status, step });
+}
+
+export function trackLabDemo(status: 'started' | 'interrupted' | 'finished') {
+  gtagEvent('lab_demo', { status });
+}
+
+export function trackLabPalette(action: 'opened' | 'executed', itemId?: string) {
+  gtagEvent('lab_palette', { action, item: itemId });
+}

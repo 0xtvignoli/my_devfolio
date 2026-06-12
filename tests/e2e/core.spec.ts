@@ -52,6 +52,9 @@ test('theme toggle opens and offers light, dark, system', async ({ page }) => {
   await page.goto(HOME);
   const themeButton = page.getByRole('button', { name: /toggle theme/i });
   await expect(themeButton).toBeVisible();
+  // The toggle renders a static placeholder until React hydrates; wait for the
+  // Radix trigger (aria-haspopup) so the click is not swallowed pre-hydration.
+  await expect(themeButton).toHaveAttribute('aria-haspopup', 'menu');
   await themeButton.click();
   await expect(page.getByRole('menuitem', { name: /Light/i })).toBeVisible();
   await expect(page.getByRole('menuitem', { name: /Dark/i })).toBeVisible();

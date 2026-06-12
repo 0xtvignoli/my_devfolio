@@ -32,6 +32,7 @@ import { AriaLiveRegion } from '@/components/shared/aria-live-region';
 import { HelpModal } from '@/components/lab/help-modal';
 import { GuidedTour, buildLabTourSteps } from '@/components/onboarding/guided-tour';
 import { LabConfirmDialogs } from '@/components/lab/lab-confirm-dialogs';
+import { LabCommandPalette } from '@/components/lab/lab-command-palette';
 import { useLabActions } from '@/hooks/use-lab-actions';
 
 interface ImmersiveLabLayoutProps {
@@ -108,6 +109,11 @@ export function ImmersiveLabLayout({
             <Typography variant="caption" color={latestLatency > 200 ? 'warning.main' : 'inherit'} suppressHydrationWarning>
               P95 {latestLatency}ms
             </Typography>
+            <LabCommandPalette
+              translations={translations}
+              onRunCommand={lab.runTerminalCommand}
+              onChaos={lab.handleChaosClick}
+            />
             <HelpModal translations={translations} />
             <GuidedTour
               tourId="lab-tour"

@@ -1,6 +1,7 @@
 'use client';
 
 import { motion, useMotionValue, useMotionTemplate } from 'framer-motion';
+import Link from 'next/link';
 import { Terminal, Sparkles } from 'lucide-react';
 import { useEffect, useState, useCallback } from 'react';
 import { HeroCTAButton } from '@/components/shared/hero-cta-button';
@@ -148,7 +149,13 @@ export function EnhancedHero({
           </Box>
 
           <Box>
-            <LabPreviewPanel title={labPreviewTitle} subtitle={labPreviewSubtitle} />
+            <Link
+              href={`${localizedPath(locale, '/lab')}?cmd=${encodeURIComponent('kubectl get pods')}`}
+              aria-label={ctaLab}
+              className="hidden lg:block rounded-3xl transition-transform duration-300 hover:scale-[1.015] focus-visible:outline-2 focus-visible:outline-primary"
+            >
+              <LabPreviewPanel title={labPreviewTitle} subtitle={labPreviewSubtitle} />
+            </Link>
           </Box>
         </Box>
 
