@@ -44,12 +44,13 @@ export default async function ArticlesPage({ params }: ArticlesPageProps) {
         ])}
       />
       <div className="container mx-auto px-4 py-16 max-w-6xl">
-        <section className="text-center mb-12" aria-labelledby="articles-heading">
-          <h1 id="articles-heading" className="font-headline text-4xl md:text-5xl font-bold tracking-tight">
+        <section className="mb-12 border-b border-border pb-6" aria-labelledby="articles-heading">
+          <h1 id="articles-heading" className="font-headline text-3xl md:text-4xl font-bold tracking-tight text-foreground">
+            <span aria-hidden className="text-muted-foreground mr-2">#</span>
             {t.nav.articles}
           </h1>
           {t.articles.pageSubtitle && (
-            <p className="text-lg text-muted-foreground mt-2 max-w-2xl mx-auto">
+            <p className="text-base text-muted-foreground mt-3 max-w-2xl">
               {t.articles.pageSubtitle}
             </p>
           )}

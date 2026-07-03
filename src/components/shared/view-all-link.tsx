@@ -1,7 +1,6 @@
 'use client';
 
 import { Button } from '@/components/ui-mui';
-import { ArrowRight } from 'lucide-react';
 
 interface ViewAllLinkProps {
   href: string;
@@ -14,7 +13,7 @@ export function ViewAllLink({ href, children }: ViewAllLinkProps) {
       variant="ghost"
       asChild
       href={href}
-      endIcon={<ArrowRight style={{ width: 16, height: 16 }} />}
+      endIcon={<span aria-hidden style={{ fontWeight: 700 }}>→</span>}
     >
       <span>{children}</span>
     </Button>

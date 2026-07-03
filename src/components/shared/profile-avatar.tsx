@@ -20,7 +20,7 @@ export function ProfileAvatar({ locale, name, role, className }: ProfileAvatarPr
         alignItems: 'center',
         gap: 3,
         p: 3,
-        borderRadius: 3,
+        borderRadius: 0,
         border: '1px solid',
         borderColor: 'divider',
         bgcolor: 'background.paper',
@@ -34,17 +34,17 @@ export function ProfileAvatar({ locale, name, role, className }: ProfileAvatarPr
           flexShrink: 0,
           borderRadius: '50%',
           overflow: 'hidden',
-          border: '3px solid',
-          borderColor: 'primary.main',
-          boxShadow: '0 0 24px rgba(0, 217, 255, 0.25)',
+          border: '1px solid',
+          borderColor: 'text.primary',
         }}
       >
         <Image
-          src="/thomas-vignoli.png"
+          src="/images/thomas-vignoli-avatar.svg"
           alt={name}
           fill
           sizes="120px"
           style={{ objectFit: 'cover' }}
+          unoptimized
           priority
         />
       </Box>

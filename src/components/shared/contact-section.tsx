@@ -14,13 +14,9 @@ interface ContactSectionProps {
 
 export function ContactSection({ email, translations, locale }: ContactSectionProps) {
   const { toast } = useToast();
-  const [isTouchDevice, setIsTouchDevice] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   useEffect(() => {
-    // Detect touch device
-    setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
-    
     // Detect prefers-reduced-motion
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     setPrefersReducedMotion(mediaQuery.matches);
@@ -53,78 +49,42 @@ export function ContactSection({ email, translations, locale }: ContactSectionPr
   const emailLabel = translations.contact.emailLabel.replace('{email}', email);
 
   return (
-    <section id="contact" className="py-20 text-center bg-card rounded-2xl" aria-labelledby="contact-heading">
-      <h2 id="contact-heading" className="font-headline text-3xl font-bold mb-4">
+    <section
+      id="contact"
+      className="py-16 px-6 text-center border border-border"
+      aria-labelledby="contact-heading"
+    >
+      <h2 id="contact-heading" className="font-headline text-2xl font-bold mb-4 text-foreground">
+        <span aria-hidden className="text-muted-foreground mr-2">$</span>
         {translations.contact.title}
       </h2>
-      <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
+      <p className="text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
         {translations.contact.description}
       </p>
-      <div className="relative group">
+      <div>
         <a
           href={`mailto:${email}`}
           onClick={handleEmailClick}
           aria-label={emailLabel}
           className={cn(
-            "relative inline-block p-px font-semibold leading-6 text-foreground bg-card shadow-2xl cursor-pointer rounded-xl shadow-zinc-900/10",
-            "transition-all duration-300 ease-in-out",
-            "focus-visible:outline-2 focus-visible:outline-primary focus-visible:ring-4 focus-visible:ring-primary/50 focus-visible:ring-offset-2",
-            // Ottimizzazioni per mobile e reduced motion
-            !isTouchDevice && !prefersReducedMotion && "hover:scale-105 active:scale-95",
-            isTouchDevice && "active:scale-95",
-            prefersReducedMotion && "transition-none"
+            "inline-flex items-center gap-2 px-5 py-2 font-medium leading-8 rounded-[4px]",
+            "bg-primary text-primary-foreground",
+            "transition-colors duration-150 hover:bg-foreground/85",
+            "focus-visible:outline focus-visible:outline-1 focus-visible:outline-ring focus-visible:outline-offset-2",
+            !prefersReducedMotion && "active:opacity-90"
           )}
         >
-          <span
-            className={cn(
-              "absolute inset-0 rounded-xl bg-gradient-to-r from-primary via-blue-500 to-purple-500 p-[2px]",
-              "transition-opacity duration-500",
-              !isTouchDevice && !prefersReducedMotion && "opacity-0 group-hover:opacity-100",
-              prefersReducedMotion && "opacity-0"
-            )}
-            aria-hidden="true"
-          />
-      
-          <span className="relative z-10 block px-6 py-3 rounded-xl bg-background/95 dark:bg-background/98">
-            <div className="relative z-10 flex items-center space-x-2">
-              <Mail className="h-5 w-5 text-primary drop-shadow-sm" aria-hidden="true" />
-              <span 
-                className={cn(
-                  "transition-all duration-500 font-semibold text-foreground drop-shadow-sm",
-                  !isTouchDevice && !prefersReducedMotion && "group-hover:translate-x-1",
-                  prefersReducedMotion && "transition-none"
-                )}
-              >
-                {translations.contact.buttonText}
-              </span>
-              <svg
-                className={cn(
-                  "w-6 h-6 transition-transform duration-500",
-                  !isTouchDevice && !prefersReducedMotion && "group-hover:translate-x-1",
-                  prefersReducedMotion && "transition-none"
-                )}
-                data-slot="icon"
-                aria-hidden="true"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  clipRule="evenodd"
-                  d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z"
-                  fillRule="evenodd"
-                />
-              </svg>
-            </div>
-          </span>
+          <Mail className="h-4 w-4" aria-hidden="true" />
+          <span>{translations.contact.buttonText}</span>
+          <span aria-hidden className="font-bold">→</span>
         </a>
       </div>
-      
+
       {/* Aria-live region per screen readers */}
-      <div 
+      <div
         id="contact-announcement"
-        aria-live="polite" 
-        aria-atomic="true" 
+        aria-live="polite"
+        aria-atomic="true"
         className="sr-only"
       />
     </section>

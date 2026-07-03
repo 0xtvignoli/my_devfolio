@@ -1,6 +1,6 @@
 import type {Metadata} from 'next';
 import './globals.css';
-import { inter, spaceGrotesk, sourceCodePro } from './fonts';
+import { jetbrainsMono, ibmPlexMono } from './fonts';
 import { cn } from '@/lib/utils';
 import { GoogleAnalytics } from '@/components/analytics/google-analytics';
 import { Suspense } from 'react';
@@ -62,12 +62,11 @@ export default async function RootLayout({
           <GoogleAnalytics GA_MEASUREMENT_ID={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || ''} />
         </Suspense>
       </head>
-      <body 
+      <body
         className={cn(
-          "font-body antialiased",
-          inter.variable, 
-          spaceGrotesk.variable, 
-          sourceCodePro.variable
+          "font-mono antialiased",
+          jetbrainsMono.variable,
+          ibmPlexMono.variable
         )}
         suppressHydrationWarning
       >

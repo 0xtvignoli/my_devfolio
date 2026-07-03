@@ -1,0 +1,9 @@
+# Security contact information for tvignoli.com (RFC 9116)
+# https://securitytxt.org/
+
+Contact: mailto:thomas.vignoli@pm.me
+Contact: https://github.com/tvignoli
+Expires: 2027-06-12T23:59:59.000Z
+Preferred-Languages: en, it
+Canonical: https://tvignoli.com/.well-known/security.txt
+Acknowledgments: https://github.com/0xtvignoli/my_devfolio

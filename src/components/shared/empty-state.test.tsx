@@ -1,5 +1,6 @@
 import React from 'react';
-import { render, screen, cleanup } from '@testing-library/react';
+import { render, cleanup } from '@testing-library/react';
+import { screen } from '@testing-library/dom';
 import { describe, test, expect, afterEach } from 'bun:test';
 import '@testing-library/jest-dom';
 import { EmptyState } from './empty-state';

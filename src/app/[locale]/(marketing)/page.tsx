@@ -18,7 +18,6 @@ import type { Metadata } from 'next';
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import Box from '@mui/material/Box';
-import { Terminal } from 'lucide-react';
 
 export const dynamic = 'force-static';
 
@@ -69,13 +68,12 @@ export default async function Home({ params }: HomePageProps) {
         <Box
           component="section"
           aria-labelledby="try-lab-heading"
-          className="glass-panel"
           sx={{
             py: 3,
-            px: 2,
-            borderRadius: 2,
-            border: '1px solid var(--glass-border)',
-            background: 'var(--glass-bg)',
+            px: 2.5,
+            borderRadius: 0,
+            border: '1px solid',
+            borderColor: 'divider',
           }}
         >
         <Stack
@@ -86,14 +84,14 @@ export default async function Home({ params }: HomePageProps) {
             justifyContent: 'space-between',
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Terminal size={20} aria-hidden style={{ color: 'hsl(var(--primary))' }} />
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+            <Box component="span" aria-hidden sx={{ fontWeight: 700, color: 'text.primary', lineHeight: 1.6 }}>{'>_'}</Box>
             <Box>
-              <h2 id="try-lab-heading" className="font-headline text-lg font-semibold text-foreground" style={{ margin: 0 }}>
+              <h2 id="try-lab-heading" className="font-headline text-lg font-bold text-foreground" style={{ margin: 0 }}>
                 {t.hero.tryLabTitle}
               </h2>
               {t.hero.tryLabDescription && (
-                <p className="text-sm text-muted-foreground dark:text-muted-foreground" style={{ margin: '4px 0 0' }}>
+                <p className="text-sm text-muted-foreground" style={{ margin: '4px 0 0' }}>
                   {t.hero.tryLabDescription}
                 </p>
               )}
@@ -101,30 +99,32 @@ export default async function Home({ params }: HomePageProps) {
           </Box>
           <Link
             href={localizedPath(locale, '/lab')}
-            className="font-medium text-primary hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary shrink-0 inline-flex items-center gap-1 min-h-[44px] min-w-[44px] justify-center"
+            className="font-medium text-foreground underline underline-offset-4 hover:opacity-70 focus-visible:outline focus-visible:outline-1 focus-visible:outline-ring shrink-0 inline-flex items-center gap-2 min-h-[44px] min-w-[44px] justify-center"
           >
             {t.hero.tryLabCta}
+            <span aria-hidden className="font-bold no-underline">→</span>
           </Link>
         </Stack>
         </Box>
       )}
 
       <Stack component="section" id="skills" spacing={3} sx={{ py: 6 }}>
-        <SectionHeading variant="h2" className="text-center" sx={{ mb: 3, fontSize: '1.875rem' }}>
+        <SectionHeading variant="h2" marker="##" sx={{ mb: 3, fontSize: '1.5rem' }}>
           {t.skills.title}
         </SectionHeading>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 2 }}>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
           {t.skills.list.map((skill) => (
             <Box
               key={skill}
-              className="glass-panel"
               sx={{
-                px: 2,
-                py: 1,
-                borderRadius: 9999,
+                px: 1.25,
+                py: 0.25,
+                borderRadius: '4px',
                 fontSize: '0.875rem',
-                fontWeight: 500,
-                border: '1px solid var(--glass-border)',
+                fontWeight: 400,
+                color: 'text.secondary',
+                border: '1px solid',
+                borderColor: 'divider',
               }}
             >
               {skill}
@@ -135,7 +135,7 @@ export default async function Home({ params }: HomePageProps) {
 
       <Stack component="section" id="portfolio" spacing={3} sx={{ py: 6 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-          <SectionHeading variant="h2" sx={{ fontSize: '1.875rem' }}>
+          <SectionHeading variant="h2" marker="##" rule={false} sx={{ fontSize: '1.5rem' }}>
             {t.portfolio.title}
           </SectionHeading>
           <ViewAllLink href={localizedPath(locale, '/portfolio')}>{t.portfolio.viewAll}</ViewAllLink>
@@ -148,7 +148,7 @@ export default async function Home({ params }: HomePageProps) {
       </Stack>
 
       <Stack component="section" id="experience" spacing={3} sx={{ py: 6 }}>
-        <SectionHeading variant="h2" className="text-center" sx={{ mb: 3, fontSize: '1.875rem' }}>
+        <SectionHeading variant="h2" marker="##" sx={{ mb: 3, fontSize: '1.5rem' }}>
           {t.experience.title}
         </SectionHeading>
         <ExperienceTimeline locale={locale} />
@@ -156,7 +156,7 @@ export default async function Home({ params }: HomePageProps) {
 
       <Stack component="section" id="articles" spacing={3} sx={{ py: 6 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-          <SectionHeading variant="h2" sx={{ fontSize: '1.875rem' }}>
+          <SectionHeading variant="h2" marker="##" rule={false} sx={{ fontSize: '1.5rem' }}>
             {t.articles.title}
           </SectionHeading>
           <ViewAllLink href={localizedPath(locale, '/articles')}>{t.articles.viewAll}</ViewAllLink>

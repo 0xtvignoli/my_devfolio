@@ -2,19 +2,67 @@ import type { Article, Locale } from "@/lib/types";
 
 const articlesContent: Omit<Article, 'title' | 'description' | 'content'>[] = [
   {
+    slug: 'finops-kubernetes-cost-optimization',
+    date: '2025-06-05',
+    author: 'Thomas Vignoli',
+    imageUrl: '/images/articles/finops.svg',
+    imageHint: 'cloud cost optimization chart',
+  },
+  {
+    slug: 'platform-engineering-gitops-argocd',
+    date: '2025-05-14',
+    author: 'Thomas Vignoli',
+    imageUrl: '/images/articles/gitops.svg',
+    imageHint: 'gitops reconciliation loop',
+  },
+  {
+    slug: 'devsecops-supply-chain-security',
+    date: '2025-04-08',
+    author: 'Thomas Vignoli',
+    imageUrl: '/images/articles/security.svg',
+    imageHint: 'software supply chain security shield',
+  },
+  {
+    slug: 'slo-driven-observability',
+    date: '2025-03-10',
+    author: 'Thomas Vignoli',
+    imageUrl: '/images/articles/observability.svg',
+    imageHint: 'observability metrics dashboard',
+  },
+  {
+    slug: 'llmops-serving-llms-in-production',
+    date: '2025-02-18',
+    author: 'Thomas Vignoli',
+    imageUrl: '/images/articles/ai.svg',
+    imageHint: 'llm serving neural network',
+  },
+  {
+    slug: 'kubernetes-autoscaling-hpa-keda',
+    date: '2025-01-20',
+    author: 'Thomas Vignoli',
+    imageUrl: '/images/articles/kubernetes.svg',
+    imageHint: 'kubernetes autoscaling pods',
+  },
+  {
     slug: 'aws-rag-etl-pipeline',
     date: '2024-09-15',
     author: 'Thomas Vignoli',
+    imageUrl: '/images/articles/ai.svg',
+    imageHint: 'rag etl pipeline diagram',
   },
   {
     slug: 'infrastructure-as-code-guide',
     date: '2024-08-30',
     author: 'Thomas Vignoli',
+    imageUrl: '/images/articles/iac.svg',
+    imageHint: 'infrastructure as code terraform',
   },
   {
     slug: 'github-actions-vs-vercel-ci',
     date: '2024-07-12',
     author: 'Thomas Vignoli',
+    imageUrl: '/images/articles/cicd.svg',
+    imageHint: 'ci cd pipeline stages',
   },
 ];
 
@@ -1641,6 +1689,449 @@ jobs:
         { type: 'paragraph', content: 'Scegliete Actions se dovete orchestrare backend, container e IaC, oppure se avete policy di approvazione e ambienti differenziati. Scegliete Vercel se vivete in Next.js e volete un\'unica piattaforma per build, deploy e hosting. Non è raro usare entrambi: Actions come "motore CI" e Vercel come layer di distribuzione per l\'interfaccia.' },
         { type: 'paragraph', content: 'Matrice decisionale: Se avete bisogno di build Docker, deployment multi-cloud o orchestrazione complessa → GitHub Actions. Se costruite siti Next.js/React e volete preview zero-config → Vercel. Se avete sia backend che frontend → usate entrambi, con Actions per CI/CD backend e Vercel per hosting frontend. Considerazione costi: Actions è più economico per build ad alto volume (specialmente con runner self-hosted), Vercel è più cost-effective quando l\'hosting è incluso nella stessa piattaforma.' },
         { type: 'paragraph', content: 'Percorso migrazione: Se iniziate con Vercel e avete bisogno di più controllo, potete esportare artifact di build e deployarli via Actions su S3/CloudFront. Se iniziate con Actions e volete preview frontend più veloci, potete aggiungere Vercel come target deployment secondario. La chiave è non forzare uno strumento a fare tutto—usate ogni piattaforma per quello che fa meglio.' },
+      ],
+    },
+  },
+  'kubernetes-autoscaling-hpa-keda': {
+    en: {
+      title: 'Kubernetes Autoscaling in Production: HPA, KEDA, and Cluster Autoscaler',
+      description: 'How the three autoscaling layers fit together, which metrics actually matter, and the pitfalls that cause thrash, cold starts, and surprise bills.',
+      content: [
+        { type: 'paragraph', content: 'Autoscaling is where teams either save money or set it on fire. Kubernetes ships three independent controllers operating at different layers, and the common mistake is treating them as a single knob. After tuning autoscaling for platforms handling unpredictable traffic—from Black Friday spikes to bursty event-driven jobs—here is how the pieces fit and where they bite.' },
+        { type: 'heading', level: 2, content: 'The three layers' },
+        { type: 'paragraph', content: 'The Horizontal Pod Autoscaler (HPA) changes the replica count of a workload. The Vertical Pod Autoscaler (VPA) adjusts CPU/memory requests. The Cluster Autoscaler (or Karpenter) adds and removes nodes when pods cannot be scheduled. Compose them deliberately: run HPA and VPA on the same resource and they will fight over the same signal.' },
+        { type: 'heading', level: 2, content: 'HPA beyond CPU' },
+        { type: 'paragraph', content: 'CPU-based HPA is the default and almost never the right SLI. Latency-sensitive services should scale on requests-per-second or queue depth via custom/external metrics (Prometheus Adapter). Target a realistic utilization (60–70%) so there is headroom during the ramp, and always set sensible min/max replicas.' },
+        { type: 'code', language: 'yaml', code: `apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: api
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: api
+  minReplicas: 3
+  maxReplicas: 20
+  metrics:
+    - type: Pods
+      pods:
+        metric:
+          name: http_requests_per_second
+        target:
+          type: AverageValue
+          averageValue: "50"
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60` },
+        { type: 'heading', level: 2, content: 'Event-driven scaling with KEDA' },
+        { type: 'paragraph', content: 'For queue workers, Kafka consumers, or bursty jobs, KEDA scales on the actual backlog and can scale to zero when idle—something stock HPA cannot do. KEDA creates an HPA under the hood but feeds it external scalers (SQS, Kafka, Prometheus, cron).' },
+        { type: 'code', language: 'yaml', code: `apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: worker
+spec:
+  scaleTargetRef:
+    name: worker
+  minReplicaCount: 0
+  maxReplicaCount: 30
+  cooldownPeriod: 120
+  triggers:
+    - type: aws-sqs-queue
+      metadata:
+        queueURL: https://sqs.eu-west-1.amazonaws.com/123456789/jobs
+        queueLength: "20"
+        awsRegion: eu-west-1` },
+        { type: 'heading', level: 2, content: 'Cluster Autoscaler, Karpenter, and node pressure' },
+        { type: 'paragraph', content: 'Replica scaling is useless if nodes cannot host the pods. Cluster Autoscaler scales fixed node groups; Karpenter provisions right-sized nodes just-in-time and consolidates underused ones. Pair this with PodDisruptionBudgets and topology spread constraints so scaling events never violate availability.' },
+        { type: 'heading', level: 2, content: 'Avoiding thrash and cold starts' },
+        { type: 'paragraph', content: 'Flapping (rapid scale up/down) burns money and hurts latency. Use HPA stabilization windows and scale-down policies, keep readiness probes honest so new pods do not receive traffic before they are warm, and pre-provision a small buffer for spiky workloads. Measure the cost of a cold start before optimizing for it—premature warm pools are their own waste.' },
+      ],
+    },
+    it: {
+      title: 'Autoscaling Kubernetes in produzione: HPA, KEDA e Cluster Autoscaler',
+      description: 'Come si incastrano i tre livelli di autoscaling, quali metriche contano davvero e le trappole che causano thrash, cold start e bollette a sorpresa.',
+      content: [
+        { type: 'paragraph', content: 'L\'autoscaling è il punto in cui i team risparmiano o bruciano soldi. Kubernetes offre tre controller indipendenti che operano su livelli diversi, e l\'errore comune è trattarli come un\'unica manopola. Dopo aver messo a punto l\'autoscaling per piattaforme con traffico imprevedibile—dai picchi del Black Friday ai job event-driven a raffica—ecco come si incastrano i pezzi e dove mordono.' },
+        { type: 'heading', level: 2, content: 'I tre livelli' },
+        { type: 'paragraph', content: 'L\'Horizontal Pod Autoscaler (HPA) cambia il numero di repliche di un workload. Il Vertical Pod Autoscaler (VPA) regola le request di CPU/memoria. Il Cluster Autoscaler (o Karpenter) aggiunge e rimuove nodi quando i pod non possono essere schedulati. Vanno composti con criterio: se HPA e VPA agiscono sulla stessa risorsa, litigano sullo stesso segnale.' },
+        { type: 'heading', level: 2, content: 'HPA oltre la CPU' },
+        { type: 'paragraph', content: 'L\'HPA basato su CPU è il default e quasi mai la SLI giusta. I servizi sensibili alla latenza dovrebbero scalare su richieste-al-secondo o profondità della coda tramite metriche custom/esterne (Prometheus Adapter). Puntate a un\'utilizzazione realistica (60–70%) per avere margine durante la salita, e definite sempre min/max repliche sensati.' },
+        { type: 'code', language: 'yaml', code: `apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: api
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: api
+  minReplicas: 3
+  maxReplicas: 20
+  metrics:
+    - type: Pods
+      pods:
+        metric:
+          name: http_requests_per_second
+        target:
+          type: AverageValue
+          averageValue: "50"
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300` },
+        { type: 'heading', level: 2, content: 'Scaling event-driven con KEDA' },
+        { type: 'paragraph', content: 'Per worker di code, consumer Kafka o job a raffica, KEDA scala sul backlog reale e può scalare a zero quando è idle—cosa che l\'HPA standard non può fare. KEDA crea un HPA sotto il cofano ma lo alimenta con scaler esterni (SQS, Kafka, Prometheus, cron).' },
+        { type: 'code', language: 'yaml', code: `apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: worker
+spec:
+  scaleTargetRef:
+    name: worker
+  minReplicaCount: 0
+  maxReplicaCount: 30
+  triggers:
+    - type: aws-sqs-queue
+      metadata:
+        queueURL: https://sqs.eu-west-1.amazonaws.com/123456789/jobs
+        queueLength: "20"
+        awsRegion: eu-west-1` },
+        { type: 'heading', level: 2, content: 'Cluster Autoscaler, Karpenter e pressione sui nodi' },
+        { type: 'paragraph', content: 'Scalare le repliche è inutile se i nodi non possono ospitare i pod. Il Cluster Autoscaler scala node group fissi; Karpenter provisiona nodi della dimensione giusta just-in-time e consolida quelli sottoutilizzati. Abbinatelo a PodDisruptionBudget e topology spread constraint così gli eventi di scaling non violano mai la disponibilità.' },
+        { type: 'heading', level: 2, content: 'Evitare thrash e cold start' },
+        { type: 'paragraph', content: 'Il flapping (scale up/down rapidi) brucia soldi e peggiora la latenza. Usate le stabilization window dell\'HPA e le policy di scale-down, mantenete readiness probe oneste così i nuovi pod non ricevono traffico prima di essere caldi, e pre-provisionate un piccolo buffer per i workload a raffica. Misurate il costo di un cold start prima di ottimizzarlo—i warm pool prematuri sono a loro volta uno spreco.' },
+      ],
+    },
+  },
+  'llmops-serving-llms-in-production': {
+    en: {
+      title: 'LLMOps: Serving LLMs in Production Without Burning the Budget',
+      description: 'Model serving patterns, GPU utilization, caching, and evals for LLM workloads—lessons from running inference where every millisecond and every token has a price.',
+      content: [
+        { type: 'paragraph', content: 'Getting an LLM to answer in a notebook is easy. Serving it to thousands of users with predictable latency and a bill your CFO tolerates is the hard part. LLMOps is DevOps with two new variables: GPUs are scarce and expensive, and quality is non-deterministic. Here are the patterns that kept both under control in production.' },
+        { type: 'heading', level: 2, content: 'Self-host or call an API?' },
+        { type: 'paragraph', content: 'Managed APIs (Bedrock, OpenAI, Anthropic) win on time-to-market and elasticity; self-hosting wins on unit cost at high, steady volume and on data residency. The break-even is usually higher than teams expect: unless you are saturating a GPU most of the day, an API is cheaper. Decide with a spreadsheet, not vibes.' },
+        { type: 'heading', level: 2, content: 'Throughput: batching and the KV cache' },
+        { type: 'paragraph', content: 'If you self-host, throughput is everything. Continuous batching (vLLM, TGI) and prefix/KV caching turn a GPU that served 3 requests/second into one that serves 30. Tune max sequence count and GPU memory utilization to your context length; long contexts eat VRAM fast.' },
+        { type: 'code', language: 'bash', code: `python -m vllm.entrypoints.openai.api_server \\
+  --model mistralai/Mistral-7B-Instruct-v0.3 \\
+  --dtype bfloat16 \\
+  --max-num-seqs 256 \\
+  --gpu-memory-utilization 0.90 \\
+  --enable-prefix-caching` },
+        { type: 'heading', level: 2, content: 'Semantic caching cuts cost more than any GPU' },
+        { type: 'paragraph', content: 'A large share of production traffic is near-duplicate. A semantic cache—embed the prompt, look up similar prior prompts, return the cached completion above a similarity threshold—routinely deflects 30–50% of calls. That is the single highest-ROI optimization in most LLM systems, and it also improves p95 latency.' },
+        { type: 'heading', level: 2, content: 'Guardrails and continuous evals' },
+        { type: 'paragraph', content: 'Non-deterministic output needs a test harness. Maintain a golden dataset and run automated evals (exact-match, LLM-as-judge, or task-specific metrics) on every prompt or model change in CI. Add input/output guardrails for PII, injection, and toxicity. Treat prompts and model versions as versioned artifacts—a prompt change is a deploy.' },
+        { type: 'heading', level: 2, content: 'Observability and cost per token' },
+        { type: 'paragraph', content: 'Log tokens-in, tokens-out, model, latency, and cache-hit per request, and chart cost-per-request by feature. Trace multi-step chains so you can see which tool call or retrieval is slow. Without token-level observability you cannot answer "why did this month cost double?"—and with LLMs, it always eventually does.' },
+      ],
+    },
+    it: {
+      title: 'LLMOps: servire LLM in produzione senza bruciare il budget',
+      description: 'Pattern di serving, utilizzo GPU, caching ed eval per workload LLM—lezioni dal far girare inference dove ogni millisecondo e ogni token ha un prezzo.',
+      content: [
+        { type: 'paragraph', content: 'Far rispondere un LLM in un notebook è facile. Servirlo a migliaia di utenti con latenza prevedibile e una bolletta che il CFO tollera è la parte difficile. LLMOps è DevOps con due nuove variabili: le GPU sono scarse e costose, e la qualità è non deterministica. Ecco i pattern che hanno tenuto entrambe sotto controllo in produzione.' },
+        { type: 'heading', level: 2, content: 'Self-host o chiamata API?' },
+        { type: 'paragraph', content: 'Le API gestite (Bedrock, OpenAI, Anthropic) vincono su time-to-market ed elasticità; il self-hosting vince sul costo unitario ad alto volume costante e sulla data residency. Il break-even è di solito più alto di quanto i team pensino: se non saturate una GPU per gran parte della giornata, un\'API costa meno. Decidete con un foglio di calcolo, non a sensazione.' },
+        { type: 'heading', level: 2, content: 'Throughput: batching e KV cache' },
+        { type: 'paragraph', content: 'Se fate self-host, il throughput è tutto. Il continuous batching (vLLM, TGI) e il caching di prefix/KV trasformano una GPU che serviva 3 richieste/secondo in una che ne serve 30. Regolate il numero massimo di sequenze e l\'utilizzo di memoria GPU in base alla lunghezza di contesto; i contesti lunghi divorano VRAM.' },
+        { type: 'code', language: 'bash', code: `python -m vllm.entrypoints.openai.api_server \\
+  --model mistralai/Mistral-7B-Instruct-v0.3 \\
+  --dtype bfloat16 \\
+  --max-num-seqs 256 \\
+  --gpu-memory-utilization 0.90 \\
+  --enable-prefix-caching` },
+        { type: 'heading', level: 2, content: 'La cache semantica taglia i costi più di qualsiasi GPU' },
+        { type: 'paragraph', content: 'Buona parte del traffico in produzione è quasi-duplicato. Una cache semantica—embeddi il prompt, cerchi prompt simili precedenti, restituisci il completamento in cache sopra una soglia di similarità—devia regolarmente il 30–50% delle chiamate. È l\'ottimizzazione a più alto ROI nella maggior parte dei sistemi LLM, e migliora anche la latenza p95.' },
+        { type: 'heading', level: 2, content: 'Guardrail ed eval continue' },
+        { type: 'paragraph', content: 'L\'output non deterministico richiede un test harness. Mantenete un golden dataset ed eseguite eval automatiche (exact-match, LLM-as-judge o metriche task-specific) a ogni cambio di prompt o modello in CI. Aggiungete guardrail su input/output per PII, injection e tossicità. Trattate prompt e versioni di modello come artefatti versionati—un cambio di prompt è un deploy.' },
+        { type: 'heading', level: 2, content: 'Osservabilità e costo per token' },
+        { type: 'paragraph', content: 'Loggate token-in, token-out, modello, latenza e cache-hit per richiesta, e tracciate il costo-per-richiesta per feature. Tracciate le catene multi-step per vedere quale tool call o retrieval è lento. Senza osservabilità a livello di token non potete rispondere a "perché questo mese è costato il doppio?"—e con gli LLM, prima o poi succede sempre.' },
+      ],
+    },
+  },
+  'slo-driven-observability': {
+    en: {
+      title: 'SLO-Driven Observability: Error Budgets Over Vanity Dashboards',
+      description: 'Trading 200 dashboards nobody reads for a handful of SLOs that drive decisions—with Prometheus recording rules and multi-window burn-rate alerts.',
+      content: [
+        { type: 'paragraph', content: 'Most "observability" is a wall of graphs that light up red at 3am and tell you nothing actionable. SLOs flip the model: define the reliability your users actually need, measure how much of that budget you are spending, and alert only when the budget is burning fast enough to matter. Fewer pages, better sleep, clearer decisions.' },
+        { type: 'heading', level: 2, content: 'Pick SLIs your users feel' },
+        { type: 'paragraph', content: 'A good SLI is a ratio of good events to total events, measured where the user experiences it. Availability = successful requests / total requests. Latency = requests faster than a threshold / total. Avoid infrastructure proxies (CPU, memory) as SLIs—they are causes, not symptoms. Start with two or three SLOs per critical service, not twenty.' },
+        { type: 'heading', level: 2, content: 'Recording rules for SLOs' },
+        { type: 'paragraph', content: 'Compute the error ratio once with recording rules so dashboards and alerts share the same source of truth and stay cheap to query at scale.' },
+        { type: 'code', language: 'yaml', code: `groups:
+  - name: slo-api-availability
+    rules:
+      - record: job:http_requests:rate5m
+        expr: sum(rate(http_requests_total{job="api"}[5m]))
+      - record: job:http_errors:rate5m
+        expr: sum(rate(http_requests_total{job="api",code=~"5.."}[5m]))
+      - record: job:slo_error_ratio:ratio5m
+        expr: job:http_errors:rate5m / job:http_requests:rate5m` },
+        { type: 'heading', level: 2, content: 'Multi-window, multi-burn-rate alerts' },
+        { type: 'paragraph', content: 'The Google SRE pattern: page only when a short window AND a long window both show fast budget burn. This catches real incidents quickly while ignoring brief blips. For a 99.9% SLO, a 14.4x burn rate exhausts 2% of the monthly budget in one hour—page-worthy.' },
+        { type: 'code', language: 'yaml', code: `- alert: ErrorBudgetBurnFast
+  expr: |
+    job:slo_error_ratio:ratio5m > (14.4 * 0.001)
+    and
+    job:slo_error_ratio:ratio1h > (14.4 * 0.001)
+  for: 2m
+  labels:
+    severity: page
+  annotations:
+    summary: "API burning the 99.9% error budget fast (5m and 1h)"` },
+        { type: 'heading', level: 2, content: 'The error budget policy' },
+        { type: 'paragraph', content: 'The SLO is only useful if the budget has consequences. Agree in advance: while budget remains, ship features fast; when it is exhausted, freeze risky changes and prioritize reliability work. That written policy turns observability from a dashboard into an engineering decision framework.' },
+      ],
+    },
+    it: {
+      title: 'Osservabilità guidata dagli SLO: error budget invece di dashboard di vanità',
+      description: 'Scambiare 200 dashboard che nessuno legge con pochi SLO che guidano le decisioni—con recording rule Prometheus e alert multi-window sul burn-rate.',
+      content: [
+        { type: 'paragraph', content: 'Gran parte dell\'"osservabilità" è un muro di grafici che diventano rossi alle 3 di notte senza dire nulla di azionabile. Gli SLO ribaltano il modello: definisci l\'affidabilità di cui gli utenti hanno davvero bisogno, misuri quanto budget stai consumando, e alerti solo quando il budget brucia abbastanza in fretta da contare. Meno page, sonno migliore, decisioni più chiare.' },
+        { type: 'heading', level: 2, content: 'Scegli SLI che gli utenti sentono' },
+        { type: 'paragraph', content: 'Una buona SLI è un rapporto tra eventi buoni ed eventi totali, misurato dove l\'utente lo vive. Disponibilità = richieste riuscite / richieste totali. Latenza = richieste sotto una soglia / totali. Evitate proxy infrastrutturali (CPU, memoria) come SLI—sono cause, non sintomi. Iniziate con due o tre SLO per servizio critico, non venti.' },
+        { type: 'heading', level: 2, content: 'Recording rule per gli SLO' },
+        { type: 'paragraph', content: 'Calcolate il rapporto di errore una volta con recording rule, così dashboard e alert condividono la stessa fonte di verità e restano economici da interrogare su larga scala.' },
+        { type: 'code', language: 'yaml', code: `groups:
+  - name: slo-api-availability
+    rules:
+      - record: job:http_requests:rate5m
+        expr: sum(rate(http_requests_total{job="api"}[5m]))
+      - record: job:http_errors:rate5m
+        expr: sum(rate(http_requests_total{job="api",code=~"5.."}[5m]))
+      - record: job:slo_error_ratio:ratio5m
+        expr: job:http_errors:rate5m / job:http_requests:rate5m` },
+        { type: 'heading', level: 2, content: 'Alert multi-window e multi-burn-rate' },
+        { type: 'paragraph', content: 'Il pattern SRE di Google: fai page solo quando una finestra breve E una lunga mostrano entrambe un consumo rapido del budget. Così prendi in fretta gli incidenti reali ignorando i blip brevi. Per uno SLO del 99,9%, un burn rate di 14,4x esaurisce il 2% del budget mensile in un\'ora—degno di page.' },
+        { type: 'code', language: 'yaml', code: `- alert: ErrorBudgetBurnFast
+  expr: |
+    job:slo_error_ratio:ratio5m > (14.4 * 0.001)
+    and
+    job:slo_error_ratio:ratio1h > (14.4 * 0.001)
+  for: 2m
+  labels:
+    severity: page` },
+        { type: 'heading', level: 2, content: 'La policy dell\'error budget' },
+        { type: 'paragraph', content: 'Lo SLO è utile solo se il budget ha conseguenze. Concordate in anticipo: finché resta budget, si rilasciano feature velocemente; quando è esaurito, si congelano le modifiche rischiose e si dà priorità al lavoro di affidabilità. Quella policy scritta trasforma l\'osservabilità da dashboard a framework decisionale per l\'ingegneria.' },
+      ],
+    },
+  },
+  'devsecops-supply-chain-security': {
+    en: {
+      title: 'Securing the Software Supply Chain: SBOMs, Signing, and Policy-as-Code',
+      description: 'A practical DevSecOps pipeline: shift-left scanning, SBOM generation, artifact signing with Sigstore, and admission policies that actually block bad deploys.',
+      content: [
+        { type: 'paragraph', content: 'After Log4Shell and SolarWinds, "trust your dependencies" stopped being a strategy. Modern DevSecOps assumes any artifact could be compromised and builds verifiable trust into the pipeline: know what is in your software, prove where it came from, and refuse to run anything unverified.' },
+        { type: 'heading', level: 2, content: 'Shift left, but keep the gate' },
+        { type: 'paragraph', content: 'Run SAST (Semgrep, CodeQL) and dependency scanning (Grype, Trivy, Dependabot) on every pull request, and fail the build on high/critical findings that have a fix. Shift-left without a blocking gate is just noise—developers learn to ignore warnings that never stop a merge.' },
+        { type: 'heading', level: 2, content: 'SBOM and provenance' },
+        { type: 'paragraph', content: 'A Software Bill of Materials lists every component in an artifact. Generate it at build time, attach it to the image as an attestation, and store it so you can answer "are we affected by CVE-XXXX?" in minutes instead of days.' },
+        { type: 'code', language: 'bash', code: `# Generate an SBOM and scan it
+syft packages ghcr.io/acme/api:1.4.2 -o spdx-json > sbom.spdx.json
+grype sbom:sbom.spdx.json --fail-on high
+
+# Sign the image and attach the SBOM as an attestation (keyless)
+cosign sign ghcr.io/acme/api:1.4.2
+cosign attest --predicate sbom.spdx.json --type spdxjson ghcr.io/acme/api:1.4.2` },
+        { type: 'heading', level: 2, content: 'Sign and verify everything' },
+        { type: 'paragraph', content: 'Sigstore/cosign keyless signing binds an artifact to the identity that built it (e.g. a GitHub Actions workflow) via short-lived certificates and a transparency log—no long-lived keys to leak. The signature is only useful if something verifies it, which is where admission control comes in.' },
+        { type: 'heading', level: 2, content: 'Enforce at admission with policy-as-code' },
+        { type: 'paragraph', content: 'Kyverno or OPA/Gatekeeper verify signatures and policies at the Kubernetes admission webhook, rejecting unsigned or non-compliant images before they ever run. This is the gate that makes the rest of the chain enforceable rather than advisory.' },
+        { type: 'code', language: 'yaml', code: `apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-signed-images
+spec:
+  validationFailureAction: Enforce
+  rules:
+    - name: verify-signature
+      match:
+        any:
+          - resources:
+              kinds: ["Pod"]
+      verifyImages:
+        - imageReferences: ["ghcr.io/acme/*"]
+          attestors:
+            - entries:
+                - keyless:
+                    issuer: "https://token.actions.githubusercontent.com"
+                    subject: "https://github.com/acme/*"` },
+      ],
+    },
+    it: {
+      title: 'Mettere in sicurezza la supply chain software: SBOM, firma e policy-as-code',
+      description: 'Una pipeline DevSecOps pratica: scanning shift-left, generazione SBOM, firma degli artefatti con Sigstore e admission policy che bloccano davvero i deploy pericolosi.',
+      content: [
+        { type: 'paragraph', content: 'Dopo Log4Shell e SolarWinds, "fidati delle tue dipendenze" ha smesso di essere una strategia. Il DevSecOps moderno assume che qualsiasi artefatto possa essere compromesso e costruisce fiducia verificabile nella pipeline: sapere cosa c\'è nel software, provare da dove viene e rifiutarsi di eseguire qualcosa di non verificato.' },
+        { type: 'heading', level: 2, content: 'Shift left, ma tieni il cancello' },
+        { type: 'paragraph', content: 'Eseguite SAST (Semgrep, CodeQL) e scanning delle dipendenze (Grype, Trivy, Dependabot) su ogni pull request, e fate fallire la build sui finding high/critical che hanno un fix. Lo shift-left senza un gate bloccante è solo rumore—gli sviluppatori imparano a ignorare warning che non fermano mai un merge.' },
+        { type: 'heading', level: 2, content: 'SBOM e provenance' },
+        { type: 'paragraph', content: 'Un Software Bill of Materials elenca ogni componente di un artefatto. Generatelo al build, allegatelo all\'immagine come attestazione e archiviatelo per rispondere a "siamo colpiti dalla CVE-XXXX?" in minuti invece che in giorni.' },
+        { type: 'code', language: 'bash', code: `# Genera un SBOM e scansionalo
+syft packages ghcr.io/acme/api:1.4.2 -o spdx-json > sbom.spdx.json
+grype sbom:sbom.spdx.json --fail-on high
+
+# Firma l'immagine e allega l'SBOM come attestazione (keyless)
+cosign sign ghcr.io/acme/api:1.4.2
+cosign attest --predicate sbom.spdx.json --type spdxjson ghcr.io/acme/api:1.4.2` },
+        { type: 'heading', level: 2, content: 'Firma e verifica tutto' },
+        { type: 'paragraph', content: 'La firma keyless di Sigstore/cosign lega un artefatto all\'identità che l\'ha costruito (es. un workflow GitHub Actions) tramite certificati a vita breve e un transparency log—nessuna chiave a lunga vita da far trapelare. La firma è utile solo se qualcosa la verifica, ed è qui che entra l\'admission control.' },
+        { type: 'heading', level: 2, content: 'Enforcement in admission con policy-as-code' },
+        { type: 'paragraph', content: 'Kyverno o OPA/Gatekeeper verificano firme e policy al webhook di admission di Kubernetes, rifiutando immagini non firmate o non conformi prima che vengano eseguite. È il cancello che rende il resto della catena vincolante invece che consultivo.' },
+        { type: 'code', language: 'yaml', code: `apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-signed-images
+spec:
+  validationFailureAction: Enforce
+  rules:
+    - name: verify-signature
+      match:
+        any:
+          - resources:
+              kinds: ["Pod"]
+      verifyImages:
+        - imageReferences: ["ghcr.io/acme/*"]
+          attestors:
+            - entries:
+                - keyless:
+                    issuer: "https://token.actions.githubusercontent.com"
+                    subject: "https://github.com/acme/*"` },
+      ],
+    },
+  },
+  'platform-engineering-gitops-argocd': {
+    en: {
+      title: 'Platform Engineering with GitOps: Golden Paths on Argo CD',
+      description: 'Building an internal developer platform where self-service templates and Argo CD reconciliation replace ticket-driven ops—without turning developers into cluster admins.',
+      content: [
+        { type: 'paragraph', content: 'Platform engineering is DevOps that scales past a handful of teams. Instead of every squad reinventing pipelines and YAML, a small platform team ships a "paved road": self-service, opinionated, and safe by default. GitOps is the delivery mechanism that makes it auditable and self-healing.' },
+        { type: 'heading', level: 2, content: 'From tickets to a paved road' },
+        { type: 'paragraph', content: 'The failure mode of central ops is the ticket queue: developers wait, ops context-switches, nobody is happy. The platform inverts it—developers describe intent in Git (a new service, a new environment), and automation provisions it. Ops moves from doing the work to owning the guardrails.' },
+        { type: 'heading', level: 2, content: 'App-of-apps and ApplicationSets' },
+        { type: 'paragraph', content: 'Argo CD ApplicationSets generate an Application per service or environment from a single template, so onboarding a new service is a folder in Git—not a copy-pasted manifest. Reconciliation with self-heal means drift is corrected automatically and the cluster always matches Git.' },
+        { type: 'code', language: 'yaml', code: `apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: tenant-services
+spec:
+  generators:
+    - git:
+        repoURL: https://github.com/acme/platform
+        revision: main
+        directories:
+          - path: "services/*"
+  template:
+    metadata:
+      name: "{{path.basename}}"
+    spec:
+      project: tenants
+      source:
+        repoURL: https://github.com/acme/platform
+        targetRevision: main
+        path: "{{path}}"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{path.basename}}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true` },
+        { type: 'heading', level: 2, content: 'Golden paths, not golden cages' },
+        { type: 'paragraph', content: 'Scaffolding tools (Backstage, cookiecutter templates) generate a new service with CI, Dockerfile, Helm chart, SLOs, and dashboards already wired. The path is opinionated but not mandatory—teams with special needs can step off it. A platform that forbids escape hatches becomes shadow IT within a quarter.' },
+        { type: 'heading', level: 2, content: 'Progressive delivery and guardrails' },
+        { type: 'paragraph', content: 'Argo Rollouts adds canary and blue/green on top of GitOps, promoting on real metrics (error rate, latency) and rolling back automatically when an analysis run fails. Combined with policy-as-code and RBAC scoped per tenant, developers get speed and the platform keeps the blast radius small.' },
+      ],
+    },
+    it: {
+      title: 'Platform Engineering con GitOps: golden path su Argo CD',
+      description: 'Costruire una piattaforma interna per sviluppatori dove template self-service e riconciliazione Argo CD sostituiscono le ops a colpi di ticket—senza trasformare gli sviluppatori in admin del cluster.',
+      content: [
+        { type: 'paragraph', content: 'La platform engineering è il DevOps che scala oltre una manciata di team. Invece che ogni squad reinventi pipeline e YAML, un piccolo team di piattaforma rilascia una "strada asfaltata": self-service, con opinioni e sicura di default. GitOps è il meccanismo di delivery che la rende auditabile e self-healing.' },
+        { type: 'heading', level: 2, content: 'Dai ticket alla strada asfaltata' },
+        { type: 'paragraph', content: 'Il fallimento delle ops centralizzate è la coda dei ticket: gli sviluppatori aspettano, le ops fanno context-switch, nessuno è contento. La piattaforma lo ribalta—gli sviluppatori descrivono l\'intento in Git (un nuovo servizio, un nuovo ambiente) e l\'automazione lo provisiona. Le ops passano dal fare il lavoro a possedere i guardrail.' },
+        { type: 'heading', level: 2, content: 'App-of-apps e ApplicationSet' },
+        { type: 'paragraph', content: 'Gli ApplicationSet di Argo CD generano una Application per servizio o ambiente da un singolo template, così onboardare un nuovo servizio è una cartella in Git—non un manifest copiato e incollato. La riconciliazione con self-heal significa che il drift viene corretto automaticamente e il cluster corrisponde sempre a Git.' },
+        { type: 'code', language: 'yaml', code: `apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: tenant-services
+spec:
+  generators:
+    - git:
+        repoURL: https://github.com/acme/platform
+        revision: main
+        directories:
+          - path: "services/*"
+  template:
+    metadata:
+      name: "{{path.basename}}"
+    spec:
+      project: tenants
+      source:
+        repoURL: https://github.com/acme/platform
+        targetRevision: main
+        path: "{{path}}"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{path.basename}}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true` },
+        { type: 'heading', level: 2, content: 'Golden path, non gabbie dorate' },
+        { type: 'paragraph', content: 'Gli strumenti di scaffolding (Backstage, template cookiecutter) generano un nuovo servizio con CI, Dockerfile, Helm chart, SLO e dashboard già collegati. Il percorso ha opinioni ma non è obbligatorio—i team con necessità speciali possono uscirne. Una piattaforma che vieta le vie di fuga diventa shadow IT nel giro di un trimestre.' },
+        { type: 'heading', level: 2, content: 'Progressive delivery e guardrail' },
+        { type: 'paragraph', content: 'Argo Rollouts aggiunge canary e blue/green sopra il GitOps, promuovendo su metriche reali (error rate, latenza) e facendo rollback automatico quando un\'analisi fallisce. Combinato con policy-as-code e RBAC per tenant, gli sviluppatori ottengono velocità e la piattaforma mantiene piccolo il raggio d\'impatto.' },
+      ],
+    },
+  },
+  'finops-kubernetes-cost-optimization': {
+    en: {
+      title: 'FinOps for Kubernetes: Cutting Cloud Spend Without Cutting Reliability',
+      description: 'Where Kubernetes money actually goes, how to rightsize with real data, and the spot + autoscaling patterns that cut 40–60% without hurting your SLOs.',
+      content: [
+        { type: 'paragraph', content: 'Kubernetes makes it trivially easy to waste money: over-generous requests, idle namespaces, and always-on nodes hide inside a bill nobody can attribute. FinOps brings the accountability back—make cost visible per team and feature, then optimize with data instead of guesswork.' },
+        { type: 'heading', level: 2, content: 'You cannot cut what you cannot see' },
+        { type: 'paragraph', content: 'Start with allocation. OpenCost or Kubecost break the cluster bill down by namespace, workload, and label, enabling showback (and eventually chargeback) per team. Enforce a tagging/labeling standard so every pod maps to an owner and a cost center—untagged spend is where budgets go to die.' },
+        { type: 'heading', level: 2, content: 'Rightsizing with real data' },
+        { type: 'paragraph', content: 'The biggest Kubernetes waste is the gap between requested and used resources. Set requests from observed p95 usage, not from a copied template. VPA in recommendation mode surfaces the right values without acting on them, so you can review before applying.' },
+        { type: 'code', language: 'bash', code: `# Actual usage vs requests — the gap is wasted money
+kubectl top pods -A --sum=true
+
+# VPA recommendation (recommender mode, does not mutate)
+kubectl get vpa api -o jsonpath="{.status.recommendation.containerRecommendations[0].target}"` },
+        { type: 'heading', level: 2, content: 'Spot instances and Karpenter consolidation' },
+        { type: 'paragraph', content: 'Fault-tolerant and stateless workloads belong on spot/preemptible nodes at 60–90% discount. Karpenter provisions the cheapest instance types that fit pending pods and consolidates underused nodes automatically. Protect availability with PodDisruptionBudgets and spread across capacity types so a spot reclaim never takes a whole service down.' },
+        { type: 'heading', level: 2, content: 'Kill idle and zombie spend' },
+        { type: 'paragraph', content: 'Scale non-production namespaces to zero outside working hours (KEDA cron or a simple controller). Delete orphaned PersistentVolumes, unattached load balancers, and old snapshots—storage and networking are the silent line items. A weekly automated waste report, sent to the owning team, keeps entropy in check far better than a one-off cleanup.' },
+      ],
+    },
+    it: {
+      title: 'FinOps per Kubernetes: tagliare la spesa cloud senza tagliare l\'affidabilità',
+      description: 'Dove finiscono davvero i soldi su Kubernetes, come fare rightsizing con dati reali e i pattern spot + autoscaling che tagliano il 40–60% senza intaccare gli SLO.',
+      content: [
+        { type: 'paragraph', content: 'Kubernetes rende banalmente facile sprecare soldi: request troppo generose, namespace idle e nodi sempre accesi si nascondono dentro una bolletta che nessuno riesce ad attribuire. Il FinOps riporta la responsabilità—rendi il costo visibile per team e feature, poi ottimizza con i dati invece che a intuito.' },
+        { type: 'heading', level: 2, content: 'Non puoi tagliare ciò che non vedi' },
+        { type: 'paragraph', content: 'Si parte dall\'allocazione. OpenCost o Kubecost scompongono la bolletta del cluster per namespace, workload ed etichetta, abilitando lo showback (e poi il chargeback) per team. Imponete uno standard di tagging/labeling così ogni pod mappa a un owner e a un cost center—la spesa non taggata è dove muoiono i budget.' },
+        { type: 'heading', level: 2, content: 'Rightsizing con dati reali' },
+        { type: 'paragraph', content: 'Lo spreco più grande su Kubernetes è il divario tra risorse richieste e usate. Impostate le request dall\'uso p95 osservato, non da un template copiato. VPA in modalità recommendation mostra i valori giusti senza agire, così potete rivedere prima di applicare.' },
+        { type: 'code', language: 'bash', code: `# Uso reale vs request — il divario sono soldi sprecati
+kubectl top pods -A --sum=true
+
+# Raccomandazione VPA (modalita recommender, non muta nulla)
+kubectl get vpa api -o jsonpath="{.status.recommendation.containerRecommendations[0].target}"` },
+        { type: 'heading', level: 2, content: 'Istanze spot e consolidamento con Karpenter' },
+        { type: 'paragraph', content: 'I workload fault-tolerant e stateless stanno su nodi spot/preemptible con sconti del 60–90%. Karpenter provisiona i tipi di istanza più economici che ospitano i pod in attesa e consolida automaticamente i nodi sottoutilizzati. Proteggete la disponibilità con PodDisruptionBudget e distribuzione tra tipi di capacità, così un reclaim spot non abbatte mai un intero servizio.' },
+        { type: 'heading', level: 2, content: 'Elimina spesa idle e zombie' },
+        { type: 'paragraph', content: 'Scalate a zero i namespace non-produttivi fuori dall\'orario di lavoro (cron KEDA o un semplice controller). Cancellate PersistentVolume orfani, load balancer non collegati e vecchi snapshot—storage e networking sono le voci silenziose. Un report settimanale automatico degli sprechi, inviato al team owner, tiene a bada l\'entropia molto meglio di una pulizia una tantum.' },
       ],
     },
   },

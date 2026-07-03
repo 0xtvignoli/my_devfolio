@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { MotionConfig } from "framer-motion";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { MuiThemeProviderWrapper } from "@/components/providers/mui-theme-provider";
@@ -19,9 +20,11 @@ export function SiteProviders({ children, skipLabel }: SiteProvidersProps) {
       <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
         <MuiThemeProviderWrapper>
           <SnackbarProvider>
-            {skipLabel ? <SkipLink label={skipLabel} /> : null}
-            <WebVitalsTracker />
-            {children}
+            <MotionConfig reducedMotion="user">
+              {skipLabel ? <SkipLink label={skipLabel} /> : null}
+              <WebVitalsTracker />
+              {children}
+            </MotionConfig>
           </SnackbarProvider>
         </MuiThemeProviderWrapper>
       </ThemeProvider>

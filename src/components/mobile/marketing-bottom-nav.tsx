@@ -37,7 +37,7 @@ export function MarketingBottomNav({ locale, translations }: MarketingBottomNavP
     <Paper
       component="nav"
       aria-label={translations.mobileNav.ariaLabel}
-      elevation={8}
+      elevation={0}
       sx={{
         display: { xs: 'block', md: 'none' },
         position: 'fixed',
@@ -48,8 +48,8 @@ export function MarketingBottomNav({ locale, translations }: MarketingBottomNavP
         borderTop: 1,
         borderColor: 'divider',
         pb: 'env(safe-area-inset-bottom, 0px)',
-        background: 'var(--glass-bg)',
-        backdropFilter: 'blur(var(--glass-blur))',
+        bgcolor: 'background.default',
+        boxShadow: 'none',
       }}
     >
       <BottomNavigation

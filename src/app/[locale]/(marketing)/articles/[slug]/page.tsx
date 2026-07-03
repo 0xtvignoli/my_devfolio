@@ -101,7 +101,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             {t.article.back}
           </Link>
         </Button>
-        <h1 className="font-headline text-4xl md:text-5xl font-bold tracking-tight mb-4">{article.title}</h1>
+        <h1 className="font-headline text-3xl md:text-4xl font-bold tracking-tight mb-4 text-foreground">{article.title}</h1>
         <div className="text-muted-foreground text-sm mb-8">
           <span>
             {t.article.author} {article.author}

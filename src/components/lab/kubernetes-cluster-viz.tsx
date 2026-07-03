@@ -1,6 +1,6 @@
 'use client';
 
-import { Server, Cpu, MemoryStick, CheckCircle2, AlertCircle, XCircle, Waypoints } from 'lucide-react';
+import { Server, Cpu, MemoryStick, Waypoints } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui-mui';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { KubernetesCluster } from '@/lib/types';
@@ -9,17 +9,16 @@ import { getInteractiveClasses } from '@/lib/mobile-utils';
 import { useDeviceDetection } from '@/hooks/use-device-detection';
 import { Badge } from '../ui/badge';
 
-const statusIcons = {
-  Running: <CheckCircle2 className="text-green-500" />,
-  Pending: <AlertCircle className="text-yellow-500 animate-pulse" />,
-  Error: <XCircle className="text-red-500" />,
+// ASCII bracket markers instead of colored icons/fills — the color rides on
+// the marker + status text, the card itself stays a neutral hairline.
+const statusMarkers = {
+  Running: <span className="text-green-600 dark:text-green-400 font-bold" aria-hidden="true">[+]</span>,
+  Pending: <span className="text-yellow-600 dark:text-yellow-400 font-bold" aria-hidden="true">[~]</span>,
+  Error: <span className="text-red-600 dark:text-red-400 font-bold" aria-hidden="true">[x]</span>,
 };
 
-const statusColors = {
-    Running: 'border-green-600/70 bg-green-600/15 hover:bg-green-600/25 dark:border-green-500/70 dark:bg-green-500/25 dark:hover:bg-green-500/35',
-    Pending: 'border-yellow-600/70 bg-yellow-600/15 hover:bg-yellow-600/25 dark:border-yellow-500/70 dark:bg-yellow-500/25 dark:hover:bg-yellow-500/35',
-    Error: 'border-red-600/70 bg-red-600/15 hover:bg-red-600/25 dark:border-red-500/70 dark:bg-red-500/25 dark:hover:bg-red-500/35',
-}
+const statusCard =
+  'border-[var(--md-sys-color-outline-variant)] bg-[var(--md-sys-color-surface-container-lowest)] hover:bg-[var(--md-sys-color-surface-container)] hover:border-[var(--md-sys-color-outline)]';
 
 interface KubernetesClusterVizProps {
   cluster: KubernetesCluster;
@@ -45,7 +44,7 @@ export function KubernetesClusterViz({ cluster }: KubernetesClusterVizProps) {
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row gap-4 justify-center items-start">
           {cluster.nodes.map((node) => (
-            <Card key={node.name} className="bg-card/80 backdrop-blur-sm border-primary/20 w-full flex-1">
+            <Card key={node.name} className="border-border w-full flex-1">
               <CardHeader className="p-4">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Server className="text-primary w-5 h-5" aria-hidden="true" />
@@ -78,7 +77,7 @@ export function KubernetesClusterViz({ cluster }: KubernetesClusterVizProps) {
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row gap-4 justify-center items-start">
           {cluster.nodes.map((node) => (
-            <Card key={node.name} className="bg-card/80 backdrop-blur-sm border-primary/20 w-full flex-1">
+            <Card key={node.name} className="border-border w-full flex-1">
               <CardHeader className="p-4">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Server className="text-primary w-5 h-5" aria-hidden="true" />
@@ -102,12 +101,12 @@ export function KubernetesClusterViz({ cluster }: KubernetesClusterVizProps) {
                       <button 
                         className={getInteractiveClasses(
                           cn(
-                            'border rounded-md p-2 text-center text-xs cursor-pointer relative text-left w-full transition-colors', 
-                            statusColors[pod.status],
-                            pod.isCanary && 'border-purple-500/50 bg-purple-500/10 dark:bg-purple-900/20'
+                            'border rounded-[4px] p-2 text-center text-xs cursor-pointer relative text-left w-full transition-colors',
+                            statusCard,
+                            pod.isCanary && 'border-[var(--md-sys-color-primary)]/60'
                           ),
-                          pod.isCanary 
-                            ? 'hover:bg-purple-500/20 dark:hover:bg-purple-900/40' 
+                          pod.isCanary
+                            ? 'hover:border-[var(--md-sys-color-primary)]'
                             : '',
                           'transition-colors',
                           isTouchDevice,
@@ -116,22 +115,22 @@ export function KubernetesClusterViz({ cluster }: KubernetesClusterVizProps) {
                         title={ariaLabel}
                         aria-label={ariaLabel}
                       >
-                        {pod.isCanary && <Badge variant="outline" className="absolute -top-2 -right-2 text-xs px-1.5 py-0.5 border-purple-500 text-purple-500" aria-label="Canary deployment">Canary</Badge>}
+                        {pod.isCanary && <Badge variant="outline" className="absolute -top-2 -right-2 text-xs px-1.5 py-0.5 border-[var(--md-sys-color-primary)] text-[var(--md-sys-color-primary)]" aria-label="Canary deployment">Canary</Badge>}
                         {pod.traffic !== undefined && pod.traffic > 0 && (
-                            <div className="absolute top-1 left-1 flex items-center gap-1 text-primary text-[10px]" aria-label={`Traffic: ${pod.traffic}%`}>
+                            <div className="absolute top-1 left-1 flex items-center gap-1 text-[var(--md-sys-color-primary)] text-[10px]" aria-label={`Traffic: ${pod.traffic}%`}>
                                 <Waypoints className="w-3 h-3" aria-hidden="true"/>
                                 <span className="font-semibold">{pod.traffic}%</span>
                             </div>
                         )}
-                        <div className="flex justify-center mb-1" aria-hidden="true">{statusIcons[pod.status]}</div>
+                        <div className="flex justify-center mb-1 text-sm" aria-hidden="true">{statusMarkers[pod.status]}</div>
                         <div className="font-semibold truncate" title={pod.service}>{pod.service}</div>
                         <div className="text-muted-foreground dark:text-muted-foreground truncate text-xs" title={pod.name}>{pod.name}</div>
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent className="font-code text-xs bg-card/80 backdrop-blur-sm">
+                    <TooltipContent className="font-mono text-xs">
                         <div className='font-bold text-base mb-2 text-primary flex items-center gap-2'>
                            {pod.name}
-                           {pod.isCanary && <Badge variant="outline" className="text-xs px-1.5 py-0.5 border-purple-500 text-purple-500">Canary</Badge>}
+                           {pod.isCanary && <Badge variant="outline" className="text-xs px-1.5 py-0.5 border-[var(--md-sys-color-primary)] text-[var(--md-sys-color-primary)]">Canary</Badge>}
                         </div>
                         <div className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1">
                           <span className="font-semibold text-muted-foreground dark:text-muted-foreground">Service:</span> <span>{pod.service}</span>

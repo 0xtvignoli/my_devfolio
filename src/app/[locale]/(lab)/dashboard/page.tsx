@@ -5,8 +5,6 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { GamificationDashboard } from '@/components/gamification/gamification-dashboard';
 import { motion } from 'framer-motion';
-import { AuroraBackground } from '@/components/backgrounds/aurora';
-import { GridBackground } from '@/components/backgrounds/grid';
 import { resolveLocaleParam } from '@/lib/i18n/config';
 import { translations } from '@/data/locales';
 import { localizedPath } from '@/lib/i18n/paths';
@@ -19,9 +17,7 @@ export default function DashboardPage() {
 
   return (
     <div className="relative">
-      <AuroraBackground />
-      <GridBackground />
-      <div className="container mx-auto px-4 py-20">
+      <div className="container mx-auto px-4 py-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -35,11 +31,12 @@ export default function DashboardPage() {
             <ArrowLeft size={16} aria-hidden />
             {t.nav.lab}
           </Link>
-          <div className="text-center space-y-4" role="region" aria-labelledby="dashboard-heading">
-            <h1 id="dashboard-heading" className="font-headline text-4xl md:text-6xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary via-blue-500 to-purple-500">
+          <div className="space-y-3 border-b border-border pb-6" role="region" aria-labelledby="dashboard-heading">
+            <h1 id="dashboard-heading" className="font-headline text-3xl md:text-4xl font-bold tracking-tight text-foreground">
+              <span aria-hidden className="text-muted-foreground mr-2">#</span>
               {t.nav.missionProgress}
             </h1>
-            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+            <p className="text-base text-muted-foreground max-w-3xl">
               {locale === 'it'
                 ? 'Monitora i progressi, sblocca achievement e sali di livello nelle simulazioni DevOps.'
                 : 'Track progress, unlock achievements, and level up through interactive DevOps simulations.'}

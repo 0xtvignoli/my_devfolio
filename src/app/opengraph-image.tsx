@@ -4,7 +4,29 @@ export const alt = 'Thomas Vignoli - Senior DevOps Engineer Portfolio';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
-export default function OpenGraphImage() {
+// Best-effort load of JetBrains Mono so the OG card is monospaced too.
+// If the fetch fails (offline build), we fall back to the default face —
+// the cream/ink palette + terminal layout still carry the brand.
+async function loadMono(weight: 400 | 700): Promise<ArrayBuffer | null> {
+  try {
+    const res = await fetch(
+      `https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-${weight}-normal.woff`
+    );
+    if (res.ok) return await res.arrayBuffer();
+  } catch {
+    /* offline — fall back to default font */
+  }
+  return null;
+}
+
+export default async function OpenGraphImage() {
+  const [regular, bold] = await Promise.all([loadMono(400), loadMono(700)]);
+  const fonts = [
+    regular && { name: 'JetBrains Mono', data: regular, style: 'normal' as const, weight: 400 as const },
+    bold && { name: 'JetBrains Mono', data: bold, style: 'normal' as const, weight: 700 as const },
+  ].filter(Boolean) as { name: string; data: ArrayBuffer; style: 'normal'; weight: 400 | 700 }[];
+  const mono = fonts.length ? 'JetBrains Mono' : 'monospace';
+
   return new ImageResponse(
     (
       <div
@@ -13,58 +35,63 @@ export default function OpenGraphImage() {
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'center',
-          padding: '64px 80px',
-          background: 'linear-gradient(135deg, #121212 0%, #1E1E1E 50%, #121212 100%)',
-          color: '#E3E3E3',
-          fontFamily: 'system-ui, sans-serif',
+          background: '#fdfcfc',
+          color: '#201d1d',
+          fontFamily: mono,
+          padding: 56,
         }}
       >
+        {/* Wordmark */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, fontSize: 30, fontWeight: 700 }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 60,
+              height: 60,
+              border: '2px solid #201d1d',
+              borderRadius: 6,
+              fontSize: 26,
+            }}
+          >
+            ~$
+          </div>
+          <span>devops-folio</span>
+        </div>
+
+        {/* Dark TUI mockup — the single "visual moment" */}
         <div
           style={{
+            marginTop: 36,
+            flex: 1,
             display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            marginBottom: 32,
-            fontSize: 22,
-            color: '#8AB4F8',
-            fontWeight: 600,
+            flexDirection: 'column',
+            justifyContent: 'center',
+            background: '#201d1d',
+            color: '#fdfcfc',
+            border: '1px solid #3a3636',
+            borderRadius: 6,
+            padding: 48,
           }}
         >
-          <span style={{ fontSize: 28 }}>{'</>'}</span>
-          <span>DevOps Folio</span>
-        </div>
-        <div style={{ fontSize: 64, fontWeight: 700, lineHeight: 1.1, marginBottom: 24, maxWidth: 900 }}>
-          Thomas Vignoli
-        </div>
-        <div style={{ fontSize: 32, color: '#9AA0A6', lineHeight: 1.4, maxWidth: 820 }}>
-          Senior DevOps Engineer — Kubernetes, Cloud Infrastructure &amp; CI/CD
-        </div>
-        <div
-          style={{
-            marginTop: 48,
-            display: 'flex',
-            gap: 16,
-          }}
-        >
-          {['Kubernetes', 'Terraform', 'AWS', 'Interactive Lab'].map((tag) => (
-            <div
-              key={tag}
-              style={{
-                padding: '10px 20px',
-                borderRadius: 8,
-                border: '1px solid #424242',
-                color: '#8AB4F8',
-                fontSize: 20,
-                background: '#1E1E1E',
-              }}
-            >
-              {tag}
-            </div>
-          ))}
+          <div style={{ display: 'flex', color: '#9a9898', fontSize: 24, marginBottom: 20 }}>
+            [+] Senior DevOps Engineer
+          </div>
+          <div style={{ display: 'flex', fontSize: 60, fontWeight: 700, marginBottom: 16 }}>
+            Thomas Vignoli
+          </div>
+          <div style={{ display: 'flex', fontSize: 26, color: '#9a9898', marginBottom: 36 }}>
+            Kubernetes · Cloud Infrastructure · CI/CD · SRE
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 24 }}>
+            <span style={{ color: '#30d158' }}>$</span>
+            <span style={{ color: '#fdfcfc' }}>kubectl get pods</span>
+            <span style={{ color: '#4da3ff' }}>-n production</span>
+          </div>
         </div>
       </div>
     ),
-    { ...size }
+    { ...size, ...(fonts.length ? { fonts } : {}) }
   );
 }

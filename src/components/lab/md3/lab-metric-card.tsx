@@ -22,7 +22,6 @@ export function LabMetricCard({
   value,
   subtitle,
   hint,
-  accentColor = 'var(--md-sys-color-primary)',
   chart,
   'aria-label': ariaLabel,
 }: LabMetricCardProps) {
@@ -56,7 +55,7 @@ export function LabMetricCard({
         variant="h5"
         component="div"
         suppressHydrationWarning
-        sx={{ color: accentColor, fontWeight: 700, lineHeight: 1.2 }}
+        sx={{ color: 'var(--md-sys-color-on-surface)', fontWeight: 700, lineHeight: 1.2 }}
       >
         {value}
       </Typography>
