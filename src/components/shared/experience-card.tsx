@@ -27,14 +27,19 @@ export function ExperienceCard({
     <div className={cn("relative pl-20 pb-12", !isLast && "pb-12", className)}>
       {/* Timeline line - only show if not last */}
       {!isLast && (
-        <div className="absolute left-9 top-2 h-full w-0.5 bg-primary/25 -translate-x-1/2" />
+        <div className="absolute left-9 top-3 h-full w-px bg-border -translate-x-1/2" />
       )}
-      
-      {/* Timeline dot */}
-      <div className="absolute left-9 top-2 h-4 w-4 rounded-full bg-primary border-4 border-background -translate-x-1/2 shadow-sm" />
-      
+
+      {/* Timeline marker (ASCII-style bracket) */}
+      <span
+        aria-hidden
+        className="absolute left-9 top-1 -translate-x-1/2 font-bold text-foreground bg-background leading-none"
+      >
+        [+]
+      </span>
+
       {/* Date */}
-      <p className="text-sm font-medium text-primary mb-1.5 tracking-wide">
+      <p className="text-sm font-medium text-muted-foreground mb-1.5">
         {dateRange}
       </p>
       
@@ -57,10 +62,10 @@ export function ExperienceCard({
       {tags && tags.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {tags.map((tag) => (
-            <Badge 
-              key={tag} 
-              variant="secondary"
-              className="bg-primary/8 text-primary border border-primary/20 hover:bg-primary/12 hover:border-primary/30 transition-all duration-200 font-medium"
+            <Badge
+              key={tag}
+              variant="outline"
+              className="text-muted-foreground border-border hover:border-foreground transition-colors duration-150 font-normal"
             >
               {tag}
             </Badge>

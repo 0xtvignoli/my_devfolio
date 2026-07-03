@@ -23,8 +23,8 @@ export function CodeBlock({ code, language }: CodeBlockProps) {
 
   return (
     <div className="relative group my-4">
-      <pre className="bg-card p-4 rounded-lg border overflow-x-auto">
-        <code className={`font-code text-sm language-${language}`}>
+      <pre className="bg-secondary p-4 rounded-[4px] border border-border overflow-x-auto">
+        <code className={`font-mono text-sm language-${language}`}>
           {code}
         </code>
       </pre>

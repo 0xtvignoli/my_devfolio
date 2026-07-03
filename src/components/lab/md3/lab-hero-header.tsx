@@ -23,8 +23,7 @@ export function LabHeroHeader({ title, subtitle, liveLabel, actions, stats }: La
         p: { xs: 2.5, md: 3 },
         borderRadius: 'var(--lab-radius-xl)',
         bgcolor: 'var(--md-sys-color-surface-container-low)',
-        backgroundImage:
-          'linear-gradient(135deg, var(--md-sys-color-primary-container) 0%, transparent 55%)',
+        backgroundImage: 'none',
       }}
     >
       <Stack direction={{ xs: 'column', md: 'row' }} spacing={2.5} sx={{ justifyContent: 'space-between' }}>
@@ -50,6 +49,9 @@ export function LabHeroHeader({ title, subtitle, liveLabel, actions, stats }: La
             {actions}
           </Stack>
           <Typography variant="h4" component="h1" sx={{ fontWeight: 700, mb: 1 }}>
+            <Box component="span" aria-hidden sx={{ color: 'var(--md-sys-color-on-surface-variant)', mr: 1 }}>
+              #
+            </Box>
             {title}
           </Typography>
           <Typography variant="body1" sx={{ color: 'var(--md-sys-color-on-surface-variant)', maxWidth: 720 }}>
@@ -75,7 +77,7 @@ export function LabHeroHeader({ title, subtitle, liveLabel, actions, stats }: La
               <Typography
                 variant="subtitle1"
                 suppressHydrationWarning
-                sx={{ color: stat.accent ?? 'var(--md-sys-color-primary)', fontWeight: 700 }}
+                sx={{ color: 'var(--md-sys-color-on-surface)', fontWeight: 700 }}
               >
                 {stat.value}
               </Typography>

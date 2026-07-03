@@ -1,51 +1,71 @@
 import { createTheme } from '@mui/material/styles';
 
-/** Material Design 3 inspired palette – minimal blue primary, neutral surfaces */
-const md3 = {
+/**
+ * OpenCode "manpage" theme for MUI.
+ * Monospaced everywhere, warm cream canvas / near-black ink, flat surfaces
+ * (elevation 0, no shadows), sharp 0px containers, 4px radius on interactive
+ * controls, and 1px hairline dividers. The dark mode is a coherent inversion.
+ */
+const MONO =
+  'var(--font-mono-stack), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace';
+
+const oc = {
   light: {
-    primary: { main: '#1A73E8', light: '#4285F4', dark: '#1557B0', contrastText: '#FFFFFF' },
-    secondary: { main: '#5F6368', contrastText: '#FFFFFF' },
-    error: { main: '#B3261E' },
-    background: { default: '#FAFAFA', paper: '#FFFFFF' },
-    text: { primary: '#1F1F1F', secondary: '#5F6368' },
-    divider: '#E0E0E0',
+    canvas: '#fdfcfc',
+    surfaceSoft: '#f8f7f7',
+    surfaceCard: '#f1eeee',
+    ink: '#201d1d',
+    inkDeep: '#0f0000',
+    body: '#424245',
+    mute: '#646262',
+    ash: '#9a9898',
+    hairline: '#e0dede',
+    hairlineStrong: '#646262',
+    danger: '#c0271f', // darker than #ff3b30 so white-on-red / red-on-cream meet WCAG AA
   },
   dark: {
-    primary: { main: '#8AB4F8', light: '#AECBFA', dark: '#669DF6', contrastText: '#062E6F' },
-    secondary: { main: '#9AA0A6', contrastText: '#121212' },
-    error: { main: '#F2B8B5' },
-    background: { default: '#121212', paper: '#1E1E1E' },
-    text: { primary: '#E3E3E3', secondary: '#9AA0A6' },
-    divider: '#424242',
+    canvas: '#201d1d',
+    surfaceSoft: '#302c2c',
+    surfaceCard: '#302c2c',
+    ink: '#fdfcfc',
+    inkDeep: '#fdfcfc',
+    body: '#c9c6c6',
+    mute: '#9a9898',
+    ash: '#9a9898',
+    hairline: '#3a3636',
+    hairlineStrong: '#6e6e73',
+    danger: '#ff6961',
   },
 } as const;
 
 export function createAppTheme(mode: 'light' | 'dark') {
-  const tokens = md3[mode];
-  const isDark = mode === 'dark';
+  const c = oc[mode];
 
   return createTheme({
     palette: {
       mode,
-      primary: tokens.primary,
-      secondary: tokens.secondary,
-      error: tokens.error,
-      background: tokens.background,
-      text: tokens.text,
-      divider: tokens.divider,
+      primary: { main: c.ink, dark: c.inkDeep, contrastText: c.canvas },
+      secondary: { main: c.mute, contrastText: c.canvas },
+      error: { main: c.danger },
+      background: { default: c.canvas, paper: c.canvas },
+      text: { primary: c.ink, secondary: c.mute },
+      divider: c.hairline,
     },
     shape: {
-      borderRadius: 12,
+      // 4px on interactive controls (buttons/inputs); containers overridden to 0
+      borderRadius: 4,
     },
     spacing: 8,
     typography: {
-      fontFamily: 'var(--font-body), system-ui, sans-serif',
-      h1: { fontFamily: 'var(--font-headline), system-ui, sans-serif', fontWeight: 700 },
-      h2: { fontFamily: 'var(--font-headline), system-ui, sans-serif', fontWeight: 700 },
-      h3: { fontFamily: 'var(--font-headline), system-ui, sans-serif', fontWeight: 600 },
-      h4: { fontFamily: 'var(--font-headline), system-ui, sans-serif', fontWeight: 600 },
-      h5: { fontFamily: 'var(--font-headline), system-ui, sans-serif', fontWeight: 600 },
-      h6: { fontFamily: 'var(--font-headline), system-ui, sans-serif', fontWeight: 600 },
+      fontFamily: MONO,
+      // Single face, hierarchy comes from size + weight only
+      h1: { fontFamily: MONO, fontWeight: 700, letterSpacing: 0 },
+      h2: { fontFamily: MONO, fontWeight: 700, letterSpacing: 0 },
+      h3: { fontFamily: MONO, fontWeight: 700, letterSpacing: 0 },
+      h4: { fontFamily: MONO, fontWeight: 700, letterSpacing: 0 },
+      h5: { fontFamily: MONO, fontWeight: 700, letterSpacing: 0 },
+      h6: { fontFamily: MONO, fontWeight: 700, letterSpacing: 0 },
+      button: { fontFamily: MONO, fontWeight: 500, letterSpacing: 0 },
     },
     components: {
       MuiButton: {
@@ -55,11 +75,15 @@ export function createAppTheme(mode: 'light' | 'dark') {
         },
         styleOverrides: {
           root: {
-            borderRadius: 8,
+            borderRadius: 4,
             textTransform: 'none',
-            fontWeight: 600,
+            fontWeight: 500,
+            fontFamily: MONO,
             minHeight: 44,
             minWidth: 44,
+            boxShadow: 'none',
+            '&:hover': { boxShadow: 'none' },
+            '&:active': { boxShadow: 'none' },
           },
         },
       },
@@ -69,6 +93,7 @@ export function createAppTheme(mode: 'light' | 'dark') {
         },
         styleOverrides: {
           root: {
+            borderRadius: 4,
             minWidth: 44,
             minHeight: 44,
           },
@@ -80,14 +105,15 @@ export function createAppTheme(mode: 'light' | 'dark') {
         },
         styleOverrides: {
           root: {
-            borderRadius: 16,
+            borderRadius: 0, // sharp container
             border: '1px solid',
-            borderColor: tokens.divider,
-            transition: 'box-shadow 0.2s ease',
+            borderColor: c.hairline,
+            boxShadow: 'none',
+            backgroundImage: 'none',
+            transition: 'border-color 0.2s ease',
             '&:hover': {
-              boxShadow: isDark
-                ? '0 2px 8px rgba(0,0,0,0.4)'
-                : '0 2px 8px rgba(0,0,0,0.08)',
+              boxShadow: 'none',
+              borderColor: c.hairlineStrong,
             },
           },
         },
@@ -98,8 +124,9 @@ export function createAppTheme(mode: 'light' | 'dark') {
         },
         styleOverrides: {
           root: {
-            borderRadius: 12,
+            borderRadius: 0,
             backgroundImage: 'none',
+            boxShadow: 'none',
           },
         },
       },
@@ -107,29 +134,35 @@ export function createAppTheme(mode: 'light' | 'dark') {
         defaultProps: {
           elevation: 0,
           position: 'sticky',
+          color: 'default',
         },
         styleOverrides: {
-          root: ({ theme }) => ({
-            background: 'var(--glass-bg)',
-            backdropFilter: 'blur(var(--glass-blur))',
-            WebkitBackdropFilter: 'blur(var(--glass-blur))',
-            borderBottom: `1px solid ${tokens.divider}`,
-            color: theme.palette.text.primary,
-          }),
+          root: {
+            background: c.canvas,
+            backgroundImage: 'none',
+            backdropFilter: 'none',
+            WebkitBackdropFilter: 'none',
+            boxShadow: 'none',
+            borderBottom: `1px solid ${c.hairline}`,
+            color: c.ink,
+          },
         },
       },
       MuiDrawer: {
         styleOverrides: {
           paper: {
             borderRadius: 0,
-            borderRight: `1px solid ${tokens.divider}`,
+            backgroundImage: 'none',
+            borderRight: `1px solid ${c.hairline}`,
           },
         },
       },
       MuiDialog: {
         styleOverrides: {
           paper: {
-            borderRadius: 16,
+            borderRadius: 0, // sharp container
+            border: `1px solid ${c.hairline}`,
+            backgroundImage: 'none',
           },
         },
       },
@@ -140,14 +173,16 @@ export function createAppTheme(mode: 'light' | 'dark') {
         },
         styleOverrides: {
           root: {
-            borderRadius: 8,
+            borderRadius: 4,
+            fontFamily: MONO,
+            borderColor: c.hairlineStrong,
           },
         },
       },
       MuiAlert: {
         styleOverrides: {
           root: {
-            borderRadius: 12,
+            borderRadius: 4,
           },
         },
       },
@@ -157,9 +192,36 @@ export function createAppTheme(mode: 'light' | 'dark') {
           size: 'medium',
         },
       },
+      MuiOutlinedInput: {
+        styleOverrides: {
+          root: {
+            borderRadius: 4,
+            fontFamily: MONO,
+          },
+          notchedOutline: {
+            borderColor: c.hairlineStrong,
+          },
+        },
+      },
       MuiLink: {
         defaultProps: {
-          underline: 'hover',
+          underline: 'always',
+        },
+        styleOverrides: {
+          root: {
+            color: c.ink,
+            textDecorationColor: c.hairlineStrong,
+          },
+        },
+      },
+      MuiTooltip: {
+        styleOverrides: {
+          tooltip: {
+            borderRadius: 4,
+            fontFamily: MONO,
+            backgroundColor: c.ink,
+            color: c.canvas,
+          },
         },
       },
       MuiBottomNavigation: {
@@ -167,6 +229,7 @@ export function createAppTheme(mode: 'light' | 'dark') {
           root: {
             height: 64,
             bgcolor: 'transparent',
+            borderTop: `1px solid ${c.hairline}`,
           },
         },
       },
@@ -174,11 +237,14 @@ export function createAppTheme(mode: 'light' | 'dark') {
         styleOverrides: {
           root: {
             minWidth: 56,
+            fontFamily: MONO,
+            color: c.mute, // AA-safe unselected label (was falling back to a low-contrast gray)
             '&.Mui-selected': {
-              color: tokens.primary.main,
+              color: c.ink,
             },
           },
           label: {
+            fontFamily: MONO,
             fontSize: '0.7rem',
             '&.Mui-selected': {
               fontSize: '0.75rem',
@@ -189,9 +255,12 @@ export function createAppTheme(mode: 'light' | 'dark') {
       MuiFab: {
         styleOverrides: {
           root: {
-            borderRadius: 16,
+            borderRadius: 4,
             textTransform: 'none',
-            fontWeight: 600,
+            fontWeight: 500,
+            fontFamily: MONO,
+            boxShadow: 'none',
+            '&:hover': { boxShadow: 'none' },
           },
         },
       },

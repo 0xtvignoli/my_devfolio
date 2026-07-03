@@ -287,10 +287,10 @@ export function LabCommandPalette({
         sx={{
           width: '100%',
           maxWidth: 560,
-          borderRadius: 'var(--lab-radius-lg, 16px)',
+          borderRadius: 'var(--lab-radius-lg, 0px)',
           border: '1px solid var(--md-sys-color-outline-variant)',
           bgcolor: 'var(--md-sys-color-surface-container)',
-          boxShadow: 'var(--lab-elevation-3, 0 12px 40px rgba(0,0,0,0.4))',
+          boxShadow: 'none',
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',

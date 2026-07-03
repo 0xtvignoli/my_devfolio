@@ -36,7 +36,7 @@ export function ProjectCard({ project, locale, translations }: ProjectCardProps)
 
   return (
     <>
-      <Card sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', transition: 'box-shadow 0.25s ease, transform 0.25s ease', '&:hover': { boxShadow: 4, transform: 'translateY(-2px)' } }}>
+      <Card sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', transition: 'border-color 0.2s ease' }}>
         <Box
           sx={{
             position: 'relative',
@@ -72,11 +72,11 @@ export function ProjectCard({ project, locale, translations }: ProjectCardProps)
                     key={metric.label[locale]}
                     sx={{
                       p: 1,
-                      borderRadius: 1.5,
+                      borderRadius: 0,
                       border: '1px solid',
                       borderColor: 'divider',
                       textAlign: 'center',
-                      bgcolor: 'action.hover',
+                      bgcolor: 'transparent',
                     }}
                   >
                     <Typography variant="subtitle2" color="primary.main" sx={{ fontWeight: 700, lineHeight: 1.2 }}>

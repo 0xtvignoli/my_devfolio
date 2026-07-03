@@ -84,7 +84,7 @@ export function LabActivityBeacon({ translations, isDeploying, incidentsCount }:
         gap: 1,
         px: 2,
         py: 1.25,
-        borderRadius: 999,
+        borderRadius: '4px',
         border: '1px solid var(--md-sys-color-outline-variant)',
         bgcolor: 'var(--md-sys-color-primary-container)',
         color: 'var(--md-sys-color-on-primary-container)',

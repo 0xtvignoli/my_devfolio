@@ -13,6 +13,7 @@ const STATIC_PATH_PREFIXES = [
   '/favicon.ico',
   '/robots.txt',
   '/sitemap.xml',
+  '/.well-known',
   '/opengraph-image',
   '/og-image.png',
   '/thomas-vignoli.svg',
@@ -165,6 +166,6 @@ export function proxy(req: NextRequest) {
 export const config = {
   matcher: [
     '/',
-    '/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|opengraph-image|og-image.png|thomas-vignoli\\.svg|thomas-vignoli\\.png|images/).*)',
+    '/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|\\.well-known|opengraph-image|og-image.png|thomas-vignoli\\.svg|thomas-vignoli\\.png|images/).*)',
   ],
 };

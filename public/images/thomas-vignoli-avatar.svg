@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-label="Thomas Vignoli">
+  <defs>
+    <linearGradient id="av-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0d1220"/>
+      <stop offset="100%" stop-color="#122642"/>
+    </linearGradient>
+    <linearGradient id="av-skin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#eab892"/>
+      <stop offset="100%" stop-color="#d99e77"/>
+    </linearGradient>
+    <linearGradient id="av-shirt" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#20304e"/>
+      <stop offset="100%" stop-color="#16233b"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="400" height="400" fill="url(#av-bg)"/>
+  <!-- Faint circuit hint -->
+  <g stroke="#2dd4ff" stroke-width="1.5" opacity="0.14" fill="none">
+    <path d="M20 300 H70 V340 H120"/><circle cx="20" cy="300" r="3" fill="#2dd4ff"/>
+    <path d="M380 90 H330 V130 H285"/><circle cx="380" cy="90" r="3" fill="#2dd4ff"/>
+    <path d="M40 120 H90"/><circle cx="90" cy="120" r="3" fill="#2dd4ff"/>
+  </g>
+
+  <!-- Shoulders / shirt -->
+  <path d="M70 400 C70 320 130 292 200 292 C270 292 330 320 330 400 Z" fill="url(#av-shirt)"/>
+  <path d="M200 292 L200 400" stroke="#0f1a2e" stroke-width="2" opacity="0.5"/>
+  <!-- Collar -->
+  <path d="M175 300 L200 322 L225 300" fill="none" stroke="#0f1a2e" stroke-width="3"/>
+
+  <!-- Neck -->
+  <path d="M176 250 H224 V286 C224 300 176 300 176 286 Z" fill="#d99e77"/>
+  <path d="M176 268 C190 280 210 280 224 268" fill="none" stroke="#c98c66" stroke-width="2" opacity="0.6"/>
+
+  <!-- Ears -->
+  <ellipse cx="126" cy="188" rx="13" ry="21" fill="url(#av-skin)"/>
+  <ellipse cx="274" cy="188" rx="13" ry="21" fill="url(#av-skin)"/>
+
+  <!-- Head (bald) -->
+  <path d="M124 176 C124 108 156 74 200 74 C244 74 276 108 276 176 C276 236 244 274 200 274 C156 274 124 236 124 176 Z" fill="url(#av-skin)"/>
+  <!-- Bald-dome highlight -->
+  <ellipse cx="182" cy="118" rx="34" ry="22" fill="#f2c9a4" opacity="0.55"/>
+  <!-- Side shading -->
+  <path d="M262 150 C272 190 262 236 214 266 C252 244 262 200 258 156 Z" fill="#c98c66" opacity="0.5"/>
+
+  <!-- Beard (short, jaw + chin) -->
+  <path d="M132 178 C138 236 168 276 200 276 C232 276 262 236 268 178
+           C258 196 236 208 200 210 C164 208 142 196 132 178 Z" fill="#2c2420"/>
+  <!-- Moustache -->
+  <path d="M174 196 C186 204 214 204 226 196 C214 200 186 200 174 196 Z" fill="#2c2420"/>
+  <!-- Sideburns -->
+  <path d="M128 150 C126 176 130 196 138 206 L146 200 C140 184 138 164 140 148 Z" fill="#2c2420"/>
+  <path d="M272 150 C274 176 270 196 262 206 L254 200 C260 184 262 164 260 148 Z" fill="#2c2420"/>
+
+  <!-- Eyebrows -->
+  <path d="M150 158 C162 150 178 150 188 156" fill="none" stroke="#2c2420" stroke-width="6" stroke-linecap="round"/>
+  <path d="M212 156 C222 150 238 150 250 158" fill="none" stroke="#2c2420" stroke-width="6" stroke-linecap="round"/>
+
+  <!-- Eyes -->
+  <ellipse cx="169" cy="172" rx="11" ry="8" fill="#fdfbf7"/>
+  <ellipse cx="231" cy="172" rx="11" ry="8" fill="#fdfbf7"/>
+  <circle cx="171" cy="173" r="4.5" fill="#3a2a1e"/>
+  <circle cx="233" cy="173" r="4.5" fill="#3a2a1e"/>
+  <circle cx="172.5" cy="171.5" r="1.4" fill="#fff"/>
+  <circle cx="234.5" cy="171.5" r="1.4" fill="#fff"/>
+
+  <!-- Nose -->
+  <path d="M200 176 L194 198 C197 202 203 202 206 198 Z" fill="#c98c66" opacity="0.7"/>
+
+  <!-- Accent rim light (right) -->
+  <path d="M276 176 C276 118 250 82 210 76" fill="none" stroke="#4da3ff" stroke-width="3" opacity="0.55" stroke-linecap="round"/>
+</svg>

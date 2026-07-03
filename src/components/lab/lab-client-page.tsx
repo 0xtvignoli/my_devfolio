@@ -323,7 +323,8 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
                       </Typography>
                     </Box>
                     <Button
-                      variant={macro.destructive ? 'destructive' : 'outline'}
+                      variant="outline"
+                      color={macro.destructive ? 'error' : undefined}
                       size="sm"
                       onClick={() => executeMacro(macro.command)}
                       disabled={isMacroDisabled(macro.command)}

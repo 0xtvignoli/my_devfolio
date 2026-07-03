@@ -1,8 +1,8 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import type { Article, Locale, Translations } from '@/lib/types';
 import { localizedPath } from '@/lib/i18n/paths';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui-mui';
-import { ArrowRight } from 'lucide-react';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 
@@ -15,7 +15,29 @@ interface ArticleCardProps {
 export function ArticleCard({ article, locale, translations }: ArticleCardProps) {
   return (
     <Link href={localizedPath(locale, `/articles/${article.slug}`)} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
-      <Card sx={{ height: '100%', transition: 'box-shadow 0.2s, transform 0.2s', '&:hover': { transform: 'translateY(-4px)' } }}>
+      <Card sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', transition: 'border-color 0.2s ease' }}>
+        {article.imageUrl && (
+          <Box
+            sx={{
+              position: 'relative',
+              width: '100%',
+              aspectRatio: '16 / 9',
+              minHeight: 150,
+              bgcolor: 'action.hover',
+              borderBottom: '1px solid',
+              borderColor: 'divider',
+            }}
+          >
+            <Image
+              src={article.imageUrl}
+              alt={article.imageHint ?? article.title}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 400px"
+              unoptimized
+              style={{ objectFit: 'cover' }}
+            />
+          </Box>
+        )}
         <CardHeader
           title={<CardTitle>{article.title}</CardTitle>}
           subheader={
@@ -28,9 +50,9 @@ export function ArticleCard({ article, locale, translations }: ArticleCardProps)
           <CardDescription>{article.description}</CardDescription>
         </CardContent>
         <CardFooter sx={{ pt: 0 }}>
-          <Typography variant="body2" color="primary" sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 500 }}>
+          <Typography variant="body2" color="text.primary" sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 500 }}>
             {translations.articles.viewAll}
-            <ArrowRight style={{ width: 16, height: 16 }} />
+            <span aria-hidden style={{ fontWeight: 700 }}>→</span>
           </Typography>
         </CardFooter>
       </Card>

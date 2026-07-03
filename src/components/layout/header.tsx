@@ -4,9 +4,9 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { LocaleSwitcher } from '@/components/locale-switcher';
-import { Code2, LayoutGrid, Briefcase, BookOpen, FlaskConical, Menu } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 import type { Locale, Translations } from '@/lib/types';
 import { localizedPath, stripLocaleFromPath } from '@/lib/i18n/paths';
 import AppBar from '@mui/material/AppBar';
@@ -14,7 +14,6 @@ import Toolbar from '@mui/material/Toolbar';
 import Drawer from '@mui/material/Drawer';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
 
 interface HeaderProps {
   locale: Locale;
@@ -26,50 +25,57 @@ function isActivePath(currentPath: string, itemPath: string): boolean {
   return currentPath === itemPath || currentPath.startsWith(`${itemPath}/`);
 }
 
+/** Terminal-style monospaced wordmark (block monogram + name). */
+function Wordmark() {
+  return (
+    <span className="inline-flex items-center gap-2 text-foreground">
+      <span
+        aria-hidden
+        className="inline-flex items-center justify-center w-[26px] h-[26px] rounded-[4px] border border-foreground text-[0.8125rem] font-bold leading-none"
+      >
+        ~$
+      </span>
+      <span className="text-base font-bold">devops-folio</span>
+    </span>
+  );
+}
+
 export function Header({ locale, translations }: HeaderProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const pathname = usePathname() ?? '/';
   const currentPath = stripLocaleFromPath(pathname);
 
   const navLinks = [
-    { path: '/portfolio', label: translations.nav.portfolio, icon: LayoutGrid },
-    { path: '/experience', label: translations.nav.experience, icon: Briefcase },
-    { path: '/articles', label: translations.nav.articles, icon: BookOpen },
-    { path: '/lab', label: translations.nav.lab, icon: FlaskConical },
+    { path: '/portfolio', label: translations.nav.portfolio },
+    { path: '/experience', label: translations.nav.experience },
+    { path: '/articles', label: translations.nav.articles },
+    { path: '/lab', label: translations.nav.lab },
   ].map((link) => ({ ...link, href: localizedPath(locale, link.path) }));
 
   const homeHref = localizedPath(locale);
 
-  const linkSx = (active: boolean) => ({
-    textDecoration: 'none',
-    color: 'inherit',
-    fontSize: '0.875rem',
-    fontWeight: active ? 600 : 500,
-    opacity: active ? 1 : 0.75,
-    position: 'relative' as const,
-    px: 1.5,
-    py: 0.75,
-    borderRadius: 1,
-    bgcolor: active ? 'action.selected' : 'transparent',
-    transition: 'opacity 0.2s, background-color 0.2s',
-    '&:hover': { opacity: 1 },
-  });
-
   return (
     <>
       <AppBar position="sticky" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
-        <Toolbar sx={{ minHeight: 64, px: { xs: 2, md: 3 } }}>
-          <Link href={homeHref} style={{ display: 'flex', alignItems: 'center', gap: 8, marginRight: 24, textDecoration: 'none', color: 'inherit' }}>
-            <Code2 style={{ height: 24, width: 24 }} aria-hidden />
-            <Typography variant="h6" component="span" sx={{ fontWeight: 700, fontFamily: 'var(--font-headline), system-ui, sans-serif' }}>
-              DevOps Folio
-            </Typography>
+        <Toolbar sx={{ minHeight: 56, px: { xs: 2, md: 3 } }}>
+          <Link href={homeHref} className="flex items-center mr-6 no-underline">
+            <Wordmark />
           </Link>
           <Box component="nav" aria-label="Primary" sx={{ display: { xs: 'none', md: 'flex' }, gap: 0.5, alignItems: 'center' }}>
             {navLinks.map((link) => {
               const active = isActivePath(currentPath, link.path);
               return (
-                <Link key={link.path} href={link.href} style={linkSx(active)} aria-current={active ? 'page' : undefined}>
+                <Link
+                  key={link.path}
+                  href={link.href}
+                  aria-current={active ? 'page' : undefined}
+                  className={cn(
+                    'inline-flex items-center min-h-[44px] px-3 py-2 text-[0.9375rem] font-medium no-underline border-b-2 transition-colors',
+                    active
+                      ? 'text-foreground border-foreground'
+                      : 'text-muted-foreground border-transparent hover:text-foreground'
+                  )}
+                >
                   {link.label}
                 </Link>
               );
@@ -99,11 +105,8 @@ export function Header({ locale, translations }: HeaderProps) {
         aria-label="Navigation menu"
       >
         <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', height: '100%' }}>
-          <Link href={homeHref} onClick={() => setDrawerOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, textDecoration: 'none', color: 'inherit' }}>
-            <Code2 style={{ height: 24, width: 24 }} />
-            <Typography variant="h6" sx={{ fontWeight: 700, fontFamily: 'var(--font-headline), system-ui, sans-serif' }}>
-              DevOps Folio
-            </Typography>
+          <Link href={homeHref} onClick={() => setDrawerOpen(false)} className="flex items-center mb-4 no-underline">
+            <Wordmark />
           </Link>
           <Box component="nav" sx={{ flex: 1 }}>
             <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0 }}>
@@ -111,30 +114,22 @@ export function Header({ locale, translations }: HeaderProps) {
                 const active = isActivePath(currentPath, link.path);
                 return (
                   <li key={link.path}>
-                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                      <Link
-                        href={link.href}
-                        onClick={() => setDrawerOpen(false)}
-                        aria-current={active ? 'page' : undefined}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 12,
-                          padding: 12,
-                          borderRadius: 8,
-                          textDecoration: 'none',
-                          color: 'inherit',
-                          opacity: active ? 1 : 0.9,
-                          fontWeight: active ? 600 : 500,
-                          background: active ? 'rgba(0, 217, 255, 0.08)' : 'transparent',
-                        }}
-                      >
-                        <link.icon style={{ width: 20, height: 20 }} aria-hidden />
-                        <Typography component="span" sx={{ fontWeight: 'inherit' }}>
-                          {link.label}
-                        </Typography>
-                      </Link>
-                    </motion.div>
+                    <Link
+                      href={link.href}
+                      onClick={() => setDrawerOpen(false)}
+                      aria-current={active ? 'page' : undefined}
+                      className={cn(
+                        'flex items-center gap-3 px-3 py-3 no-underline border-l-2 transition-colors',
+                        active
+                          ? 'text-foreground border-foreground font-bold'
+                          : 'text-muted-foreground border-transparent font-medium hover:text-foreground'
+                      )}
+                    >
+                      <span aria-hidden className="text-muted-foreground font-bold">
+                        {active ? '[x]' : '[ ]'}
+                      </span>
+                      <span>{link.label}</span>
+                    </Link>
                   </li>
                 );
               })}

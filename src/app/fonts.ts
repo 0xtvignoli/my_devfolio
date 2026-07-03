@@ -1,19 +1,20 @@
-import { Inter, Space_Grotesk, Source_Code_Pro } from 'next/font/google'
+import { JetBrains_Mono, IBM_Plex_Mono } from 'next/font/google'
 
-export const inter = Inter({
+/**
+ * OpenCode-style typography: the whole site is monospaced.
+ * Berkeley Mono is commercial, so we use JetBrains Mono (closest metric match)
+ * with IBM Plex Mono as the documented secondary fallback.
+ */
+export const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-inter',
+  weight: ['400', '500', '700'],
+  variable: '--font-jetbrains-mono',
 })
 
-export const spaceGrotesk = Space_Grotesk({
+export const ibmPlexMono = IBM_Plex_Mono({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-space-grotesk',
-})
-
-export const sourceCodePro = Source_Code_Pro({
-    subsets: ['latin'],
-    display: 'swap',
-    variable: '--font-source-code-pro',
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-ibm-plex-mono',
 })

@@ -321,6 +321,8 @@ export interface Article {
   date: string;
   author: string;
   content: ArticleContent[];
+  imageUrl?: string;
+  imageHint?: string;
 }
 
 // --- Lab Specific Types ---

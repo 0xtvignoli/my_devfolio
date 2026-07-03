@@ -195,7 +195,7 @@ export function GuidedTour({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70]"
+          className="fixed inset-0 bg-black/60 z-[70]"
           onClick={handleSkip}
         />
       )}
@@ -205,7 +205,7 @@ export function GuidedTour({
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: 'spring', damping: 20 }}
-          className="fixed z-[70] rounded-lg border-2 border-emerald-400"
+          className="fixed z-[70] rounded-[4px] border-2 border-[#007aff]"
           style={{
             ...spotlight,
             boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.6)',
@@ -229,8 +229,8 @@ export function GuidedTour({
           hasSpotlight ? 'bottom-6' : 'top-1/2 -translate-y-1/2'
         )}
       >
-        <div className="bg-gray-900 border border-gray-700 rounded-xl shadow-2xl overflow-hidden">
-          <div className="bg-gradient-to-r from-emerald-600 to-blue-600 p-4">
+        <div className="bg-[var(--oc-surface-dark)] border border-[#3a3636] overflow-hidden">
+          <div className="bg-[var(--oc-surface-dark-elevated)] border-b border-[#3a3636] p-4">
             <div className="flex items-start justify-between">
               <h3 className="text-lg font-bold text-white pr-8">{currentStepData.title}</h3>
               <button
@@ -251,8 +251,8 @@ export function GuidedTour({
                 <div
                   key={index}
                   className={cn(
-                    'h-1.5 flex-1 rounded-full transition-all',
-                    index <= currentStep ? 'bg-emerald-500' : 'bg-gray-700'
+                    'h-1.5 flex-1 transition-all',
+                    index <= currentStep ? 'bg-[#007aff]' : 'bg-[#3a3636]'
                   )}
                 />
               ))}
@@ -281,7 +281,7 @@ export function GuidedTour({
 
               <button
                 onClick={handleNext}
-                className="flex items-center gap-2 px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium transition-all hover:scale-105"
+                className="flex items-center gap-2 px-6 py-2 bg-[#007aff] hover:opacity-90 text-white rounded-[4px] font-medium transition-opacity"
               >
                 {currentStepData.action || (isLastStep ? labels.finish : labels.next)}
                 {!isLastStep && <ChevronRight className="h-4 w-4" aria-hidden />}

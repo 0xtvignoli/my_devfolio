@@ -60,7 +60,10 @@ export function LabSectionCard({
         }}
       >
         <Box>
-          <Typography id={id ? `${id}-heading` : undefined} variant="h6" sx={{ fontWeight: 600 }}>
+          <Typography id={id ? `${id}-heading` : undefined} variant="h6" sx={{ fontWeight: 700 }}>
+            <Box component="span" aria-hidden sx={{ color: 'var(--md-sys-color-on-surface-variant)', mr: 1 }}>
+              ##
+            </Box>
             {title}
           </Typography>
           {subtitle ? (

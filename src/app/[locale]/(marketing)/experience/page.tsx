@@ -39,12 +39,13 @@ export default async function ExperiencePage({ params }: ExperiencePageProps) {
         ])}
       />
       <div className="container mx-auto px-4 py-16 max-w-6xl">
-        <section className="text-center mb-16" aria-labelledby="experience-heading">
-          <h1 id="experience-heading" className="font-headline text-4xl md:text-5xl font-bold tracking-tight">
+        <section className="mb-16 border-b border-border pb-6" aria-labelledby="experience-heading">
+          <h1 id="experience-heading" className="font-headline text-3xl md:text-4xl font-bold tracking-tight text-foreground">
+            <span aria-hidden className="text-muted-foreground mr-2">#</span>
             {t.experience.title}
           </h1>
           {t.experience.pageSubtitle && (
-            <p className="text-lg text-muted-foreground mt-2 max-w-2xl mx-auto">
+            <p className="text-base text-muted-foreground mt-3 max-w-2xl">
               {t.experience.pageSubtitle}
             </p>
           )}

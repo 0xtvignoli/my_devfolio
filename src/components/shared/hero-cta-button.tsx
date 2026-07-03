@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui-mui';
-import { ArrowRight, LucideIcon } from 'lucide-react';
+import { LucideIcon } from 'lucide-react';
 import type { ButtonVariant } from '@/components/ui-mui';
 
 interface HeroCTAButtonProps {
@@ -15,7 +15,7 @@ interface HeroCTAButtonProps {
 
 const variantMap: Record<'primary' | 'secondary' | 'outline', ButtonVariant> = {
   primary: 'default',
-  secondary: 'secondary',
+  secondary: 'outline',
   outline: 'outline',
 };
 
@@ -34,19 +34,17 @@ export function HeroCTAButton({
       size="lg"
       className={className}
       sx={{
-        borderRadius: 9999,
-        px: 3,
-        boxShadow: 'var(--elevation-soft)',
-        '&:hover': {
-          transform: 'translateY(-1px)',
-          boxShadow: '0 4px 12px rgba(26, 115, 232, 0.2)',
-        },
+        borderRadius: '4px',
+        px: 2.5,
+        boxShadow: 'none',
+        fontWeight: 500,
+        '&:hover': { boxShadow: 'none' },
       }}
     >
       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
         {Icon && <Icon style={{ height: 16, width: 16 }} aria-hidden />}
         <span>{children}</span>
-        <ArrowRight style={{ height: 16, width: 16 }} aria-hidden />
+        <span aria-hidden style={{ fontWeight: 700 }}>→</span>
       </span>
     </Button>
   );

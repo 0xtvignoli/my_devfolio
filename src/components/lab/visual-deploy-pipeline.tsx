@@ -62,7 +62,7 @@ export function VisualDeployPipeline({ pipelineStages }: VisualDeployPipelinePro
           display: 'flex',
           height: 6,
           width: '100%',
-          borderRadius: 999,
+          borderRadius: 0,
           overflow: 'hidden',
           bgcolor: 'var(--md-sys-color-surface-container-highest)',
           mb: 3,

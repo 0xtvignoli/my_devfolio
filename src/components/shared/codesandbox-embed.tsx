@@ -61,7 +61,7 @@ export function CodeSandboxEmbed({
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         className={cn(
-          "relative rounded-lg border border-cyan-500/30 bg-gradient-to-br from-slate-900/90 to-slate-950/90 backdrop-blur-sm p-4 shadow-lg shadow-cyan-500/10",
+          "relative rounded-[4px] border border-[#3a3636] bg-[var(--oc-surface-dark)] p-4",
           className
         )}
       >
@@ -84,7 +84,7 @@ export function CodeSandboxEmbed({
         {description && (
           <p className="text-xs text-slate-400 mb-3">{description}</p>
         )}
-        <div className="aspect-video rounded border border-cyan-500/20 bg-slate-950 overflow-hidden relative">
+        <div className="aspect-video rounded-[4px] border border-[#3a3636] bg-[var(--oc-surface-dark)] overflow-hidden relative">
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-slate-950">
               <div className="flex flex-col items-center gap-2">
@@ -117,7 +117,7 @@ export function CodeSandboxEmbed({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50"
+              className="fixed inset-0 bg-black/80 z-50"
               onClick={() => setIsExpanded(false)}
             />
             
@@ -126,10 +126,10 @@ export function CodeSandboxEmbed({
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="fixed inset-4 md:inset-8 z-50 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 rounded-lg border border-cyan-500/30 shadow-2xl shadow-cyan-500/20 flex flex-col overflow-hidden"
+              className="fixed inset-4 md:inset-8 z-50 bg-[var(--oc-surface-dark)] rounded-[4px] border border-[#3a3636] flex flex-col overflow-hidden"
             >
               {/* Header */}
-              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-slate-900/90 via-slate-800/80 to-slate-900/90 backdrop-blur-sm border-b border-cyan-500/30">
+              <div className="flex items-center justify-between p-4 bg-[var(--oc-surface-dark-elevated)] border-b border-[#3a3636]">
                 <div className="flex items-center gap-3">
                   <Code2 className="h-5 w-5 text-cyan-400" aria-hidden="true" />
                   <div>
@@ -203,12 +203,12 @@ export function CodeSandboxEmbed({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       className={cn(
-        "relative rounded-lg border border-cyan-500/30 bg-gradient-to-br from-slate-900/90 to-slate-950/90 backdrop-blur-sm shadow-lg shadow-cyan-500/10 overflow-hidden",
+        "relative rounded-[4px] border border-[#3a3636] bg-[var(--oc-surface-dark)] overflow-hidden",
         className
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-3 bg-gradient-to-r from-slate-900/90 via-slate-800/80 to-slate-900/90 backdrop-blur-sm border-b border-cyan-500/30">
+      <div className="flex items-center justify-between p-3 bg-[var(--oc-surface-dark-elevated)] border-b border-[#3a3636]">
         <div className="flex items-center gap-2">
           <Code2 className="h-4 w-4 text-cyan-400" aria-hidden="true" />
           <h4 className="font-semibold text-cyan-300 text-sm">{title}</h4>

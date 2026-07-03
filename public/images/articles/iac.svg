@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" role="img" aria-label="Infrastructure as Code">
+  <defs><linearGradient id="iac-bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0d1220"/><stop offset="100%" stop-color="#101f38"/></linearGradient></defs>
+  <rect width="600" height="400" fill="url(#iac-bg)"/>
+  <text x="40" y="52" fill="#4da3ff" font-family="monospace" font-size="14">~ infrastructure as code</text>
+  <!-- terraform-ish blocks -->
+  <g font-family="monospace" font-size="13">
+    <rect x="60" y="90" width="230" height="230" rx="6" fill="#0f1a2e" stroke="#3a4a63" stroke-width="1.5"/>
+    <text x="80" y="128" fill="#c39bff">resource</text><text x="168" y="128" fill="#e0e8f4">"aws_vpc"</text>
+    <text x="96" y="156" fill="#7dd3fc">cidr_block</text><text x="200" y="156" fill="#ffd18a">= 10.0/16</text>
+    <text x="96" y="184" fill="#7dd3fc">tags</text><text x="200" y="184" fill="#ffd18a">= { env }</text>
+    <text x="80" y="228" fill="#c39bff">module</text><text x="152" y="228" fill="#e0e8f4">"eks"</text>
+    <text x="96" y="256" fill="#7dd3fc">version</text><text x="200" y="256" fill="#ffd18a">= ~&gt; 20.0</text>
+    <text x="96" y="284" fill="#30d158">+ plan: 14 to add</text>
+  </g>
+  <!-- infra tree -->
+  <g stroke="#4da3ff" stroke-width="1.5" fill="none" opacity="0.8">
+    <path d="M360 200 H420"/><path d="M420 130 V270"/><path d="M420 130 H480"/><path d="M420 200 H480"/><path d="M420 270 H480"/>
+  </g>
+  <g fill="#0d1220" stroke="#4da3ff" stroke-width="2"><circle cx="360" cy="200" r="12"/><rect x="480" y="118" width="70" height="24" rx="4"/><rect x="480" y="188" width="70" height="24" rx="4"/><rect x="480" y="258" width="70" height="24" rx="4"/></g>
+  <text x="40" y="372" fill="#6e7d92" font-family="monospace" font-size="12">terraform · pulumi · cloudformation · drift detection</text>
+</svg>

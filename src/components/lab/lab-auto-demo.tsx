@@ -98,10 +98,10 @@ export function LabAutoDemo({ translations, runCommand, disabled = false }: LabA
         gap: 1.5,
         px: 2,
         py: 1,
-        borderRadius: 999,
+        borderRadius: '4px',
         bgcolor: 'var(--md-sys-color-surface-container-highest)',
         border: '1px solid var(--md-sys-color-outline-variant)',
-        boxShadow: 'var(--lab-elevation-2)',
+        boxShadow: 'none',
         maxWidth: 'calc(100vw - 32px)',
       }}
     >

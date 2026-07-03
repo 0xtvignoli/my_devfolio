@@ -5,12 +5,10 @@ import { projects } from '@/data/content/projects';
 import { experiences } from '@/data/content/experiences';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import type { KubernetesCluster, Locale, Pod, Translations } from '@/lib/types';
-import { AlertTriangle, Check, Clipboard, FileTerminal, Loader2, Power, Sparkles, Code2 } from 'lucide-react';
-import { Button } from '../ui/button';
+import { AlertTriangle, FileTerminal, Loader2, Power, Code2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useDeviceDetection } from '@/hooks/use-device-detection';
 import { cn } from '@/lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
 import { CodePlayground } from './code-playground';
 
 type CommandOutput = string | string[] | null;
@@ -203,42 +201,24 @@ const getAllPods = (cluster: KubernetesCluster): Pod[] => {
 };
 
 const StatusPill = ({ status }: { status?: CommandStatus }) => {
+  // Real-shell semantics: exit 0 is silent. Only surface running / error.
   if (status === 'running') {
     return (
-      <motion.span 
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 shadow-lg shadow-amber-500/20"
-      >
-        <Loader2 className="h-3 w-3 animate-spin" />
+      <span className="inline-flex items-center gap-1 text-xs text-amber-400">
+        <Loader2 className="h-3 w-3 animate-spin" aria-hidden />
         running
-      </motion.span>
+      </span>
     );
   }
-
   if (status === 'error') {
     return (
-      <motion.span 
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full bg-red-500/20 border border-red-500/40 text-red-400 shadow-lg shadow-red-500/20"
-      >
-        <AlertTriangle className="h-3 w-3" />
-        error
-      </motion.span>
+      <span className="inline-flex items-center gap-1 text-xs text-red-400">
+        <AlertTriangle className="h-3 w-3" aria-hidden />
+        exit 1
+      </span>
     );
   }
-
-  return (
-    <motion.span 
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-        className="flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 shadow-lg shadow-cyan-500/20"
-    >
-      <Check className="h-3 w-3" />
-      ok
-    </motion.span>
-  );
+  return null;
 };
 
 // Regex patterns for link detection (defined outside component for performance)
@@ -306,7 +286,7 @@ const CommandOutputDisplay = ({ output }: { output: CommandOutput }) => {
             href={part.content}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-cyan-400 hover:underline hover:text-cyan-300 transition-colors font-semibold hover:bg-cyan-500/10 px-1 rounded"
+            className="text-[#4da3ff] hover:underline hover:text-[#4da3ff] transition-colors font-semibold hover:bg-[#4da3ff]/10 px-1 rounded"
           >
             {part.content}
           </a>
@@ -316,7 +296,7 @@ const CommandOutputDisplay = ({ output }: { output: CommandOutput }) => {
           <a
             key={index}
             href={`mailto:${part.content}`}
-            className="text-cyan-400 hover:underline hover:text-cyan-300 transition-colors font-semibold hover:bg-cyan-500/10 px-1 rounded"
+            className="text-[#4da3ff] hover:underline hover:text-[#4da3ff] transition-colors font-semibold hover:bg-[#4da3ff]/10 px-1 rounded"
           >
             {part.content}
           </a>
@@ -327,39 +307,16 @@ const CommandOutputDisplay = ({ output }: { output: CommandOutput }) => {
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 5 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
-      className="relative group mt-2 rounded-lg border border-emerald-500/30 bg-slate-800 px-3 py-2.5 text-slate-200 hover:border-emerald-500/50 transition-colors duration-200"
-    >
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
+    <div className="relative group/out">
+      <button
+        type="button"
+        onClick={copyToClipboard}
+        className="absolute right-0 -top-0.5 opacity-0 group-hover/out:opacity-100 focus-visible:opacity-100 transition-opacity text-[10px] leading-none px-1.5 py-1 rounded-[4px] border border-[#3a3636] bg-[#201d1d] text-[#9a9898] hover:text-[#fdfcfc] hover:border-[#4da3ff] focus-visible:outline-1 focus-visible:outline-[#4da3ff]"
+        aria-label="Copy output"
       >
-        <Button
-          size="icon"
-          variant="ghost"
-          className="absolute top-1.5 right-1.5 h-7 w-7 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 hover:border-cyan-500/60 rounded-md"
-          onClick={copyToClipboard}
-          type="button"
-        >
-          {hasCopied ? (
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 500, damping: 30 }}
-            >
-              <Check className="h-4 w-4 text-cyan-400" />
-            </motion.div>
-          ) : (
-            <Clipboard className="h-4 w-4 text-slate-400 group-hover:text-cyan-400 transition-colors" />
-          )}
-          <span className="sr-only">Copy output</span>
-        </Button>
-      </motion.div>
-      <pre className="whitespace-pre-wrap text-xs leading-relaxed font-mono">
+        {hasCopied ? 'copied' : 'copy'}
+      </button>
+      <pre className="whitespace-pre-wrap break-words text-[13px] leading-relaxed font-mono text-[#c9c6c6] m-0">
         {lines.map((line, lineIndex) => (
           <React.Fragment key={lineIndex}>
             {renderOutput(line)}
@@ -367,7 +324,7 @@ const CommandOutputDisplay = ({ output }: { output: CommandOutput }) => {
           </React.Fragment>
         ))}
       </pre>
-    </motion.div>
+    </div>
   );
 };
 
@@ -381,7 +338,7 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [suggestions, setSuggestions] = useState<Suggestion[]>(contextualSuggestions.default);
   const [sessionMeta, setSessionMeta] = useState<SessionMeta | null>(null);
-  const { isTouchDevice, isMobile } = useDeviceDetection();
+  const { isTouchDevice } = useDeviceDetection();
 
   const sessionRef = useRef<SessionMeta | null>(null);
   const promptRef = useRef<string>('[infra@control-plane-1 ~]');
@@ -1027,7 +984,7 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
           'grid w-full grid-cols-3 rounded-t-lg rounded-b-none p-0 gap-0 text-xs sm:text-sm',
           isMd3
             ? 'bg-[var(--md-sys-color-surface-container-high)] border border-[var(--md-sys-color-outline-variant)] font-sans'
-            : 'bg-slate-900 border border-cyan-500/30 font-mono'
+            : 'bg-[#201d1d] border border-[#3a3636] font-mono'
         )}
         aria-label="Terminal view selection"
       >
@@ -1037,7 +994,7 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
             'rounded-tl-lg rounded-tr-none gap-1 sm:gap-1.5 py-2 px-2 border-0 border-r last:border-r-0 transition-colors duration-200 focus-visible:ring-2',
             isMd3
               ? 'border-[var(--md-sys-color-outline-variant)] data-[state=active]:bg-[var(--md-sys-color-primary-container)] data-[state=active]:text-[var(--md-sys-color-on-primary-container)] data-[state=active]:border-b-2 data-[state=active]:border-[var(--md-sys-color-primary)] data-[state=inactive]:text-[var(--md-sys-color-on-surface-variant)] data-[state=inactive]:hover:bg-[var(--md-sys-color-surface-container)] focus-visible:ring-[var(--md-sys-color-primary)]'
-              : 'border-slate-700 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 data-[state=inactive]:bg-slate-800 data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:bg-slate-700 data-[state=inactive]:hover:text-slate-300 focus-visible:ring-cyan-500'
+              : 'border-[#3a3636] data-[state=active]:bg-[#4da3ff]/15 data-[state=active]:text-[#4da3ff] data-[state=active]:border-b-2 data-[state=active]:border-[#4da3ff] data-[state=inactive]:bg-[#302c2c] data-[state=inactive]:text-[#9a9898] data-[state=inactive]:hover:bg-[#3a3636] data-[state=inactive]:hover:text-[#c9c6c6] focus-visible:ring-[#4da3ff]'
           )}
           aria-label="Terminal Core tab"
           title="Terminal"
@@ -1052,7 +1009,7 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
             'rounded-none gap-1 sm:gap-1.5 py-2 px-2 border-0 border-r last:border-r-0 transition-colors duration-200 focus-visible:ring-2',
             isMd3
               ? 'border-[var(--md-sys-color-outline-variant)] data-[state=active]:bg-[var(--md-sys-color-primary-container)] data-[state=active]:text-[var(--md-sys-color-on-primary-container)] data-[state=active]:border-b-2 data-[state=active]:border-[var(--md-sys-color-primary)] data-[state=inactive]:text-[var(--md-sys-color-on-surface-variant)] data-[state=inactive]:hover:bg-[var(--md-sys-color-surface-container)] focus-visible:ring-[var(--md-sys-color-primary)]'
-              : 'border-slate-700 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 data-[state=inactive]:bg-slate-800 data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:bg-slate-700 data-[state=inactive]:hover:text-slate-300 focus-visible:ring-cyan-500'
+              : 'border-[#3a3636] data-[state=active]:bg-[#4da3ff]/15 data-[state=active]:text-[#4da3ff] data-[state=active]:border-b-2 data-[state=active]:border-[#4da3ff] data-[state=inactive]:bg-[#302c2c] data-[state=inactive]:text-[#9a9898] data-[state=inactive]:hover:bg-[#3a3636] data-[state=inactive]:hover:text-[#c9c6c6] focus-visible:ring-[#4da3ff]'
           )}
           aria-label="Runtime Logs tab"
           title="Logs"
@@ -1067,7 +1024,7 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
             'rounded-tl-none rounded-tr-lg gap-1 sm:gap-1.5 py-2 px-2 border-0 transition-colors duration-200 focus-visible:ring-2',
             isMd3
               ? 'data-[state=active]:bg-[var(--md-sys-color-primary-container)] data-[state=active]:text-[var(--md-sys-color-on-primary-container)] data-[state=active]:border-b-2 data-[state=active]:border-[var(--md-sys-color-primary)] data-[state=inactive]:text-[var(--md-sys-color-on-surface-variant)] data-[state=inactive]:hover:bg-[var(--md-sys-color-surface-container)] focus-visible:ring-[var(--md-sys-color-primary)]'
-              : 'data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-300 data-[state=active]:border-b-2 data-[state=active]:border-cyan-400 data-[state=inactive]:bg-slate-800 data-[state=inactive]:text-slate-400 data-[state=inactive]:hover:bg-slate-700 data-[state=inactive]:hover:text-slate-300 focus-visible:ring-cyan-500'
+              : 'data-[state=active]:bg-[#4da3ff]/15 data-[state=active]:text-[#4da3ff] data-[state=active]:border-b-2 data-[state=active]:border-[#4da3ff] data-[state=inactive]:bg-[#302c2c] data-[state=inactive]:text-[#9a9898] data-[state=inactive]:hover:bg-[#3a3636] data-[state=inactive]:hover:text-[#c9c6c6] focus-visible:ring-[#4da3ff]'
           )}
           aria-label="Code Playground tab"
           title="Playground"
@@ -1078,282 +1035,160 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
         </TabsTrigger>
       </TabsList>
       <TabsContent value="terminal">
-        <motion.div
+        <div
           ref={terminalRef}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className={cn(
-            'relative font-mono rounded-b-lg h-[28rem] text-sm flex flex-col cursor-text overflow-hidden group',
-            isMd3
-              ? 'bg-[var(--md-sys-color-surface-container-lowest)] text-[var(--md-sys-color-on-surface)] border border-[var(--md-sys-color-outline-variant)]'
-              : 'bg-slate-950 text-slate-100 border border-cyan-500/30'
-          )}
+          className="relative font-mono rounded-b-[4px] text-sm flex flex-col cursor-text overflow-hidden bg-[#1a1717] text-[#fdfcfc] border border-[#3a3636] h-[26rem] sm:h-[30rem] lg:h-[34rem]"
           onClick={() => {
             setHasUserInteracted(true);
             inputRef.current?.focus();
           }}
         >
-          {/* Subtle grid – solid line pattern (no fill gradient) */}
-          {!isMd3 && (
-          <div 
-            className="absolute inset-0 opacity-[0.06] pointer-events-none"
-            style={{
-              backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(34,211,238,0.15) 19px, rgba(34,211,238,0.15) 20px), repeating-linear-gradient(90deg, transparent, transparent 19px, rgba(34,211,238,0.15) 19px, rgba(34,211,238,0.15) 20px)',
-              backgroundSize: '20px 20px',
-            }}
-          />
-          )}
-          {/* Terminal Header with Status Indicators */}
-          <div className={cn(
-            'relative flex items-center gap-2 p-3 border-b text-xs z-10',
-            isMd3
-              ? 'bg-[var(--md-sys-color-surface-container)] border-[var(--md-sys-color-outline-variant)] text-[var(--md-sys-color-on-surface-variant)]'
-              : 'bg-slate-900 border-cyan-500/30 text-slate-300'
-          )}>
-            <div className="flex gap-1.5">
-              <motion.div 
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-400 transition-colors cursor-pointer shadow-lg shadow-red-500/50" 
-                aria-label="Close terminal"
-                title="Close terminal"
-              />
-              <motion.div 
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-400 transition-colors cursor-pointer shadow-lg shadow-yellow-500/50" 
-                aria-label="Minimize terminal"
-                title="Minimize terminal"
-              />
-              <motion.div 
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-3 h-3 rounded-full bg-green-500 hover:bg-green-400 transition-colors cursor-pointer shadow-lg shadow-green-500/50" 
-                aria-label="Maximize terminal"
-                title="Maximize terminal"
-              />
+          {/* Title bar */}
+          <div className="flex items-center gap-2 px-3 sm:px-4 py-2 border-b border-[#3a3636] bg-[#201d1d] text-xs shrink-0">
+            <div className="flex gap-1.5" aria-hidden>
+              <span className="w-3 h-3 rounded-full bg-red-500" />
+              <span className="w-3 h-3 rounded-full bg-yellow-500" />
+              <span className="w-3 h-3 rounded-full bg-green-500" />
             </div>
-            <div className="flex-1 text-center font-semibold text-cyan-300 tracking-wide">
-              {sessionMeta ? `${sessionMeta.user}@${sessionMeta.host}:~$` : 'infra@control-plane:~$'} | <span className="text-purple-400">DevOps Lab Terminal</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-xs">
-              <motion.span 
-                animate={{ opacity: [1, 0.5, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="text-cyan-400 text-lg leading-none"
-              >●</motion.span>
-              <span className="text-cyan-400 font-semibold">LIVE</span>
-            </div>
+            <span className="ml-1 text-[#9a9898] truncate">
+              {sessionMeta ? `${sessionMeta.user}@${sessionMeta.host}` : 'infra@control-plane'}
+              <span className="hidden sm:inline text-[#9a9898]"> — DevOps Lab</span>
+            </span>
+            <span className="ml-auto inline-flex items-center gap-1.5 text-[#30d158] shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#30d158] animate-pulse" aria-hidden />
+              live
+            </span>
           </div>
 
-          <div className="relative border-b border-cyan-500/20 px-4 py-2 text-xs text-slate-400 flex flex-col gap-1 md:flex-row md:items-center md:justify-between bg-slate-900/40 backdrop-blur-sm z-10">
+          {/* MOTD / last login */}
+          <div className="px-3 sm:px-4 py-1.5 border-b border-[#302c2c] bg-[#201d1d] text-[11px] text-[#9a9898] truncate shrink-0" suppressHydrationWarning>
             {sessionMeta ? (
-              <>
-                <span suppressHydrationWarning className="text-slate-300">Last login: <span className="text-cyan-400">{sessionMeta.lastLogin}</span> from <span className="text-blue-400">{sessionMeta.ip}</span> on <span className="text-purple-400">{sessionMeta.tty}</span></span>
-                <span className="text-slate-300"><span className="text-cyan-400">{sessionMeta.distro}</span> • <span className="text-blue-400">{sessionMeta.kernel}</span></span>
-              </>
+              <>Last login: {sessionMeta.lastLogin} from {sessionMeta.ip}<span className="hidden md:inline"> · {sessionMeta.distro} · {sessionMeta.kernel}</span></>
             ) : (
-              <>
-                <span className="text-slate-300">Last login: <span className="animate-pulse text-cyan-400">Loading...</span></span>
-                <span className="text-slate-300"><span className="text-cyan-400">Ubuntu 24.04.1 LTS</span> • <span className="text-blue-400">6.8.0-41-generic</span></span>
-              </>
+              <>Last login: <span className="animate-pulse">connecting…</span></>
             )}
           </div>
 
-          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4 relative z-0">
-            <AnimatePresence mode="popLayout">
-              {history.map((entry, index) => (
-                <motion.div
-                  key={entry.id}
-                  initial={{ opacity: 0, y: 10, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.98 }}
-                  transition={{ duration: 0.2, delay: index * 0.02 }}
-                  className={cn(
-                    "rounded-lg border px-3 py-2 transition-colors duration-200",
-                    entry.isSystem 
-                      ? 'border-cyan-500/30 bg-slate-800/80' 
-                      : 'border-cyan-500/30 bg-slate-800/80 hover:bg-slate-700/80 hover:border-cyan-400/50'
-                  )}
-                >
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="flex items-center gap-2">
-                      <span className={cn(
-                        "font-semibold",
-                        entry.isSystem ? 'text-cyan-400' : 'text-cyan-300'
-                      )}>
-                        {entry.isSystem ? '[system]' : (sessionMeta ? promptRef.current : '[infra@control-plane-1 ~]')}
-                      </span>
-                      <span className="text-slate-500">{entry.timestamp}</span>
-                    </span>
-                    <StatusPill status={entry.status} />
-                  </div>
-                  {!entry.isSystem && entry.command && (
-                    <div className="mt-2 flex items-center gap-2 text-slate-100 font-medium">
-                      <motion.span 
-                        animate={{ opacity: [1, 0.5, 1] }}
-                        transition={{ duration: 1.5, repeat: Infinity }}
-                        className="text-cyan-400 text-lg"
-                      >❯</motion.span>
-                      <span className="text-cyan-300">{entry.command}</span>
+          <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-3 space-y-1.5 text-[13px] leading-relaxed relative z-0">
+            {history.map((entry) =>
+              entry.isSystem ? (
+                <div key={entry.id} className="text-[#9a9898] break-words">
+                  <span className="text-[#9a9898]">{entry.timestamp} </span>
+                  {ensureArray(entry.output).join(' ')}
+                </div>
+              ) : (
+                <div key={entry.id} className="break-words">
+                  {entry.command && (
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      <span className="text-[#4da3ff] shrink-0">{entry.prompt}</span>
+                      <span className="text-[#fdfcfc] break-all">{entry.command}</span>
+                      {(entry.status === 'running' || entry.status === 'error') && (
+                        <span className="ml-auto shrink-0">
+                          <StatusPill status={entry.status} />
+                        </span>
+                      )}
                     </div>
                   )}
                   <CommandOutputDisplay output={entry.output} />
                   {entry.contextHint && (
-                    <motion.p 
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.3 }}
-                      className="mt-2 text-xs text-slate-400 italic"
-                    >
-                      {entry.contextHint}
-                    </motion.p>
+                    <div className="text-[#9a9898] mt-0.5"># {entry.contextHint}</div>
                   )}
                   {entry.suggestion && (
-                    <motion.p 
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.4 }}
-                      className="mt-2 text-xs text-purple-400 flex items-center gap-1.5 font-medium"
-                    >
-                      <Sparkles className="h-3.5 w-3.5 text-purple-400 animate-pulse" />
-                      <span>{entry.suggestion}</span>
-                    </motion.p>
+                    <div className="text-[#9a9898] mt-0.5">→ {entry.suggestion}</div>
                   )}
-                </motion.div>
-              ))}
-            </AnimatePresence>
+                </div>
+              )
+            )}
             <div ref={endOfHistoryRef} />
           </div>
 
-          <div className={cn(
-            "relative border-t border-cyan-500/30 px-4 py-3 text-xs bg-slate-900 flex flex-wrap gap-2 z-10",
-            isMobile && "gap-2"
-          )}>
-            {suggestions.map((suggestion, index) => (
-              <motion.button
+          <div className="flex gap-2 overflow-x-auto px-3 sm:px-4 py-2 border-t border-[#302c2c] bg-[#201d1d] shrink-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {suggestions.map((suggestion) => (
+              <button
                 key={suggestion.command}
                 type="button"
                 onClick={() => handleSuggestionClick(suggestion.command)}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.05 }}
-                whileHover={{ scale: 1.02, y: -1 }}
-                whileTap={{ scale: 0.98 }}
+                title={suggestion.helper}
                 className={cn(
-                  "relative flex flex-col rounded-lg border text-left transition-colors duration-200 overflow-hidden group",
-                  isTouchDevice 
-                    ? "px-4 py-3 min-h-[44px] text-sm" 
-                    : "px-3 py-2",
-                  "border-cyan-500/40 bg-slate-800",
-                  "hover:border-cyan-400 hover:bg-slate-700",
-                  "focus-visible:outline-2 focus-visible:outline-cyan-500 focus-visible:ring-2 focus-visible:ring-cyan-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+                  "shrink-0 inline-flex items-center gap-1.5 rounded-[4px] border border-[#3a3636] bg-[#302c2c] px-2.5 whitespace-nowrap text-xs text-[#c9c6c6]",
+                  "hover:border-[#4da3ff] hover:bg-[#3a3636] hover:text-[#fdfcfc] transition-colors",
+                  "focus-visible:outline-1 focus-visible:outline-[#4da3ff]",
+                  isTouchDevice ? "py-2 min-h-[40px]" : "py-1"
                 )}
-                aria-label={`Use suggestion: ${suggestion.label}, ${suggestion.helper}`}
+                aria-label={`Run: ${suggestion.label} — ${suggestion.helper}`}
               >
-                <span className={cn(
-                  "relative text-cyan-300 font-semibold group-hover:text-cyan-200 transition-colors",
-                  isTouchDevice ? "text-sm" : "text-xs"
-                )}>{suggestion.label}</span>
-                <span className={cn(
-                  "relative text-slate-400 group-hover:text-slate-300 transition-colors",
-                  isTouchDevice ? "text-xs" : "text-[10px]"
-                )}>{suggestion.helper}</span>
-              </motion.button>
+                <span className="text-[#4da3ff]" aria-hidden>$</span>
+                {suggestion.label}
+              </button>
             ))}
           </div>
 
-          <form onSubmit={(e) => e.preventDefault()} className="relative px-4 py-3 border-t border-cyan-500/30 bg-slate-900 z-10">
+          <form onSubmit={(e) => e.preventDefault()} className="px-3 sm:px-4 py-2.5 border-t border-[#3a3636] bg-[#201d1d] shrink-0">
             <label htmlFor="terminal-input" className="sr-only">Terminal input</label>
-            <div className="flex items-center gap-2">
-              <motion.span 
-                className="text-cyan-400 font-semibold"
-                animate={{ opacity: [1, 0.7, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                {sessionMeta ? promptRef.current : '[infra@control-plane-1 ~]'}
-              </motion.span>
-              <div className="relative w-full group">
-                <input
-                  ref={inputRef}
-                  id="terminal-input"
-                  name="terminal-input"
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={handleInputKeyDown}
-                  className={cn(
-                    "bg-transparent border-none text-slate-100 font-medium w-full p-0",
-                    "focus-visible:outline-hidden focus-visible:ring-0",
-                    "placeholder:text-slate-600 placeholder:font-normal",
-                    isTouchDevice && "text-base py-1 min-h-[44px]"
-                  )}
-                  autoComplete="off"
-                  placeholder="Type a command..."
-                  aria-label="Terminal command input"
-                />
-                <span className="absolute left-0 top-0 pointer-events-none flex items-center">
-                  <span className="invisible whitespace-pre">{input}</span>
-                  <motion.span 
-                    className="text-cyan-400 font-bold text-lg"
-                    animate={{ opacity: [1, 0, 1] }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
-                  >
-                    █
-                  </motion.span>
-                </span>
-                {/* Focus glow effect */}
-                <div className="absolute inset-0 -z-10 bg-cyan-500/0 group-focus-within:bg-cyan-500/10 rounded transition-all duration-300 blur-sm" />
-              </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-[#4da3ff] shrink-0 whitespace-nowrap">
+                {sessionMeta ? promptRef.current : 'infra@control-plane:~$'}
+              </span>
+              <input
+                ref={inputRef}
+                id="terminal-input"
+                name="terminal-input"
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleInputKeyDown}
+                className={cn(
+                  "flex-1 min-w-0 bg-transparent border-none text-[#fdfcfc] p-0 caret-[#4da3ff]",
+                  "focus-visible:outline-hidden focus-visible:ring-0",
+                  "placeholder:text-[#646262]",
+                  isTouchDevice ? "text-base min-h-[40px]" : "text-[13px]"
+                )}
+                autoComplete="off"
+                placeholder="type a command — try 'help'"
+                aria-label="Terminal command input"
+              />
             </div>
           </form>
 
-          {/* Terminal Footer with Hints */}
-          <div className="relative bg-slate-900 px-4 py-2.5 text-xs text-slate-400 border-t border-cyan-500/20 z-10">
-            <div className="flex justify-between items-center flex-wrap gap-2">
-              <span className="text-slate-400">
-                Type <kbd className="px-2 py-0.5 bg-cyan-500/20 border border-cyan-500/40 rounded text-cyan-300 font-mono font-semibold shadow-lg shadow-cyan-500/20">help</kbd> for available commands • Use <kbd className="px-1.5 py-0.5 bg-slate-800/80 rounded text-purple-300">↑/↓</kbd> arrows for command history
-              </span>
-              <span className="text-slate-400">
-                Press <kbd className="px-1.5 py-0.5 bg-slate-800/80 rounded text-purple-300">Tab</kbd> for autocomplete • <kbd className="px-1.5 py-0.5 bg-slate-800/80 rounded text-purple-300">Ctrl+C</kbd> to interrupt
-              </span>
-            </div>
+          {/* Footer hints (desktop) */}
+          <div className="hidden sm:block px-4 py-2 border-t border-[#302c2c] bg-[#201d1d] text-[11px] text-[#9a9898] shrink-0">
+            <span className="text-[#4da3ff]">help</span> commands · <span className="text-[#c9c6c6]">↑/↓</span> history · <span className="text-[#c9c6c6]">Tab</span> autocomplete · <span className="text-[#c9c6c6]">Ctrl+C</span> interrupt
           </div>
-        </motion.div>
+        </div>
       </TabsContent>
       <TabsContent value="logs">
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="relative bg-slate-950 text-slate-100 font-mono p-4 rounded-b-lg h-96 text-sm overflow-y-auto border border-cyan-500/30"
-        >
-          <div 
-            className="absolute inset-0 opacity-[0.06] pointer-events-none"
-            style={{
-              backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(34,211,238,0.12) 19px, rgba(34,211,238,0.12) 20px), repeating-linear-gradient(90deg, transparent, transparent 19px, rgba(34,211,238,0.12) 19px, rgba(34,211,238,0.12) 20px)',
-              backgroundSize: '20px 20px',
-            }}
-          />
-          <div className="relative z-0 space-y-1">
-            <AnimatePresence mode="popLayout">
-              {runtimeLogs.map((log, index) => (
-                <motion.div 
-                  key={`log-${index}`} 
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2, delay: index * 0.01 }}
-                  className="whitespace-pre-wrap text-slate-200 font-mono text-xs leading-relaxed px-2 py-1 rounded hover:bg-emerald-500/5 transition-colors"
+        <div className="relative font-mono rounded-b-[4px] flex flex-col overflow-hidden bg-[#1a1717] text-[#fdfcfc] border border-[#3a3636] h-[26rem] sm:h-[30rem] lg:h-[34rem]">
+          {/* Header */}
+          <div className="flex items-center gap-2 px-3 sm:px-4 py-2 border-b border-[#3a3636] bg-[#201d1d] text-xs shrink-0">
+            <span className="text-[#9a9898] truncate">
+              tail -f <span className="text-[#9a9898]">/var/log/lab-agent.log</span>
+            </span>
+            <span className="ml-auto text-[#9a9898] shrink-0">{runtimeLogs.length} lines</span>
+            <span className="inline-flex items-center gap-1.5 text-[#30d158] shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#30d158] animate-pulse" aria-hidden />
+              live
+            </span>
+          </div>
+          {/* Log stream */}
+          <div className="flex-1 overflow-y-auto py-2 text-[13px] leading-relaxed" role="log" aria-live="polite">
+            {runtimeLogs.length === 0 ? (
+              <div className="px-4 py-10 text-center text-[#9a9898]">In attesa di eventi runtime…</div>
+            ) : (
+              runtimeLogs.map((log, index) => (
+                <div
+                  key={`log-${index}`}
+                  className="flex gap-3 px-3 sm:px-4 hover:bg-[#302c2c]/50 transition-colors"
                 >
-                  {log}
-                </motion.div>
-              ))}
-            </AnimatePresence>
+                  <span className="shrink-0 select-none text-right tabular-nums text-[#524d4d] w-7 sm:w-9" aria-hidden>
+                    {index + 1}
+                  </span>
+                  <span className="whitespace-pre-wrap break-words text-[#c9c6c6]">{log}</span>
+                </div>
+              ))
+            )}
             <div ref={endOfLogsRef} />
           </div>
-        </motion.div>
+        </div>
       </TabsContent>
       <TabsContent value="playground">
         <CodePlayground locale={locale} translations={translations} />
