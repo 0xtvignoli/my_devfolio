@@ -10,6 +10,7 @@ export const PROJECT_IMAGES = {
   "project-6": "/images/projects/project-6-llm-gateway.svg",
   "project-7": "/images/projects/project-7-finops.svg",
   "project-8": "/images/projects/project-8-x402-gateway.svg",
+  "project-9": "/images/projects/project-9-margin-observability.svg",
 } as const;
 
 export const projects: Project[] = [
@@ -170,6 +171,26 @@ export const projects: Project[] = [
       { label: { en: "Payment", it: "Pagamento" }, value: "HTTP 402" },
       { label: { en: "Settlement", it: "Settlement" }, value: "sub-sec" },
       { label: { en: "Onboarding", it: "Onboarding" }, value: "keyless" },
+    ],
+  },
+  {
+    id: "project-9",
+    title: {
+      en: "Per-Request Margin Observability",
+      it: "Osservabilità del Margine per-Richiesta",
+    },
+    description: {
+      en: "A FinOps dashboard that computes profit on every API call: x402 revenue per request minus the infra cost of serving it (OpenCost allocation plus token/GPU cost), broken down by endpoint, model, and tenant. Turns settlement webhooks and cost data into live margin-per-request — the half of the ledger monitoring never had.",
+      it: "Una dashboard FinOps che calcola il profitto su ogni chiamata API: ricavo x402 per richiesta meno il costo infrastrutturale di servirla (allocazione OpenCost più costo token/GPU), scomposto per endpoint, modello e tenant. Trasforma i webhook di settlement e i dati di costo in margine-per-richiesta in tempo reale—la metà del libro mastro che il monitoring non ha mai avuto.",
+    },
+    tags: ["FinOps", "x402", "Observability", "Grafana", "OpenCost", "LLMOps"],
+    imageUrl: PROJECT_IMAGES["project-9"],
+    imageHint: "per-request margin revenue minus cost dashboard",
+    githubUrl: "https://github.com/tvignoli",
+    metrics: [
+      { label: { en: "Margin", it: "Margine" }, value: "per-req" },
+      { label: { en: "Attribution", it: "Attribuzione" }, value: "endpoint" },
+      { label: { en: "Signal", it: "Segnale" }, value: "rev − cost" },
     ],
   },
 ];

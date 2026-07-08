@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" role="img" aria-label="Per-Request Margin Observability">
+  <defs>
+    <linearGradient id="bg9" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0a0e1a"/><stop offset="100%" stop-color="#0a1f14"/></linearGradient>
+  </defs>
+  <rect width="600" height="400" fill="url(#bg9)"/>
+  <text x="40" y="48" fill="#7dd3fc" font-family="monospace" font-size="13">per-request margin · finops × x402</text>
+  <g font-family="monospace" font-size="11">
+    <!-- legend -->
+    <rect x="360" y="70" width="12" height="12" rx="2" fill="#ef4444"/><text x="378" y="80" fill="#94a3b8">cost</text>
+    <rect x="440" y="70" width="12" height="12" rx="2" fill="#22c55e"/><text x="458" y="80" fill="#94a3b8">margin</text>
+    <!-- row A: chat:large -->
+    <text x="40" y="135" fill="#e0f2fe">chat:large</text>
+    <rect x="150" y="122" width="125" height="20" rx="3" fill="#ef4444"/>
+    <rect x="275" y="122" width="175" height="20" rx="3" fill="#22c55e"/>
+    <text x="462" y="137" fill="#22c55e" font-weight="700">+$0.0070</text>
+    <!-- row B: chat:std -->
+    <text x="40" y="193" fill="#e0f2fe">chat:std</text>
+    <rect x="150" y="180" width="75" height="20" rx="3" fill="#ef4444"/>
+    <rect x="225" y="180" width="125" height="20" rx="3" fill="#22c55e"/>
+    <text x="462" y="195" fill="#22c55e" font-weight="700">+$0.0050</text>
+    <!-- row C: mcp:lint -->
+    <text x="40" y="251" fill="#e0f2fe">mcp:lint</text>
+    <rect x="150" y="238" width="37" height="20" rx="3" fill="#ef4444"/>
+    <rect x="187" y="238" width="63" height="20" rx="3" fill="#22c55e"/>
+    <text x="462" y="253" fill="#22c55e" font-weight="700">+$0.0025</text>
+  </g>
+  <line x1="40" y1="300" x2="560" y2="300" stroke="#1e3a2e" stroke-width="1.5"/>
+  <text x="40" y="336" fill="#facc15" font-family="monospace" font-size="13">margin = x402 revenue − infra cost, per call</text>
+  <text x="40" y="372" fill="#64748b" font-family="monospace" font-size="11">OpenCost · token/GPU cost · per endpoint · per model · per tenant</text>
+</svg>
