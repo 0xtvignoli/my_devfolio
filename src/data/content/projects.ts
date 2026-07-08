@@ -9,6 +9,7 @@ export const PROJECT_IMAGES = {
   "project-5": "/images/projects/project-5-gitops.svg",
   "project-6": "/images/projects/project-6-llm-gateway.svg",
   "project-7": "/images/projects/project-7-finops.svg",
+  "project-8": "/images/projects/project-8-x402-gateway.svg",
 } as const;
 
 export const projects: Project[] = [
@@ -149,6 +150,26 @@ export const projects: Project[] = [
       { label: { en: "Cloud spend", it: "Spesa cloud" }, value: "−48%" },
       { label: { en: "Spot coverage", it: "Copertura spot" }, value: "80%" },
       { label: { en: "Idle waste", it: "Spreco idle" }, value: "−65%" },
+    ],
+  },
+  {
+    id: "project-8",
+    title: {
+      en: "Agent-Native Inference Gateway",
+      it: "Gateway di Inferenza Agent-Native",
+    },
+    description: {
+      en: "The LLM inference gateway exposed as a pay-per-use, agent-native endpoint via Cloudflare's Monetization Gateway (x402). Autonomous agents call it with no API key and no account: they get an HTTP 402 with the price, pay in stablecoin, and receive the completion — settled peer-to-peer to my wallet, with a reduced price on semantic-cache hits.",
+      it: "Il gateway di inferenza LLM esposto come endpoint pay-per-use e agent-native tramite il Monetization Gateway di Cloudflare (x402). Gli agenti autonomi lo chiamano senza API key né account: ricevono un HTTP 402 con il prezzo, pagano in stablecoin e ottengono la risposta — con settlement peer-to-peer sul mio wallet e prezzo ridotto sulle cache-hit semantiche.",
+    },
+    tags: ["x402", "Cloudflare", "LLMOps", "vLLM", "Agents", "Monetization"],
+    imageUrl: PROJECT_IMAGES["project-8"],
+    imageHint: "agent micropayment x402 flow",
+    githubUrl: "https://github.com/tvignoli",
+    metrics: [
+      { label: { en: "Payment", it: "Pagamento" }, value: "HTTP 402" },
+      { label: { en: "Settlement", it: "Settlement" }, value: "sub-sec" },
+      { label: { en: "Onboarding", it: "Onboarding" }, value: "keyless" },
     ],
   },
 ];
