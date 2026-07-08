@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
@@ -30,6 +30,17 @@ const ENDPOINTS: Endpoint[] = [
 const BASE_RPS = 42;
 const HISTORY = 40;
 
+// Live signals from the Lab that modulate the economics.
+type Signals = {
+  latencyMs: number;
+  cpuPercent: number;
+  incidents: number;
+  isDeploying: boolean;
+  autoChaos: boolean;
+};
+
+const BASELINE: Signals = { latencyMs: 120, cpuPercent: 40, incidents: 0, isDeploying: false, autoChaos: false };
+
 type EndpointStat = {
   id: string;
   cache: boolean;
@@ -47,13 +58,23 @@ type Snapshot = {
   margin: number;
   marginPerReq: number;
   grossMarginPct: number;
+  errorRate: number;
 };
 
-function computeSnapshot(rps: number, jitter: () => number): Snapshot {
+function computeSnapshot(rps: number, jitter: () => number, sig: Signals): Snapshot {
+  // Latency and CPU above baseline raise the compute cost per request.
+  const costMult = 1 + Math.max(0, (sig.latencyMs - 120) / 240) + Math.max(0, (sig.cpuPercent - 60) / 120);
+  // Incidents, chaos, and extreme latency cause failed (unpaid) requests.
+  const errorRate = Math.min(0.45, 0.01 + sig.incidents * 0.015 + (sig.autoChaos ? 0.06 : 0) + Math.max(0, (sig.latencyMs - 250) / 2000));
+  // Deploys and high latency reduce throughput.
+  const rpsMult = (sig.isDeploying ? 0.7 : 1) * (1 - Math.min(0.4, Math.max(0, (sig.latencyMs - 150) / 600)));
+  const effRps = rps * rpsMult;
+
   const endpoints: EndpointStat[] = ENDPOINTS.map((e) => {
-    const eRps = rps * e.weight * jitter();
-    const revenue = eRps * e.price;
-    const cost = eRps * e.cost;
+    const eRps = effRps * e.weight * jitter();
+    const successRps = eRps * (1 - errorRate); // only settled requests earn revenue
+    const revenue = successRps * e.price;
+    const cost = eRps * e.cost * costMult; // every request costs infra, even failed ones
     return { id: e.id, cache: !!e.cache, rps: eRps, revenue, cost, margin: revenue - cost };
   });
   const totalRps = endpoints.reduce((s, e) => s + e.rps, 0);
@@ -68,13 +89,14 @@ function computeSnapshot(rps: number, jitter: () => number): Snapshot {
     margin,
     marginPerReq: totalRps > 0 ? margin / totalRps : 0,
     grossMarginPct: revenue > 0 ? (margin / revenue) * 100 : 0,
+    errorRate,
   };
 }
 
-// Deterministic initial snapshot (no randomness) → identical on server and client.
-const INITIAL = computeSnapshot(BASE_RPS, () => 1);
+// Deterministic initial snapshot (no randomness, baseline signals) → identical on server and client.
+const INITIAL = computeSnapshot(BASE_RPS, () => 1, BASELINE);
 
-const money = (n: number) => `$${n.toFixed(4)}`;
+const money = (n: number) => `${n < 0 ? '-' : ''}$${Math.abs(n).toFixed(4)}`;
 
 function Sparkline({ data, color }: { data: number[]; color: string }) {
   const w = 132;
@@ -109,7 +131,7 @@ function StatTile({ label, value, accent }: { label: string; value: string; acce
         variant="h5"
         component="div"
         suppressHydrationWarning
-        sx={{ color: accent, fontWeight: 700, lineHeight: 1.2, fontFamily: 'var(--font-family-mono), monospace' }}
+        sx={{ color: accent, fontWeight: 700, lineHeight: 1.2, fontFamily: 'var(--font-family-mono), monospace', transition: 'color 0.3s ease' }}
       >
         {value}
       </Typography>
@@ -117,27 +139,58 @@ function StatTile({ label, value, accent }: { label: string; value: string; acce
   );
 }
 
-export function LabMarginPanel({ translations }: { translations: Translations }) {
+type LabMarginPanelProps = {
+  translations: Translations;
+  latencyMs: number;
+  cpuPercent: number;
+  incidents: number;
+  isDeploying: boolean;
+  autoChaos: boolean;
+};
+
+export function LabMarginPanel({ translations, latencyMs, cpuPercent, incidents, isDeploying, autoChaos }: LabMarginPanelProps) {
   const t = translations.lab.margin;
   const [snap, setSnap] = useState<Snapshot>(INITIAL);
   const [history, setHistory] = useState<number[]>(() => Array(HISTORY).fill(INITIAL.marginPerReq));
   const [live, setLive] = useState(false);
 
+  // Keep the latest signals available to the streaming interval's closure.
+  const signalsRef = useRef<Signals>(BASELINE);
   useEffect(() => {
-    // Respect reduced motion: keep the deterministic snapshot, no streaming.
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    signalsRef.current = { latencyMs, cpuPercent, incidents, isDeploying, autoChaos };
+  });
+
+  const reducedRef = useRef(false);
+
+  // Continuous stream (normal motion) reads fresh signals each tick.
+  useEffect(() => {
+    reducedRef.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reducedRef.current) {
+      setSnap(computeSnapshot(BASE_RPS, () => 1, signalsRef.current));
+      return;
+    }
     setLive(true);
-    const tick = () => {
+    const iv = setInterval(() => {
       const rps = BASE_RPS * (0.85 + Math.random() * 0.3);
-      const s = computeSnapshot(rps, () => 0.8 + Math.random() * 0.4);
+      const s = computeSnapshot(rps, () => 0.8 + Math.random() * 0.4, signalsRef.current);
       setSnap(s);
       setHistory((h) => [...h.slice(1), s.marginPerReq]);
-    };
-    const iv = setInterval(tick, 1600);
+    }, 1600);
     return () => clearInterval(iv);
   }, []);
 
+  // Under reduced motion, reflect discrete Lab signal changes (deploy / chaos / metrics).
+  useEffect(() => {
+    if (!reducedRef.current) return;
+    const s = computeSnapshot(BASE_RPS, () => 1, { latencyMs, cpuPercent, incidents, isDeploying, autoChaos });
+    setSnap(s);
+    setHistory((h) => [...h.slice(1), s.marginPerReq]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [latencyMs, cpuPercent, incidents, isDeploying, autoChaos]);
+
   const maxRevenue = Math.max(...snap.endpoints.map((e) => e.revenue), 0.0001);
+  const marginAccent = snap.marginPerReq < 0 ? 'var(--md-sys-color-error)' : 'var(--md-sys-color-primary)';
+  const grossAccent = snap.grossMarginPct < 0 ? 'var(--md-sys-color-error)' : 'var(--md-sys-color-tertiary)';
 
   return (
     <LabSectionCard
@@ -167,9 +220,9 @@ export function LabMarginPanel({ translations }: { translations: Translations })
       <Stack spacing={2.5}>
         {/* Aggregate stat tiles + margin sparkline */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 1.5 }}>
-          <StatTile label={t.marginPerReq} value={money(snap.marginPerReq)} accent="var(--md-sys-color-primary)" />
+          <StatTile label={t.marginPerReq} value={money(snap.marginPerReq)} accent={marginAccent} />
           <StatTile label={t.throughput} value={snap.totalRps.toFixed(0)} accent="var(--md-sys-color-on-surface)" />
-          <StatTile label={t.grossMargin} value={`${snap.grossMarginPct.toFixed(0)}%`} accent="var(--md-sys-color-tertiary)" />
+          <StatTile label={t.grossMargin} value={`${snap.grossMarginPct.toFixed(0)}%`} accent={grossAccent} />
           <Box className="lab-md3-surface-high" sx={{ p: 1.5, borderRadius: 'var(--lab-radius-md)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <Typography
               variant="caption"
@@ -178,7 +231,7 @@ export function LabMarginPanel({ translations }: { translations: Translations })
               {t.marginPerReq}
             </Typography>
             <Box sx={{ flex: 1, minHeight: 34, display: 'flex', alignItems: 'flex-end' }}>
-              <Sparkline data={history} color="var(--md-sys-color-primary)" />
+              <Sparkline data={history} color={marginAccent} />
             </Box>
           </Box>
         </Box>
@@ -199,7 +252,7 @@ export function LabMarginPanel({ translations }: { translations: Translations })
         <Stack spacing={1}>
           {snap.endpoints.map((e) => {
             const fillPct = (e.revenue / maxRevenue) * 100;
-            const costPct = e.revenue > 0 ? (e.cost / e.revenue) * 100 : 0;
+            const costPct = e.revenue > 0 ? Math.min(100, (e.cost / e.revenue) * 100) : 100;
             const marginPct = 100 - costPct;
             return (
               <Box
@@ -222,7 +275,7 @@ export function LabMarginPanel({ translations }: { translations: Translations })
                 </Box>
                 <Typography
                   suppressHydrationWarning
-                  sx={{ fontFamily: 'var(--font-family-mono), monospace', fontSize: '0.8rem', color: 'var(--md-sys-color-tertiary)', fontWeight: 700, textAlign: 'right' }}
+                  sx={{ fontFamily: 'var(--font-family-mono), monospace', fontSize: '0.8rem', color: e.margin < 0 ? 'var(--md-sys-color-error)' : 'var(--md-sys-color-tertiary)', fontWeight: 700, textAlign: 'right' }}
                 >
                   {money(e.margin)}
                 </Typography>

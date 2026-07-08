@@ -449,7 +449,14 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
           </Box>
         </Box>
 
-        <LabMarginPanel translations={translations} />
+        <LabMarginPanel
+          translations={translations}
+          latencyMs={latestLatency}
+          cpuPercent={latestCpu}
+          incidents={incidents.length}
+          isDeploying={isDeploying}
+          autoChaos={isAutoChaosEnabled}
+        />
 
         <LabSectionCard
           id="cluster"

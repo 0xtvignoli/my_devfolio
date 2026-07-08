@@ -144,7 +144,7 @@ export const en: Translations = {
       revenue: "Revenue",
       cost: "Cost",
       margin: "Margin",
-      hint: "Simulated: each request earns an x402 micropayment and costs infra to serve. Margin = revenue − cost.",
+      hint: "Driven by the Lab's live signals: each request earns an x402 micropayment and costs infra to serve. Latency and CPU raise cost; incidents and chaos cause failed (unpaid) requests. Margin = revenue − cost.",
       simulated: "simulated stream",
     },
     actions: {

@@ -144,7 +144,7 @@ export const it: Translations = {
       revenue: "Ricavo",
       cost: "Costo",
       margin: "Margine",
-      hint: "Simulato: ogni richiesta incassa un micropagamento x402 e costa infra per essere servita. Margine = ricavo − costo.",
+      hint: "Guidato dai segnali live del Lab: ogni richiesta incassa un micropagamento x402 e costa infra per essere servita. Latenza e CPU alzano il costo; incidenti e chaos causano richieste fallite (non pagate). Margine = ricavo − costo.",
       simulated: "stream simulato",
     },
     actions: {
