@@ -11,6 +11,8 @@ const STATIC_PATH_PREFIXES = [
   '/_next',
   '/api',
   '/favicon.ico',
+  '/icon.svg',
+  '/apple-icon',
   '/robots.txt',
   '/sitemap.xml',
   '/.well-known',
@@ -166,6 +168,6 @@ export function proxy(req: NextRequest) {
 export const config = {
   matcher: [
     '/',
-    '/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|\\.well-known|opengraph-image|og-image.png|thomas-vignoli\\.svg|thomas-vignoli\\.png|images/).*)',
+    '/((?!_next/static|_next/image|favicon.ico|icon\\.svg|apple-icon|robots.txt|sitemap.xml|\\.well-known|opengraph-image|og-image.png|thomas-vignoli\\.svg|thomas-vignoli\\.png|images/).*)',
   ],
 };
