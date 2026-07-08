@@ -31,9 +31,13 @@ export function ThemeToggle({ labels }: ThemeToggleProps) {
       aria-label={label}
       title={mounted ? label : undefined}
     >
-      {/* Sun in light mode, Moon in dark mode — crossfade driven by the .dark class */}
-      <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-      <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+      {/* Sun on light, Moon on dark — driven by the active app theme (next-themes),
+          not Tailwind's dark: variant (which here follows the OS, not the app). */}
+      {isDark ? (
+        <Moon className="h-[1.2rem] w-[1.2rem]" />
+      ) : (
+        <Sun className="h-[1.2rem] w-[1.2rem]" />
+      )}
     </Button>
   )
 }
