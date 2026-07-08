@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import type { Locale } from '@/lib/types';
-import { SUPPORTED_LOCALES } from '@/lib/i18n/config';
+import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '@/lib/i18n/config';
 import { localizedPath, LOCALE_OPEN_GRAPH } from '@/lib/i18n/paths';
 import { SITE_URL, SITE_NAME, DEFAULT_DESCRIPTION } from './constants';
 
@@ -16,9 +16,12 @@ type PageMetadataOptions = {
 };
 
 function buildHreflangLanguages(pathWithoutLocale: string) {
-  return Object.fromEntries(
+  const languages = Object.fromEntries(
     SUPPORTED_LOCALES.map((loc) => [loc, `${SITE_URL}${localizedPath(loc, pathWithoutLocale)}`])
   ) as Record<string, string>;
+  // x-default points crawlers to the default-locale version as the fallback.
+  languages['x-default'] = `${SITE_URL}${localizedPath(DEFAULT_LOCALE, pathWithoutLocale)}`;
+  return languages;
 }
 
 export function createPageMetadata({
@@ -50,6 +53,11 @@ export function createPageMetadata({
       title,
       description,
       ...(publishedTime && type === 'article' ? { publishedTime } : {}),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
     },
   };
 }

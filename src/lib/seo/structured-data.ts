@@ -54,26 +54,28 @@ export function buildBreadcrumbSchema(items: { name: string; path: string }[]) {
   };
 }
 
+const bcp47 = (locale?: string) => (locale === 'it' ? 'it-IT' : 'en-US');
+
 export function buildArticleSchema(options: {
   title: string;
   description: string;
   path: string;
   datePublished: string;
   dateModified?: string;
+  locale?: string;
+  image?: string;
 }) {
   return {
     '@context': 'https://schema.org',
-    '@type': 'Article',
+    '@type': 'BlogPosting',
     headline: options.title,
     description: options.description,
-    image: `${SITE_URL}/opengraph-image`,
+    image: options.image ?? `${SITE_URL}/opengraph-image`,
     datePublished: options.datePublished,
     dateModified: options.dateModified ?? options.datePublished,
+    inLanguage: bcp47(options.locale),
     author: { '@id': `${SITE_URL}/#person` },
-    publisher: {
-      '@type': 'Person',
-      name: AUTHOR_NAME,
-    },
+    publisher: { '@id': `${SITE_URL}/#person` },
     mainEntityOfPage: {
       '@type': 'WebPage',
       '@id': `${SITE_URL}${options.path}`,
@@ -108,5 +110,68 @@ export function buildProfilePageSchema() {
     '@context': 'https://schema.org',
     '@type': 'ProfilePage',
     mainEntity: { '@id': `${SITE_URL}/#person` },
+  };
+}
+
+/** Blog listing with each post as a BlogPosting — surfaces all articles to crawlers. */
+export function buildBlogSchema(options: {
+  path: string;
+  locale?: string;
+  name: string;
+  description?: string;
+  posts: { title: string; description: string; path: string; datePublished: string }[];
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Blog',
+    '@id': `${SITE_URL}${options.path}#blog`,
+    url: `${SITE_URL}${options.path}`,
+    name: options.name,
+    ...(options.description ? { description: options.description } : {}),
+    inLanguage: bcp47(options.locale),
+    author: { '@id': `${SITE_URL}/#person` },
+    blogPost: options.posts.map((p) => ({
+      '@type': 'BlogPosting',
+      headline: p.title,
+      description: p.description,
+      url: `${SITE_URL}${p.path}`,
+      datePublished: p.datePublished,
+      author: { '@id': `${SITE_URL}/#person` },
+    })),
+  };
+}
+
+/** Collection page with an ItemList of projects (SoftwareSourceCode) — surfaces the portfolio to crawlers. */
+export function buildCollectionPageSchema(options: {
+  path: string;
+  locale?: string;
+  name: string;
+  description?: string;
+  items: { name: string; description: string; codeRepository?: string; keywords?: string[] }[];
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    '@id': `${SITE_URL}${options.path}#collection`,
+    url: `${SITE_URL}${options.path}`,
+    name: options.name,
+    ...(options.description ? { description: options.description } : {}),
+    inLanguage: bcp47(options.locale),
+    mainEntity: {
+      '@type': 'ItemList',
+      numberOfItems: options.items.length,
+      itemListElement: options.items.map((it, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        item: {
+          '@type': 'SoftwareSourceCode',
+          name: it.name,
+          description: it.description,
+          ...(it.codeRepository ? { codeRepository: it.codeRepository } : {}),
+          ...(it.keywords && it.keywords.length ? { keywords: it.keywords.join(', ') } : {}),
+          author: { '@id': `${SITE_URL}/#person` },
+        },
+      })),
+    },
   };
 }

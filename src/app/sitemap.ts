@@ -1,10 +1,19 @@
 import { MetadataRoute } from 'next';
 import { getArticleSlugs, getArticle } from '@/data/content/articles';
-import { SUPPORTED_LOCALES } from '@/lib/i18n/config';
+import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '@/lib/i18n/config';
 import { localizedPath } from '@/lib/i18n/paths';
 import { SITE_URL } from '@/lib/seo/constants';
 
 const STATIC_PATHS = ['', '/portfolio', '/lab', '/experience', '/articles', '/dashboard'] as const;
+
+/** hreflang alternates including x-default (→ default locale) for a locale-agnostic path. */
+function hreflangAlternates(pathWithoutLocale: string) {
+  const languages = Object.fromEntries(
+    SUPPORTED_LOCALES.map((loc) => [loc, `${SITE_URL}${localizedPath(loc, pathWithoutLocale)}`])
+  ) as Record<string, string>;
+  languages['x-default'] = `${SITE_URL}${localizedPath(DEFAULT_LOCALE, pathWithoutLocale)}`;
+  return languages;
+}
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticEntries: MetadataRoute.Sitemap = SUPPORTED_LOCALES.flatMap((locale) =>
@@ -14,12 +23,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: path === '/lab' || path === '/dashboard' ? ('daily' as const) : ('weekly' as const),
       priority: path === '' ? 1 : path === '/portfolio' || path === '/lab' ? 0.9 : 0.8,
       alternates: {
-        languages: Object.fromEntries(
-          SUPPORTED_LOCALES.map((loc) => [
-            loc,
-            `${SITE_URL}${localizedPath(loc, path || '/')}`,
-          ])
-        ),
+        languages: hreflangAlternates(path || '/'),
       },
     }))
   );
@@ -34,12 +38,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
         changeFrequency: 'monthly' as const,
         priority: 0.7,
         alternates: {
-          languages: Object.fromEntries(
-            SUPPORTED_LOCALES.map((loc) => [
-              loc,
-              `${SITE_URL}${localizedPath(loc, `/articles/${slug}`)}`,
-            ])
-          ),
+          languages: hreflangAlternates(`/articles/${slug}`),
         },
       };
     })
