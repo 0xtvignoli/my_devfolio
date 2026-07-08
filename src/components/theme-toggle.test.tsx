@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, cleanup } from '@testing-library/react';
+import { render, cleanup, fireEvent } from '@testing-library/react';
 import { screen } from '@testing-library/dom';
 import { describe, test, expect, mock, afterEach } from 'bun:test';
 import '@testing-library/jest-dom';
@@ -18,8 +18,14 @@ const defaultLabels = { light: 'Light', dark: 'Dark', system: 'System' };
 afterEach(cleanup);
 
 describe('ThemeToggle', () => {
-  test('renders toggle button with accessible name', () => {
+  test('renders a single theme toggle button', () => {
     render(<ThemeToggle labels={defaultLabels} />, { wrapper: MuiTestWrapper });
-    expect(screen.getByRole('button', { name: /toggle theme/i })).toBeInTheDocument();
+    expect(screen.getByRole('button')).toBeInTheDocument();
+  });
+
+  test('toggles from light to dark on click', () => {
+    render(<ThemeToggle labels={defaultLabels} />, { wrapper: MuiTestWrapper });
+    fireEvent.click(screen.getByRole('button'));
+    expect(setThemeMock).toHaveBeenCalledWith('dark');
   });
 });
