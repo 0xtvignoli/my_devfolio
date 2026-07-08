@@ -27,7 +27,7 @@ export const projects: Project[] = [
     tags: ["Kubernetes", "Terraform", "Helm", "AWS", "GCP", "Prometheus"],
     imageUrl: PROJECT_IMAGES["project-1"],
     imageHint: "cloud infrastructure diagram",
-    githubUrl: "https://github.com/tvignoli",
+    githubUrl: "https://github.com/0xtvignoli",
     metrics: [
       { label: { en: "Deploy time", it: "Tempo deploy" }, value: "−40%" },
       { label: { en: "Uptime", it: "Uptime" }, value: "99.95%" },
@@ -47,7 +47,7 @@ export const projects: Project[] = [
     tags: ["Go", "Terratest", "Terraform", "CI/CD", "Testing"],
     imageUrl: PROJECT_IMAGES["project-2"],
     imageHint: "code terminal",
-    githubUrl: "https://github.com/tvignoli",
+    githubUrl: "https://github.com/0xtvignoli",
     metrics: [
       { label: { en: "Modules tested", it: "Moduli testati" }, value: "24+" },
       { label: { en: "CI coverage", it: "Copertura CI" }, value: "100%" },
@@ -86,7 +86,7 @@ export const projects: Project[] = [
     tags: ["Observability", "Prometheus", "Grafana", "Kubernetes", "Helm"],
     imageUrl: PROJECT_IMAGES["project-4"],
     imageHint: "dashboard monitoring",
-    githubUrl: "https://github.com/tvignoli",
+    githubUrl: "https://github.com/0xtvignoli",
     metrics: [
       { label: { en: "MTTR", it: "MTTR" }, value: "−35%" },
       { label: { en: "Dashboards", it: "Dashboard" }, value: "40+" },
@@ -106,7 +106,7 @@ export const projects: Project[] = [
     tags: ["GitOps", "Argo CD", "Kubernetes", "Helm", "Argo Rollouts"],
     imageUrl: PROJECT_IMAGES["project-5"],
     imageHint: "gitops reconciliation flow",
-    githubUrl: "https://github.com/tvignoli",
+    githubUrl: "https://github.com/0xtvignoli",
     metrics: [
       { label: { en: "Onboarding", it: "Onboarding" }, value: "−70%" },
       { label: { en: "Services", it: "Servizi" }, value: "30+" },
@@ -126,7 +126,7 @@ export const projects: Project[] = [
     tags: ["LLMOps", "vLLM", "Python", "FastAPI", "Redis", "GPU"],
     imageUrl: PROJECT_IMAGES["project-6"],
     imageHint: "llm inference gateway architecture",
-    githubUrl: "https://github.com/tvignoli",
+    githubUrl: "https://github.com/0xtvignoli",
     metrics: [
       { label: { en: "Cache hit", it: "Cache hit" }, value: "42%" },
       { label: { en: "Cost/token", it: "Costo/token" }, value: "−55%" },
@@ -146,7 +146,7 @@ export const projects: Project[] = [
     tags: ["FinOps", "OpenCost", "Karpenter", "Kubernetes", "Grafana"],
     imageUrl: PROJECT_IMAGES["project-7"],
     imageHint: "cloud cost optimization dashboard",
-    githubUrl: "https://github.com/tvignoli",
+    githubUrl: "https://github.com/0xtvignoli",
     metrics: [
       { label: { en: "Cloud spend", it: "Spesa cloud" }, value: "−48%" },
       { label: { en: "Spot coverage", it: "Copertura spot" }, value: "80%" },
@@ -166,7 +166,7 @@ export const projects: Project[] = [
     tags: ["x402", "Cloudflare", "LLMOps", "vLLM", "Agents", "Monetization"],
     imageUrl: PROJECT_IMAGES["project-8"],
     imageHint: "agent micropayment x402 flow",
-    githubUrl: "https://github.com/tvignoli",
+    githubUrl: "https://github.com/0xtvignoli",
     metrics: [
       { label: { en: "Payment", it: "Pagamento" }, value: "HTTP 402" },
       { label: { en: "Settlement", it: "Settlement" }, value: "sub-sec" },
@@ -186,7 +186,7 @@ export const projects: Project[] = [
     tags: ["FinOps", "x402", "Observability", "Grafana", "OpenCost", "LLMOps"],
     imageUrl: PROJECT_IMAGES["project-9"],
     imageHint: "per-request margin revenue minus cost dashboard",
-    githubUrl: "https://github.com/tvignoli",
+    githubUrl: "https://github.com/0xtvignoli",
     metrics: [
       { label: { en: "Margin", it: "Margine" }, value: "per-req" },
       { label: { en: "Attribution", it: "Attribuzione" }, value: "endpoint" },

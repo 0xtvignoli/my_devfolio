@@ -5,6 +5,6 @@ export const DEFAULT_DESCRIPTION =
   'Senior DevOps Engineer specializing in Kubernetes, Cloud Infrastructure, CI/CD, and Site Reliability Engineering. Explore my interactive lab, projects, and technical articles.';
 
 export const SOCIAL_LINKS = {
-  linkedin: 'https://linkedin.com/in/thomas-vignoli',
-  github: 'https://github.com/tvignoli',
+  linkedin: 'https://www.linkedin.com/in/tvignoli/',
+  github: 'https://github.com/0xtvignoli',
 } as const;
