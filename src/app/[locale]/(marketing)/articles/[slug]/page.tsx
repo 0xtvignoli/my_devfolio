@@ -86,6 +86,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             description: article.description,
             path: articlePath,
             datePublished: article.date,
+            locale,
           }),
           buildBreadcrumbSchema([
             { name: 'Home', path: localizedPath(locale) },

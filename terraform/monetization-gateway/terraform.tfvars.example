@@ -1,0 +1,19 @@
+# Copy to terraform.tfvars and fill in.  DO NOT commit terraform.tfvars.
+# The API token must come from the environment, not this file:
+#   export TF_VAR_cloudflare_api_token="<your-cloudflare-api-token>"
+
+zone_id           = "<your-cloudflare-zone-id>"
+gateway_hostname  = "api.tvignoli.com"
+gated_path        = "/v1/chat/completions"
+settlement_wallet = "0x0000000000000000000000000000000000000000"
+settlement_asset  = "USDC"
+
+# Deterministic pre-payment price per model tier (x402 settles before response).
+price_tiers = {
+  small  = 0.002
+  medium = 0.004
+  large  = 0.012
+}
+
+# Charge 10% of the cold price when the semantic cache serves the answer.
+cache_hit_discount = 0.1

@@ -2,6 +2,13 @@ import type { Article, Locale } from "@/lib/types";
 
 const articlesContent: Omit<Article, 'title' | 'description' | 'content'>[] = [
   {
+    slug: 'x402-agent-native-api-monetization',
+    date: '2026-07-08',
+    author: 'Thomas Vignoli',
+    imageUrl: '/images/articles/x402.svg',
+    imageHint: 'x402 http 402 agent micropayment flow',
+  },
+  {
     slug: 'finops-kubernetes-cost-optimization',
     date: '2025-06-05',
     author: 'Thomas Vignoli',
@@ -67,6 +74,72 @@ const articlesContent: Omit<Article, 'title' | 'description' | 'content'>[] = [
 ];
 
 const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'description' | 'content'>>> = {
+  'x402-agent-native-api-monetization': {
+    en: {
+      title: 'Getting Paid by Machines: Monetizing APIs with x402 and Pay Per Crawl',
+      description: 'HTTP 402 finally has a job. How Cloudflare\'s Pay Per Crawl and Monetization Gateway let agents and crawlers pay per request—and the pricing pitfalls nobody mentions.',
+      content: [
+        { type: 'paragraph', content: 'For three decades the web had exactly two answers for an automated client: serve it for free, or block it. HTTP 402 "Payment Required" sat reserved-but-unused in the spec the entire time. It finally has a job: letting AI crawlers and autonomous agents pay for what they fetch—per request, with no account and no contract. Cloudflare shipped two products on top of it, Pay Per Crawl and the Monetization Gateway, and together they redefine what a paying customer can be.' },
+        { type: 'heading', level: 2, content: 'Two gateways, two economic models' },
+        { type: 'paragraph', content: 'Pay Per Crawl targets AI crawlers specifically. A publisher sets one flat per-request price for the whole domain and marks each crawler allow, charge, or block. Cloudflare acts as Merchant of Record: it verifies the crawler, aggregates the charges, and pays the publisher in fiat. Zero crypto, almost no setup—but it only bills crawlers.' },
+        { type: 'paragraph', content: 'The Monetization Gateway generalizes the idea to any caller and any resource: web pages, REST APIs, datasets, even MCP tools. It runs on x402, an open protocol where the buyer pays in stablecoin (USDC) and settlement lands peer-to-peer straight in the seller\'s wallet—sub-second, with fees down to fractions of a cent. This is the surface that matters if you sell APIs, not just articles.' },
+        { type: 'heading', level: 2, content: 'The x402 handshake' },
+        { type: 'paragraph', content: 'The flow is stateless and needs no prior relationship. The client requests a gated resource; the edge replies 402 with the price, the accepted asset, and a payment destination; the client pays and retries with proof; the edge verifies and returns 200. Because enforcement happens at Cloudflare\'s edge, your origin never sees unpaid traffic or the payment machinery.' },
+        { type: 'code', language: 'http', code: `# Pay Per Crawl — discovery-first flow (documented headers)
+GET /research/2026-forecast.html
+< HTTP/1.1 402 Payment Required
+< crawler-price: USD 0.01
+
+# the crawler agrees to the price and retries
+GET /research/2026-forecast.html
+> crawler-exact-price: USD 0.01
+< HTTP/1.1 200 OK
+< crawler-charged: USD 0.01` },
+        { type: 'paragraph', content: 'Crawlers are kept honest with Web Bot Auth: an Ed25519 key pair, a published JWK directory, and HTTP Message Signatures (RFC 9421) on every request, so a spoofed user agent cannot rack up charges in your name. The Monetization Gateway reuses the same identity layer optionally, to bill usage against a known account.' },
+        { type: 'heading', level: 2, content: 'Price the way machines consume' },
+        { type: 'paragraph', content: 'Human pricing is seats and monthly tiers; machine pricing is per call. The gateway lets you charge a fixed amount per verb and path ("$0.01 per GET /premium/*"), vary it by work done ("up to $2" for an image generation), or intercept a 401 and return 402 so an unauthenticated caller pays instead of bouncing. Subscriptions become one option among many, not the only one.' },
+        { type: 'heading', level: 2, content: 'The subtlety nobody mentions: pre-payment vs metered billing' },
+        { type: 'paragraph', content: 'x402 is pre-payment—you pay, then you get the response. But the most valuable machine resource, LLM inference, is billed after the fact, per output token, and you cannot know the exact token count before generating. There are three clean ways to reconcile the two.' },
+        { type: 'paragraph', content: 'First, fixed tiers: price by model and a max_tokens cap so the charge is deterministic. Second, prepaid credits against a verified agent identity, settling real usage post-hoc. Third, a cache-aware price: when a semantic cache serves the answer, charge a fraction of the cold price—high margin, and a healthy incentive to cache.' },
+        { type: 'heading', level: 2, content: 'Revenue per request becomes an observability signal' },
+        { type: 'paragraph', content: 'Once every call carries a price, you can finally compute margin per endpoint: x402 revenue minus the infra cost of serving that request. For anyone doing FinOps this is the missing half of the ledger—until now we only ever measured cost. Feed settlement webhooks into the same dashboards that track cost-per-request and you get profit-per-request, live.' },
+        { type: 'heading', level: 2, content: 'Position before the agents arrive' },
+        { type: 'paragraph', content: 'Both products are still early: Pay Per Crawl is in private beta, the Monetization Gateway on a waitlist, and x402 settlement means holding a stablecoin wallet with the tax and compliance that implies. The buyer side—agents that carry their own wallets—is nascent in 2026. That is exactly the point: the cheapest moment to wire a keyless, pay-per-request path into your API is before the agents show up, not after.' },
+      ],
+    },
+    it: {
+      title: 'Farsi pagare dalle macchine: monetizzare le API con x402 e Pay Per Crawl',
+      description: 'Lo status HTTP 402 ha finalmente un compito. Come Pay Per Crawl e il Monetization Gateway di Cloudflare fanno pagare agenti e crawler a richiesta—e le insidie di pricing che nessuno cita.',
+      content: [
+        { type: 'paragraph', content: 'Per trent\'anni il web ha avuto esattamente due risposte per un client automatico: servirlo gratis, oppure bloccarlo. Lo status HTTP 402 "Payment Required" è rimasto riservato-ma-inutilizzato nella specifica per tutto questo tempo. Ora ha finalmente un compito: far pagare crawler AI e agenti autonomi per ciò che scaricano—a richiesta, senza account e senza contratto. Cloudflare ha rilasciato due prodotti che ci si appoggiano, Pay Per Crawl e il Monetization Gateway, e insieme ridefiniscono cosa può essere un cliente pagante.' },
+        { type: 'heading', level: 2, content: 'Due gateway, due modelli economici' },
+        { type: 'paragraph', content: 'Pay Per Crawl si rivolge specificamente ai crawler AI. L\'editore imposta un unico prezzo flat per-richiesta su tutto il dominio e marca ogni crawler come allow, charge o block. Cloudflare fa da Merchant of Record: verifica il crawler, aggrega gli addebiti e paga l\'editore in valuta fiat. Zero crypto, quasi nessun setup—ma fattura solo i crawler.' },
+        { type: 'paragraph', content: 'Il Monetization Gateway generalizza l\'idea a qualunque chiamante e qualunque risorsa: pagine web, API REST, dataset, perfino tool MCP. Gira su x402, un protocollo aperto in cui il compratore paga in stablecoin (USDC) e il settlement arriva peer-to-peer direttamente nel wallet del venditore—sub-secondo, con commissioni fino a frazioni di centesimo. È questa la superficie che conta se vendi API, non solo articoli.' },
+        { type: 'heading', level: 2, content: 'L\'handshake x402' },
+        { type: 'paragraph', content: 'Il flusso è stateless e non richiede alcuna relazione pregressa. Il client chiede una risorsa protetta; l\'edge risponde 402 con il prezzo, l\'asset accettato e una destinazione di pagamento; il client paga e riprova allegando la prova; l\'edge verifica e restituisce 200. Poiché l\'enforcement avviene all\'edge di Cloudflare, il tuo origin non vede mai né il traffico non pagato né la macchina dei pagamenti.' },
+        { type: 'code', language: 'http', code: `# Pay Per Crawl — flusso discovery-first (header documentati)
+GET /research/2026-forecast.html
+< HTTP/1.1 402 Payment Required
+< crawler-price: USD 0.01
+
+# il crawler accetta il prezzo e riprova
+GET /research/2026-forecast.html
+> crawler-exact-price: USD 0.01
+< HTTP/1.1 200 OK
+< crawler-charged: USD 0.01` },
+        { type: 'paragraph', content: 'I crawler restano onesti grazie a Web Bot Auth: una coppia di chiavi Ed25519, una directory JWK pubblicata e HTTP Message Signatures (RFC 9421) su ogni richiesta, così uno user agent contraffatto non può accumulare addebiti a tuo nome. Il Monetization Gateway riusa opzionalmente lo stesso layer di identità per fatturare l\'uso su un account noto.' },
+        { type: 'heading', level: 2, content: 'Prezza come consumano le macchine' },
+        { type: 'paragraph', content: 'Il pricing umano è a postazioni e piani mensili; quello delle macchine è a chiamata. Il gateway ti lascia addebitare un importo fisso per verbo e path ("$0.01 per ogni GET /premium/*"), variarlo in base al lavoro svolto ("fino a $2" per una generazione di immagini), oppure intercettare un 401 e restituire 402 così un chiamante non autenticato paga invece di rimbalzare. Gli abbonamenti diventano un\'opzione tra tante, non l\'unica.' },
+        { type: 'heading', level: 2, content: 'La sottigliezza che nessuno cita: pre-pagamento vs billing a consumo' },
+        { type: 'paragraph', content: 'x402 è pre-pagamento—paghi, poi ottieni la risposta. Ma la risorsa-macchina più preziosa, l\'inferenza LLM, si fattura a posteriori, per token generato, e non puoi conoscere il numero esatto di token prima di generarli. Ci sono tre modi puliti per conciliare le due cose.' },
+        { type: 'paragraph', content: 'Primo, tier fissi: prezzo per modello e un cap di max_tokens, così l\'addebito è deterministico. Secondo, crediti prepagati contro un\'identità agente verificata, regolando l\'uso reale a posteriori. Terzo, un prezzo cache-aware: quando una cache semantica serve la risposta, addebiti una frazione del prezzo a freddo—margine alto e un sano incentivo a mettere in cache.' },
+        { type: 'heading', level: 2, content: 'Il ricavo per richiesta diventa un segnale di osservabilità' },
+        { type: 'paragraph', content: 'Quando ogni chiamata porta con sé un prezzo, puoi finalmente calcolare il margine per endpoint: ricavo x402 meno il costo infrastrutturale di servire quella richiesta. Per chi fa FinOps è la metà mancante del libro mastro—finora abbiamo sempre e solo misurato il costo. Manda i webhook di settlement nelle stesse dashboard che tracciano il costo-per-richiesta e ottieni il profitto-per-richiesta, in tempo reale.' },
+        { type: 'heading', level: 2, content: 'Posizionati prima che arrivino gli agenti' },
+        { type: 'paragraph', content: 'Entrambi i prodotti sono ancora acerbi: Pay Per Crawl è in private beta, il Monetization Gateway in waitlist, e il settlement x402 significa detenere un wallet stablecoin con le implicazioni fiscali e di compliance del caso. Il lato compratore—agenti che portano il proprio wallet—è nascente nel 2026. Ed è esattamente questo il punto: il momento più economico per cablare un percorso keyless e pay-per-request nella tua API è prima che gli agenti arrivino, non dopo.' },
+      ],
+    },
+  },
   'aws-rag-etl-pipeline': {
     en: {
       title: 'Designing a Cost-Effective RAG ETL Flow on AWS',

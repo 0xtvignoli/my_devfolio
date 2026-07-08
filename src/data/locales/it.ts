@@ -135,6 +135,18 @@ export const it: Translations = {
       pipeline: "Pipeline di deploy",
       pipelineSubtitle: "Stage CI/CD e gate canary",
     },
+    margin: {
+      title: "Margine per richiesta",
+      subtitle: "Ricavo x402 live meno costo infra — profitto su ogni chiamata",
+      marginPerReq: "Margine / req",
+      throughput: "Richieste / s",
+      grossMargin: "Margine lordo",
+      revenue: "Ricavo",
+      cost: "Costo",
+      margin: "Margine",
+      hint: "Guidato dai segnali live del Lab: ogni richiesta incassa un micropagamento x402 e costa infra per essere servita. Latenza e CPU alzano il costo; incidenti e chaos causano richieste fallite (non pagate). Margine = ricavo − costo.",
+      simulated: "stream simulato",
+    },
     actions: {
       promote: "Promuovi canary",
       rollback: "Rollback",

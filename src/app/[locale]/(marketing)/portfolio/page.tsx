@@ -4,7 +4,7 @@ import { getTranslations, resolveLocaleParam } from '@/lib/i18n/server';
 import { localizedPath } from '@/lib/i18n/paths';
 import { createPageMetadata } from '@/lib/seo/metadata';
 import { JsonLd } from '@/components/seo/json-ld';
-import { buildBreadcrumbSchema } from '@/lib/seo/structured-data';
+import { buildCollectionPageSchema, buildBreadcrumbSchema } from '@/lib/seo/structured-data';
 import type { Locale } from '@/lib/types';
 import type { Metadata } from 'next';
 
@@ -34,10 +34,24 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
   return (
     <>
       <JsonLd
-        data={buildBreadcrumbSchema([
-          { name: 'Home', path: localizedPath(locale) },
-          { name: t.nav.portfolio, path: localizedPath(locale, '/portfolio') },
-        ])}
+        data={[
+          buildCollectionPageSchema({
+            path: localizedPath(locale, '/portfolio'),
+            locale,
+            name: t.nav.portfolio,
+            description: t.portfolio.pageSubtitle,
+            items: projects.map((p) => ({
+              name: p.title[locale],
+              description: p.description[locale],
+              codeRepository: p.githubUrl,
+              keywords: p.tags,
+            })),
+          }),
+          buildBreadcrumbSchema([
+            { name: 'Home', path: localizedPath(locale) },
+            { name: t.nav.portfolio, path: localizedPath(locale, '/portfolio') },
+          ]),
+        ]}
       />
       <div className="container mx-auto px-4 py-16 max-w-6xl">
         <section className="mb-12 border-b border-border pb-6" aria-labelledby="portfolio-heading">

@@ -133,6 +133,18 @@ export interface Translations {
       pipeline: string;
       pipelineSubtitle: string;
     };
+    margin: {
+      title: string;
+      subtitle: string;
+      marginPerReq: string;
+      throughput: string;
+      grossMargin: string;
+      revenue: string;
+      cost: string;
+      margin: string;
+      hint: string;
+      simulated: string;
+    };
     actions: {
       promote: string;
       rollback: string;

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" role="img" aria-label="x402 agent-native monetization">
+  <defs><linearGradient id="x402-bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0d1220"/><stop offset="100%" stop-color="#101f38"/></linearGradient></defs>
+  <rect width="600" height="400" fill="url(#x402-bg)"/>
+  <text x="40" y="52" fill="#4da3ff" font-family="monospace" font-size="14">~ x402 · pay-per-request</text>
+  <!-- 402 -->
+  <text x="70" y="238" fill="#ff9f0a" font-family="monospace" font-size="72" font-weight="700">402</text>
+  <text x="78" y="266" fill="#6e7d92" font-family="monospace" font-size="13">Payment Required</text>
+  <!-- arrow to coin -->
+  <line x1="238" y1="205" x2="272" y2="205" stroke="#4da3ff" stroke-width="2.5"/>
+  <polygon points="272,205 262,200 262,210" fill="#4da3ff"/>
+  <!-- coin / USDC -->
+  <circle cx="312" cy="205" r="34" fill="#0d1220" stroke="#30d158" stroke-width="2"/>
+  <text x="312" y="200" text-anchor="middle" fill="#30d158" font-family="monospace" font-size="14" font-weight="700">USDC</text>
+  <text x="312" y="217" text-anchor="middle" fill="#e0f2fe" font-family="monospace" font-size="12">0.004</text>
+  <!-- arrow to 200 -->
+  <line x1="352" y1="205" x2="386" y2="205" stroke="#4da3ff" stroke-width="2.5"/>
+  <polygon points="386,205 376,200 376,210" fill="#4da3ff"/>
+  <!-- 200 -->
+  <text x="404" y="238" fill="#30d158" font-family="monospace" font-size="72" font-weight="700">200</text>
+  <text x="412" y="266" fill="#6e7d92" font-family="monospace" font-size="13">settled → wallet</text>
+  <line x1="40" y1="312" x2="560" y2="312" stroke="#3a4a63" stroke-width="1.5"/>
+  <text x="40" y="372" fill="#6e7d92" font-family="monospace" font-size="12">http 402 · stablecoin · agents · MCP tools · keyless</text>
+</svg>

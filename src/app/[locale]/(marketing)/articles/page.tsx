@@ -7,7 +7,7 @@ import { getTranslations, resolveLocaleParam } from '@/lib/i18n/server';
 import { localizedPath } from '@/lib/i18n/paths';
 import { createPageMetadata } from '@/lib/seo/metadata';
 import { JsonLd } from '@/components/seo/json-ld';
-import { buildBreadcrumbSchema } from '@/lib/seo/structured-data';
+import { buildBlogSchema, buildBreadcrumbSchema } from '@/lib/seo/structured-data';
 import type { Locale } from '@/lib/types';
 import type { Metadata } from 'next';
 
@@ -38,10 +38,24 @@ export default async function ArticlesPage({ params }: ArticlesPageProps) {
   return (
     <>
       <JsonLd
-        data={buildBreadcrumbSchema([
-          { name: 'Home', path: localizedPath(locale) },
-          { name: t.nav.articles, path: localizedPath(locale, '/articles') },
-        ])}
+        data={[
+          buildBlogSchema({
+            path: localizedPath(locale, '/articles'),
+            locale,
+            name: t.nav.articles,
+            description: t.articles.pageSubtitle,
+            posts: articles.map((a) => ({
+              title: a.title,
+              description: a.description,
+              path: localizedPath(locale, `/articles/${a.slug}`),
+              datePublished: a.date,
+            })),
+          }),
+          buildBreadcrumbSchema([
+            { name: 'Home', path: localizedPath(locale) },
+            { name: t.nav.articles, path: localizedPath(locale, '/articles') },
+          ]),
+        ]}
       />
       <div className="container mx-auto px-4 py-16 max-w-6xl">
         <section className="mb-12 border-b border-border pb-6" aria-labelledby="articles-heading">

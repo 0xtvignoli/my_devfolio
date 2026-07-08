@@ -35,6 +35,7 @@ import { HelpModal } from '@/components/lab/help-modal';
 import { GuidedTour, buildLabTourSteps } from '@/components/onboarding/guided-tour';
 import { LabHeroHeader } from '@/components/lab/md3/lab-hero-header';
 import { LabMetricCard } from '@/components/lab/md3/lab-metric-card';
+import { LabMarginPanel } from '@/components/lab/lab-margin-panel';
 import { LabSectionCard } from '@/components/lab/md3/lab-section-card';
 import { LabConfirmDialogs } from '@/components/lab/lab-confirm-dialogs';
 import { LabMissions, type MissionId } from '@/components/lab/lab-missions';
@@ -447,6 +448,15 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
             />
           </Box>
         </Box>
+
+        <LabMarginPanel
+          translations={translations}
+          latencyMs={latestLatency}
+          cpuPercent={latestCpu}
+          incidents={incidents.length}
+          isDeploying={isDeploying}
+          autoChaos={isAutoChaosEnabled}
+        />
 
         <LabSectionCard
           id="cluster"
