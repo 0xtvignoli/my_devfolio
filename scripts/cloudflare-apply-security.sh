@@ -1,0 +1,148 @@
+#!/usr/bin/env bash
+# Apply Cloudflare Security Insights for tvignoli.com via API.
+#
+# Covers (dashboard → Security Insights):
+#   - Bot Fight Mode
+#   - Block AI bots (training scrapers)
+#   - AI Labyrinth (crawler honeypot)
+#   - Turnstile widget bootstrap (account-level)
+#
+# Prerequisites:
+#   export CLOUDFLARE_API_TOKEN="<your-cloudflare-api-token>"   # Zone:Edit + Account:Read (+ Turnstile:Edit for widget)
+#   export CLOUDFLARE_ZONE_NAME="tvignoli.com"   # optional, default below
+#   export CLOUDFLARE_ACCOUNT_ID="<your-cloudflare-account-id>"  # optional, required only for Turnstile widget creation
+#
+# Usage:
+#   ./scripts/cloudflare-apply-security.sh
+#   ./scripts/cloudflare-apply-security.sh --dry-run
+#
+# Docs:
+#   https://developers.cloudflare.com/api/resources/bot_management/methods/update/
+#   https://developers.cloudflare.com/turnstile/get-started/
+
+set -euo pipefail
+
+API_BASE="https://api.cloudflare.com/client/v4"
+ZONE_NAME="${CLOUDFLARE_ZONE_NAME:-tvignoli.com}"
+DRY_RUN=false
+
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) DRY_RUN=true ;;
+    -h|--help)
+      sed -n '2,20p' "$0"
+      exit 0
+      ;;
+  esac
+done
+
+if [[ -z "${CLOUDFLARE_API_TOKEN:-}" ]]; then
+  echo "ERROR: CLOUDFLARE_API_TOKEN is not set."
+  echo "Create a token at https://dash.cloudflare.com/profile/api-tokens"
+  echo "Permissions: Zone → Bot Management → Edit, Zone → Zone → Read"
+  exit 1
+fi
+
+cf_api() {
+  local method="$1"
+  local path="$2"
+  local data="${3:-}"
+  if [[ "$DRY_RUN" == true ]]; then
+    echo "[dry-run] $method $path"
+    [[ -n "$data" ]] && echo "$data"
+    return 0
+  fi
+  if [[ -n "$data" ]]; then
+    curl -fsS -X "$method" \
+      -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+      -H "Content-Type: application/json" \
+      --data "$data" \
+      "$API_BASE$path"
+  else
+    curl -fsS -X "$method" \
+      -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+      "$API_BASE$path"
+  fi
+}
+
+echo "→ Resolving zone ID for $ZONE_NAME..."
+ZONE_RESPONSE=$(cf_api GET "/zones?name=$ZONE_NAME")
+ZONE_ID=$(echo "$ZONE_RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['result'][0]['id'] if d.get('result') else '')" 2>/dev/null || true)
+
+if [[ -z "$ZONE_ID" ]]; then
+  echo "ERROR: Could not resolve zone ID for $ZONE_NAME"
+  echo "$ZONE_RESPONSE"
+  exit 1
+fi
+echo "  Zone ID: $ZONE_ID"
+
+echo "→ Reading current bot management config..."
+CURRENT=$(cf_api GET "/zones/$ZONE_ID/bot_management" || echo '{}')
+echo "  Current: $(echo "$CURRENT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(json.dumps(d.get('result',{}), indent=None))" 2>/dev/null || echo 'n/a')"
+
+# Layered edge protection (Cloudflare security pillars: bot management + AI controls)
+BOT_PAYLOAD=$(cat <<EOF
+{
+  "fight_mode": true,
+  "ai_bots_protection": "block",
+  "crawler_protection": "enabled",
+  "cf_robots_variant": "policy_only",
+  "is_robots_txt_managed": false,
+  "enable_js": true
+}
+EOF
+)
+
+echo "→ Applying bot management (Bot Fight Mode + Block AI bots + AI Labyrinth)..."
+RESULT=$(cf_api PUT "/zones/$ZONE_ID/bot_management" "$BOT_PAYLOAD")
+if [[ "$DRY_RUN" != true ]]; then
+  echo "$RESULT" | python3 -c "
+import sys, json
+d = json.load(sys.stdin)
+if not d.get('success'):
+    print('ERROR:', d.get('errors', d))
+    sys.exit(1)
+r = d.get('result', {})
+print('  fight_mode:', r.get('fight_mode'))
+print('  ai_bots_protection:', r.get('ai_bots_protection'))
+print('  crawler_protection:', r.get('crawler_protection'))
+"
+fi
+
+# Turnstile is account-scoped — create a widget if account ID is provided.
+if [[ -n "${CLOUDFLARE_ACCOUNT_ID:-}" ]]; then
+  TURNSTILE_PAYLOAD=$(cat <<EOF
+{
+  "name": "tvignoli.com portfolio",
+  "domains": ["tvignoli.com", "www.tvignoli.com", "dev.tvignoli.com"],
+  "mode": "managed",
+  "clearance_level": "interactive"
+}
+EOF
+)
+  echo "→ Creating Turnstile widget (account-level)..."
+  T_RESULT=$(cf_api POST "/accounts/$CLOUDFLARE_ACCOUNT_ID/challenges/widgets" "$TURNSTILE_PAYLOAD" || true)
+  if [[ "$DRY_RUN" != true ]] && echo "$T_RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); exit(0 if d.get('success') else 1)" 2>/dev/null; then
+    echo "$T_RESULT" | python3 -c "
+import sys, json
+r = json.load(sys.stdin)['result']
+print('  sitekey:', r.get('sitekey'))
+print('  Add to .env.local:')
+print('    NEXT_PUBLIC_TURNSTILE_SITE_KEY=' + r.get('sitekey',''))
+print('    TURNSTILE_SECRET_KEY=<from Cloudflare dashboard>')
+"
+  else
+    echo "  Turnstile widget may already exist or needs Turnstile:Edit permission."
+    echo "  Create manually: https://dash.cloudflare.com/?to=/:account/turnstile"
+  fi
+else
+  echo "→ Turnstile: set CLOUDFLARE_ACCOUNT_ID to auto-create a widget, or enable at:"
+  echo "  https://dash.cloudflare.com/?to=/:account/turnstile"
+  echo "  (Portfolio has no public forms yet — widget is ready for future contact/API endpoints.)"
+fi
+
+echo ""
+echo "✓ Cloudflare security configuration applied."
+echo "  Verify in dashboard: Security → Security Insights"
+echo "  security.txt is served from /.well-known/security.txt (app repo)"
+echo "  robots.txt blocks AI training crawlers; search bots remain allowed."

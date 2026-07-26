@@ -77,7 +77,7 @@ export const en: Translations = {
   },
   article: {
     back: "Back to articles",
-    author: "By Thomas Vignoli",
+    author: "By",
     published: "Published on",
   },
   project: {

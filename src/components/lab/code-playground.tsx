@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Code2, FileCode, Cloud, Database, Box, GitBranch } from 'lucide-react';
+import { Code2, Cloud } from 'lucide-react';
 import { CodeSandboxEmbed } from '@/components/shared/codesandbox-embed';
 import { cn } from '@/lib/utils';
 import type { Locale, Translations } from '@/lib/types';
@@ -20,55 +20,18 @@ interface CodePlaygroundProps {
   translations: Translations;
 }
 
-// CodeSandbox Sandbox IDs
-// TODO: Replace these placeholder IDs with actual CodeSandbox sandbox IDs
-// Instructions: See CODESANDBOX_SETUP_GUIDE.md
-// 
-// To get a sandbox ID:
-// 1. Create a sandbox on CodeSandbox.io
-// 2. Copy the ID from the URL: https://codesandbox.io/s/YOUR_SANDBOX_ID
-// 3. Replace the placeholder below
+// Only templates backed by a real published CodeSandbox are listed. To add one,
+// publish a module under codesandbox-templates/ and paste its sandbox ID (the
+// part after /s/ in the URL) here — no placeholder IDs, they render as broken embeds.
 const TERRAFORM_TEMPLATES: TerraformTemplate[] = [
   {
     id: 'eks-cluster',
     name: 'EKS Cluster',
     description: 'Production-ready EKS cluster with node groups, IAM roles, and networking',
-    sandboxId: 'summer-tree-z6nwdp', // Real CodeSandbox ID for testing
+    sandboxId: 'summer-tree-z6nwdp',
     icon: Cloud,
     tags: ['Kubernetes', 'AWS', 'EKS', 'Terraform']
   },
-  {
-    id: 'vpc-network',
-    name: 'VPC Network',
-    description: 'Multi-AZ VPC with public/private subnets, NAT gateway, and security groups',
-    sandboxId: 'placeholder-vpc', // TODO: Replace with actual CodeSandbox ID
-    icon: FileCode,
-    tags: ['AWS', 'VPC', 'Networking', 'Terraform']
-  },
-  {
-    id: 'rds-database',
-    name: 'RDS Database',
-    description: 'RDS PostgreSQL with automated backups, encryption, and monitoring',
-    sandboxId: 'placeholder-rds', // TODO: Replace with actual CodeSandbox ID
-    icon: Database,
-    tags: ['AWS', 'RDS', 'PostgreSQL', 'Terraform']
-  },
-  {
-    id: 's3-bucket',
-    name: 'S3 Bucket',
-    description: 'Secure S3 bucket with versioning, encryption, and lifecycle policies',
-    sandboxId: 'placeholder-s3', // TODO: Replace with actual CodeSandbox ID
-    icon: Box,
-    tags: ['AWS', 'S3', 'Storage', 'Terraform']
-  },
-  {
-    id: 'cicd-pipeline',
-    name: 'CI/CD Pipeline',
-    description: 'GitHub Actions workflow for Terraform with policy checks and automated deployments',
-    sandboxId: 'placeholder-cicd', // TODO: Replace with actual CodeSandbox ID
-    icon: GitBranch,
-    tags: ['CI/CD', 'GitHub Actions', 'Terraform', 'Automation']
-  }
 ];
 
 export function CodePlayground({ locale, translations }: CodePlaygroundProps) {

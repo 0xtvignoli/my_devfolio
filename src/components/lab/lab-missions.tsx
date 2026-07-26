@@ -6,7 +6,7 @@ import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { Button } from '@/components/ui-mui';
-import { CheckCircle2, Circle, Compass, FlaskConical, Loader2, Repeat2, Rocket, Trophy } from 'lucide-react';
+import { CheckCircle2, Circle, Compass, FlaskConical, Loader2, Repeat2, Rocket, Timer, Trophy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { trackLabMission } from '@/lib/lab-telemetry';
 import type { Translations } from '@/lib/types';
@@ -28,6 +28,21 @@ const MISSION_ICONS: Record<MissionId, typeof Rocket> = {
   chaos: FlaskConical,
   bluegreen: Repeat2,
 };
+
+// Soft target per mission — turns the timer chip red past it. The point isn't to
+// fail the user (missions still complete), it's the visible constraint that turns
+// a passive walkthrough into an active "beat the clock" challenge.
+const MISSION_TARGET_SECONDS: Record<MissionId, number> = {
+  canary: 90,
+  chaos: 60,
+  bluegreen: 75,
+};
+
+function formatDuration(totalSeconds: number): string {
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
 
 interface MissionStepDef {
   key: string;
@@ -99,6 +114,7 @@ export function LabMissions({
   });
   const [active, setActive] = useState<MissionId | null>(null);
   const [progress, setProgress] = useState<Record<string, boolean>>({});
+  const [elapsed, setElapsed] = useState(0);
 
   const activeRef = useRef(active);
   activeRef.current = active;
@@ -107,6 +123,7 @@ export function LabMissions({
   const prevStatusRef = useRef<PipelineStatus>(pipelineStatus);
   const prevIncidentsRef = useRef(incidentsCount);
   const autoStartedRef = useRef(false);
+  const startedAtRef = useRef<number | null>(null);
 
   useEffect(() => {
     setCompleted(loadCompleted());
@@ -124,14 +141,19 @@ export function LabMissions({
         localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
         return next;
       });
+      const secs = startedAtRef.current
+        ? Math.round((Date.now() - startedAtRef.current) / 1000)
+        : 0;
+      startedAtRef.current = null;
       setActive(null);
       setProgress({});
+      setElapsed(0);
       trackLabMission(mission, 'completed');
       window.dispatchEvent(
         new CustomEvent('lab_activity', { detail: { type: 'mission_completed', data: { mission } } })
       );
       toast({
-        title: `${t.completedTitle} ${t.xpBadge}`,
+        title: `${t.completedTitle} ${t.xpBadge} · ⏱ ${formatDuration(secs)}`,
         description: t.items[mission].completedDescription,
         duration: 6000,
       });
@@ -142,8 +164,21 @@ export function LabMissions({
   const startMission = useCallback((mission: MissionId) => {
     setActive(mission);
     setProgress({});
+    startedAtRef.current = Date.now();
+    setElapsed(0);
     trackLabMission(mission, 'started');
   }, []);
+
+  // Count-up challenge timer, live while a mission is active.
+  useEffect(() => {
+    if (!active) return;
+    const id = setInterval(() => {
+      if (startedAtRef.current) {
+        setElapsed(Math.floor((Date.now() - startedAtRef.current) / 1000));
+      }
+    }, 1000);
+    return () => clearInterval(id);
+  }, [active]);
 
   useEffect(() => {
     if (autoStartMission && !autoStartedRef.current) {
@@ -317,7 +352,22 @@ export function LabMissions({
                   <Button size="sm" variant="outline" onClick={() => startMission(mission)}>
                     {t.start}
                   </Button>
-                ) : null}
+                ) : (
+                  <Chip
+                    size="small"
+                    icon={<Timer size={14} />}
+                    label={`${formatDuration(elapsed)} / ${formatDuration(MISSION_TARGET_SECONDS[mission])}`}
+                    aria-label={`Elapsed ${formatDuration(elapsed)} of ${formatDuration(MISSION_TARGET_SECONDS[mission])} target`}
+                    sx={{
+                      fontWeight: 600,
+                      fontVariantNumeric: 'tabular-nums',
+                      bgcolor:
+                        elapsed > MISSION_TARGET_SECONDS[mission]
+                          ? 'var(--md-sys-color-error-container)'
+                          : 'var(--md-sys-color-surface-container-high)',
+                    }}
+                  />
+                )}
               </Stack>
 
               {isActive ? (
