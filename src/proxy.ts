@@ -108,6 +108,45 @@ function withLocaleHeader(response: NextResponse, locale: string) {
   return response;
 }
 
+// --- Experimental /shell route: real bash-on-WASIX rendered in xterm.js ------
+// @wasmer/sdk needs SharedArrayBuffer (threads) → the page must be cross-origin
+// isolated (COOP+COEP) AND its CSP must permit WebAssembly + workers. Both are
+// scoped to /shell ONLY, so the rest of the site keeps its strict CSP and its
+// cross-origin resources (analytics, Google Fonts, CodeSandbox) keep working.
+function buildShellContentSecurityPolicy(): string {
+  // esm.sh serves the unbundled @wasmer/sdk (see real-shell.tsx for why); the
+  // SDK then pulls the bash package from the Wasmer registry.
+  return [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob: https://esm.sh",
+    "style-src 'self' 'unsafe-inline'",
+    "font-src 'self' data:",
+    "img-src 'self' data: blob:",
+    "connect-src 'self' https://esm.sh https://registry.wasmer.io https://*.wasmer.io blob: data:",
+    "worker-src 'self' blob: https://esm.sh",
+    "child-src 'self' blob:",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+  ].join('; ');
+}
+
+function applyShellIsolationHeaders(response: NextResponse, req?: NextRequest) {
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.headers.set(
+    'Content-Security-Policy',
+    isDevelopmentEnvironment(req)
+      ? buildDevelopmentContentSecurityPolicy()
+      : buildShellContentSecurityPolicy()
+  );
+  // credentialless (not require-corp) keeps cross-origin isolation on while being
+  // permissive on cross-origin subresources, so the page won't hard-break.
+  response.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
+  response.headers.set('Cross-Origin-Embedder-Policy', 'credentialless');
+  response.headers.set('Cross-Origin-Resource-Policy', 'same-origin');
+  return response;
+}
+
 // Host-based routing, locale path redirects, and security headers
 export function proxy(req: NextRequest) {
   const url = req.nextUrl.clone();
@@ -141,6 +180,7 @@ export function proxy(req: NextRequest) {
     const labAllowed =
       stripped === '/' ||
       stripped.startsWith('/lab') ||
+      stripped.startsWith('/shell') ||
       stripped.startsWith('/dashboard');
 
     if (!labAllowed) {
@@ -162,7 +202,10 @@ export function proxy(req: NextRequest) {
     maxAge: 60 * 60 * 24 * 365,
   });
 
-  return applySecurityHeaders(withLocaleHeader(response, pathLocale), req);
+  const withLocale = withLocaleHeader(response, pathLocale);
+  return stripLocaleFromPath(path).startsWith('/shell')
+    ? applyShellIsolationHeaders(withLocale, req)
+    : applySecurityHeaders(withLocale, req);
 }
 
 export const config = {
