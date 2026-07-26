@@ -114,14 +114,16 @@ function withLocaleHeader(response: NextResponse, locale: string) {
 // scoped to /shell ONLY, so the rest of the site keeps its strict CSP and its
 // cross-origin resources (analytics, Google Fonts, CodeSandbox) keep working.
 function buildShellContentSecurityPolicy(): string {
+  // esm.sh serves the unbundled @wasmer/sdk (see real-shell.tsx for why); the
+  // SDK then pulls the bash package from the Wasmer registry.
   return [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob:",
+    "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob: https://esm.sh",
     "style-src 'self' 'unsafe-inline'",
     "font-src 'self' data:",
     "img-src 'self' data: blob:",
-    "connect-src 'self' https://registry.wasmer.io https://*.wasmer.io blob: data:",
-    "worker-src 'self' blob:",
+    "connect-src 'self' https://esm.sh https://registry.wasmer.io https://*.wasmer.io blob: data:",
+    "worker-src 'self' blob: https://esm.sh",
     "child-src 'self' blob:",
     "frame-ancestors 'none'",
     "base-uri 'self'",

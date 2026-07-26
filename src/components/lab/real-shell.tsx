@@ -70,7 +70,12 @@ export function RealShell() {
 
       term.writeln('Loading bash (WASIX) from the Wasmer registry…');
       try {
-        const { init, Wasmer } = await import('@wasmer/sdk');
+        // Load @wasmer/sdk from a CDN, UNBUNDLED. Next's bundler rewrites the
+        // SDK's web-worker module URL to a /_next/static path the worker can't
+        // resolve, which silently breaks bash execution. A native dynamic import
+        // of the CDN ESM keeps the SDK's own worker/wasm URLs intact.
+        const wasmerUrl = 'https://esm.sh/@wasmer/sdk@0.10.0';
+        const { init, Wasmer } = await import(/* webpackIgnore: true */ /* turbopackIgnore: true */ wasmerUrl);
         await init();
         const pkg = await Wasmer.fromRegistry('sharrattj/bash');
         const instance = (await pkg.entrypoint!.run()) as unknown as WasmerInstanceLike;
