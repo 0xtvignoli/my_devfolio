@@ -1,6 +1,6 @@
 'use client';
 
-import { onCLS, onFID, onFCP, onLCP, onTTFB } from 'web-vitals';
+import { onCLS, onINP, onFCP, onLCP, onTTFB } from 'web-vitals';
 
 export interface WebVitalsMetric {
   name: string;
@@ -26,11 +26,16 @@ export function sendWebVitals(metric: WebVitalsMetric) {
     });
   }
 
-  // Send to analytics endpoint
-  // Replace with your actual analytics service
-  if (window.location.pathname !== '/_next/static' && !window.location.pathname.includes('__nextjs')) {
-    const vitalsUrl = `${process.env.NEXT_PUBLIC_ANALYTICS_URL || 'https://analytics.example.com'}/api/vitals`;
-    
+  // Send to analytics endpoint only when one is configured.
+  // No endpoint set → dev/console only, no dead beacon to a placeholder host.
+  const analyticsBase = process.env.NEXT_PUBLIC_ANALYTICS_URL;
+  if (
+    analyticsBase &&
+    window.location.pathname !== '/_next/static' &&
+    !window.location.pathname.includes('__nextjs')
+  ) {
+    const vitalsUrl = `${analyticsBase}/api/vitals`;
+
     // Use sendBeacon for reliability when page is unloading
     if (navigator.sendBeacon) {
       navigator.sendBeacon(vitalsUrl, JSON.stringify(metric));
@@ -45,7 +50,7 @@ export function sendWebVitals(metric: WebVitalsMetric) {
 export function initializeWebVitals() {
   try {
     onCLS(sendWebVitals);
-    onFID(sendWebVitals);
+    onINP(sendWebVitals);
     onFCP(sendWebVitals);
     onLCP(sendWebVitals);
     onTTFB(sendWebVitals);

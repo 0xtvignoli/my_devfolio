@@ -55,11 +55,19 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
     
     const addIncident = useCallback((incident: Omit<Incident, 'id' | 'timestamp'>) => {
         const newIncident: Incident = {
-            id: `inc-${Date.now()}`,
+            id: `inc-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
             timestamp: new Date(),
             ...incident
         };
         setIncidents(prev => [newIncident, ...prev.slice(0, 4)]);
+        return newIncident.id;
+    }, []);
+
+    // Flip an in-flight incident to Resolved and stamp its real duration.
+    const resolveIncident = useCallback((id: string, duration: string) => {
+        setIncidents(prev =>
+            prev.map(i => (i.id === id ? { ...i, status: 'Resolved', duration } : i))
+        );
     }, []);
 
     const updateMonitoring = useCallback(() => {
@@ -119,13 +127,14 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
             addRuntimeLog(description);
             toast({ variant: 'destructive', title: '🚨 ALERT: High API Latency Detected', description });
             simulationEffects.current.latencyInjection = 300;
+            const incidentId = addIncident({ type: 'API Latency', duration: '—', status: 'Investigating' });
              setTimeout(() => {
                 const recoveryMsg = "Chaos experiment 'latency' finished. Latency returning to normal.";
                 addRuntimeLog(`✅ ${recoveryMsg}`);
                 toast({ variant: 'default', title: '✅ RESOLVED: API Latency Normalized', description: 'The API gateway has recovered.' });
                 simulationEffects.current.latencyInjection = 0;
                 const duration = ((Date.now() - startTime) / 1000).toFixed(1);
-                addIncident({ type: 'API Latency', duration: `${duration}s`, status: 'Resolved' });
+                resolveIncident(incidentId, `${duration}s`);
                 
                 // Trigger gamification event for chaos experiment
                 window.dispatchEvent(new CustomEvent('lab_activity', {
@@ -145,6 +154,7 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
             const description = `Terminating pod '${targetPodName}'...`;
             addRuntimeLog(description);
             toast({ variant: 'destructive', title: `🚨 ALERT: Pod Unhealthy`, description: `Pod ${targetPodName} is not responding.` });
+            const incidentId = addIncident({ type: 'Pod Failure', duration: '—', status: 'Investigating' });
 
             setCluster(prev => {
                 const newNodes = prev.nodes.map(node => ({
@@ -182,7 +192,7 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
                     return { ...prev, nodes: newNodes };
                 });
                 const duration = ((Date.now() - startTime) / 1000).toFixed(1);
-                addIncident({ type: 'Pod Failure', duration: `${duration}s`, status: 'Resolved' });
+                resolveIncident(incidentId, `${duration}s`);
             }, 6000);
 
         } else if (scenario === 'cpu_spike') {
@@ -190,13 +200,14 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
             addRuntimeLog(description);
             toast({ variant: 'destructive', title: '🚨 ALERT: High CPU Usage Detected', description });
             simulationEffects.current.cpuSpike = 80;
+            const incidentId = addIncident({ type: 'CPU Spike', duration: '—', status: 'Investigating' });
              setTimeout(() => {
                 const recoveryMsg = "Chaos experiment 'cpu_spike' finished. CPU usage returning to normal.";
                 addRuntimeLog(`✅ ${recoveryMsg}`);
                 toast({ variant: 'default', title: '✅ RESOLVED: CPU Usage Normalized', description: 'The monitoring service has stabilized.' });
                 simulationEffects.current.cpuSpike = 0;
                  const duration = ((Date.now() - startTime) / 1000).toFixed(1);
-                addIncident({ type: 'CPU Spike', duration: `${duration}s`, status: 'Resolved' });
+                resolveIncident(incidentId, `${duration}s`);
             }, 8000);
         } else {
              addRuntimeLog(`Unknown chaos scenario: ${scenario}. Available: latency, pod_failure, cpu_spike`);
@@ -210,7 +221,7 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
                 description: 'An error occurred during the chaos experiment. Check logs for details.' 
             });
         }
-    }, [addRuntimeLog, toast, cluster, addIncident]);
+    }, [addRuntimeLog, toast, cluster, addIncident, resolveIncident]);
 
     const runStage = (stage: PipelineStage, commandOutput: string): Promise<void> => {
         return new Promise((resolve, reject) => {

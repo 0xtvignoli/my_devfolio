@@ -75,7 +75,7 @@ export default async function Image({ params }: { params: Promise<{ locale: stri
           </div>
           <span>devops-folio</span>
           <span style={{ marginLeft: 'auto', fontSize: 22, fontWeight: 400, color: '#9a9898' }}>
-            // {sectionLabel.toLowerCase()}
+            {`// ${sectionLabel.toLowerCase()}`}
           </span>
         </div>
 
