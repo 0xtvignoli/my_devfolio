@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import Container from '@mui/material/Container';
@@ -19,6 +20,8 @@ import {
   Undo,
   Loader2,
   GaugeCircle,
+  Radio,
+  Terminal,
 } from 'lucide-react';
 import { CpuUsageChart } from '@/components/lab/cpu-chart';
 import { MemoryUsageChart } from '@/components/lab/memory-chart';
@@ -28,6 +31,7 @@ import { InteractiveTerminal } from '@/components/lab/interactive-terminal';
 import { KubernetesClusterViz } from '@/components/lab/kubernetes-cluster-viz';
 import { VisualDeployPipeline } from '@/components/lab/visual-deploy-pipeline';
 import type { Locale, Translations } from '@/lib/types';
+import { localizedPath } from '@/lib/i18n/paths';
 import { IncidentHistory } from '@/components/lab/incident-history';
 import { CanaryAnalysis } from '@/components/lab/canary-analysis';
 import { AriaLiveRegion } from '@/components/shared/aria-live-region';
@@ -177,6 +181,22 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
                 steps={buildLabTourSteps(translations)}
                 labels={t.tour}
               />
+              <Link
+                href={localizedPath(locale, '/live')}
+                className="inline-flex items-center gap-1 rounded-[8px] border border-[var(--md-sys-color-outline-variant)] px-2 py-1 text-xs font-medium text-[var(--md-sys-color-on-surface-variant)] transition-colors hover:text-[var(--md-sys-color-primary)] hover:border-[var(--md-sys-color-primary)]"
+                title="Live Ops — real commands vs emulated AWS"
+              >
+                <Radio size={14} aria-hidden />
+                <span className="hidden sm:inline">Live Ops</span>
+              </Link>
+              <Link
+                href={localizedPath(locale, '/shell')}
+                className="inline-flex items-center gap-1 rounded-[8px] border border-[var(--md-sys-color-outline-variant)] px-2 py-1 text-xs font-medium text-[var(--md-sys-color-on-surface-variant)] transition-colors hover:text-[var(--md-sys-color-primary)] hover:border-[var(--md-sys-color-primary)]"
+                title="Real shell — bash running in your browser (WASM)"
+              >
+                <Terminal size={14} aria-hidden />
+                <span className="hidden sm:inline">Shell</span>
+              </Link>
             </Stack>
           }
           stats={[
