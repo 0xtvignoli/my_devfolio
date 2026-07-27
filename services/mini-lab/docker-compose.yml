@@ -1,0 +1,25 @@
+# Self-host the live lab on a box you own (VPS, Fly.io machine, etc.).
+# NOT for Vercel — it needs a long-lived process and a reachable floci.
+services:
+  floci:
+    image: floci/floci:latest
+    user: root
+    # Only container-backed services (EKS/k3s) need the Docker socket; the
+    # current allowlist (ec2/s3/iam) is in-process, but this keeps EKS ready.
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+    # No published ports: only mini-lab talks to it, over the internal network.
+
+  mini-lab:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      FLOCI_ENDPOINT: http://floci:4566
+      # Lock this to your site origin in production (e.g. https://tvignoli.com).
+      ALLOWED_ORIGIN: ${ALLOWED_ORIGIN:-*}
+      RATE_LIMIT: ${RATE_LIMIT:-30}
+    depends_on:
+      - floci
+    restart: unless-stopped

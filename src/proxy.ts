@@ -55,6 +55,18 @@ function buildDevelopmentContentSecurityPolicy(): string {
   ].join('; ');
 }
 
+// Origin of the optional mini-lab backend (live lab), so the /live page may
+// fetch it. Only its origin is allowed, and only when configured.
+function miniLabOrigin(): string | null {
+  const url = process.env.NEXT_PUBLIC_MINILAB_URL;
+  if (!url) return null;
+  try {
+    return new URL(url).origin;
+  } catch {
+    return null;
+  }
+}
+
 function buildContentSecurityPolicy(): string {
   const scriptSrc = [
     "'self'",
@@ -68,7 +80,10 @@ function buildContentSecurityPolicy(): string {
     'https://www.google-analytics.com',
     'https://analytics.google.com',
     'https://*.google-analytics.com',
-  ].join(' ');
+    miniLabOrigin(),
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return [
     "default-src 'self'",
@@ -181,6 +196,7 @@ export function proxy(req: NextRequest) {
       stripped === '/' ||
       stripped.startsWith('/lab') ||
       stripped.startsWith('/shell') ||
+      stripped.startsWith('/live') ||
       stripped.startsWith('/dashboard');
 
     if (!labAllowed) {
