@@ -16,6 +16,12 @@ const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || '*';
 const CMD_TIMEOUT_MS = Number(process.env.CMD_TIMEOUT_MS) || 30_000;
 const RATE_LIMIT = Number(process.env.RATE_LIMIT) || 30; // requests / window / ip
 const RATE_WINDOW_MS = 60_000;
+const MAX_HEAVY = Number(process.env.MAX_HEAVY) || 3; // concurrent heavy (k3s) actions
+
+// Global guard for `heavy` actions (each spins a real k3s container) so a public
+// deployment can't be exhausted. ponytail: single counter; add per-IP heavy caps
+// + idle cluster reaping if this ever runs hot.
+let heavyRunning = 0;
 
 const hits = new Map();
 function rateLimited(ip) {
@@ -56,13 +62,13 @@ function newAccountId() {
   return s;
 }
 
-function runStep(step, env, res) {
+function runStep(step, env, res, timeoutMs) {
   return new Promise((resolve) => {
     const child = spawn(step[0], step.slice(1), { env });
     const timer = setTimeout(() => {
       res.write('\n[timed out]\n');
       child.kill('SIGKILL');
-    }, CMD_TIMEOUT_MS);
+    }, timeoutMs);
     child.stdout.on('data', (d) => res.write(d));
     child.stderr.on('data', (d) => res.write(d));
     child.on('error', (e) => res.write(`\n[error] ${e.message}\n`));
@@ -107,6 +113,9 @@ const server = createServer(async (req, res) => {
     }
     const act = ACTIONS[action];
     if (!act) return sendJson(res, 400, { error: 'unknown action' });
+    if (act.heavy && heavyRunning >= MAX_HEAVY) {
+      return sendJson(res, 429, { error: 'lab at capacity for heavy actions, try again shortly' });
+    }
 
     cors(res);
     res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
@@ -120,9 +129,21 @@ const server = createServer(async (req, res) => {
       AWS_DEFAULT_REGION: 'us-east-1',
       AWS_PAGER: '',
     };
-    for (const step of act.steps) {
-      res.write(`$ ${step.join(' ')}\n`);
-      await runStep(step, env, res);
+    const timeoutMs = act.timeoutMs || CMD_TIMEOUT_MS;
+    // Script actions run a FIXED bundled script (no user input); argv actions run
+    // fixed argv arrays. Either way nothing user-controlled reaches the command.
+    const steps = act.script
+      ? [['bash', new URL(`./${act.script}`, import.meta.url).pathname]]
+      : act.steps;
+
+    if (act.heavy) heavyRunning++;
+    try {
+      for (const step of steps) {
+        if (!act.script) res.write(`$ ${step.join(' ')}\n`);
+        await runStep(step, env, res, timeoutMs);
+      }
+    } finally {
+      if (act.heavy) heavyRunning--;
     }
     return res.end();
   }

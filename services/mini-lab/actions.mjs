@@ -33,4 +33,12 @@ export const ACTIONS = {
     label: 'List IAM roles',
     steps: [['aws', 'iam', 'list-roles', '--query', 'Roles[].RoleName', '--output', 'table']],
   },
+  'deploy-eks': {
+    label: 'Deploy an EKS cluster',
+    // A FIXED bundled script (no user input). This is the heavy one: floci backs
+    // EKS with a real k3s container, so it's rate-capped by `heavy` below.
+    script: 'deploy-eks.sh',
+    timeoutMs: 150_000,
+    heavy: true,
+  },
 };

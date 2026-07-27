@@ -10,7 +10,7 @@ RUN apt-get update \
  && rm -rf /tmp/* /var/lib/apt/lists/*
 
 WORKDIR /app
-COPY server.mjs actions.mjs ./
+COPY server.mjs actions.mjs deploy-eks.sh ./
 
 ENV PORT=8080
 EXPOSE 8080
