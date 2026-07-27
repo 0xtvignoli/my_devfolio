@@ -333,6 +333,15 @@
     display: inline-flex;
     align-items: center;
   }
+  /* Opt prose back out of the touch-target floor above: WCAG 2.5.8 exempts
+     inline text links, and inline-flex stops them wrapping mid-paragraph.
+     Written as an override rather than `a:not(.prose a)` because Lightning CSS
+     lowers a complex :not() by dropping it — the selector silently became `a`. */
+  .prose a {
+    min-height: 0;
+    display: inline;
+    align-items: normal;
+  }
   @media (hover: none) and (pointer: coarse) {
     button:active,
     a:active,

@@ -30,6 +30,7 @@ const STATUS_LABEL: Record<Phase, string> = {
  */
 export function RealShell() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const termRef = useRef<import('@xterm/xterm').Terminal>(null);
   const [phase, setPhase] = useState<Phase>('booting');
 
   useEffect(() => {
@@ -54,6 +55,7 @@ export function RealShell() {
       const fit = new FitAddon();
       term.loadAddon(fit);
       term.open(containerRef.current);
+      termRef.current = term;
       fit.fit();
       const onResize = () => fit.fit();
       window.addEventListener('resize', onResize);
@@ -100,6 +102,7 @@ export function RealShell() {
 
     return () => {
       disposed = true;
+      termRef.current = null;
       term?.dispose();
     };
   }, []);
@@ -113,7 +116,18 @@ export function RealShell() {
         <span className="ml-2 font-mono">bash — dev.tvignoli.com</span>
         <span className="ml-auto font-mono text-[#9a9898]">{STATUS_LABEL[phase]}</span>
       </div>
-      <div ref={containerRef} className="min-h-0 flex-1 p-2" aria-label="Interactive shell" />
+      {/* Focus has to happen synchronously inside the tap handler: mobile
+          browsers only open the soft keyboard for a focus caused by a real user
+          gesture, and xterm's helper textarea is never tapped directly.
+          ponytail: 13px mono still only fits ~30 columns at 390px — if bash on a
+          phone matters beyond a demo, the next step is a soft key row (Tab, Ctrl,
+          arrows), not a smaller font. */}
+      <div
+        ref={containerRef}
+        onPointerDown={() => termRef.current?.focus()}
+        className="min-h-0 flex-1 p-2"
+        aria-label="Interactive shell"
+      />
     </div>
   );
 }

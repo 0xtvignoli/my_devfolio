@@ -4,8 +4,9 @@ import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { ChevronDown } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 
 type LabSectionCardProps = {
   title: string;
@@ -18,6 +19,11 @@ type LabSectionCardProps = {
   collapsible?: boolean;
   expanded?: boolean;
   onExpandedChange?: (expanded: boolean) => void;
+  /**
+   * Below md the section starts collapsed and manages its own toggle — secondary
+   * content shouldn't cost a screen of scrolling on a phone. Desktop is untouched.
+   */
+  collapseOnCompact?: boolean;
 };
 
 export function LabSectionCard({
@@ -30,11 +36,18 @@ export function LabSectionCard({
   collapsible = false,
   expanded = true,
   onExpandedChange,
+  collapseOnCompact = false,
 }: LabSectionCardProps) {
-  const isOpen = collapsible ? expanded : true;
+  const [compactOpen, setCompactOpen] = useState(false);
+  const isCompact = useMediaQuery('(max-width:899.95px)'); // theme.breakpoints.down('md')
+  const selfCollapsing = collapseOnCompact && isCompact;
+
+  const canCollapse = collapsible || selfCollapsing;
+  const isOpen = selfCollapsing ? compactOpen : collapsible ? expanded : true;
   const contentId = id ? `${id}-content` : undefined;
 
-  const toggle = () => onExpandedChange?.(!expanded);
+  const toggle = () =>
+    selfCollapsing ? setCompactOpen((open) => !open) : onExpandedChange?.(!expanded);
 
   return (
     <Box
@@ -45,7 +58,7 @@ export function LabSectionCard({
       aria-labelledby={id ? `${id}-heading` : undefined}
     >
       <Box
-        onClick={collapsible ? toggle : undefined}
+        onClick={canCollapse ? toggle : undefined}
         sx={{
           display: 'flex',
           alignItems: 'flex-start',
@@ -55,8 +68,8 @@ export function LabSectionCard({
           py: 2,
           borderBottom: isOpen ? '1px solid var(--md-sys-color-outline-variant)' : 'none',
           bgcolor: 'var(--md-sys-color-surface-container-lowest)',
-          cursor: collapsible ? 'pointer' : 'default',
-          '&:hover': collapsible ? { bgcolor: 'var(--md-sys-color-surface-container-low)' } : undefined,
+          cursor: canCollapse ? 'pointer' : 'default',
+          '&:hover': canCollapse ? { bgcolor: 'var(--md-sys-color-surface-container-low)' } : undefined,
         }}
       >
         <Box>
@@ -74,7 +87,7 @@ export function LabSectionCard({
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }} onClick={(e) => e.stopPropagation()}>
           {action}
-          {collapsible ? (
+          {canCollapse ? (
             <IconButton
               size="small"
               onClick={toggle}
@@ -95,7 +108,7 @@ export function LabSectionCard({
           ) : null}
         </Box>
       </Box>
-      {collapsible ? (
+      {canCollapse ? (
         <Collapse in={isOpen} id={contentId}>
           <Box sx={{ p: noPadding ? 0 : 2.5 }}>{children}</Box>
         </Collapse>

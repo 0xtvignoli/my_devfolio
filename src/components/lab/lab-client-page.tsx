@@ -289,7 +289,7 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
             </Stack>
           </LabSectionCard>
 
-          <LabSectionCard id="mission-control" title={t.missionControl.title} subtitle={t.missionControl.description}>
+          <LabSectionCard id="mission-control" title={t.missionControl.title} subtitle={t.missionControl.description} collapseOnCompact>
             <Stack spacing={2}>
               <Alert
                 severity="warning"
@@ -415,7 +415,8 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
           <Box
             sx={{
               display: 'grid',
-              gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(4, 1fr)' },
+              // 2-up on compact: one card per row cost ~960px of scroll on a phone.
+              gridTemplateColumns: { xs: '1fr 1fr', lg: 'repeat(4, 1fr)' },
               gap: 2,
             }}
           >

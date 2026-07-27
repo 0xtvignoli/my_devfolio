@@ -197,6 +197,7 @@ export function LabMarginPanel({ translations, latencyMs, cpuPercent, incidents,
       id="margin"
       title={t.title}
       subtitle={t.subtitle}
+      collapseOnCompact
       action={
         <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
           <Typography variant="caption" sx={{ color: 'var(--md-sys-color-on-surface-variant)' }}>

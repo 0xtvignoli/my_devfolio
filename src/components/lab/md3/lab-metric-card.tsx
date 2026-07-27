@@ -55,7 +55,13 @@ export function LabMetricCard({
         variant="h5"
         component="div"
         suppressHydrationWarning
-        sx={{ color: 'var(--md-sys-color-on-surface)', fontWeight: 700, lineHeight: 1.2 }}
+        sx={{
+          color: 'var(--md-sys-color-on-surface)',
+          fontWeight: 700,
+          lineHeight: 1.2,
+          // Two cards per row on compact leaves ~140px: "13.4 / 32 GB" needs to fit.
+          fontSize: { xs: '1.0625rem', md: '1.5rem' },
+        }}
       >
         {value}
       </Typography>
