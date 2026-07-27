@@ -189,14 +189,17 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
                 <Radio size={14} aria-hidden />
                 <span className="hidden sm:inline">Live Ops</span>
               </Link>
-              <Link
+              {/* Native <a>, not Next <Link>: /shell needs a full-document load so
+                  its COOP/COEP isolation headers take effect (a soft SPA nav
+                  leaves crossOriginIsolated=false and bash can't run). */}
+              <a
                 href={localizedPath(locale, '/shell')}
                 className="inline-flex items-center gap-1 rounded-[8px] border border-[var(--md-sys-color-outline-variant)] px-2 py-1 text-xs font-medium text-[var(--md-sys-color-on-surface-variant)] transition-colors hover:text-[var(--md-sys-color-primary)] hover:border-[var(--md-sys-color-primary)]"
                 title="Real shell — bash running in your browser (WASM)"
               >
                 <Terminal size={14} aria-hidden />
                 <span className="hidden sm:inline">Shell</span>
-              </Link>
+              </a>
             </Stack>
           }
           stats={[
