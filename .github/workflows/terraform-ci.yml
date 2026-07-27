@@ -1,0 +1,91 @@
+name: terraform-ci
+
+# Validates the portfolio's Terraform modules against a local AWS emulator
+# (floci) — the AWS modules are init/validate/plan'd (and VPC applied) against
+# a real, emulated AWS API; the Cloudflare module is validated offline.
+# Proof the IaC is real and correct, with zero cloud account or cloud spend.
+
+on:
+  push:
+    branches: [develop, main]
+    paths:
+      - 'codesandbox-templates/**'
+      - 'terraform/**'
+      - '.github/workflows/terraform-ci.yml'
+  pull_request:
+    paths:
+      - 'codesandbox-templates/**'
+      - 'terraform/**'
+      - '.github/workflows/terraform-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  terraform:
+    name: Validate Terraform against emulated AWS (floci)
+    runs-on: ubuntu-latest
+    env:
+      # floci is a local AWS emulator; the AWS provider reads these endpoint/creds
+      # env vars, so the real .tf modules are never modified for CI.
+      AWS_ENDPOINT_URL: http://localhost:4566
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_REGION: us-east-1
+      AWS_DEFAULT_REGION: us-east-1
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.15.3
+          terraform_wrapper: false
+
+      - name: Start floci (local AWS emulator)
+        run: |
+          docker run -d --name floci -p 4566:4566 \
+            -v /var/run/docker.sock:/var/run/docker.sock -u root \
+            floci/floci:latest
+          echo "Waiting for floci to be ready…"
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:4566/_localstack/health >/dev/null; then
+              echo "floci ready"; exit 0
+            fi
+            sleep 2
+          done
+          echo "floci did not become ready in time"; docker logs floci; exit 1
+
+      - name: 'vpc-network — validate → plan → apply (emulated AWS)'
+        working-directory: codesandbox-templates/vpc-network
+        run: |
+          terraform init -no-color -input=false
+          terraform validate -no-color
+          terraform plan  -no-color -input=false
+          terraform apply -auto-approve -no-color -input=false
+
+      - name: 'vpc-network — confirm the VPC really exists in the emulator'
+        run: |
+          aws --endpoint-url "$AWS_ENDPOINT_URL" ec2 describe-vpcs \
+            --query 'Vpcs[].VpcId' --output text
+
+      - name: 'eks-cluster — validate → plan (emulated AWS)'
+        working-directory: codesandbox-templates/eks-cluster
+        run: |
+          terraform init -no-color -input=false
+          terraform validate -no-color
+          terraform plan -no-color -input=false
+
+      - name: 'monetization-gateway — validate (Cloudflare, offline)'
+        working-directory: terraform/monetization-gateway
+        run: |
+          terraform init -backend=false -no-color -input=false
+          terraform validate -no-color
+
+      - name: Stop floci
+        if: always()
+        run: docker rm -f floci || true

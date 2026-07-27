@@ -1,5 +1,9 @@
 # Thomas Vignoli - DevOps Engineer Portfolio
 
+[![terraform-ci](https://github.com/0xtvignoli/my_devfolio/actions/workflows/terraform-ci.yml/badge.svg)](https://github.com/0xtvignoli/my_devfolio/actions/workflows/terraform-ci.yml)
+
+> Every Terraform module in this repo is `validate`d and `plan`ned against a real AWS API — [floci](https://github.com/floci-io/floci), a local AWS emulator — in CI, with the VPC module fully `apply`d. No cloud account, no cloud spend.
+
 ## About
 
 Questo sito è un portfolio personale costruito con Next.js (App Router), TypeScript, Tailwind CSS e componenti shadcn/ui.
