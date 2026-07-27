@@ -1172,8 +1172,10 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
 
           <form onSubmit={(e) => e.preventDefault()} className="px-3 sm:px-4 py-2.5 border-t border-[#3a3636] bg-[#201d1d] shrink-0">
             <label htmlFor="terminal-input" className="sr-only">Terminal input</label>
-            <div className="flex items-baseline gap-2">
-              <span className="text-[#4da3ff] shrink-0 whitespace-nowrap">
+            {/* Compact windows: the prompt (~200px) and the input can't share a row —
+                below sm it took the whole line and left the field 10px wide. */}
+            <div className="flex items-baseline gap-2 max-sm:flex-col max-sm:items-stretch max-sm:gap-0">
+              <span className="text-[#4da3ff] shrink-0 whitespace-nowrap max-sm:text-xs">
                 {sessionMeta ? promptRef.current : 'infra@control-plane:~$'}
               </span>
               <input

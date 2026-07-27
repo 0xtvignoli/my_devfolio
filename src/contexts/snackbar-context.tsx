@@ -58,6 +58,8 @@ export function SnackbarProvider({ children }: { children: React.ReactNode }) {
         autoHideDuration={message?.duration ?? 5000}
         onClose={handleClose}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        // Clear the 64px mobile bottom nav — MD3 forbids a snackbar covering it.
+        sx={{ bottom: { xs: 'calc(72px + env(safe-area-inset-bottom, 0px))', md: 24 } }}
       >
         <Alert onClose={() => handleClose()} severity={severity} variant="filled" sx={{ width: '100%' }}>
           {message?.title}

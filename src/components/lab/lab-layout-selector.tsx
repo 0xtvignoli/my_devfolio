@@ -85,9 +85,15 @@ export function LabLayoutSelector({ locale, translations }: LabLayoutSelectorPro
         role="radiogroup"
         aria-label={t.ariaLabel}
         sx={{
-          position: 'fixed',
-          top: layout === 'immersive' ? { xs: 8, md: 10 } : { xs: 72, md: 80 },
-          right: { xs: 12, md: 16 },
+          // Compact: in flow above the hero instead of a panel permanently
+          // floating over the breadcrumb and every card below it.
+          position: layout === 'immersive' ? 'fixed' : { xs: 'static', md: 'fixed' },
+          top: layout === 'immersive' ? { xs: 8, md: 10 } : { md: 80 },
+          right: layout === 'immersive' ? { xs: 12, md: 16 } : { md: 16 },
+          width: 'fit-content',
+          ml: 'auto',
+          mr: { xs: layout === 'immersive' ? 0 : 2, md: 0 },
+          mt: { xs: layout === 'immersive' ? 0 : 1, md: 0 },
           zIndex: 60,
           display: 'flex',
           alignItems: 'center',

@@ -1,4 +1,4 @@
-import type {Metadata} from 'next';
+import type {Metadata, Viewport} from 'next';
 import './globals.css';
 import { jetbrainsMono, ibmPlexMono } from './fonts';
 import { cn } from '@/lib/utils';
@@ -44,6 +44,18 @@ export const metadata: Metadata = {
   ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
     ? { verification: { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION } }
     : {}),
+};
+
+/* viewportFit: 'cover' is what makes env(safe-area-inset-*) resolve to anything
+   other than 0 — the bottom nav and the marketing main padding both depend on it. */
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#fdfcfc' },
+    { media: '(prefers-color-scheme: dark)', color: '#201d1d' },
+  ],
 };
 
 export default async function RootLayout({

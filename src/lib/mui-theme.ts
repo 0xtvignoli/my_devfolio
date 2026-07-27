@@ -1,4 +1,4 @@
-import { createTheme } from '@mui/material/styles';
+import { createTheme, responsiveFontSizes } from '@mui/material/styles';
 
 /**
  * OpenCode "manpage" theme for MUI.
@@ -41,7 +41,9 @@ const oc = {
 export function createAppTheme(mode: 'light' | 'dark') {
   const c = oc[mode];
 
-  return createTheme({
+  // responsiveFontSizes only scales headings *down* below lg, which is exactly
+  // what a mono face needs on a 390px window (h4 was 2 lines / ~130px there).
+  return responsiveFontSizes(createTheme({
     palette: {
       mode,
       primary: { main: c.ink, dark: c.inkDeep, contrastText: c.canvas },
@@ -245,7 +247,7 @@ export function createAppTheme(mode: 'light' | 'dark') {
           },
           label: {
             fontFamily: MONO,
-            fontSize: '0.7rem',
+            fontSize: '0.75rem', // MD3 label-medium floor; 0.7rem rendered at 11.2px
             '&.Mui-selected': {
               fontSize: '0.75rem',
             },
@@ -265,5 +267,5 @@ export function createAppTheme(mode: 'light' | 'dark') {
         },
       },
     },
-  });
+  }));
 }

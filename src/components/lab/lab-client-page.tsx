@@ -238,6 +238,7 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
                     sx={{
                       fontFamily: 'var(--font-family-mono), monospace',
                       fontSize: '0.75rem',
+                      height: { xs: 40, md: 32 }, // 24px default is far under a usable touch target
                       borderColor: 'var(--md-sys-color-outline-variant)',
                       '&:hover': { bgcolor: 'var(--md-sys-color-surface-container-high)' },
                     }}

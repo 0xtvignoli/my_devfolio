@@ -89,7 +89,10 @@ export function LabAutoDemo({ translations, runCommand, disabled = false }: LabA
       role="status"
       sx={{
         position: 'fixed',
-        bottom: { xs: 16, md: 24 },
+        // Compact: top slot. The bottom already carries the snackbar and the
+        // activity beacon, and all three landed on each other at 390px.
+        bottom: { xs: 'auto', md: 24 },
+        top: { xs: 64, md: 'auto' },
         left: '50%',
         transform: 'translateX(-50%)',
         zIndex: 55,
@@ -103,6 +106,8 @@ export function LabAutoDemo({ translations, runCommand, disabled = false }: LabA
         border: '1px solid var(--md-sys-color-outline-variant)',
         boxShadow: 'none',
         maxWidth: 'calc(100vw - 32px)',
+        // Shrink-to-fit left it 216px wide and 3 lines tall on a 390px screen.
+        width: { xs: 'calc(100vw - 32px)', md: 'auto' },
       }}
     >
       <PlayCircle size={18} style={{ color: 'var(--md-sys-color-primary)', flexShrink: 0 }} aria-hidden />
