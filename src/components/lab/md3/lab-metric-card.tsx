@@ -34,6 +34,9 @@ export function LabMetricCard({
         display: 'flex',
         flexDirection: 'column',
         gap: 0.5,
+        // Grid items default to min-width:auto — two per row at 320px pushed the
+        // track 3px past the viewport rather than shrinking.
+        minWidth: 0,
         transition: 'box-shadow 0.2s ease',
         '&:hover': { boxShadow: 'var(--lab-elevation-2)' },
       }}

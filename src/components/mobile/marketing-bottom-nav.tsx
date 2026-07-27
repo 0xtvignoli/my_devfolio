@@ -48,6 +48,9 @@ export function MarketingBottomNav({ locale, translations }: MarketingBottomNavP
         borderTop: 1,
         borderColor: 'divider',
         pb: 'env(safe-area-inset-bottom, 0px)',
+        // Landscape: the cutout is on a side, and the bar spans edge to edge.
+        pl: 'env(safe-area-inset-left, 0px)',
+        pr: 'env(safe-area-inset-right, 0px)',
         bgcolor: 'background.default',
         boxShadow: 'none',
       }}

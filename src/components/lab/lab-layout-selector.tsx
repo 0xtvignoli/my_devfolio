@@ -7,6 +7,7 @@ import Paper from '@mui/material/Paper';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { LabClientPage } from '@/components/lab/lab-client-page';
 import { ImmersiveLabLayout } from '@/components/lab/immersive-lab-layout';
 import { LabPageSkeleton } from '@/components/lab/lab-page-skeleton';
@@ -31,6 +32,7 @@ export function LabLayoutSelector({ locale, translations }: LabLayoutSelectorPro
   const t = translations.lab.layout;
   const [layout, setLayout] = useState<LayoutType>('standard');
   const [isClient, setIsClient] = useState(false);
+  const isCompact = useMediaQuery('(max-width:899.95px)');
 
   useEffect(() => {
     const saved = localStorage.getItem('lab-layout-preference') as string | null;
@@ -45,6 +47,14 @@ export function LabLayoutSelector({ locale, translations }: LabLayoutSelectorPro
     setIsClient(true);
     trackLabView(initial);
   }, []);
+
+  // Immersive is a desktop TUI: three nested scroll panes don't fit a 664px
+  // screen, and its only exit is Escape, which needs a keyboard. Compact falls
+  // back to standard — the stored preference is left alone, so a wider window
+  // still restores it.
+  useEffect(() => {
+    if (isCompact) setLayout('standard');
+  }, [isCompact]);
 
   const applyLayout = useCallback((newLayout: LayoutType) => {
     setLayout(newLayout);
@@ -144,6 +154,7 @@ export function LabLayoutSelector({ locale, translations }: LabLayoutSelectorPro
           value={layout}
           onChange={handleLayoutChange}
           aria-labelledby="lab-layout-label"
+          sx={{ display: isCompact ? 'none' : 'flex' }}
         >
           {LAYOUTS.map(({ id, labelKey, hintKey, icon: Icon }) => (
             <ToggleButton

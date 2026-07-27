@@ -58,7 +58,10 @@ const ChartContainer = React.forwardRef<
         {...props}
       >
         <ChartStyle id={chartId} config={config} />
-        <RechartsPrimitive.ResponsiveContainer>
+        {/* initialDimension: before the ResizeObserver fires, recharts holds -1/-1
+            and warns once per chart instance. Seeding it silences that without
+            affecting the measured size that lands a frame later. */}
+        <RechartsPrimitive.ResponsiveContainer initialDimension={{ width: 320, height: 200 }}>
           {children}
         </RechartsPrimitive.ResponsiveContainer>
       </div>

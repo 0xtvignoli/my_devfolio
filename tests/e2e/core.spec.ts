@@ -48,17 +48,17 @@ test('lab page has no critical a11y violations (axe)', async ({ page }) => {
   expect(critical, `Critical a11y violations: ${JSON.stringify(critical, null, 2)}`).toEqual([]);
 });
 
-test('theme toggle opens and offers light, dark, system', async ({ page }) => {
+test('theme toggle switches between light and dark', async ({ page }) => {
   await page.goto(HOME);
-  const themeButton = page.getByRole('button', { name: /toggle theme/i });
-  await expect(themeButton).toBeVisible();
-  // The toggle renders a static placeholder until React hydrates; wait for the
-  // Radix trigger (aria-haspopup) so the click is not swallowed pre-hydration.
-  await expect(themeButton).toHaveAttribute('aria-haspopup', 'menu');
-  await themeButton.click();
-  await expect(page.getByRole('menuitem', { name: /Light/i })).toBeVisible();
-  await expect(page.getByRole('menuitem', { name: /Dark/i })).toBeVisible();
-  await expect(page.getByRole('menuitem', { name: /System/i })).toBeVisible();
+  // The button is labelled with the theme a click switches TO, and it renders a
+  // pre-hydration placeholder ("Toggle theme") first — matching Light|Dark is
+  // what proves React took over. Which one it starts on depends on the runner's
+  // colour scheme, so assert the flip rather than a fixed direction.
+  const toggle = page.getByRole('button', { name: /^(Light|Dark)$/ });
+  await expect(toggle).toBeVisible();
+  const startedDark = ((await page.locator('html').getAttribute('class')) ?? '').includes('dark');
+  await toggle.click();
+  await expect(page.locator('html')).toHaveClass(startedDark ? /^(?!.*dark).*$/ : /dark/);
 });
 
 test('articles list page shows articles and links to slug', async ({ page }) => {

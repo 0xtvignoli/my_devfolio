@@ -57,7 +57,15 @@ export function Header({ locale, translations }: HeaderProps) {
   return (
     <>
       <AppBar position="sticky" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
-        <Toolbar sx={{ minHeight: 56, px: { xs: 2, md: 3 } }}>
+        {/* Landscape on a notched phone puts the cutout on one side, and
+            viewport-fit=cover means the bar now extends under it. */}
+        <Toolbar
+          sx={{
+            minHeight: 56,
+            pl: { xs: 'max(16px, env(safe-area-inset-left, 0px))', md: 'max(24px, env(safe-area-inset-left, 0px))' },
+            pr: { xs: 'max(16px, env(safe-area-inset-right, 0px))', md: 'max(24px, env(safe-area-inset-right, 0px))' },
+          }}
+        >
           <Link href={homeHref} className="flex items-center mr-6 no-underline">
             <Wordmark />
           </Link>
@@ -101,7 +109,18 @@ export function Header({ locale, translations }: HeaderProps) {
         anchor="left"
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        slotProps={{ paper: { sx: { width: 280, boxSizing: 'border-box' } } }}
+        slotProps={{
+          paper: {
+            sx: {
+              width: 280,
+              boxSizing: 'border-box',
+              // Full-height surface: the bottom row (locale + theme) would sit
+              // under the home indicator otherwise.
+              pb: 'env(safe-area-inset-bottom, 0px)',
+              pl: 'env(safe-area-inset-left, 0px)',
+            },
+          },
+        }}
         aria-label="Navigation menu"
       >
         <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', height: '100%' }}>
