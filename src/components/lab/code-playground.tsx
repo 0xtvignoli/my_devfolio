@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Code2, Cloud, Network, Coins, FileCode2, Check, Clipboard, ExternalLink } from 'lucide-react';
+import { Code2, Cloud, Network, Coins, FileCode2, Check, Clipboard, ExternalLink, BadgeCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { terraformTemplates, type TerraformTemplate } from '@/data/content/terraform-templates';
@@ -16,6 +16,18 @@ const TEMPLATE_ICONS: Record<string, typeof Code2> = {
   'eks-cluster': Cloud,
   'vpc-network': Network,
   'x402-gateway': Coins,
+};
+
+const CI_WORKFLOW_URL =
+  'https://github.com/0xtvignoli/my_devfolio/actions/workflows/terraform-ci.yml';
+
+// The terraform subcommand each module is actually verified with in CI, against
+// a local AWS emulator (floci). See .github/workflows/terraform-ci.yml — kept
+// honest per-module: vpc applies, eks plans, the Cloudflare module validates.
+const CI_LEVEL: Record<string, string> = {
+  'vpc-network': 'apply',
+  'eks-cluster': 'plan',
+  'x402-gateway': 'validate',
 };
 
 // Shows the real Terraform from the repo inline (read-only) instead of an
@@ -71,7 +83,7 @@ export function CodePlayground({ translations }: CodePlaygroundProps) {
                   <div className="flex-1 min-w-0">
                     <h4 className="font-semibold text-[#fdfcfc]">{t.name}</h4>
                     <p className="text-xs text-[#9a9898] mt-0.5 mb-2">{t.description}</p>
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap items-center gap-1.5">
                       {t.tags.map((tag) => (
                         <span
                           key={tag}
@@ -80,6 +92,14 @@ export function CodePlayground({ translations }: CodePlaygroundProps) {
                           {tag}
                         </span>
                       ))}
+                      {CI_LEVEL[t.id] && (
+                        <span
+                          className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] rounded-[4px] border border-green-500/40 text-green-400"
+                          title={`Verified in CI: terraform ${CI_LEVEL[t.id]} against emulated AWS`}
+                        >
+                          <BadgeCheck className="h-3 w-3" aria-hidden /> terraform {CI_LEVEL[t.id]} · CI
+                        </span>
+                      )}
                     </div>
                   </div>
                   <span className="shrink-0 text-[#9a9898] group-hover/tpl:text-[#4da3ff] transition-colors" aria-hidden>→</span>
@@ -120,6 +140,17 @@ export function CodePlayground({ translations }: CodePlaygroundProps) {
               ))}
             </div>
             <div className="ml-auto flex items-center gap-1 shrink-0">
+              {CI_LEVEL[selected.id] && (
+                <a
+                  href={CI_WORKFLOW_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 px-2 py-1 text-[10px] rounded-[4px] border border-green-500/40 text-green-400 hover:bg-green-500/10 transition-colors focus-visible:outline-1 focus-visible:outline-[#4da3ff]"
+                  title={`Verified in CI: terraform ${CI_LEVEL[selected.id]} against emulated AWS — open the runs`}
+                >
+                  <BadgeCheck className="h-3.5 w-3.5" aria-hidden /> {CI_LEVEL[selected.id]} · CI
+                </a>
+              )}
               <button
                 onClick={() => copyCode(selected.files[activeFile].code)}
                 className="inline-flex items-center gap-1 px-2 py-1 text-xs text-[#9a9898] hover:text-[#4da3ff] rounded-[4px] focus-visible:outline-1 focus-visible:outline-[#4da3ff]"
