@@ -6,7 +6,7 @@ import { buildBreadcrumbSchema } from '@/lib/seo/structured-data';
 import { getTranslations, resolveLocaleParam } from '@/lib/i18n/server';
 import { localizedPath } from '@/lib/i18n/paths';
 import { createPageMetadata } from '@/lib/seo/metadata';
-import { AUTHOR_NAME, SOCIAL_LINKS } from '@/lib/seo/constants';
+import { AUTHOR_NAME, CONTACT_EMAIL, SOCIAL_LINKS } from '@/lib/seo/constants';
 import type { Locale } from '@/lib/types';
 import type { Metadata } from 'next';
 
@@ -89,8 +89,14 @@ export default async function CvPage({ params }: CvPageProps) {
           </div>
           <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1 list-none p-0 m-0 text-sm text-muted-foreground">
             <li>
-              <a href={`mailto:${t.contact.email}`} className="underline underline-offset-4">
-                {t.contact.email}
+              {/* Server-rendered: the address is in the href and the link text, and
+                  nowhere in any client payload. NOTE: Cloudflare's email
+                  obfuscation rewrites both into a JS-decoded span, which prints as
+                  "[email protected]" if the script has not run — on the one page
+                  meant to become a static PDF. Exempt /cv from it with a
+                  Configuration Rule. */}
+              <a href={`mailto:${CONTACT_EMAIL}`} className="underline underline-offset-4">
+                {CONTACT_EMAIL}
               </a>
             </li>
             <li>

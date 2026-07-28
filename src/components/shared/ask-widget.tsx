@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { CornerDownLeft, Loader2 } from 'lucide-react';
+import { useContactEmail } from '@/hooks/use-contact-email';
 import { cn } from '@/lib/utils';
 import type { Translations } from '@/lib/types';
 
@@ -19,6 +20,7 @@ export function AskWidget({ translations }: { translations: Translations }) {
   const [answer, setAnswer] = useState<string | null>(null);
   const [degraded, setDegraded] = useState(false);
   const [pending, setPending] = useState(false);
+  const email = useContactEmail();
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -102,10 +104,11 @@ export function AskWidget({ translations }: { translations: Translations }) {
             {answer}
           </pre>
         )}
-        {degraded && (
+        {/* The address is fetched, not received as a prop — see use-contact-email. */}
+        {degraded && email && (
           <p className="text-sm text-muted-foreground mt-2 mb-0">
             <a
-              href={`mailto:${translations.contact.email}`}
+              href={`mailto:${email}?subject=${encodeURIComponent(translations.contact.subject)}`}
               className="text-foreground underline underline-offset-4 hover:opacity-70"
             >
               {t.fallbackCta}

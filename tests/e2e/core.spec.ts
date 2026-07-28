@@ -143,6 +143,30 @@ test('ask widget posts to the assistant and renders a reply', async ({ page }) =
   await expect(page.locator('[aria-live="polite"] pre')).not.toBeEmpty({ timeout: 20_000 });
 });
 
+// The address used to be inside the Translations bundle, which Header and the
+// mobile nav — both client components on every page — serialise wholesale into
+// each page's RSC payload. That put it in the HTML of pages with no contact form
+// at all, where Cloudflare's email obfuscation cannot reach it.
+test('the contact address only appears where a mail link is rendered', async ({ request }) => {
+  const ADDRESS = 'thomas.vignoli@pm.me';
+
+  for (const path of ['/en/articles', '/it/articles', '/en/lab', '/en/portfolio', '/en/experience']) {
+    const html = await (await request.get(path)).text();
+    expect(html.includes(ADDRESS), `${path} should not carry the contact address`).toBe(false);
+  }
+
+  // Where it is legitimate, it must be server-rendered so obfuscation covers it.
+  for (const path of ['/en', '/en/cv']) {
+    const html = await (await request.get(path)).text();
+    expect(html.includes(`mailto:${ADDRESS}`), `${path} should render a real mail link`).toBe(true);
+  }
+
+  // The client-side copy button reads it from here instead of a prop.
+  const api = await request.get('/api/contact');
+  expect(api.status()).toBe(200);
+  expect((await api.json()).email).toBe(ADDRESS);
+});
+
 test('legacy root path redirects to locale prefix', async ({ page }) => {
   await page.goto('/');
   await expect(page).toHaveURL(/\/(en|it)\/?$/);

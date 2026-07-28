@@ -55,13 +55,16 @@ export interface Translations {
   contact: {
     title: string;
     description: string;
-    email: string;
+    /** Accessible name for the mail link. Holds no address on purpose: it used to
+        interpolate one, which both leaked it and made screen readers spell it out. */
     emailLabel: string;
-    openingEmailClient: string;
-    emailClientOpened: string;
     buttonText: string;
     copyEmail: string;
     emailCopied: string;
+    /** Prefilled mail subject, so inbound is triageable. */
+    subject: string;
+    responseTime: string;
+    cvLink: string;
   };
   ask: {
     title: string;

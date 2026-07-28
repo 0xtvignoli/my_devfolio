@@ -189,7 +189,7 @@ export default async function Home({ params }: HomePageProps) {
         </Box>
       </Stack>
 
-      <ContactSection email={t.contact.email} translations={t} assistantEnabled={hasAssistantKey()} />
+      <ContactSection translations={t} locale={locale} assistantEnabled={hasAssistantKey()} />
     </Container>
   );
 }

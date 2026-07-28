@@ -8,6 +8,7 @@ import type { KubernetesCluster, Locale, Pod, Translations } from '@/lib/types';
 import { AlertTriangle, FileTerminal, Loader2, Power, Code2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useDeviceDetection } from '@/hooks/use-device-detection';
+import { SOCIAL_LINKS } from '@/lib/seo/constants';
 import { cn } from '@/lib/utils';
 import { CodePlayground } from './code-playground';
 
@@ -416,9 +417,17 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
       'README.md': 'This directory contains my professional experience.'
     },
     'skills.txt': translations.skills.list.join('\n'),
-    'contact.txt': `You can reach me at: ${translations.contact.email}`,
+    // Profile URLs, not the address: this component is client-side, so anything
+    // here ships in the page payload where email obfuscation can't reach it.
+    // The contact section has a real mail link.
+    'contact.txt': [
+      `GitHub:   ${SOCIAL_LINKS.github}`,
+      `LinkedIn: ${SOCIAL_LINKS.linkedin}`,
+      '',
+      'Email: see the contact section on the home page.',
+    ].join('\n'),
     'README.md': "Welcome to my interactive portfolio! Type `help` to see available commands.",
-  }), [locale, translations.contact.email, translations.skills.list]);
+  }), [locale, translations.skills.list]);
 
   const pushEntry = useCallback((entry: Omit<TerminalEntry, 'id'>) => {
     const id = createId();
