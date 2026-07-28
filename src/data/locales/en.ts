@@ -56,13 +56,13 @@ export const en: Translations = {
   contact: {
     title: "Let's work together",
     description: "I'm always open to discussing new projects, creative ideas, or opportunities to be part of an ambitious vision. Feel free to reach out.",
-    email: "thomas.vignoli@pm.me",
-    emailLabel: "Send email to {email}",
-    openingEmailClient: "Opening email client...",
-    emailClientOpened: "Email client should open shortly",
+    emailLabel: "Send me an email",
     buttonText: "Get in touch",
     copyEmail: "Copy email",
     emailCopied: "Email copied to clipboard",
+    subject: "Contact from the portfolio",
+    responseTime: "I usually reply within a couple of days.",
+    cvLink: "View CV",
   },
   ask: {
     title: "Ask about my work",

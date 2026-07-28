@@ -56,13 +56,13 @@ export const it: Translations = {
   contact: {
     title: "Lavoriamo insieme",
     description: "Sono sempre disponibile a discutere di nuovi progetti, idee creative o opportunità per far parte di una visione ambiziosa. Scrivimi pure.",
-    email: "thomas.vignoli@pm.me",
-    emailLabel: "Invia email a {email}",
-    openingEmailClient: "Apertura client email...",
-    emailClientOpened: "Il client email dovrebbe aprirsi a breve",
+    emailLabel: "Scrivimi una email",
     buttonText: "Contattami",
     copyEmail: "Copia email",
     emailCopied: "Email copiata negli appunti",
+    subject: "Contatto dal portfolio",
+    responseTime: "Rispondo di solito entro un paio di giorni.",
+    cvLink: "Guarda il CV",
   },
   ask: {
     title: "Chiedi del mio lavoro",
