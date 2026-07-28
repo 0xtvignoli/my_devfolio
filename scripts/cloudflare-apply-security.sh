@@ -223,6 +223,13 @@ fi
 # expression limited to path/verified-bot. On Pro+ raise RATELIMIT_PERIOD and
 # RATELIMIT_TIMEOUT (60s+ / up to 1h).
 #
+# cf.colo.id must be listed EXPLICITLY, despite the docs describing it as implicit
+# ("mandatory ... do not use in expressions"). The API is the authority and it
+# refuses ["ip.src"] alone with error 20155: "characteristics field is missing
+# 'cf.colo.id', this is required as ratelimiting counting is processed at
+# colocation level only". Counting is per-datacentre, so the real threshold is
+# roughly RATELIMIT_REQUESTS per colo rather than globally.
+#
 # PUT on the phase entrypoint REPLACES every rule in the http_ratelimit phase —
 # that's what makes this script idempotent, but any rule added by hand in the
 # dashboard is overwritten. Add it here instead.
@@ -239,7 +246,7 @@ RATELIMIT_PAYLOAD=$(cat <<EOF
       "expression": "(http.request.uri.path eq \"$RL_PATH\")",
       "action": "block",
       "ratelimit": {
-        "characteristics": ["ip.src"],
+        "characteristics": ["ip.src", "cf.colo.id"],
         "period": $RL_PERIOD,
         "requests_per_period": $RL_REQUESTS,
         "mitigation_timeout": $RL_TIMEOUT
@@ -257,8 +264,9 @@ if ! cf_ok "$RL_RESULT"; then
   cf_why "$RL_RESULT"
   echo "    Checklist for a 400: on Free the period and mitigation_timeout must both"
   echo "    be 10, the expression may only reference path / verified-bot, and the plan"
-  echo "    allows exactly ONE rule. A 403 instead means the token lacks Zone → WAF → Edit."
-  echo "    Do NOT add cf.colo.id to characteristics — Cloudflare adds it implicitly."
+  echo "    allows exactly ONE rule. Error 20155 means characteristics is missing"
+  echo "    cf.colo.id, which the API requires explicitly. A 403 instead means the"
+  echo "    token lacks Zone → WAF → Edit."
   FAILURES+=("rate limiting rule on $RL_PATH")
 elif [[ "$DRY_RUN" != true ]]; then
   echo "$RL_RESULT" | python3 -c "
@@ -280,26 +288,26 @@ fi
 # Same PUT-the-phase-entrypoint idiom as the rate limit above: idempotent, and it
 # replaces any Configuration Rule added by hand in the dashboard.
 CV_PATHS="${CV_PATHS:-/en/cv /it/cv}"
-CV_EXPRESSION=$(python3 -c "
-import sys
-paths = sys.argv[1].split()
-print(' or '.join(f'http.request.uri.path eq \"{p}\"' for p in paths))
-" "$CV_PATHS")
 
-CONFIG_PAYLOAD=$(cat <<EOF
-{
-  "rules": [
-    {
-      "ref": "cv_plain_email",
-      "description": "CV pages must print a real address, not a JS-decoded placeholder",
-      "expression": "($CV_EXPRESSION)",
-      "action": "set_config",
-      "action_parameters": { "email_obfuscation": false }
-    }
-  ]
-}
-EOF
-)
+# Built with json.dumps, not a heredoc. The expression contains double quotes
+# around each path, and pasting it into a JSON string literal produced
+# `"expression": "(... eq "/en/cv" ...)"` — the API rejected it with
+# `invalid character '/' after object key:value pair`. Letting a JSON serialiser
+# do the escaping is correct by construction instead of by carefulness.
+CONFIG_PAYLOAD=$(python3 -c "
+import json, sys
+paths = sys.argv[1].split()
+expression = '(' + ' or '.join(f'http.request.uri.path eq \"{p}\"' for p in paths) + ')'
+print(json.dumps({
+    'rules': [{
+        'ref': 'cv_plain_email',
+        'description': 'CV pages must print a real address, not a JS-decoded placeholder',
+        'expression': expression,
+        'action': 'set_config',
+        'action_parameters': {'email_obfuscation': False},
+    }]
+}))
+" "$CV_PATHS")
 
 echo "→ Disabling Email Obfuscation on the CV pages ($CV_PATHS)..."
 CFG_RESULT=$(cf_api PUT "/zones/$ZONE_ID/rulesets/phases/http_config_settings/entrypoint" "$CONFIG_PAYLOAD")
