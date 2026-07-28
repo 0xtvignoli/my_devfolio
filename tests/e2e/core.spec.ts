@@ -191,10 +191,15 @@ test('the contact endpoint validates before it reveals anything', async ({ reque
   const trapped = await request.post('/api/contact/send', { data: { ...valid, company: 'Acme' } });
   expect(trapped.status()).toBe(200);
 
-  // A valid message either sends (503 when unconfigured, which is honest, or 200
-  // once a provider key exists) but never 400.
+  // A valid message always answers 200 and reports the outcome in the body:
+  // Cloudflare replaces origin 5xx bodies with its own, so a 5xx here would reach
+  // the browser as an unexplained "error code: 502".
   const good = await request.post('/api/contact/send', { data: valid });
-  expect([200, 503]).toContain(good.status());
+  expect(good.status()).toBe(200);
+  const payload = await good.json();
+  expect(typeof payload.ok).toBe('boolean');
+  // Locally there is no provider key, so ok:false with a reason is correct.
+  if (!payload.ok) expect(['not_configured', 'send_failed']).toContain(payload.reason);
 });
 
 test('legacy root path redirects to locale prefix', async ({ page }) => {

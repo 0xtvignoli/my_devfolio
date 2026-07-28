@@ -52,28 +52,40 @@ async function turnstilePassed(token: unknown, ip: string): Promise<boolean> {
   }
 }
 
-async function sendEmail(name: string, email: string, message: string): Promise<boolean> {
-  const response = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      from: process.env.CONTACT_FROM_EMAIL,
-      to: [CONTACT_EMAIL],
-      // Reply goes straight to the visitor, so the inbox behaves like a normal thread.
-      reply_to: email,
-      subject: `Portfolio contact — ${name}`,
-      text: `From: ${name} <${email}>\n\n${message}`,
-    }),
-  });
+type SendOutcome = { sent: true } | { sent: false; providerStatus: number | null };
 
-  if (!response.ok) {
-    console.error('contact send failed:', response.status, await response.text().catch(() => ''));
-    return false;
+async function sendEmail(name: string, email: string, message: string): Promise<SendOutcome> {
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: process.env.CONTACT_FROM_EMAIL,
+        to: [CONTACT_EMAIL],
+        // Reply goes straight to the visitor, so the inbox behaves like a normal thread.
+        reply_to: email,
+        subject: `Portfolio contact — ${name}`,
+        text: `From: ${name} <${email}>\n\n${message}`,
+      }),
+    });
+
+    const body = await response.text().catch(() => '');
+    if (!response.ok) {
+      console.error('contact send rejected:', response.status, body);
+      return { sent: false, providerStatus: response.status };
+    }
+    console.info('contact send accepted:', body.slice(0, 200));
+    return { sent: true };
+  } catch (err) {
+    // The mail call is the most likely thing here to fail transiently, and it was
+    // the only external call left unguarded — an unhandled rejection turns into a
+    // 500 at the origin, which Cloudflare then serves as a bodiless 502.
+    console.error('contact send threw:', err);
+    return { sent: false, providerStatus: null };
   }
-  return true;
 }
 
 export async function POST(req: NextRequest) {
@@ -104,15 +116,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'challenge_failed' }, { status: 403 });
   }
 
+  // NOTE on status codes. Everything below answers 200 with a flag rather than a
+  // 5xx, because Cloudflare replaces origin 5xx bodies with its own bodiless
+  // "error code: 502" page — so a carefully worded JSON error never reached the
+  // browser. 4xx bodies pass through untouched, which is why the client-error
+  // cases above keep their real status.
   if (!isContactFormConfigured()) {
-    // The UI hides the form in this state; anyone reaching here called the API
-    // directly, so say plainly that it is unconfigured rather than pretend.
-    return NextResponse.json({ error: 'not_configured' }, { status: 503 });
+    return NextResponse.json({ ok: false, reason: 'not_configured' });
   }
 
   const { name, email, message } = validation.value;
-  const sent = await sendEmail(name, email, message);
-  return sent
-    ? NextResponse.json({ ok: true })
-    : NextResponse.json({ error: 'send_failed' }, { status: 502 });
+  const outcome = await sendEmail(name, email, message);
+  if (outcome.sent) return NextResponse.json({ ok: true });
+
+  // providerStatus is the mail provider's HTTP status: 401 bad key, 403 domain not
+  // verified or account restricted, 422 bad from/to. A bare status code is not
+  // sensitive, and it is the difference between diagnosing this and guessing.
+  return NextResponse.json({ ok: false, reason: 'send_failed', providerStatus: outcome.providerStatus });
 }
