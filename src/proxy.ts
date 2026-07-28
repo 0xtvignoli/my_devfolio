@@ -161,11 +161,15 @@ function buildShellContentSecurityPolicy(): string {
   // SDK then pulls the bash package from the Wasmer registry.
   return [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob: https://esm.sh",
+    // static.cloudflareinsights.com: the proxy injects its analytics beacon here
+    // too, and this page has its own policy — so fixing the site-wide CSP left
+    // /shell logging a violation on every load. Negligible next to what this
+    // policy already permits (esm.sh can serve arbitrary JS, by necessity).
+    "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob: https://esm.sh https://static.cloudflareinsights.com",
     "style-src 'self' 'unsafe-inline'",
     "font-src 'self' data:",
     "img-src 'self' data: blob:",
-    "connect-src 'self' https://esm.sh https://registry.wasmer.io https://*.wasmer.io blob: data:",
+    "connect-src 'self' https://esm.sh https://registry.wasmer.io https://*.wasmer.io https://cloudflareinsights.com blob: data:",
     "worker-src 'self' blob: https://esm.sh",
     "child-src 'self' blob:",
     "frame-ancestors 'none'",
