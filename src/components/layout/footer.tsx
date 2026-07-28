@@ -1,4 +1,5 @@
 import { getTranslations } from '@/lib/i18n/server';
+import { localizedPath } from '@/lib/i18n/paths';
 import { SOCIAL_LINKS } from '@/lib/seo/constants';
 import type { Locale } from '@/lib/types';
 import Box from '@mui/material/Box';
@@ -40,6 +41,12 @@ export async function Footer({ locale }: { locale: Locale }) {
             {t.footer.copy}
           </Typography>
           <Box sx={{ display: 'flex', gap: 0, alignItems: 'center' }}>
+            <Link href={localizedPath(locale, '/cv')} sx={footerLinkSx}>
+              {t.footer.cv}
+            </Link>
+            <Box component="span" aria-hidden sx={{ color: 'text.disabled', px: 1.5, fontSize: '0.875rem' }}>
+              ·
+            </Box>
             <Link href={SOCIAL_LINKS.github} target="_blank" rel="noopener noreferrer" sx={footerLinkSx} aria-label="GitHub">
               [github]
             </Link>

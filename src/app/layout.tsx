@@ -70,6 +70,11 @@ export default async function RootLayout({
     <html lang={locale} suppressHydrationWarning>
       <head>
         <JsonLd data={[buildPersonSchema(), buildWebsiteSchema(), buildProfilePageSchema()]} />
+        {/* Feed discovery. Emitted here rather than via Metadata.alternates because
+            every page sets its own `alternates` (canonical + hreflang), which would
+            drop these. */}
+        <link rel="alternate" type="application/rss+xml" title="Articles (EN)" href="/en/feed.xml" />
+        <link rel="alternate" type="application/rss+xml" title="Articoli (IT)" href="/it/feed.xml" />
         <Suspense fallback={null}>
           <GoogleAnalytics GA_MEASUREMENT_ID={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || ''} />
         </Suspense>

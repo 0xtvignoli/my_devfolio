@@ -48,6 +48,26 @@ export function ArticleCard({ article, locale, translations }: ArticleCardProps)
         />
         <CardContent sx={{ pt: 0 }}>
           <CardDescription>{article.description}</CardDescription>
+          {article.tags.length > 0 && (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mt: 1.5 }}>
+              {article.tags.map((tag) => (
+                <Box
+                  key={tag}
+                  sx={{
+                    px: 1,
+                    py: 0.25,
+                    fontSize: '0.75rem',
+                    color: 'text.secondary',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    borderRadius: '4px',
+                  }}
+                >
+                  {tag}
+                </Box>
+              ))}
+            </Box>
+          )}
         </CardContent>
         <CardFooter sx={{ pt: 0 }}>
           <Typography variant="body2" color="text.primary" sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 500 }}>

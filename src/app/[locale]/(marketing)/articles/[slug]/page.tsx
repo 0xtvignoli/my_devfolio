@@ -1,8 +1,10 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Article as ArticleType, Locale } from '@/lib/types';
-import { getArticle, getArticleSlugs } from '@/data/content/articles';
+import { getArticle, getArticleSlugs, getRelatedArticles } from '@/data/content/articles';
 import { CodeBlock } from '@/components/shared/code-block';
+import { InlineText } from '@/components/shared/inline-text';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui-mui';
 import { ArrowLeft } from 'lucide-react';
 import { getTranslations, resolveLocaleParam } from '@/lib/i18n/server';
@@ -55,13 +57,23 @@ const renderContent = (article: ArticleType) =>
       case 'paragraph':
         return (
           <p key={index} className="my-4 leading-relaxed">
-            {item.content}
+            <InlineText text={item.content} />
           </p>
         );
+      case 'list': {
+        const Tag = item.ordered ? 'ol' : 'ul';
+        return (
+          <Tag key={index} className={cn('my-4 space-y-2 pl-6', item.ordered ? 'list-decimal' : 'list-disc')}>
+            {item.items.map((entry, i) => (
+              <li key={i} className="leading-relaxed">
+                <InlineText text={entry} />
+              </li>
+            ))}
+          </Tag>
+        );
+      }
       case 'code':
         return <CodeBlock key={index} language={item.language} code={item.code} />;
-      default:
-        return null;
     }
   });
 
@@ -76,6 +88,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   }
 
   const articlePath = localizedPath(locale, `/articles/${slug}`);
+  const related = getRelatedArticles(slug, locale);
 
   return (
     <>
@@ -119,6 +132,28 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         </div>
 
         <div className="prose prose-lg dark:prose-invert max-w-none">{renderContent(article)}</div>
+
+        {related.length > 0 && (
+          <section className="mt-16 border-t border-border pt-8" aria-labelledby="related-heading">
+            <h2 id="related-heading" className="font-headline text-xl font-bold mb-4 text-foreground">
+              <span aria-hidden className="text-muted-foreground mr-2">##</span>
+              {t.articles.related}
+            </h2>
+            <ul className="space-y-3 list-none p-0 m-0">
+              {related.map((item) => (
+                <li key={item.slug}>
+                  <Link
+                    href={localizedPath(locale, `/articles/${item.slug}`)}
+                    className="text-foreground underline underline-offset-4 hover:opacity-70"
+                  >
+                    {item.title}
+                  </Link>
+                  <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
       </article>
     </>
   );

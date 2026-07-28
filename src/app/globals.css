@@ -645,3 +645,34 @@ body.lab-immersive-active header.MuiAppBar-root,
 body.lab-immersive-active [data-lab-breadcrumb] {
   display: none !important;
 }
+
+/* Print: /cv is meant to come out as a PDF. Strip site chrome, force ink-on-paper
+   colours (the dark theme would print as a black rectangle), and keep each role
+   on one page. !important beats MUI's unlayered emotion styles. */
+@media print {
+  header.MuiAppBar-root,
+  footer,
+  nav,
+  [data-print-hide] {
+    display: none !important;
+  }
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  [data-print-root] {
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  [data-print-root] * {
+    color: #000 !important;
+  }
+  [data-print-root] a {
+    text-decoration: underline;
+  }
+  .break-inside-avoid {
+    break-inside: avoid;
+  }
+}

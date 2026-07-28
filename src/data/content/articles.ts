@@ -3,6 +3,7 @@ import type { Article, Locale } from "@/lib/types";
 const articlesContent: Omit<Article, 'title' | 'description' | 'content'>[] = [
   {
     slug: 'x402-agent-native-api-monetization',
+    tags: ['x402', 'Monetization', 'Cloudflare', 'AI Agents'],
     date: '2026-07-08',
     author: 'Thomas Vignoli',
     imageUrl: '/images/articles/x402.svg',
@@ -10,6 +11,7 @@ const articlesContent: Omit<Article, 'title' | 'description' | 'content'>[] = [
   },
   {
     slug: 'finops-kubernetes-cost-optimization',
+    tags: ['FinOps', 'Kubernetes', 'Cost'],
     date: '2025-06-05',
     author: 'Thomas Vignoli',
     imageUrl: '/images/articles/finops.svg',
@@ -17,6 +19,7 @@ const articlesContent: Omit<Article, 'title' | 'description' | 'content'>[] = [
   },
   {
     slug: 'platform-engineering-gitops-argocd',
+    tags: ['GitOps', 'Argo CD', 'Platform Engineering'],
     date: '2025-05-14',
     author: 'Thomas Vignoli',
     imageUrl: '/images/articles/gitops.svg',
@@ -24,6 +27,7 @@ const articlesContent: Omit<Article, 'title' | 'description' | 'content'>[] = [
   },
   {
     slug: 'devsecops-supply-chain-security',
+    tags: ['DevSecOps', 'Supply Chain', 'Sigstore'],
     date: '2025-04-08',
     author: 'Thomas Vignoli',
     imageUrl: '/images/articles/security.svg',
@@ -31,6 +35,7 @@ const articlesContent: Omit<Article, 'title' | 'description' | 'content'>[] = [
   },
   {
     slug: 'slo-driven-observability',
+    tags: ['Observability', 'SLO', 'Prometheus'],
     date: '2025-03-10',
     author: 'Thomas Vignoli',
     imageUrl: '/images/articles/observability.svg',
@@ -38,6 +43,7 @@ const articlesContent: Omit<Article, 'title' | 'description' | 'content'>[] = [
   },
   {
     slug: 'llmops-serving-llms-in-production',
+    tags: ['LLMOps', 'AI', 'Cost'],
     date: '2025-02-18',
     author: 'Thomas Vignoli',
     imageUrl: '/images/articles/ai.svg',
@@ -45,6 +51,7 @@ const articlesContent: Omit<Article, 'title' | 'description' | 'content'>[] = [
   },
   {
     slug: 'kubernetes-autoscaling-hpa-keda',
+    tags: ['Kubernetes', 'Autoscaling', 'KEDA'],
     date: '2025-01-20',
     author: 'Thomas Vignoli',
     imageUrl: '/images/articles/kubernetes.svg',
@@ -52,6 +59,7 @@ const articlesContent: Omit<Article, 'title' | 'description' | 'content'>[] = [
   },
   {
     slug: 'aws-rag-etl-pipeline',
+    tags: ['AWS', 'RAG', 'AI'],
     date: '2024-09-15',
     author: 'Thomas Vignoli',
     imageUrl: '/images/articles/ai.svg',
@@ -59,6 +67,7 @@ const articlesContent: Omit<Article, 'title' | 'description' | 'content'>[] = [
   },
   {
     slug: 'infrastructure-as-code-guide',
+    tags: ['IaC', 'Terraform'],
     date: '2024-08-30',
     author: 'Thomas Vignoli',
     imageUrl: '/images/articles/iac.svg',
@@ -66,6 +75,7 @@ const articlesContent: Omit<Article, 'title' | 'description' | 'content'>[] = [
   },
   {
     slug: 'github-actions-vs-vercel-ci',
+    tags: ['CI/CD', 'GitHub Actions'],
     date: '2024-07-12',
     author: 'Thomas Vignoli',
     imageUrl: '/images/articles/cicd.svg',
@@ -2229,4 +2239,26 @@ export function getArticle(slug: string, locale: Locale): Article | undefined {
 
 export function getArticleSlugs(): string[] {
   return articlesContent.map((article) => article.slug);
+}
+
+/**
+ * Articles sharing the most tags with `slug`, newest first on a tie.
+ * Returns fewer than `limit` (or none) rather than padding with unrelated posts —
+ * a "related" link that isn't related is worse than no link.
+ */
+export function getRelatedArticles(slug: string, locale: Locale, limit = 3): Article[] {
+  const current = getArticle(slug, locale);
+  if (!current) return [];
+  const currentTags = new Set(current.tags);
+
+  return getArticles(locale)
+    .filter((candidate) => candidate.slug !== slug)
+    .map((candidate) => ({
+      article: candidate,
+      shared: candidate.tags.filter((tag) => currentTags.has(tag)).length,
+    }))
+    .filter(({ shared }) => shared > 0)
+    .sort((a, b) => b.shared - a.shared || +new Date(b.article.date) - +new Date(a.article.date))
+    .slice(0, limit)
+    .map(({ article }) => article);
 }

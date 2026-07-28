@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ArticleCard } from '@/components/shared/article-card';
+import { ArticleFilter } from '@/components/shared/article-filter';
 import { EmptyState } from '@/components/shared/empty-state';
 import { Button } from '@/components/ui-mui';
 import { getArticles } from '@/data/content/articles';
@@ -82,11 +83,16 @@ export default async function ArticlesPage({ params }: ArticlesPageProps) {
             }
           />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {articles.map((article) => (
-              <ArticleCard key={article.slug} article={article} locale={locale} translations={t} />
-            ))}
-          </div>
+          <ArticleFilter
+            label={t.articles.filterLabel}
+            allLabel={t.articles.filterAll}
+            countTemplate={t.articles.filterCount}
+            items={articles.map((article) => ({
+              slug: article.slug,
+              tags: article.tags,
+              card: <ArticleCard article={article} locale={locale} translations={t} />,
+            }))}
+          />
         )}
       </div>
     </>
