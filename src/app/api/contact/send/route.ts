@@ -54,6 +54,16 @@ async function turnstilePassed(token: unknown, ip: string): Promise<boolean> {
 
 type SendOutcome = { sent: true } | { sent: false; providerStatus: number | null };
 
+/**
+ * Domain part of CONTACT_FROM_EMAIL. Reported on failure because the single most
+ * common cause of a provider 403 is a `from` on a domain the provider hasn't
+ * verified — and without this you cannot tell that apart from a bad key without
+ * server log access. A domain is public DNS, so this leaks nothing.
+ */
+function fromDomain(): string | null {
+  return process.env.CONTACT_FROM_EMAIL?.split('@')[1] ?? null;
+}
+
 async function sendEmail(name: string, email: string, message: string): Promise<SendOutcome> {
   try {
     const response = await fetch('https://api.resend.com/emails', {
@@ -132,5 +142,10 @@ export async function POST(req: NextRequest) {
   // providerStatus is the mail provider's HTTP status: 401 bad key, 403 domain not
   // verified or account restricted, 422 bad from/to. A bare status code is not
   // sensitive, and it is the difference between diagnosing this and guessing.
-  return NextResponse.json({ ok: false, reason: 'send_failed', providerStatus: outcome.providerStatus });
+  return NextResponse.json({
+    ok: false,
+    reason: 'send_failed',
+    providerStatus: outcome.providerStatus,
+    fromDomain: fromDomain(),
+  });
 }
