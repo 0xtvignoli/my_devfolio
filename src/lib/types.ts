@@ -59,8 +59,6 @@ export interface Translations {
         interpolate one, which both leaked it and made screen readers spell it out. */
     emailLabel: string;
     buttonText: string;
-    copyEmail: string;
-    emailCopied: string;
     /** Prefilled mail subject, so inbound is triageable. */
     subject: string;
     responseTime: string;
@@ -77,6 +75,7 @@ export interface Translations {
     error: string;
     errorField: string;
     errorRateLimited: string;
+    errorChallenge: string;
     privacy: string;
   };
   ask: {

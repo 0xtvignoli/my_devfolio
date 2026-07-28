@@ -58,8 +58,6 @@ export const it: Translations = {
     description: "Sono sempre disponibile a discutere di nuovi progetti, idee creative o opportunità per far parte di una visione ambiziosa. Scrivimi pure.",
     emailLabel: "Scrivimi una email",
     buttonText: "Contattami",
-    copyEmail: "Copia email",
-    emailCopied: "Email copiata negli appunti",
     subject: "Contatto dal portfolio",
     responseTime: "Rispondo di solito entro un paio di giorni.",
     cvLink: "Guarda il CV",
@@ -75,6 +73,7 @@ export const it: Translations = {
     error: "Non è stato possibile inviare il messaggio. Usa il pulsante email qui sopra e mi arriva comunque.",
     errorField: "Qualcosa nel form non torna — controlla i campi e riprova.",
     errorRateLimited: "Troppi messaggi in poco tempo. Riprova tra qualche minuto.",
+    errorChallenge: "La verifica anti-spam non si è completata. Ricarica la pagina e riprova, oppure usa il pulsante email qui sopra.",
     privacy: "Usati solo per risponderti. Non salvati, non condivisi.",
   },
   ask: {

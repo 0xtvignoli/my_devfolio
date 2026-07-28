@@ -58,8 +58,6 @@ export const en: Translations = {
     description: "I'm always open to discussing new projects, creative ideas, or opportunities to be part of an ambitious vision. Feel free to reach out.",
     emailLabel: "Send me an email",
     buttonText: "Get in touch",
-    copyEmail: "Copy email",
-    emailCopied: "Email copied to clipboard",
     subject: "Contact from the portfolio",
     responseTime: "I usually reply within a couple of days.",
     cvLink: "View CV",
@@ -75,6 +73,7 @@ export const en: Translations = {
     error: "The message couldn't be sent. Use the email button above and it'll reach me.",
     errorField: "Something in the form isn't right — check the fields and try again.",
     errorRateLimited: "Too many messages in a short time. Try again in a few minutes.",
+    errorChallenge: "The anti-spam check didn't complete. Reload the page and try again, or use the email button above.",
     privacy: "Used only to reply. Not stored, not shared.",
   },
   ask: {
