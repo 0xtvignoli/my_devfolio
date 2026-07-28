@@ -85,6 +85,11 @@ function buildContentSecurityPolicy(): string {
     "'unsafe-inline'",
     'https://www.googletagmanager.com',
     'https://www.google-analytics.com',
+    // Cloudflare Web Analytics: the proxy injects this beacon itself, so blocking
+    // it only produced a CSP error on every page load while the feature could
+    // never work. Kept rather than disabled — it reports real-user Core Web
+    // Vitals without cookies, and it sees the visitors ad blockers hide from GA.
+    'https://static.cloudflareinsights.com',
     turnstileEnabled ? TURNSTILE_ORIGIN : null,
   ]
     .filter(Boolean)
@@ -95,6 +100,8 @@ function buildContentSecurityPolicy(): string {
     'https://www.google-analytics.com',
     'https://analytics.google.com',
     'https://*.google-analytics.com',
+    // Where the beacon above POSTs its measurements.
+    'https://cloudflareinsights.com',
     // api.js talks back to its own origin from the parent document, not only
     // from inside the iframe.
     turnstileEnabled ? TURNSTILE_ORIGIN : null,
