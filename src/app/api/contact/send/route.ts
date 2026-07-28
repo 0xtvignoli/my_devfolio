@@ -31,11 +31,24 @@ function clientIp(req: NextRequest): string {
   );
 }
 
-/** Optional second gate: only enforced once a Turnstile secret is configured. */
-async function turnstilePassed(token: unknown, ip: string): Promise<boolean> {
+type ChallengeResult = { passed: boolean; errors: string[] };
+
+/**
+ * Optional second gate: only enforced once a Turnstile secret is configured.
+ *
+ * Returns Cloudflare's own error-codes rather than a bare boolean. They are the
+ * difference between the three ways this fails and they look identical from
+ * outside: `missing-input-response` (the widget produced no token),
+ * `invalid-input-secret` (wrong secret), `invalid-input-response` (token does not
+ * belong to this secret — a mismatched sitekey/secret pair),
+ * `timeout-or-duplicate` (token reused or expired).
+ */
+async function verifyChallenge(token: unknown, ip: string): Promise<ChallengeResult> {
   const secret = process.env.TURNSTILE_SECRET_KEY;
-  if (!secret) return true;
-  if (typeof token !== 'string' || !token) return false;
+  if (!secret) return { passed: true, errors: [] };
+  if (typeof token !== 'string' || !token) {
+    return { passed: false, errors: ['missing-input-response'] };
+  }
 
   try {
     const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
@@ -44,11 +57,14 @@ async function turnstilePassed(token: unknown, ip: string): Promise<boolean> {
       body: JSON.stringify({ secret, response: token, remoteip: ip }),
     });
     const data = await response.json();
-    return data.success === true;
-  } catch {
-    // Verification unreachable: fail closed. A form that silently stops
-    // verifying is worse than a form that is briefly unavailable.
-    return false;
+    const errors: string[] = Array.isArray(data['error-codes']) ? data['error-codes'] : [];
+    if (data.success !== true) console.error('turnstile rejected:', errors);
+    return { passed: data.success === true, errors };
+  } catch (err) {
+    // Verification unreachable: fail closed. A form that silently stops verifying
+    // is worse than a form that is briefly unavailable.
+    console.error('turnstile verification threw:', err);
+    return { passed: false, errors: ['verification-unreachable'] };
   }
 }
 
@@ -122,8 +138,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'rate_limited' }, { status: 429 });
   }
 
-  if (!(await turnstilePassed((body as Record<string, unknown>).turnstileToken, ip))) {
-    return NextResponse.json({ error: 'challenge_failed' }, { status: 403 });
+  const challenge = await verifyChallenge((body as Record<string, unknown>).turnstileToken, ip);
+  if (!challenge.passed) {
+    // 403 keeps its body through Cloudflare (only 5xx bodies get replaced), so the
+    // codes reach whoever is debugging this.
+    return NextResponse.json({ error: 'challenge_failed', codes: challenge.errors }, { status: 403 });
   }
 
   // NOTE on status codes. Everything below answers 200 with a flag rather than a

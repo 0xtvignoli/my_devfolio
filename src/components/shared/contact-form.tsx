@@ -35,6 +35,17 @@ export function ContactForm({ translations }: { translations: Translations }) {
 
     const form = event.currentTarget;
     const data = new FormData(form);
+
+    // Turnstile writes cf-turnstile-response into the form once it has solved.
+    // If it hasn't, submitting only earns a 403 — say so instead, since the cause
+    // is on this page (script blocked, still solving) and not in the message.
+    const turnstileToken = data.get('cf-turnstile-response');
+    if (TURNSTILE_SITE_KEY && !turnstileToken) {
+      setFieldError(t.errorChallenge);
+      setStatus('error');
+      return;
+    }
+
     setStatus('sending');
     setFieldError(null);
 
@@ -47,8 +58,7 @@ export function ContactForm({ translations }: { translations: Translations }) {
           email: data.get('email'),
           message: data.get('message'),
           company: data.get('company'), // honeypot
-          // Turnstile's implicit rendering writes this input into the form.
-          turnstileToken: data.get('cf-turnstile-response'),
+          turnstileToken,
         }),
       });
 
@@ -63,7 +73,13 @@ export function ContactForm({ translations }: { translations: Translations }) {
       }
 
       setFieldError(
-        response.status === 429 ? t.errorRateLimited : payload.field ? t.errorField : t.error
+        response.status === 429
+          ? t.errorRateLimited
+          : response.status === 403
+            ? t.errorChallenge
+            : payload.field
+              ? t.errorField
+              : t.error
       );
       setStatus('error');
     } catch {

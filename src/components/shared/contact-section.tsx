@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { Mail } from 'lucide-react';
 import { AskWidget } from '@/components/shared/ask-widget';
 import { ContactForm } from '@/components/shared/contact-form';
-import { CopyEmailButton } from '@/components/shared/copy-email-button';
 import { localizedPath } from '@/lib/i18n/paths';
 import { CONTACT_EMAIL, SOCIAL_LINKS } from '@/lib/seo/constants';
 import type { Locale, Translations } from '@/lib/types';
@@ -57,7 +56,6 @@ export function ContactSection({
           <span>{t.buttonText}</span>
           <span aria-hidden className="font-bold">→</span>
         </a>
-        <CopyEmailButton label={t.copyEmail} copiedLabel={t.emailCopied} />
       </div>
 
       {/* Secondary channels: someone deciding whether to write wants the CV first,
