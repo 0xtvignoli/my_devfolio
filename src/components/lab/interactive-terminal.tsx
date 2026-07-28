@@ -330,13 +330,16 @@ const CommandOutputDisplay = ({ output }: { output: CommandOutput }) => {
   );
 };
 
-export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) => void, runCommand: (command: string) => void, setActiveTab: (tab: 'terminal' | 'logs' | 'playground') => void }, InteractiveTerminalProps>(({ runtimeLogs, cluster, onCommand, locale, translations, visualVariant = 'cyber' }, ref) => {
+export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) => void, runCommand: (command: string) => void, setActiveTab: (tab: 'terminal' | 'logs' | 'playground') => void, getCommands: () => string[] }, InteractiveTerminalProps>(({ runtimeLogs, cluster, onCommand, locale, translations, visualVariant = 'cyber' }, ref) => {
   const isMd3 = visualVariant === 'md3';
   const [input, setInput] = useState('');
   const [history, setHistory] = useState<TerminalEntry[]>([]);
   const [activeTab, setActiveTab] = useState<'terminal' | 'logs' | 'playground'>('terminal');
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const [storedCommands, setStoredCommands] = useState<string[]>([]);
+  // Mirror for the imperative handle, which is created once and would otherwise
+  // close over the initial empty array.
+  const storedCommandsRef = useRef<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [suggestions, setSuggestions] = useState<Suggestion[]>(contextualSuggestions.default);
   const [sessionMeta, setSessionMeta] = useState<SessionMeta | null>(null);
@@ -387,7 +390,10 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
     },
     setActiveTab: (tab: 'terminal' | 'logs' | 'playground') => {
       setActiveTab(tab);
-    }
+    },
+    // The terminal owns the only complete command log: `ask` and `clear` return
+    // before onCommand fires, so the parent hook never sees them.
+    getCommands: () => storedCommandsRef.current,
   }));
 
   const fileSystem = useMemo(() => ({
@@ -508,6 +514,7 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
   }, []);
 
   useEffect(() => {
+    storedCommandsRef.current = storedCommands;
     if (storedCommands.length === 0) {
       localStorage.removeItem(HISTORY_STORAGE_KEY);
       return;

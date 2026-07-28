@@ -2,14 +2,17 @@
 
 import { ErrorBoundary } from '@/components/shared/error-boundary';
 import { LabLayoutSelector } from '@/components/lab/lab-layout-selector';
+import type { CiRun } from '@/lib/ci-status';
 import type { Locale, Translations } from '@/lib/types';
 
 interface LabPageWrapperProps {
   locale: Locale;
   translations: Translations;
+  /** Real CI runs, fetched at build time by the server page. */
+  ciRuns: CiRun[];
 }
 
-export function LabPageWrapper({ locale, translations }: LabPageWrapperProps) {
+export function LabPageWrapper({ locale, translations, ciRuns }: LabPageWrapperProps) {
   return (
     <ErrorBoundary
       messages={{
@@ -19,7 +22,7 @@ export function LabPageWrapper({ locale, translations }: LabPageWrapperProps) {
         goHomeLabel: translations.errorBoundary.goHome,
       }}
     >
-      <LabLayoutSelector locale={locale} translations={translations} />
+      <LabLayoutSelector locale={locale} translations={translations} ciRuns={ciRuns} />
     </ErrorBoundary>
   );
 }

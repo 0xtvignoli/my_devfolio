@@ -15,6 +15,8 @@ export interface TerminalHandle {
   setCommand: (command: string) => void;
   runCommand: (command: string) => void;
   setActiveTab: (tab: 'terminal' | 'logs' | 'playground') => void;
+  /** Every command run this session, in order — the source for session permalinks. */
+  getCommands: () => string[];
 }
 
 interface TerminalCommandResult {

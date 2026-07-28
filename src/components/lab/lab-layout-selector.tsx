@@ -14,11 +14,13 @@ import { LabPageSkeleton } from '@/components/lab/lab-page-skeleton';
 import { LayoutGrid, Maximize2, Trophy } from 'lucide-react';
 import { localizedPath } from '@/lib/i18n/paths';
 import { trackLabLayoutSwitch, trackLabView } from '@/lib/lab-telemetry';
+import type { CiRun } from '@/lib/ci-status';
 import type { Locale, Translations } from '@/lib/types';
 
 interface LabLayoutSelectorProps {
   locale: Locale;
   translations: Translations;
+  ciRuns: CiRun[];
 }
 
 export type LayoutType = 'standard' | 'immersive';
@@ -28,7 +30,7 @@ const LAYOUTS: { id: LayoutType; labelKey: 'standard' | 'immersive'; hintKey: 's
   { id: 'immersive', labelKey: 'immersive', hintKey: 'immersiveHint', icon: Maximize2 },
 ];
 
-export function LabLayoutSelector({ locale, translations }: LabLayoutSelectorProps) {
+export function LabLayoutSelector({ locale, translations, ciRuns }: LabLayoutSelectorProps) {
   const t = translations.lab.layout;
   const [layout, setLayout] = useState<LayoutType>('standard');
   const [isClient, setIsClient] = useState(false);
@@ -186,7 +188,7 @@ export function LabLayoutSelector({ locale, translations }: LabLayoutSelectorPro
         </ToggleButtonGroup>
       </Paper>
 
-      {layout === 'standard' && <LabClientPage locale={locale} translations={translations} />}
+      {layout === 'standard' && <LabClientPage locale={locale} translations={translations} ciRuns={ciRuns} />}
       {layout === 'immersive' && (
         <Box
           sx={{

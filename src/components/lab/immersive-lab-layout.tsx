@@ -12,6 +12,7 @@ import { InteractiveTerminal } from '@/components/lab/interactive-terminal';
 import { KubernetesClusterViz } from '@/components/lab/kubernetes-cluster-viz';
 import { VisualDeployPipeline } from '@/components/lab/visual-deploy-pipeline';
 import { IncidentHistory } from '@/components/lab/incident-history';
+import { PostmortemButton } from '@/components/lab/postmortem-button';
 import { CanaryAnalysis } from '@/components/lab/canary-analysis';
 import { CpuUsageChart } from '@/components/lab/cpu-chart';
 import { MemoryUsageChart } from '@/components/lab/memory-chart';
@@ -199,9 +200,15 @@ export function ImmersiveLabLayout({
               </Stack>
             )}
             {sidePanel === 'incidents' && (
-              <Box id="incident-history">
+              <Stack id="incident-history" spacing={1.5} sx={{ alignItems: 'flex-start' }}>
+                <PostmortemButton
+                  translations={translations}
+                  incidents={incidents}
+                  logs={runtimeLogs}
+                  successfulDeploys={lab.successfulDeploys}
+                />
                 <IncidentHistory incidents={incidents} translations={translations} />
-              </Box>
+              </Stack>
             )}
             {sidePanel === 'metrics' && (
               <Stack id="lab-metrics" spacing={2}>

@@ -30,9 +30,12 @@ import { ApiResponseTimeChart } from '@/components/lab/api-response-chart';
 import { InteractiveTerminal } from '@/components/lab/interactive-terminal';
 import { KubernetesClusterViz } from '@/components/lab/kubernetes-cluster-viz';
 import { VisualDeployPipeline } from '@/components/lab/visual-deploy-pipeline';
+import type { CiRun } from '@/lib/ci-status';
 import type { Locale, Translations } from '@/lib/types';
 import { localizedPath } from '@/lib/i18n/paths';
 import { IncidentHistory } from '@/components/lab/incident-history';
+import { PostmortemButton } from '@/components/lab/postmortem-button';
+import { PermalinkButton } from '@/components/lab/permalink-button';
 import { CanaryAnalysis } from '@/components/lab/canary-analysis';
 import { AriaLiveRegion } from '@/components/shared/aria-live-region';
 import { HelpModal } from '@/components/lab/help-modal';
@@ -40,6 +43,8 @@ import { GuidedTour, buildLabTourSteps } from '@/components/onboarding/guided-to
 import { LabHeroHeader } from '@/components/lab/md3/lab-hero-header';
 import { LabMetricCard } from '@/components/lab/md3/lab-metric-card';
 import { LabMarginPanel } from '@/components/lab/lab-margin-panel';
+import { LabSloPanel } from '@/components/lab/lab-slo-panel';
+import { LabCiPanel } from '@/components/lab/lab-ci-panel';
 import { LabSectionCard } from '@/components/lab/md3/lab-section-card';
 import { LabConfirmDialogs } from '@/components/lab/lab-confirm-dialogs';
 import { LabMissions, type MissionId } from '@/components/lab/lab-missions';
@@ -51,6 +56,7 @@ import { useLabActions, parseDeployCommand } from '@/hooks/use-lab-actions';
 interface LabClientPageProps {
   locale: Locale;
   translations: Translations;
+  ciRuns: CiRun[];
 }
 
 const QUICK_COMMANDS = [
@@ -59,7 +65,7 @@ const QUICK_COMMANDS = [
   'cat contact.txt',
 ] as const;
 
-export function LabClientPage({ locale, translations }: LabClientPageProps) {
+export function LabClientPage({ locale, translations, ciRuns }: LabClientPageProps) {
   const t = translations.lab;
   const lab = useLabActions(translations);
   const {
@@ -107,18 +113,22 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const cmd = params.get('cmd');
+    // Plural: a session permalink carries one `cmd` per command, in order.
+    const commands = params.getAll('cmd').filter((cmd) => cmd.trim() !== '');
     const mission = params.get('mission');
-    if (!cmd && !mission) return;
+    if (commands.length === 0 && !mission) return;
     setHasDeepLink(true);
     if (mission === 'canary' || mission === 'chaos' || mission === 'bluegreen') {
       setMissionAutoStart(mission);
       document.getElementById('lab-mission')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-    if (cmd) {
-      // Small delay so the terminal is mounted and the session banner is shown.
-      const timer = setTimeout(() => runTerminalCommand(cmd), 800);
-      return () => clearTimeout(timer);
+    if (commands.length > 0) {
+      // First delay lets the terminal mount and show the session banner; the rest
+      // are staggered so the replay reads like someone typing, not a dump.
+      const timers = commands.map((cmd, index) =>
+        setTimeout(() => runTerminalCommand(cmd), 800 + index * 1800)
+      );
+      return () => timers.forEach(clearTimeout);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -173,6 +183,11 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
                 onRunCommand={runTerminalCommand}
                 onChaos={handleChaosClick}
                 onNavigate={handlePaletteNavigate}
+              />
+              <PermalinkButton
+                translations={translations}
+                getCommands={() => terminalRef.current?.getCommands() ?? []}
+                labPath={localizedPath(locale, '/lab')}
               />
               <HelpModal translations={translations} />
               <GuidedTour
@@ -474,6 +489,10 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
           </Box>
         </Box>
 
+        <LabCiPanel translations={translations} locale={locale} runs={ciRuns} />
+
+        <LabSloPanel translations={translations} incidents={incidents} latencyMs={latestLatency} />
+
         <LabMarginPanel
           translations={translations}
           latencyMs={latestLatency}
@@ -503,6 +522,14 @@ export function LabClientPage({ locale, translations }: LabClientPageProps) {
           collapsible
           expanded={incidentsExpanded}
           onExpandedChange={setIncidentsExpanded}
+          action={
+            <PostmortemButton
+              translations={translations}
+              incidents={incidents}
+              logs={runtimeLogs}
+              successfulDeploys={successfulDeploys}
+            />
+          }
         >
           <IncidentHistory incidents={incidents} translations={translations} />
         </LabSectionCard>

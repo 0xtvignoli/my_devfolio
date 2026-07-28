@@ -5,6 +5,7 @@ import { getTranslations, resolveLocaleParam } from '@/lib/i18n/server';
 import { localizedPath } from '@/lib/i18n/paths';
 import { createPageMetadata } from '@/lib/seo/metadata';
 import { buildBreadcrumbSchema, buildLabSchema } from '@/lib/seo/structured-data';
+import { fetchCiRuns } from '@/lib/ci-status';
 import type { Locale } from '@/lib/types';
 import type { Metadata } from 'next';
 
@@ -30,6 +31,8 @@ export default async function LabPage({ params }: LabPageProps) {
   const { locale: localeParam } = await params;
   const locale: Locale = resolveLocaleParam(localeParam);
   const translations = getTranslations(locale);
+  // Build-time fetch; returns [] on any failure and the panel then hides itself.
+  const ciRuns = await fetchCiRuns();
 
   return (
     <>
@@ -46,7 +49,7 @@ export default async function LabPage({ params }: LabPageProps) {
         <div className="container mx-auto px-4 pt-4 pb-2" aria-label="Breadcrumb region" data-lab-breadcrumb>
           <Breadcrumbs items={[{ label: translations.nav.lab }]} />
         </div>
-        <LabPageWrapper locale={locale} translations={translations} />
+        <LabPageWrapper locale={locale} translations={translations} ciRuns={ciRuns} />
       </div>
     </>
   );

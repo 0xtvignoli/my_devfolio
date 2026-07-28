@@ -72,6 +72,10 @@ export function trackLabDemo(status: 'started' | 'interrupted' | 'finished') {
   gtagEvent('lab_demo', { status });
 }
 
+export function trackLabPostmortem(incidentCount: number) {
+  gtagEvent('lab_postmortem_exported', { incidents: incidentCount });
+}
+
 export function trackLabPalette(action: 'opened' | 'executed', itemId?: string) {
   gtagEvent('lab_palette', { action, item: itemId });
 }
