@@ -9,6 +9,7 @@ import { getArticles } from '@/data/content/articles';
 import { EnhancedHero } from '@/components/enhanced-hero';
 import { ContactSection } from '@/components/shared/contact-section';
 import { hasAssistantKey } from '@/ai/config';
+import { isContactFormConfigured } from '@/lib/contact-config';
 import { ProfileAvatar } from '@/components/shared/profile-avatar';
 import { getTranslations, resolveLocaleParam } from '@/lib/i18n/server';
 import { localizedPath } from '@/lib/i18n/paths';
@@ -189,7 +190,12 @@ export default async function Home({ params }: HomePageProps) {
         </Box>
       </Stack>
 
-      <ContactSection translations={t} locale={locale} assistantEnabled={hasAssistantKey()} />
+      <ContactSection
+        translations={t}
+        locale={locale}
+        assistantEnabled={hasAssistantKey()}
+        formEnabled={isContactFormConfigured()}
+      />
     </Container>
   );
 }

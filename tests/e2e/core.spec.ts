@@ -167,6 +167,36 @@ test('the contact address only appears where a mail link is rendered', async ({ 
   expect((await api.json()).email).toBe(ADDRESS);
 });
 
+// The form is hidden unless a mail provider key is configured, but its contract is
+// testable regardless: validation runs before the config check on purpose.
+test('the contact endpoint validates before it reveals anything', async ({ request }) => {
+  const valid = {
+    name: 'Jane Recruiter',
+    email: 'jane@example.com',
+    message: 'We have a platform engineering role and your GitOps work looks relevant.',
+  };
+
+  // Garbage is rejected without touching the mail provider.
+  for (const bad of [
+    { ...valid, email: 'not-an-address' },
+    { ...valid, message: 'too short' },
+    { ...valid, name: 'J' },
+    { ...valid, email: 'jane@example.com\nBcc: victim@example.com' },
+  ]) {
+    const response = await request.post('/api/contact/send', { data: bad });
+    expect(response.status(), `should reject ${JSON.stringify(bad).slice(0, 60)}`).toBe(400);
+  }
+
+  // A filled honeypot is told everything is fine — it learns nothing.
+  const trapped = await request.post('/api/contact/send', { data: { ...valid, company: 'Acme' } });
+  expect(trapped.status()).toBe(200);
+
+  // A valid message either sends (503 when unconfigured, which is honest, or 200
+  // once a provider key exists) but never 400.
+  const good = await request.post('/api/contact/send', { data: valid });
+  expect([200, 503]).toContain(good.status());
+});
+
 test('legacy root path redirects to locale prefix', async ({ page }) => {
   await page.goto('/');
   await expect(page).toHaveURL(/\/(en|it)\/?$/);
