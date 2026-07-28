@@ -85,7 +85,7 @@ Questo sito è deployato su Vercel con un dominio personalizzato. Il deployment 
 - **SLO ed error budget** - Budget di disponibilità, burn rate e proiezione di esaurimento calcolati dagli stessi segnali del lab
 - **Permalink di sessione** - Un link che riesegue i comandi eseguiti (`?cmd=` ripetuto), per condividere la demo esatta
 - **Postmortem export** - La sessione del lab (incidenti + log tape) si esporta come postmortem markdown con follow-up per tipo di guasto
-- **Rate limiting a due livelli** - Backstop in-process su `/api/ask` più la regola edge applicata da `scripts/cloudflare-apply-security.sh`
+- **Rate limiting** - Backstop in-process su `/api/ask` (con cache delle risposte). `scripts/cloudflare-apply-security.sh` aggiunge una regola edge, ma verifica prima che i record DNS siano **proxied**: con la nuvola grigia le regole Cloudflare vengono accettate dall'API e non eseguite mai — lo script ora lo dice invece di implicare protezione
 
 ## Contact
 

@@ -78,11 +78,43 @@ if [[ -z "$ZONE_ID" ]]; then
 fi
 echo "  Zone ID: $ZONE_ID"
 
+# PRECONDITION. Every rule below runs at Cloudflare's edge, which only sees the
+# traffic if the DNS records are PROXIED (orange cloud). With DNS-only records
+# the API accepts all of this and none of it ever executes — verified on
+# tvignoli.com on 2026-07-28: apex → 216.198.79.1 (Vercel), `server: Vercel`,
+# no cf-ray. So check, rather than print a checkmark and imply protection.
+echo "→ Checking whether $ZONE_NAME is proxied through Cloudflare..."
+DNS_RESPONSE=$(cf_api GET "/zones/$ZONE_ID/dns_records?type=A,AAAA,CNAME&per_page=100" || echo '{}')
+if [[ "$DRY_RUN" != true ]]; then
+  PROXY_REPORT=$(echo "$DNS_RESPONSE" | python3 -c "
+import sys, json
+d = json.load(sys.stdin)
+records = [r for r in d.get('result') or [] if r.get('type') in ('A','AAAA','CNAME')]
+proxied = [r['name'] for r in records if r.get('proxied')]
+direct   = [r['name'] for r in records if not r.get('proxied')]
+print('PROXIED=' + str(len(proxied)))
+for n in sorted(set(proxied))[:6]: print('  proxied    :', n)
+for n in sorted(set(direct))[:6]: print('  DNS-only   :', n)
+" 2>/dev/null || echo 'PROXIED=?')
+  echo "$PROXY_REPORT" | grep -v '^PROXIED=' || true
+  if echo "$PROXY_REPORT" | grep -q '^PROXIED=0'; then
+    echo ""
+    echo "  ⚠  No proxied records. Bot Fight Mode, Block AI bots, AI Labyrinth and the"
+    echo "     rate limiting rule below will be CONFIGURED BUT INERT — traffic bypasses"
+    echo "     Cloudflare entirely and goes straight to the origin."
+    echo "     Fix: enable the orange cloud on the apex/www records (with Vercel behind,"
+    echo "     set SSL/TLS to Full (strict)). Until then, rate limit where the traffic"
+    echo "     actually lands: Vercel Firewall, or a shared-store limiter in the app."
+    echo ""
+  fi
+fi
+
 echo "→ Reading current bot management config..."
 CURRENT=$(cf_api GET "/zones/$ZONE_ID/bot_management" || echo '{}')
 echo "  Current: $(echo "$CURRENT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(json.dumps(d.get('result',{}), indent=None))" 2>/dev/null || echo 'n/a')"
 
-# Layered edge protection (Cloudflare security pillars: bot management + AI controls)
+# Bot management + AI controls. Edge-side: effective only on proxied records —
+# see the precondition check above.
 BOT_PAYLOAD=$(cat <<EOF
 {
   "fight_mode": true,
@@ -199,5 +231,7 @@ echo ""
 echo "✓ Cloudflare security configuration applied."
 echo "  Verify in dashboard: Security → Security Insights"
 echo "  security.txt is served from /.well-known/security.txt (app repo)"
-echo "  robots.txt blocks AI training crawlers; search bots remain allowed."
-echo "  /api/ask is rate limited at the edge — verify in Security → WAF → Rate limiting rules"
+echo "  robots.txt blocks AI training crawlers; search bots remain allowed (origin-served,"
+echo "  so that part works with or without the proxy)."
+echo "  /api/ask rate limit: verify in Security → WAF → Rate limiting rules — and note it"
+echo "  only fires on proxied records (see the check at the top of this run)."
