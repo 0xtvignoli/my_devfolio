@@ -171,6 +171,13 @@ export const it: Translations = {
       copied: "Link della sessione copiato",
       empty: "Esegui prima un comando — non c'è ancora nulla da rieseguire.",
     },
+    liveOps: {
+      offlineTitle: "La modalità live è offline in questo momento",
+      offlineBody: "Questa non è una simulazione: esegue comandi reali contro un AWS emulato su un backend che ospito io, quindi non è acceso ventiquattr'ore. Il lab fa tutto anche senza.",
+      offlineCta: "Apri il lab",
+      unreachable: "Il backend live non risponde. È una macchina che gestisco io — riprova più tardi, o intanto usa il lab.",
+      connecting: "Connessione…",
+    },
     ci: {
       title: "Terraform CI — run reali",
       subtitle: "Ogni modulo qui viene validato e pianificato contro un'API AWS emulata in CI. Nessun account cloud, nessuna spesa.",

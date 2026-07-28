@@ -1,13 +1,22 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { Play, Loader2, ShieldCheck, Plug } from 'lucide-react';
+import type { Translations } from '@/lib/types';
 
 // Set to the mini-lab backend URL to enable live mode. When unset, the panel
-// shows a "not configured" state — the static site is never broken.
+// shows an offline state — the static site is never broken.
 const MINILAB_URL = process.env.NEXT_PUBLIC_MINILAB_URL;
 
-export function LabLivePanel() {
+type LabLivePanelProps = {
+  /** Narrow slice, not the whole Translations bundle: everything handed to a
+      client component is serialised into the page payload. */
+  labels: Translations['lab']['liveOps'];
+  labHref: string;
+};
+
+export function LabLivePanel({ labels, labHref }: LabLivePanelProps) {
   const [accountId, setAccountId] = useState<string | null>(null);
   const [actions, setActions] = useState<Record<string, string>>({});
   const [output, setOutput] = useState('');
@@ -27,13 +36,13 @@ export function LabLivePanel() {
         setActions(acts);
         setOutput(`# connected — your isolated (emulated) account: ${session.accountId}\n`);
       } catch {
-        if (!cancelled) setError('Live backend unreachable.');
+        if (!cancelled) setError(labels.unreachable);
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [labels.unreachable]);
 
   const runAction = useCallback(
     async (action: string) => {
@@ -66,16 +75,21 @@ export function LabLivePanel() {
     outRef.current?.scrollTo(0, outRef.current.scrollHeight);
   }, [output]);
 
+  // Offline state, written for a visitor. It used to tell them to set an
+  // environment variable — internal configuration on a page reachable from the
+  // home page.
   if (!MINILAB_URL) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3 rounded-[6px] border border-[#3a3636] bg-[#1a1717] p-8 text-center text-[#9a9898]">
         <Plug className="h-8 w-8 text-[#4da3ff]" aria-hidden />
-        <p className="font-mono text-sm">Live mode isn’t connected.</p>
-        <p className="max-w-md text-xs">
-          Set <code className="text-[#4da3ff]">NEXT_PUBLIC_MINILAB_URL</code> to a running{' '}
-          <code className="text-[#4da3ff]">mini-lab</code> backend to run real commands against an
-          emulated AWS. Until then, the simulated lab has you covered.
-        </p>
+        <p className="font-mono text-sm text-[#fdfcfc]">{labels.offlineTitle}</p>
+        <p className="max-w-md text-xs leading-relaxed">{labels.offlineBody}</p>
+        <Link
+          href={labHref}
+          className="mt-1 inline-flex min-h-[44px] items-center text-sm text-[#4da3ff] underline underline-offset-4 hover:text-[#fdfcfc]"
+        >
+          {labels.offlineCta} →
+        </Link>
       </div>
     );
   }
@@ -91,7 +105,15 @@ export function LabLivePanel() {
       </div>
 
       {error ? (
-        <div className="p-4 text-sm text-red-400">{error}</div>
+        <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
+          <p className="max-w-md text-sm leading-relaxed text-[#c9c6c6]">{error}</p>
+          <Link
+            href={labHref}
+            className="inline-flex min-h-[44px] items-center text-sm text-[#4da3ff] underline underline-offset-4 hover:text-[#fdfcfc]"
+          >
+            {labels.offlineCta} →
+          </Link>
+        </div>
       ) : (
         <>
           <div className="flex flex-wrap gap-1.5 border-b border-[#3a3636] p-2">
@@ -118,7 +140,7 @@ export function LabLivePanel() {
             aria-label="Live command output"
             aria-live="polite"
           >
-            {output || 'Connecting…'}
+            {output || labels.connecting}
           </pre>
         </>
       )}
