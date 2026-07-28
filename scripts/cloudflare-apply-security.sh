@@ -11,13 +11,29 @@
 #
 # Prerequisites:
 #   export CLOUDFLARE_API_TOKEN="<your-cloudflare-api-token>"
-#     Token scopes, all four needed:
-#       Zone → Zone            → Read   (resolve the zone id)
-#       Zone → DNS             → Read   (the proxied-records precondition check)
-#       Zone → Bot Management  → Edit   (Bot Fight Mode / AI bots / AI Labyrinth)
-#       Zone → WAF             → Edit   (the rate limiting rule)
-#       Zone → Config Rules    → Edit   (the CV email-obfuscation exception)
-#     Plus Account → Turnstile → Edit only if you want the widget auto-created.
+#
+#   Create at dash.cloudflare.com/profile/api-tokens → Create Token → Custom token.
+#   Cloudflare does not publish these permission names in the API docs, so they are
+#   listed here against the exact call that needs each one. Search the dropdown for
+#   the bold word.
+#
+#     Permission (Zone)      Level   Needed by
+#     ---------------------  ------  --------------------------------------------
+#     **Zone**               Read    GET /zones?name=            (resolve zone id)
+#     **DNS**                Read    GET /zones/:id/dns_records  (proxied check)
+#     **Bot Management**     Edit    GET+PUT /zones/:id/bot_management
+#     **Zone WAF**           Edit    PUT .../rulesets/phases/http_ratelimit/…
+#     **Config Rules**       Edit    PUT .../rulesets/phases/http_config_settings/…
+#
+#   Zone Resources: Include → Specific zone → your zone.
+#
+#   Account-scoped, and ONLY if you want the script to create the Turnstile widget
+#   (skip it if you already made one in the dashboard):
+#     **Turnstile**          Edit    POST /accounts/:id/challenges/widgets
+#
+#   If a permission name here is wrong or missing, run --dry-run first: each step
+#   prints Cloudflare's own error and names the scope it wanted, rather than
+#   failing silently.
 #   export CLOUDFLARE_ZONE_NAME="tvignoli.com"   # optional, default below
 #   export CLOUDFLARE_ACCOUNT_ID="<your-cloudflare-account-id>"  # optional, required only for Turnstile widget creation
 #
@@ -40,7 +56,9 @@ for arg in "$@"; do
   case "$arg" in
     --dry-run) DRY_RUN=true ;;
     -h|--help)
-      sed -n '2,20p' "$0"
+      # Print the whole header block, however long it grows — a hardcoded line
+      # count silently truncated the permissions table the moment it was added.
+      awk 'NR > 1 { if (/^#/) print; else exit }' "$0"
       exit 0
       ;;
   esac
