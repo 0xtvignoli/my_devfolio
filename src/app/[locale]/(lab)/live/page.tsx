@@ -40,7 +40,10 @@ export default async function LivePage({ params }: LivePageProps) {
         />
       </div>
       <div className="container mx-auto px-4 pb-6" style={{ height: 'calc(100dvh - 8rem)' }}>
-        <LabLivePanel />
+        <LabLivePanel
+          labels={translations.lab.liveOps}
+          labHref={localizedPath(locale, '/lab')}
+        />
       </div>
     </div>
   );

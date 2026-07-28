@@ -173,6 +173,13 @@ export interface Translations {
       copied: string;
       empty: string;
     };
+    liveOps: {
+      offlineTitle: string;
+      offlineBody: string;
+      offlineCta: string;
+      unreachable: string;
+      connecting: string;
+    };
     ci: {
       title: string;
       subtitle: string;

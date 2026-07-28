@@ -202,6 +202,23 @@ test('the contact endpoint validates before it reveals anything', async ({ reque
   if (!payload.ok) expect(['not_configured', 'send_failed']).toContain(payload.reason);
 });
 
+// /live used to tell visitors to "set NEXT_PUBLIC_MINILAB_URL" — internal
+// configuration on a page that the home page linked to.
+test('the live page never shows internal configuration to a visitor', async ({ request }) => {
+  const live = await (await request.get('/en/live')).text();
+  expect(live.includes('NEXT_PUBLIC_MINILAB_URL'), '/live leaks an env var name').toBe(false);
+  expect(live.includes('mini-lab'), '/live leaks an internal service name').toBe(false);
+
+  const offline = live.includes('Live mode is offline');
+  const home = await (await request.get('/en')).text();
+  if (offline) {
+    // No backend configured: the landing page must not send anyone to a dead end.
+    expect(home.includes('href="/en/live"'), 'home links to an offline page').toBe(false);
+  } else {
+    expect(home.includes('href="/en/live"'), 'home should link Live Ops when it works').toBe(true);
+  }
+});
+
 test('legacy root path redirects to locale prefix', async ({ page }) => {
   await page.goto('/');
   await expect(page).toHaveURL(/\/(en|it)\/?$/);

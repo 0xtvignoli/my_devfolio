@@ -107,15 +107,19 @@ export default async function Home({ params }: HomePageProps) {
               {t.hero.tryLabCta}
               <span aria-hidden className="font-bold no-underline">→</span>
             </Link>
-            {/* The two experiments that aren't simulated — previously reachable
-                only from inside the lab header. */}
-            <Link
-              href={localizedPath(locale, '/live')}
-              title="Real commands against an emulated AWS"
-              className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground inline-flex items-center min-h-[44px]"
-            >
-              Live Ops
-            </Link>
+            {/* The experiments that aren't simulated. Live Ops depends on a
+                backend that isn't always up, and this is the landing page — no
+                link rather than a link to an offline page. Build-time gate, so
+                configuring the backend needs a redeploy to surface it. */}
+            {process.env.NEXT_PUBLIC_MINILAB_URL && (
+              <Link
+                href={localizedPath(locale, '/live')}
+                title="Real commands against an emulated AWS"
+                className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground inline-flex items-center min-h-[44px]"
+              >
+                Live Ops
+              </Link>
+            )}
             {/* Native <a>: /shell needs a full-document load for its COOP/COEP
                 isolation headers to apply (see proxy.ts). */}
             <a
