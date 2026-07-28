@@ -41,6 +41,23 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
     const simulationEffects = useRef({ latencyInjection: 0, cpuSpike: 0 });
     const autoChaosTimer = useRef<NodeJS.Timeout | null>(null);
     const pipelinePromiseChain = useRef<Promise<void>>(Promise.resolve());
+    const pendingTimers = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
+
+    /**
+     * Every deferred step of the simulation goes through here — chaos recovery,
+     * pipeline stages, pod restarts. Bare setTimeout kept firing into a
+     * torn-down tree after navigating away from the lab (a chaos experiment
+     * schedules recoveries up to 8s out), and runStage's cleanup return was
+     * inside a Promise executor, so nothing ever called it.
+     */
+    const schedule = useCallback((fn: () => void, ms: number) => {
+        const id = setTimeout(() => {
+            pendingTimers.current.delete(id);
+            fn();
+        }, ms);
+        pendingTimers.current.add(id);
+        return id;
+    }, []);
 
     const addRuntimeLog = useCallback((message: string) => {
         setRuntimeLogs(prev => {
@@ -108,11 +125,14 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
 
     // Cleanup all timers on unmount
     useEffect(() => {
+        const timers = pendingTimers.current;
         return () => {
             if (autoChaosTimer.current) {
                 clearInterval(autoChaosTimer.current);
                 autoChaosTimer.current = null;
             }
+            timers.forEach(clearTimeout);
+            timers.clear();
         };
     }, []);
 
@@ -128,7 +148,7 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
             toast({ variant: 'destructive', title: '🚨 ALERT: High API Latency Detected', description });
             simulationEffects.current.latencyInjection = 300;
             const incidentId = addIncident({ type: 'API Latency', duration: '—', status: 'Investigating' });
-             setTimeout(() => {
+             schedule(() => {
                 const recoveryMsg = "Chaos experiment 'latency' finished. Latency returning to normal.";
                 addRuntimeLog(`✅ ${recoveryMsg}`);
                 toast({ variant: 'default', title: '✅ RESOLVED: API Latency Normalized', description: 'The API gateway has recovered.' });
@@ -167,7 +187,7 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
             });
 
             addRuntimeLog("Kubernetes is restarting the pod...");
-            setTimeout(() => {
+            schedule(() => {
                 setCluster(prev => {
                      const newNodes = prev.nodes.map(node => ({
                         ...node,
@@ -178,7 +198,7 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
                     return { ...prev, nodes: newNodes };
                 });
             }, 2000);
-            setTimeout(() => {
+            schedule(() => {
                 const recoveryMsg = `Pod '${targetPodName}' has recovered with a new IP.`;
                 addRuntimeLog(`✅ ${recoveryMsg}`);
                 toast({ variant: 'default', title: '✅ RESOLVED: Pod Recovered', description: recoveryMsg });
@@ -201,7 +221,7 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
             toast({ variant: 'destructive', title: '🚨 ALERT: High CPU Usage Detected', description });
             simulationEffects.current.cpuSpike = 80;
             const incidentId = addIncident({ type: 'CPU Spike', duration: '—', status: 'Investigating' });
-             setTimeout(() => {
+             schedule(() => {
                 const recoveryMsg = "Chaos experiment 'cpu_spike' finished. CPU usage returning to normal.";
                 addRuntimeLog(`✅ ${recoveryMsg}`);
                 toast({ variant: 'default', title: '✅ RESOLVED: CPU Usage Normalized', description: 'The monitoring service has stabilized.' });
@@ -221,7 +241,7 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
                 description: 'An error occurred during the chaos experiment. Check logs for details.' 
             });
         }
-    }, [addRuntimeLog, toast, cluster, addIncident, resolveIncident]);
+    }, [addRuntimeLog, toast, cluster, addIncident, resolveIncident, schedule]);
 
     const runStage = (stage: PipelineStage, commandOutput: string): Promise<void> => {
         return new Promise((resolve, reject) => {
@@ -231,7 +251,7 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
                 addRuntimeLog(`[Pipeline] > Stage '${stage.name}' started.`);
                 addRuntimeLog(`$ ${stage.details}`);
                 
-                const timer = setTimeout(() => {
+                schedule(() => {
                     try {
                         addRuntimeLog(commandOutput);
                         setPipeline(prev => prev.map(s => s.name === stage.name ? { ...s, status: 'Success', duration: `${(duration/1000).toFixed(2)}s` } : s));
@@ -244,9 +264,6 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
                         reject(error);
                     }
                 }, duration);
-
-                // Store timer reference for cleanup if needed
-                return () => clearTimeout(timer);
             } catch (error) {
                 console.error(`Error starting pipeline stage ${stage.name}:`, error);
                 setPipeline(prev => prev.map(s => s.name === stage.name ? { ...s, status: 'Failed' } : s));
@@ -353,7 +370,7 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
 
             setPipelineStatus('completed');
             setCanaryMetrics(null);
-            setTimeout(() => {
+            schedule(() => {
                 setPipelineStatus('idle');
             }, 0);
         };

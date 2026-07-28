@@ -185,7 +185,6 @@ export function LabMarginPanel({ translations, latencyMs, cpuPercent, incidents,
     const s = computeSnapshot(BASE_RPS, () => 1, { latencyMs, cpuPercent, incidents, isDeploying, autoChaos });
     setSnap(s);
     setHistory((h) => [...h.slice(1), s.marginPerReq]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [latencyMs, cpuPercent, incidents, isDeploying, autoChaos]);
 
   const maxRevenue = Math.max(...snap.endpoints.map((e) => e.revenue), 0.0001);

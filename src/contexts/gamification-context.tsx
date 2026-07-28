@@ -39,15 +39,6 @@ export interface Challenge {
   maxProgress: number;
 }
 
-export interface LeaderboardEntry {
-  rank: number;
-  username: string;
-  level: number;
-  xp: number;
-  achievements: number;
-  avatar?: string;
-}
-
 export interface RecentActivity {
   id: string;
   type: 'achievement' | 'xp' | 'challenge' | 'level';
@@ -59,7 +50,6 @@ interface GamificationContextType {
   userProgress: UserProgress;
   achievements: Achievement[];
   challenges: Challenge[];
-  leaderboard: LeaderboardEntry[];
   recentActivities: RecentActivity[];
   isLoading: boolean;
   
@@ -239,7 +229,6 @@ export const GamificationProvider = ({ children }: { children: React.ReactNode }
   
   const [achievements, setAchievements] = useState<Achievement[]>(INITIAL_ACHIEVEMENTS);
   const [challenges, setChallenges] = useState<Challenge[]>([]);
-  const [leaderboard] = useState<LeaderboardEntry[]>([]);
   const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
   const [isLoading] = useState(false);
   const timeoutRefs = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
@@ -569,7 +558,6 @@ export const GamificationProvider = ({ children }: { children: React.ReactNode }
     userProgress,
     achievements,
     challenges,
-    leaderboard,
     recentActivities,
     isLoading,
     earnXP,

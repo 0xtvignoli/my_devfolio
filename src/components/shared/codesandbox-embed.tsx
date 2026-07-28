@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Code2, ExternalLink, Copy, Play, X, Maximize2, Minimize2 } from 'lucide-react';
+import { Code2, ExternalLink, Copy, Play, X, Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui-mui';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';

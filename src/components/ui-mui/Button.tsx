@@ -2,7 +2,7 @@
 
 import MuiButton from '@mui/material/Button';
 import MuiIconButton from '@mui/material/IconButton';
-import type { ButtonProps as MuiButtonProps, IconButtonProps } from '@mui/material';
+import type { ButtonProps as MuiButtonProps } from '@mui/material';
 import { forwardRef } from 'react';
 import Link from 'next/link';
 
