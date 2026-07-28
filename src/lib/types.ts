@@ -70,6 +70,7 @@ export interface Translations {
     submit: string;
     thinking: string;
     error: string;
+    fallbackCta: string;
   };
   cv: {
     title: string;

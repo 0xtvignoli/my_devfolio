@@ -45,9 +45,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ answer });
   } catch (err) {
     console.error('ask route error:', err);
-    // Surface a terminal-friendly line rather than a raw 500 the UI can't render.
+    // Still a 200 with a printable line, because the lab terminal renders
+    // `answer` verbatim. `degraded` lets the marketing widget show its own
+    // localized copy instead of this English fallback — without it, a dead model
+    // put developer-facing text on the landing page.
     return NextResponse.json(
-      { answer: 'Assistant error — the model call failed. Try again in a moment.' },
+      {
+        answer: 'Assistant error — the model call failed. Try again in a moment.',
+        degraded: true,
+      },
       { status: 200 }
     );
   }

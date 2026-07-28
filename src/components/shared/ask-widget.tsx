@@ -17,6 +17,7 @@ export function AskWidget({ translations }: { translations: Translations }) {
   const t = translations.ask;
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState<string | null>(null);
+  const [degraded, setDegraded] = useState(false);
   const [pending, setPending] = useState(false);
 
   const submit = async (event: React.FormEvent) => {
@@ -33,9 +34,18 @@ export function AskWidget({ translations }: { translations: Translations }) {
         body: JSON.stringify({ question: trimmed }),
       });
       const data = await response.json();
-      setAnswer(typeof data.answer === 'string' ? data.answer : t.error);
+      // `degraded` means the model call failed: show localized copy and point at
+      // email, rather than the route's English fallback line.
+      if (data.degraded || typeof data.answer !== 'string') {
+        setAnswer(t.error);
+        setDegraded(true);
+      } else {
+        setAnswer(data.answer);
+        setDegraded(false);
+      }
     } catch {
       setAnswer(t.error);
+      setDegraded(true);
     } finally {
       setPending(false);
     }
@@ -91,6 +101,16 @@ export function AskWidget({ translations }: { translations: Translations }) {
           <pre className="whitespace-pre-wrap break-words text-sm text-foreground bg-muted/40 border border-border rounded-[4px] p-3 m-0">
             {answer}
           </pre>
+        )}
+        {degraded && (
+          <p className="text-sm text-muted-foreground mt-2 mb-0">
+            <a
+              href={`mailto:${translations.contact.email}`}
+              className="text-foreground underline underline-offset-4 hover:opacity-70"
+            >
+              {t.fallbackCta}
+            </a>
+          </p>
         )}
       </div>
     </div>

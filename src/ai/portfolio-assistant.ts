@@ -1,5 +1,6 @@
 import { ai } from './genkit';
 import { hasAssistantKey } from './config';
+import { createBoundedCache } from '@/lib/bounded-cache';
 import { projects } from '@/data/content/projects';
 import { experiences } from '@/data/content/experiences';
 
@@ -35,6 +36,12 @@ Reply in the same language as the question.`;
 
 export { hasAssistantKey } from './config';
 
+// Visitors converge on the same few questions and the context is a build-time
+// constant, so an identical question has an identical answer.
+const answerCache = createBoundedCache<string>(200);
+
+const cacheKey = (question: string) => question.toLowerCase().replace(/\s+/g, ' ');
+
 export async function answerPortfolioQuestion(question: string): Promise<string> {
   const q = question.trim();
   if (!q) {
@@ -43,9 +50,17 @@ export async function answerPortfolioQuestion(question: string): Promise<string>
   if (!hasAssistantKey()) {
     return 'Assistant offline: set GEMINI_API_KEY on the server to enable `ask`.';
   }
+
+  const key = cacheKey(q);
+  const cached = answerCache.get(key);
+  if (cached !== undefined) return cached;
+
   const response = await ai.generate({
     system: SYSTEM_PROMPT,
     prompt: `CONTEXT:\n${buildContext()}\n\nQUESTION: ${q}`,
   });
-  return response.text.trim();
+  const answer = response.text.trim();
+  // Don't cache an empty completion — that would pin a dud until restart.
+  if (answer) answerCache.set(key, answer);
+  return answer;
 }
