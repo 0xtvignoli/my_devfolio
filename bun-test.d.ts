@@ -8,7 +8,8 @@ declare module 'bun:test' {
   export namespace mock {
     function module(module: string, implementation: () => unknown): void;
   }
-  export const expect: (value: unknown) => {
+  /** The optional message is bun's own second argument, surfaced on failure. */
+  export const expect: (value: unknown, message?: string) => {
     toBeInTheDocument(): void;
     toHaveAttribute(name: string, value?: string): void;
     toEqual(value: unknown): void;

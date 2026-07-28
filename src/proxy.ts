@@ -68,19 +68,31 @@ function miniLabOrigin(): string | null {
   }
 }
 
+// Turnstile needs its own script origin and an iframe. Added only when a site key
+// is configured, so the CSP stays tight until the widget actually exists —
+// widening it for a dormant feature is a permanent cost for no current benefit.
+const TURNSTILE_ORIGIN = 'https://challenges.cloudflare.com';
+const turnstileEnabled = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
+
 function buildContentSecurityPolicy(): string {
   const scriptSrc = [
     "'self'",
     "'unsafe-inline'",
     'https://www.googletagmanager.com',
     'https://www.google-analytics.com',
-  ].join(' ');
+    turnstileEnabled ? TURNSTILE_ORIGIN : null,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   const connectSrc = [
     "'self'",
     'https://www.google-analytics.com',
     'https://analytics.google.com',
     'https://*.google-analytics.com',
+    // api.js talks back to its own origin from the parent document, not only
+    // from inside the iframe.
+    turnstileEnabled ? TURNSTILE_ORIGIN : null,
     miniLabOrigin(),
   ]
     .filter(Boolean)
@@ -93,6 +105,7 @@ function buildContentSecurityPolicy(): string {
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: https: blob: https://www.google-analytics.com https://www.googletagmanager.com",
     `connect-src ${connectSrc}`,
+    ...(turnstileEnabled ? [`frame-src ${TURNSTILE_ORIGIN}`] : []),
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",

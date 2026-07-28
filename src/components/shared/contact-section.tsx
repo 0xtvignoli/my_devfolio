@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Mail } from 'lucide-react';
 import { AskWidget } from '@/components/shared/ask-widget';
+import { ContactForm } from '@/components/shared/contact-form';
 import { CopyEmailButton } from '@/components/shared/copy-email-button';
 import { localizedPath } from '@/lib/i18n/paths';
 import { CONTACT_EMAIL, SOCIAL_LINKS } from '@/lib/seo/constants';
@@ -12,6 +13,9 @@ interface ContactSectionProps {
   /** False on a deploy without a model key — the widget stays hidden rather than
       telling visitors to go set an env var. */
   assistantEnabled?: boolean;
+  /** False without a mail provider key: a form that drops messages is worse than
+      no form, because the visitor believes they reached you. */
+  formEnabled?: boolean;
 }
 
 /**
@@ -25,7 +29,12 @@ interface ContactSectionProps {
  * prefers-reduced-motion effect duplicating a rule globals.css already has. That
  * was the whole reason this file needed to be a client component.
  */
-export function ContactSection({ translations, locale, assistantEnabled = false }: ContactSectionProps) {
+export function ContactSection({
+  translations,
+  locale,
+  assistantEnabled = false,
+  formEnabled = false,
+}: ContactSectionProps) {
   const t = translations.contact;
   const mailHref = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(t.subject)}`;
 
@@ -67,8 +76,14 @@ export function ContactSection({ translations, locale, assistantEnabled = false 
         </a>
       </div>
 
-      {assistantEnabled && (
+      {formEnabled && (
         <div className="mt-10 max-w-2xl mx-auto">
+          <ContactForm translations={translations} />
+        </div>
+      )}
+
+      {assistantEnabled && (
+        <div className="mt-6 max-w-2xl mx-auto">
           <AskWidget translations={translations} />
         </div>
       )}

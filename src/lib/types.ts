@@ -66,6 +66,19 @@ export interface Translations {
     responseTime: string;
     cvLink: string;
   };
+  contactForm: {
+    title: string;
+    name: string;
+    email: string;
+    message: string;
+    submit: string;
+    sending: string;
+    sent: string;
+    error: string;
+    errorField: string;
+    errorRateLimited: string;
+    privacy: string;
+  };
   ask: {
     title: string;
     description: string;

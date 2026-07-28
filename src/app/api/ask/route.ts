@@ -14,7 +14,11 @@ const MAX_QUESTION_LEN = 500;
 const rateLimited = createRateLimiter(8, 60_000);
 
 export async function POST(req: NextRequest) {
+  // Cloudflare sets cf-connecting-ip to the real client IP. Prefer it: with both
+  // Cloudflare and Vercel in the chain, x-forwarded-for is a list that each of
+  // them appends to, so parsing position is guesswork.
   const ip =
+    req.headers.get('cf-connecting-ip') ||
     req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
     req.headers.get('x-real-ip') ||
     'unknown';
