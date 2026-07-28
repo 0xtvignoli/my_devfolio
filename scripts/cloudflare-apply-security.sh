@@ -5,6 +5,7 @@
 #   - Bot Fight Mode
 #   - Block AI bots (training scrapers)
 #   - AI Labyrinth (crawler honeypot)
+#   - Rate limiting on /api/ask (LLM cost protection)
 #   - Turnstile widget bootstrap (account-level)
 #
 # Prerequisites:
@@ -18,6 +19,7 @@
 #
 # Docs:
 #   https://developers.cloudflare.com/api/resources/bot_management/methods/update/
+#   https://developers.cloudflare.com/waf/rate-limiting-rules/create-api/
 #   https://developers.cloudflare.com/turnstile/get-started/
 
 set -euo pipefail
@@ -39,7 +41,7 @@ done
 if [[ -z "${CLOUDFLARE_API_TOKEN:-}" ]]; then
   echo "ERROR: CLOUDFLARE_API_TOKEN is not set."
   echo "Create a token at https://dash.cloudflare.com/profile/api-tokens"
-  echo "Permissions: Zone → Bot Management → Edit, Zone → Zone → Read"
+  echo "Permissions: Zone → Bot Management → Edit, Zone → Zone → Read, Zone → WAF → Edit"
   exit 1
 fi
 
@@ -109,6 +111,58 @@ print('  crawler_protection:', r.get('crawler_protection'))
 "
 fi
 
+# Rate limiting on the AI endpoint. /api/ask calls a paid LLM, and the in-app
+# limiter (src/app/api/ask/route.ts) counts per serverless instance — it can't
+# see a burst spread across instances. This edge rule is the one that holds.
+#
+# Free-plan ceiling: 1 rule, period 10s, mitigation 10s, characteristic = IP,
+# expression limited to path/verified-bot. On Pro+ raise RATELIMIT_PERIOD and
+# RATELIMIT_TIMEOUT (60s+ / up to 1h).
+#
+# PUT on the phase entrypoint REPLACES every rule in the http_ratelimit phase —
+# that's what makes this script idempotent, but any rule added by hand in the
+# dashboard is overwritten. Add it here instead.
+RL_PATH="${RATELIMIT_PATH:-/api/ask}"
+RL_REQUESTS="${RATELIMIT_REQUESTS:-5}"
+RL_PERIOD="${RATELIMIT_PERIOD:-10}"
+RL_TIMEOUT="${RATELIMIT_TIMEOUT:-10}"
+
+RATELIMIT_PAYLOAD=$(cat <<EOF
+{
+  "rules": [
+    {
+      "description": "Rate limit AI assistant endpoint (LLM cost protection)",
+      "expression": "(http.request.uri.path eq \"$RL_PATH\")",
+      "action": "block",
+      "ratelimit": {
+        "characteristics": ["ip.src"],
+        "period": $RL_PERIOD,
+        "requests_per_period": $RL_REQUESTS,
+        "mitigation_timeout": $RL_TIMEOUT
+      }
+    }
+  ]
+}
+EOF
+)
+
+echo "→ Applying rate limiting on $RL_PATH ($RL_REQUESTS req / ${RL_PERIOD}s per IP)..."
+RL_RESULT=$(cf_api PUT "/zones/$ZONE_ID/rulesets/phases/http_ratelimit/entrypoint" "$RATELIMIT_PAYLOAD" || true)
+if [[ "$DRY_RUN" != true ]]; then
+  echo "$RL_RESULT" | python3 -c "
+import sys, json
+d = json.load(sys.stdin)
+if not d.get('success'):
+    print('  WARNING: rate limiting rule not applied:', d.get('errors', d))
+    print('  Needs Zone → WAF → Edit on the token; check plan limits on period/timeout.')
+    sys.exit(0)
+for r in d.get('result', {}).get('rules', []):
+    rl = r.get('ratelimit', {})
+    print('  rule:', r.get('description'))
+    print('  limit:', rl.get('requests_per_period'), 'req /', rl.get('period'), 's → block', rl.get('mitigation_timeout'), 's')
+" || true
+fi
+
 # Turnstile is account-scoped — create a widget if account ID is provided.
 if [[ -n "${CLOUDFLARE_ACCOUNT_ID:-}" ]]; then
   TURNSTILE_PAYLOAD=$(cat <<EOF
@@ -146,3 +200,4 @@ echo "✓ Cloudflare security configuration applied."
 echo "  Verify in dashboard: Security → Security Insights"
 echo "  security.txt is served from /.well-known/security.txt (app repo)"
 echo "  robots.txt blocks AI training crawlers; search bots remain allowed."
+echo "  /api/ask is rate limited at the edge — verify in Security → WAF → Rate limiting rules"

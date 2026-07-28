@@ -13,7 +13,11 @@ declare module 'bun:test' {
     toHaveAttribute(name: string, value?: string): void;
     toEqual(value: unknown): void;
     toMatch(regex: RegExp): void;
-    not: { toEqual(value: unknown); toContainText(text: string | RegExp): void };
+    not: {
+      toEqual(value: unknown);
+      toMatch(regex: RegExp): void;
+      toContainText(text: string | RegExp): void;
+    };
     [key: string]: (...args: unknown[]) => unknown;
   };
 }

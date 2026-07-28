@@ -15,6 +15,7 @@ const STATIC_PATH_PREFIXES = [
   '/apple-icon',
   '/robots.txt',
   '/sitemap.xml',
+  '/llms.txt',
   '/.well-known',
   '/opengraph-image',
   '/og-image.png',
@@ -100,8 +101,10 @@ function buildContentSecurityPolicy(): string {
 
 function applySecurityHeaders(response: NextResponse, req?: NextRequest) {
   response.headers.set('X-Content-Type-Options', 'nosniff');
+  // Kept for pre-CSP browsers; `frame-ancestors 'none'` below is what modern
+  // ones enforce. X-XSS-Protection is deliberately absent: it's a no-op in
+  // every current browser and its legacy filter introduced its own bugs.
   response.headers.set('X-Frame-Options', 'DENY');
-  response.headers.set('X-XSS-Protection', '1; mode=block');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   response.headers.set(
     'Permissions-Policy',
@@ -227,6 +230,6 @@ export function proxy(req: NextRequest) {
 export const config = {
   matcher: [
     '/',
-    '/((?!_next/static|_next/image|favicon.ico|icon\\.svg|apple-icon|robots.txt|sitemap.xml|\\.well-known|opengraph-image|og-image.png|thomas-vignoli\\.svg|thomas-vignoli\\.png|images/).*)',
+    '/((?!_next/static|_next/image|favicon.ico|icon\\.svg|apple-icon|robots.txt|sitemap.xml|llms.txt|\\.well-known|opengraph-image|og-image.png|thomas-vignoli\\.svg|thomas-vignoli\\.png|images/).*)',
   ],
 };

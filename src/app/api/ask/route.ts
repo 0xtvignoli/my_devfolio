@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { answerPortfolioQuestion } from '@/ai/portfolio-assistant';
+import { createRateLimiter } from '@/lib/rate-limit';
 
 // The model runs server-side (needs the Google GenAI key), so this must not be static.
 export const runtime = 'nodejs';
@@ -7,19 +8,10 @@ export const dynamic = 'force-dynamic';
 
 const MAX_QUESTION_LEN = 500;
 
-// ponytail: per-instance sliding window — good enough to blunt casual abuse of a
-// public LLM endpoint. Move to Upstash/KV if this ever runs hot across instances.
-const RATE_LIMIT = 8; // requests
-const RATE_WINDOW_MS = 60_000; // per minute per IP
-const hits = new Map<string, number[]>();
-
-function rateLimited(ip: string): boolean {
-  const now = Date.now();
-  const recent = (hits.get(ip) ?? []).filter((t) => now - t < RATE_WINDOW_MS);
-  recent.push(now);
-  hits.set(ip, recent);
-  return recent.length > RATE_LIMIT;
-}
+// Per-instance backstop, 8 requests/minute per IP. The rule that actually caps
+// spend on this endpoint is applied at the edge — see
+// scripts/cloudflare-apply-security.sh.
+const rateLimited = createRateLimiter(8, 60_000);
 
 export async function POST(req: NextRequest) {
   const ip =
