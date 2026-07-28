@@ -6,6 +6,7 @@
 #   - Block AI bots (training scrapers)
 #   - AI Labyrinth (crawler honeypot)
 #   - Rate limiting on /api/ask (LLM cost protection)
+#   - Email Obfuscation off on /cv only (so the printable CV prints an address)
 #   - Turnstile widget bootstrap (account-level)
 #
 # Prerequisites:
@@ -15,6 +16,7 @@
 #       Zone → DNS             → Read   (the proxied-records precondition check)
 #       Zone → Bot Management  → Edit   (Bot Fight Mode / AI bots / AI Labyrinth)
 #       Zone → WAF             → Edit   (the rate limiting rule)
+#       Zone → Config Rules    → Edit   (the CV email-obfuscation exception)
 #     Plus Account → Turnstile → Edit only if you want the widget auto-created.
 #   export CLOUDFLARE_ZONE_NAME="tvignoli.com"   # optional, default below
 #   export CLOUDFLARE_ACCOUNT_ID="<your-cloudflare-account-id>"  # optional, required only for Turnstile widget creation
@@ -247,6 +249,54 @@ for r in json.load(sys.stdin).get('result', {}).get('rules', []):
     rl = r.get('ratelimit', {})
     print('  rule:', r.get('description'))
     print('  limit:', rl.get('requests_per_period'), 'req /', rl.get('period'), 's → block', rl.get('mitigation_timeout'), 's')
+" 2>/dev/null || echo "  (applied, but the response could not be summarised)"
+fi
+
+# Email Obfuscation off on the CV pages only.
+#
+# Obfuscation rewrites both the mailto href and the visible address into a
+# JS-decoded span, so without JavaScript /cv prints "[email protected]" — on the
+# one page whose whole purpose is to become a static PDF. This is a per-path
+# exception, not a retreat: every other page keeps the address obfuscated.
+#
+# Same PUT-the-phase-entrypoint idiom as the rate limit above: idempotent, and it
+# replaces any Configuration Rule added by hand in the dashboard.
+CV_PATHS="${CV_PATHS:-/en/cv /it/cv}"
+CV_EXPRESSION=$(python3 -c "
+import sys
+paths = sys.argv[1].split()
+print(' or '.join(f'http.request.uri.path eq \"{p}\"' for p in paths))
+" "$CV_PATHS")
+
+CONFIG_PAYLOAD=$(cat <<EOF
+{
+  "rules": [
+    {
+      "ref": "cv_plain_email",
+      "description": "CV pages must print a real address, not a JS-decoded placeholder",
+      "expression": "($CV_EXPRESSION)",
+      "action": "set_config",
+      "action_parameters": { "email_obfuscation": false }
+    }
+  ]
+}
+EOF
+)
+
+echo "→ Disabling Email Obfuscation on the CV pages ($CV_PATHS)..."
+CFG_RESULT=$(cf_api PUT "/zones/$ZONE_ID/rulesets/phases/http_config_settings/entrypoint" "$CONFIG_PAYLOAD")
+if ! cf_ok "$CFG_RESULT"; then
+  echo "  ✗ configuration rule NOT applied:"
+  cf_why "$CFG_RESULT"
+  echo "    Needs Zone → Config Rules → Edit on the token."
+  echo "    By hand: Rules → Configuration Rules → path in $CV_PATHS → Email Obfuscation off."
+  FAILURES+=("email obfuscation exception for $CV_PATHS")
+elif [[ "$DRY_RUN" != true ]]; then
+  echo "$CFG_RESULT" | python3 -c "
+import sys, json
+for r in json.load(sys.stdin).get('result', {}).get('rules', []):
+    print('  rule:', r.get('description'))
+    print('  where:', r.get('expression'))
 " 2>/dev/null || echo "  (applied, but the response could not be summarised)"
 fi
 
