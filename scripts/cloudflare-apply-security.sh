@@ -238,10 +238,20 @@ RL_REQUESTS="${RATELIMIT_REQUESTS:-5}"
 RL_PERIOD="${RATELIMIT_PERIOD:-10}"
 RL_TIMEOUT="${RATELIMIT_TIMEOUT:-10}"
 
-# `enabled` is stated explicitly rather than left to the API's default: the rule
-# came back accepted and summarised, yet 24 requests inside one window all passed,
-# and "created but not enabled" was the one variable not yet eliminated. JSON has
-# no comments, so this note lives out here.
+# `enabled` is stated explicitly rather than left to the API's default. JSON has no
+# comments, so this note lives out here.
+#
+# HOW TO VERIFY THIS RULE, because the obvious way gives a false negative: a burst
+# of separate curl invocations does NOT trip it — 24 of them all returned 200 and
+# the dashboard showed 0 events, which reads exactly like a broken rule. Each
+# invocation opens its own connection and the counter does not accumulate across
+# them. Send the burst down ONE keep-alive connection instead:
+#
+#   U=https://tvignoli.com/api/ask
+#   curl -sS -H 'Content-Type: application/json' -d '{"question":"ping"}' \
+#     -o /dev/null -w "%{http_code} " $U $U $U $U $U $U $U
+#
+# Expected: 200 up to the limit, then 429 with Cloudflare's `error code: 1015`.
 RATELIMIT_PAYLOAD=$(cat <<EOF
 {
   "rules": [
