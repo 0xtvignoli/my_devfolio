@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" role="img" aria-label="Kubernetes FinOps Platform">
+  <defs>
+    <linearGradient id="bg7" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0a0e1a"/><stop offset="100%" stop-color="#0a1628"/></linearGradient>
+  </defs>
+  <rect width="600" height="400" fill="url(#bg7)"/>
+  <text x="40" y="48" fill="#7dd3fc" font-family="monospace" font-size="13">kubernetes finops · cost allocation</text>
+  <!-- descending cost bars -->
+  <g>
+    <rect x="90" y="120" width="66" height="180" rx="4" fill="#ef4444" opacity="0.85"/>
+    <rect x="186" y="160" width="66" height="140" rx="4" fill="#f97316" opacity="0.9"/>
+    <rect x="282" y="205" width="66" height="95" rx="4" fill="#facc15" opacity="0.9"/>
+    <rect x="378" y="240" width="66" height="60" rx="4" fill="#22c55e" opacity="0.9"/>
+    <rect x="474" y="258" width="66" height="42" rx="4" fill="#22c55e"/>
+  </g>
+  <line x1="80" y1="300" x2="552" y2="300" stroke="#1e293b" stroke-width="1.5"/>
+  <polyline points="123,140 219,180 315,225 411,258 507,278" fill="none" stroke="#00d9ff" stroke-width="2.5"/>
+  <text x="440" y="120" fill="#22c55e" font-family="monospace" font-size="22" font-weight="700">−48%</text>
+  <text x="40" y="372" fill="#64748b" font-family="monospace" font-size="11">OpenCost · Karpenter · spot 80% · idle waste −65%</text>
+</svg>

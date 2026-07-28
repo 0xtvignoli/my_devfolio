@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 
 // --- SIMULATION LOGIC ---
 const generateIp = () => `10.1.2.${Math.floor(Math.random() * 254) + 1}`;
-type PipelineStatus = 'idle' | 'deploying' | 'paused_canary' | 'failed';
+type PipelineStatus = 'idle' | 'deploying' | 'paused_canary' | 'failed' | 'completed';
 
 interface LabSimulationContextType {
     runtimeLogs: string[];
@@ -41,6 +41,23 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
     const simulationEffects = useRef({ latencyInjection: 0, cpuSpike: 0 });
     const autoChaosTimer = useRef<NodeJS.Timeout | null>(null);
     const pipelinePromiseChain = useRef<Promise<void>>(Promise.resolve());
+    const pendingTimers = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
+
+    /**
+     * Every deferred step of the simulation goes through here — chaos recovery,
+     * pipeline stages, pod restarts. Bare setTimeout kept firing into a
+     * torn-down tree after navigating away from the lab (a chaos experiment
+     * schedules recoveries up to 8s out), and runStage's cleanup return was
+     * inside a Promise executor, so nothing ever called it.
+     */
+    const schedule = useCallback((fn: () => void, ms: number) => {
+        const id = setTimeout(() => {
+            pendingTimers.current.delete(id);
+            fn();
+        }, ms);
+        pendingTimers.current.add(id);
+        return id;
+    }, []);
 
     const addRuntimeLog = useCallback((message: string) => {
         setRuntimeLogs(prev => {
@@ -55,11 +72,19 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
     
     const addIncident = useCallback((incident: Omit<Incident, 'id' | 'timestamp'>) => {
         const newIncident: Incident = {
-            id: `inc-${Date.now()}`,
+            id: `inc-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
             timestamp: new Date(),
             ...incident
         };
         setIncidents(prev => [newIncident, ...prev.slice(0, 4)]);
+        return newIncident.id;
+    }, []);
+
+    // Flip an in-flight incident to Resolved and stamp its real duration.
+    const resolveIncident = useCallback((id: string, duration: string) => {
+        setIncidents(prev =>
+            prev.map(i => (i.id === id ? { ...i, status: 'Resolved', duration } : i))
+        );
     }, []);
 
     const updateMonitoring = useCallback(() => {
@@ -100,11 +125,14 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
 
     // Cleanup all timers on unmount
     useEffect(() => {
+        const timers = pendingTimers.current;
         return () => {
             if (autoChaosTimer.current) {
                 clearInterval(autoChaosTimer.current);
                 autoChaosTimer.current = null;
             }
+            timers.forEach(clearTimeout);
+            timers.clear();
         };
     }, []);
 
@@ -119,13 +147,14 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
             addRuntimeLog(description);
             toast({ variant: 'destructive', title: '🚨 ALERT: High API Latency Detected', description });
             simulationEffects.current.latencyInjection = 300;
-             setTimeout(() => {
+            const incidentId = addIncident({ type: 'API Latency', duration: '—', status: 'Investigating' });
+             schedule(() => {
                 const recoveryMsg = "Chaos experiment 'latency' finished. Latency returning to normal.";
                 addRuntimeLog(`✅ ${recoveryMsg}`);
                 toast({ variant: 'default', title: '✅ RESOLVED: API Latency Normalized', description: 'The API gateway has recovered.' });
                 simulationEffects.current.latencyInjection = 0;
                 const duration = ((Date.now() - startTime) / 1000).toFixed(1);
-                addIncident({ type: 'API Latency', duration: `${duration}s`, status: 'Resolved' });
+                resolveIncident(incidentId, `${duration}s`);
                 
                 // Trigger gamification event for chaos experiment
                 window.dispatchEvent(new CustomEvent('lab_activity', {
@@ -145,6 +174,7 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
             const description = `Terminating pod '${targetPodName}'...`;
             addRuntimeLog(description);
             toast({ variant: 'destructive', title: `🚨 ALERT: Pod Unhealthy`, description: `Pod ${targetPodName} is not responding.` });
+            const incidentId = addIncident({ type: 'Pod Failure', duration: '—', status: 'Investigating' });
 
             setCluster(prev => {
                 const newNodes = prev.nodes.map(node => ({
@@ -157,7 +187,7 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
             });
 
             addRuntimeLog("Kubernetes is restarting the pod...");
-            setTimeout(() => {
+            schedule(() => {
                 setCluster(prev => {
                      const newNodes = prev.nodes.map(node => ({
                         ...node,
@@ -168,7 +198,7 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
                     return { ...prev, nodes: newNodes };
                 });
             }, 2000);
-            setTimeout(() => {
+            schedule(() => {
                 const recoveryMsg = `Pod '${targetPodName}' has recovered with a new IP.`;
                 addRuntimeLog(`✅ ${recoveryMsg}`);
                 toast({ variant: 'default', title: '✅ RESOLVED: Pod Recovered', description: recoveryMsg });
@@ -182,7 +212,7 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
                     return { ...prev, nodes: newNodes };
                 });
                 const duration = ((Date.now() - startTime) / 1000).toFixed(1);
-                addIncident({ type: 'Pod Failure', duration: `${duration}s`, status: 'Resolved' });
+                resolveIncident(incidentId, `${duration}s`);
             }, 6000);
 
         } else if (scenario === 'cpu_spike') {
@@ -190,13 +220,14 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
             addRuntimeLog(description);
             toast({ variant: 'destructive', title: '🚨 ALERT: High CPU Usage Detected', description });
             simulationEffects.current.cpuSpike = 80;
-             setTimeout(() => {
+            const incidentId = addIncident({ type: 'CPU Spike', duration: '—', status: 'Investigating' });
+             schedule(() => {
                 const recoveryMsg = "Chaos experiment 'cpu_spike' finished. CPU usage returning to normal.";
                 addRuntimeLog(`✅ ${recoveryMsg}`);
                 toast({ variant: 'default', title: '✅ RESOLVED: CPU Usage Normalized', description: 'The monitoring service has stabilized.' });
                 simulationEffects.current.cpuSpike = 0;
                  const duration = ((Date.now() - startTime) / 1000).toFixed(1);
-                addIncident({ type: 'CPU Spike', duration: `${duration}s`, status: 'Resolved' });
+                resolveIncident(incidentId, `${duration}s`);
             }, 8000);
         } else {
              addRuntimeLog(`Unknown chaos scenario: ${scenario}. Available: latency, pod_failure, cpu_spike`);
@@ -210,7 +241,7 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
                 description: 'An error occurred during the chaos experiment. Check logs for details.' 
             });
         }
-    }, [addRuntimeLog, toast, cluster, addIncident]);
+    }, [addRuntimeLog, toast, cluster, addIncident, resolveIncident, schedule]);
 
     const runStage = (stage: PipelineStage, commandOutput: string): Promise<void> => {
         return new Promise((resolve, reject) => {
@@ -220,7 +251,7 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
                 addRuntimeLog(`[Pipeline] > Stage '${stage.name}' started.`);
                 addRuntimeLog(`$ ${stage.details}`);
                 
-                const timer = setTimeout(() => {
+                schedule(() => {
                     try {
                         addRuntimeLog(commandOutput);
                         setPipeline(prev => prev.map(s => s.name === stage.name ? { ...s, status: 'Success', duration: `${(duration/1000).toFixed(2)}s` } : s));
@@ -233,9 +264,6 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
                         reject(error);
                     }
                 }, duration);
-
-                // Store timer reference for cleanup if needed
-                return () => clearTimeout(timer);
             } catch (error) {
                 console.error(`Error starting pipeline stage ${stage.name}:`, error);
                 setPipeline(prev => prev.map(s => s.name === stage.name ? { ...s, status: 'Failed' } : s));
@@ -279,11 +307,90 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
             `Sending build context to Docker daemon... 128kB\nStep 1/5 : FROM node:18-alpine\n ---> a1b2c3d4e5f6\nStep 2/5 : WORKDIR /app\n ---> Using cache\n ---> g7h8i9j0k1l2\nStep 3/5 : COPY package*.json ./\n ---> Using cache\n ---> m3n4o5p6q7r8\nStep 4/5 : RUN npm install\n ---> Running in 9s0t1u2v3w4x\nSuccessfully built a1b2c3d4`,
             `\nPASS  ./__tests__/components/Header.test.tsx\nPASS  ./__tests__/utils/helpers.test.ts\n\nTest Suites: 2 passed, 2 total\nTests:       12 passed, 12 total\nSnapshots:   0 total\nTime:        2.345s`,
             `Release "devops-folio-staging" has been upgraded. Happy Helming!\nNAME: devops-folio-staging\nLAST DEPLOYED: ${new Date().toUTCString()}\nNAMESPACE: staging\nSTATUS: deployed\nREVISION: 5\nTEST SUITE: None`,
-            `Release "devops-folio-canary" has been deployed. Traffic is being split ${deployConfig.weight}% to canary.\nNAME: devops-folio-canary\nLAST DEPLOYED: ${new Date().toUTCString()}\nNAMESPACE: production\nSTATUS: deployed\nREVISION: 9`,
+            deployConfig.strategy === 'canary'
+                ? `Release "devops-folio-canary" has been deployed. Traffic is being split ${deployConfig.weight}% to canary.\nNAME: devops-folio-canary\nLAST DEPLOYED: ${new Date().toUTCString()}\nNAMESPACE: production\nSTATUS: deployed\nREVISION: 9`
+                : `Release "devops-folio-green" has been deployed. Green environment standing by (0% traffic).\nNAME: devops-folio-green\nLAST DEPLOYED: ${new Date().toUTCString()}\nNAMESPACE: production\nSTATUS: deployed\nREVISION: 9`,
             `Release "devops-folio-prod" has been upgraded. Happy Helming!\nNAME: devops-folio-prod\nLAST DEPLOYED: ${new Date().toUTCString()}\nNAMESPACE: production\nSTATUS: deployed\nREVISION: 8\nTEST SUITE: Run "helm test devops-folio-prod --namespace production"`,
         ];
 
+        const finalizeProduction = () => {
+            addRuntimeLog("✅ Deployment successful!");
+            toast({
+                variant: "default",
+                title: "Deployment Complete",
+                description: `Version ${deployConfig.version} has been successfully rolled out.`,
+            });
+
+            // Trigger gamification event for successful deployment
+            window.dispatchEvent(new CustomEvent('lab_activity', {
+                detail: {
+                    type: 'deployment_completed',
+                    data: {
+                        strategy: deployConfig.strategy,
+                        version: deployConfig.version,
+                        weight: deployConfig.weight
+                    }
+                }
+            }));
+
+            setCluster(prev => {
+                const newProdPod: Omit<Pod, 'ip' | 'name'> = { service: 'Homepage', status: 'Running', cpu: '250m', memory: '512Mi', isCanary: false };
+
+                const newNodes = prev.nodes.map(node => ({
+                    ...node,
+                    pods: node.pods.filter(p => p.service !== 'Homepage')
+                }));
+
+                const totalProdPods = Math.max(1, prev.nodes.flatMap(n => n.pods).filter(p => p.service === 'Homepage' && !p.isCanary).length);
+
+                for(let i=0; i<totalProdPods; i++) {
+                    const targetNodeIndex = i % newNodes.length;
+                    newNodes[targetNodeIndex].pods.push({
+                        ...newProdPod,
+                        name: `frontend-webapp-${deployConfig.version}-${i}`,
+                        ip: generateIp(),
+                        traffic: 100 / totalProdPods,
+                    });
+                }
+
+                return { ...prev, nodes: newNodes };
+            });
+
+            setMonitoringData(prev => {
+                const newDeploymentData = prev.deploymentData.map(d => ({ ...d }));
+                const today = new Date().toISOString().split('T')[0];
+                const todayIndex = newDeploymentData.findIndex(d => d.date === today && d.status === 'success');
+                if (todayIndex !== -1) {
+                    newDeploymentData[todayIndex] = { ...newDeploymentData[todayIndex], count: newDeploymentData[todayIndex].count + 1 };
+                } else {
+                    newDeploymentData.push({ date: today, status: 'success' as const, count: 1 });
+                }
+                return {...prev, deploymentData: newDeploymentData.filter(d => d.status === 'success' || d.count > 0) };
+            });
+
+            setPipelineStatus('completed');
+            setCanaryMetrics(null);
+            schedule(() => {
+                setPipelineStatus('idle');
+            }, 0);
+        };
+
         const executeDeployment = (start: 'start' | 'promote') => {
+            if (start === 'start' && deployConfig.strategy !== 'canary') {
+                // Blue/green: no canary gate — green env spins up, then instant cutover.
+                pipelinePromiseChain.current = runStage(initialPipeline[0], commandOutputs[0])
+                    .then(() => runStage(initialPipeline[1], commandOutputs[1]))
+                    .then(() => runStage(initialPipeline[2], commandOutputs[2]))
+                    .then(() => runStage(initialPipeline[3], commandOutputs[3]))
+                    .then(() => runStage(initialPipeline[4], commandOutputs[4]))
+                    .then(() => {
+                        addRuntimeLog("🟢 Green environment ready. Switching production traffic...");
+                        return runStage(initialPipeline[5], commandOutputs[5]);
+                    })
+                    .then(finalizeProduction);
+                return;
+            }
+
             if (start === 'start') {
                 pipelinePromiseChain.current = runStage(initialPipeline[0], commandOutputs[0])
                     .then(() => runStage(initialPipeline[1], commandOutputs[1]))
@@ -332,66 +439,7 @@ export const LabSimulationProvider = ({ children }: { children: React.ReactNode 
             } else if (start === 'promote') {
                  pipelinePromiseChain.current = pipelinePromiseChain.current
                     .then(() => runStage(initialPipeline[5], commandOutputs[5]))
-                    .then(() => {
-                        addRuntimeLog("✅ Deployment successful!");
-                        toast({
-                            variant: "default",
-                            title: "Deployment Complete",
-                            description: `Version ${deployConfig.version} has been successfully rolled out.`,
-                        });
-
-                        // Trigger gamification event for successful deployment
-                        window.dispatchEvent(new CustomEvent('lab_activity', {
-                            detail: { 
-                                type: 'deployment_completed', 
-                                data: { 
-                                    strategy: deployConfig.strategy, 
-                                    version: deployConfig.version,
-                                    weight: deployConfig.weight
-                                } 
-                            }
-                        }));
-
-                        setCluster(prev => {
-                            const newProdPod: Omit<Pod, 'ip' | 'name'> = { service: 'Homepage', status: 'Running', cpu: '250m', memory: '512Mi', isCanary: false };
-                            
-                            const newNodes = prev.nodes.map(node => ({
-                                ...node,
-                                pods: node.pods.filter(p => p.service !== 'Homepage')
-                            }));
-
-                            const totalProdPods = prev.nodes.flatMap(n => n.pods).filter(p => p.service === 'Homepage' && !p.isCanary).length;
-
-                            for(let i=0; i<totalProdPods; i++) {
-                                const targetNodeIndex = i % newNodes.length;
-                                newNodes[targetNodeIndex].pods.push({
-                                    ...newProdPod,
-                                    name: `frontend-webapp-${deployConfig.version}-${i}`,
-                                    ip: generateIp(),
-                                    traffic: 100 / totalProdPods,
-                                });
-                            }
-                            
-                            return { ...prev, nodes: newNodes };
-                        });
-
-                        setMonitoringData(prev => {
-                            const newDeploymentData = [...prev.deploymentData];
-                            const today = new Date().toISOString().split('T')[0];
-                            const todayData = newDeploymentData.find(d => d.date === today && d.status === 'success');
-                            if (todayData) {
-                                todayData.count += 1;
-                            } else {
-                                newDeploymentData.push({ date: today, status: 'success' as const, count: 1 });
-                            }
-                            return {...prev, deploymentData: newDeploymentData.filter(d => d.status === 'success' || d.count > 0) };
-                        });
-                        
-                        setTimeout(() => {
-                           setPipelineStatus('idle');
-                           setCanaryMetrics(null);
-                        }, 0);
-                    });
+                    .then(finalizeProduction);
             }
         };
 

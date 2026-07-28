@@ -1,6 +1,9 @@
 'use client';
 
 import React from 'react';
+import Box from '@mui/material/Box';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 import {
   GitCommit,
   Wrench,
@@ -12,89 +15,125 @@ import {
   Loader,
   CircleDashed,
   Forward,
+  Activity,
+  Layers,
 } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import type { PipelineStage } from '@/lib/types';
-import { cn } from '@/lib/utils';
+import { LabEmptyState, LabCodeHint } from '@/components/lab/md3/lab-empty-state';
+import { pipelineStatusMd3 } from '@/components/lab/md3/lab-md3-tokens';
 
 const stageIcons: Record<string, React.ElementType> = {
-    Source: GitCommit,
-    Build: Wrench,
-    Test: Beaker,
-    'Deploy Staging': Server,
-    'Deploy Canary': Forward,
-    'Deploy Prod': Rocket,
+  Source: GitCommit,
+  Build: Wrench,
+  Test: Beaker,
+  'Deploy Staging': Server,
+  'Deploy Canary': Forward,
+  'Deploy Green': Layers,
+  'Deploy Prod': Rocket,
 };
 
-
 interface VisualDeployPipelineProps {
-    pipelineStages: PipelineStage[];
+  pipelineStages: PipelineStage[];
 }
 
 export function VisualDeployPipeline({ pipelineStages }: VisualDeployPipelineProps) {
+  if (!pipelineStages?.length) {
+    return (
+      <LabEmptyState
+        icon={Activity}
+        title="No pipeline stages"
+        description="Start a deployment to see the CI/CD pipeline in action."
+        hint={<>Try <LabCodeHint>deploy --strategy=canary</LabCodeHint> in the terminal.</>}
+      />
+    );
+  }
+
+  const completedCount = pipelineStages.filter((s) => s.status === 'Success').length;
+
   return (
-    <TooltipProvider>
-      <div className="w-full">
-        <div className="flex h-2 w-full rounded-full overflow-hidden bg-muted mb-4 space-x-0.5">
-          {pipelineStages.map((stage) => {
-            const isInProgress = stage.status === 'In Progress';
-            return (
-              <div key={stage.name} className="flex-1 h-full transition-all duration-500">
-                <div 
-                  className={cn('h-full w-full', {
-                    'bg-green-500': stage.status === 'Success',
-                    'bg-blue-500': isInProgress,
-                    'bg-muted': stage.status === 'Queued' || stage.status === 'Failed'
-                  })}
-                  style={isInProgress ? {
-                    backgroundImage: 'linear-gradient(45deg, hsla(0,0%,100%,.15) 25%, transparent 25%, transparent 50%, hsla(0,0%,100%,.15) 50%, hsla(0,0%,100%,.15) 75%, transparent 75%, transparent)',
-                    backgroundSize: '40px 40px',
-                    animation: 'progress-stripes 2s linear infinite'
-                  } : {}}
-                />
-              </div>
-            )
-          })}
-        </div>
+    <Box sx={{ width: '100%' }}>
+      <Box
+        role="progressbar"
+        aria-label="Pipeline progress"
+        aria-valuemin={0}
+        aria-valuemax={pipelineStages.length}
+        aria-valuenow={completedCount}
+        sx={{
+          display: 'flex',
+          height: 6,
+          width: '100%',
+          borderRadius: 0,
+          overflow: 'hidden',
+          bgcolor: 'var(--md-sys-color-surface-container-highest)',
+          mb: 3,
+          gap: '2px',
+        }}
+      >
+        {pipelineStages.map((stage) => (
+          <Box
+            key={stage.name}
+            aria-label={`${stage.name}: ${stage.status}`}
+            sx={{
+              flex: 1,
+              bgcolor: pipelineStatusMd3[stage.status],
+              opacity: stage.status === 'Queued' ? 0.35 : 1,
+              animation: stage.status === 'In Progress' ? 'pulse 1.5s ease-in-out infinite' : 'none',
+              transition: 'background-color 0.4s ease',
+            }}
+          />
+        ))}
+      </Box>
 
-        <div className="grid grid-cols-3 gap-y-4 md:grid-cols-6 md:gap-y-0 text-xs">
-          {pipelineStages.map((stage) => {
-            const Icon = stageIcons[stage.name];
-            const statusConfig = {
-              'Success': 'text-green-500',
-              'In Progress': 'text-blue-500 animate-pulse',
-              'Failed': 'text-red-500',
-              'Queued': 'text-muted-foreground dark:text-muted-foreground'
-            }[stage.status];
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', lg: 'repeat(6, 1fr)' },
+          gap: 2,
+        }}
+      >
+        {pipelineStages.map((stage) => {
+          const Icon = stageIcons[stage.name] ?? Activity;
+          const color = pipelineStatusMd3[stage.status];
+          const StatusIcon = {
+            Success: CheckCircle2,
+            'In Progress': Loader,
+            Failed: XCircle,
+            Queued: CircleDashed,
+          }[stage.status];
 
-            const StatusIcon = {
-              'Success': CheckCircle2,
-              'In Progress': Loader,
-              'Failed': XCircle,
-              'Queued': CircleDashed
-            }[stage.status];
-
-            return (
-              <Tooltip key={stage.name}>
-                <TooltipTrigger asChild>
-                   <div className={cn('flex flex-col items-center', statusConfig)}>
-                      <Icon className="h-5 w-5 mb-1" />
-                      <span className="font-semibold text-center text-foreground">{stage.name}</span>
-                      <span className="text-xs">{stage.duration}</span>
-                    </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                    <div className="flex items-center gap-2 font-bold text-base mb-1">
-                      <StatusIcon className={cn('h-4 w-4', statusConfig)} />
-                      <span>{stage.name}: {stage.status}</span>
-                    </div>
-                    <div className="text-sm text-muted-foreground dark:text-muted-foreground">{stage.details}</div>
-                </TooltipContent>
-              </Tooltip>
-            )
-          })}
-        </div>
-      </div>
-    </TooltipProvider>
+          return (
+            <Tooltip key={stage.name} title={stage.details} arrow placement="top">
+              <Box
+                component="button"
+                type="button"
+                aria-label={`${stage.name}: ${stage.status}, ${stage.duration}`}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  p: 1,
+                  border: 'none',
+                  bgcolor: 'transparent',
+                  cursor: 'default',
+                  color,
+                  borderRadius: 'var(--lab-radius-md)',
+                  '&:hover': { bgcolor: 'var(--md-sys-color-surface-container-high)' },
+                }}
+              >
+                <Icon size={20} aria-hidden />
+                <Typography variant="caption" sx={{ fontWeight: 700, textAlign: 'center', color: 'var(--md-sys-color-on-surface)' }}>
+                  {stage.name}
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'var(--md-sys-color-on-surface-variant)' }}>
+                  {stage.duration}
+                </Typography>
+                <StatusIcon size={12} style={{ opacity: 0.8 }} aria-hidden />
+              </Box>
+            </Tooltip>
+          );
+        })}
+      </Box>
+    </Box>
   );
 }

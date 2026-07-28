@@ -1,70 +1,112 @@
-"use client"
+'use client';
 
-import type { Incident } from "@/lib/types";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertTriangle, CheckCircle } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import type { Incident, Translations } from '@/lib/types';
+import Box from '@mui/material/Box';
+import Paper from '@mui/material/Paper';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+import { AlertTriangle, CheckCircle, ShieldAlert } from 'lucide-react';
+import { LabEmptyState, LabCodeHint } from '@/components/lab/md3/lab-empty-state';
+import { Fragment } from 'react';
 
 interface IncidentHistoryProps {
-    incidents: Incident[];
+  incidents: Incident[];
+  translations: Translations;
 }
 
 const statusConfig = {
-    'Resolved': { icon: CheckCircle, color: 'text-green-500' },
-    'Investigating': { icon: AlertTriangle, color: 'text-yellow-500' }
+  Resolved: { icon: CheckCircle, color: 'var(--md-sys-color-tertiary)' },
+  Investigating: { icon: AlertTriangle, color: 'var(--md-sys-color-warning)' },
 };
 
-export function IncidentHistory({ incidents }: IncidentHistoryProps) {
-    if (incidents.length === 0) {
-        return (
-            <div className="text-center text-muted-foreground dark:text-muted-foreground py-8">
-                <p>No incidents recorded yet.</p>
-                <p className="text-sm">Trigger a chaos experiment to see the system&apos;s resilience in action.</p>
-            </div>
-        )
-    }
+/** Renders "{command}" placeholders in localized hints as inline code chips. */
+function renderHint(template: string, command: string) {
+  const [before, after] = template.split('{command}');
+  return (
+    <Fragment>
+      {before}
+      <LabCodeHint>{command}</LabCodeHint>
+      {after}
+    </Fragment>
+  );
+}
 
+export function IncidentHistory({ incidents, translations }: IncidentHistoryProps) {
+  const t = translations.lab;
+
+  if (!incidents?.length) {
     return (
-        <TooltipProvider delayDuration={100}>
-            <div className="border rounded-lg">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-[80px]">Status</TableHead>
-                            <TableHead>Type</TableHead>
-                            <TableHead>Duration</TableHead>
-                            <TableHead className="text-right">Timestamp</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {incidents.map(incident => {
-                            const Icon = statusConfig[incident.status].icon;
-                            const color = statusConfig[incident.status].color;
-                            return (
-                                <TableRow key={incident.id}>
-                                    <TableCell>
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <div className="flex items-center justify-center">
-                                                   <Icon className={`h-5 w-5 ${color}`} />
-                                                </div>
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                                <p>{incident.status}</p>
-                                            </TooltipContent>
-                                        </Tooltip>
-                                    </TableCell>
-                                    <TableCell className="font-medium">{incident.type}</TableCell>
-                                    <TableCell>{incident.duration}</TableCell>
-                                    <TableCell className="text-right text-muted-foreground dark:text-muted-foreground text-xs">
-                                        {incident.timestamp.toLocaleString()}
-                                    </TableCell>
-                                </TableRow>
-                            )
-                        })}
-                    </TableBody>
-                </Table>
-            </div>
-        </TooltipProvider>
-    )
+      <LabEmptyState
+        icon={ShieldAlert}
+        title={t.empty.incidentsTitle}
+        description={t.empty.incidentsDescription}
+        hint={renderHint(t.empty.tryCommand, 'chaos latency')}
+      />
+    );
+  }
+
+  return (
+    <TableContainer
+      component={Paper}
+      elevation={0}
+      sx={{
+        borderRadius: 'var(--lab-radius-md)',
+        border: '1px solid var(--md-sys-color-outline-variant)',
+        bgcolor: 'var(--md-sys-color-surface-container-lowest)',
+      }}
+    >
+      <Table size="small" aria-label={t.incidentTable.ariaLabel}>
+        <TableHead>
+          <TableRow>
+            <TableCell sx={{ width: 72, fontWeight: 700 }}>{t.incidentTable.status}</TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>{t.incidentTable.type}</TableCell>
+            <TableCell sx={{ fontWeight: 700 }}>{t.incidentTable.duration}</TableCell>
+            <TableCell align="right" sx={{ fontWeight: 700 }}>
+              {t.incidentTable.timestamp}
+            </TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {incidents.map((incident) => {
+            const { icon: Icon, color } = statusConfig[incident.status];
+            return (
+              <TableRow
+                key={incident.id}
+                hover
+                sx={{ '&:last-child td': { border: 0 } }}
+                aria-label={`${incident.type}, ${incident.status}, ${incident.duration}`}
+              >
+                <TableCell>
+                  <Tooltip title={incident.status}>
+                    <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                      <Icon size={18} style={{ color }} aria-hidden />
+                    </Box>
+                  </Tooltip>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    {incident.type}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2">{incident.duration}</Typography>
+                </TableCell>
+                <TableCell align="right">
+                  <Typography variant="caption" sx={{ color: 'var(--md-sys-color-on-surface-variant)' }} suppressHydrationWarning>
+                    {incident.timestamp.toLocaleString()}
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
 }

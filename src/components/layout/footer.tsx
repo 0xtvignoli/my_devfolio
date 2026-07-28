@@ -1,31 +1,64 @@
-import { resolveLocale, getTranslations } from '@/lib/i18n/server';
-import { Github, Linkedin, Twitter } from 'lucide-react';
+import { getTranslations } from '@/lib/i18n/server';
+import { localizedPath } from '@/lib/i18n/paths';
+import { SOCIAL_LINKS } from '@/lib/seo/constants';
+import type { Locale } from '@/lib/types';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import Link from '@mui/material/Link';
 
-export async function Footer() {
-  const locale = await resolveLocale();
+const footerLinkSx = {
+  color: 'text.secondary',
+  fontSize: '0.875rem',
+  textDecoration: 'none',
+  '&:hover': { color: 'text.primary', textDecoration: 'underline' },
+} as const;
+
+export async function Footer({ locale }: { locale: Locale }) {
   const t = getTranslations(locale);
 
   return (
-    <footer className="border-t">
-      <div className="container mx-auto px-4 py-8 flex flex-col md:flex-row justify-between items-center">
-        <p className="text-sm text-muted-foreground mb-4 md:mb-0">
-          {t.footer.copy}
-        </p>
-        <div className="flex space-x-4">
-          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground">
-            <Twitter className="h-5 w-5" />
-            <span className="sr-only">Twitter</span>
-          </a>
-          <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground">
-            <Github className="h-5 w-5" />
-            <span className="sr-only">GitHub</span>
-          </a>
-          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground">
-            <Linkedin className="h-5 w-5" />
-            <span className="sr-only">LinkedIn</span>
-          </a>
-        </div>
-      </div>
-    </footer>
+    <Box
+      component="footer"
+      sx={{
+        borderTop: 1,
+        borderColor: 'divider',
+        py: 4,
+        mt: 6,
+      }}
+    >
+      <Container maxWidth="lg">
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
+            justifyContent: 'space-between',
+            alignItems: { xs: 'flex-start', md: 'center' },
+            gap: 2,
+          }}
+        >
+          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
+            {t.footer.copy}
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 0, alignItems: 'center' }}>
+            <Link href={localizedPath(locale, '/cv')} sx={footerLinkSx}>
+              {t.footer.cv}
+            </Link>
+            <Box component="span" aria-hidden sx={{ color: 'text.disabled', px: 1.5, fontSize: '0.875rem' }}>
+              ·
+            </Box>
+            <Link href={SOCIAL_LINKS.github} target="_blank" rel="noopener noreferrer" sx={footerLinkSx} aria-label="GitHub">
+              [github]
+            </Link>
+            <Box component="span" aria-hidden sx={{ color: 'text.disabled', px: 1.5, fontSize: '0.875rem' }}>
+              ·
+            </Box>
+            <Link href={SOCIAL_LINKS.linkedin} target="_blank" rel="noopener noreferrer" sx={footerLinkSx} aria-label="LinkedIn">
+              [linkedin]
+            </Link>
+          </Box>
+        </Box>
+      </Container>
+    </Box>
   );
 }

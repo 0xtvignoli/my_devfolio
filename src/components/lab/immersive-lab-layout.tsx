@@ -1,46 +1,55 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
-import { useLabSimulation } from '@/contexts/lab-simulation-context';
+import React, { useState } from 'react';
+import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
+import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Stack';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import Typography from '@mui/material/Typography';
 import { InteractiveTerminal } from '@/components/lab/interactive-terminal';
 import { KubernetesClusterViz } from '@/components/lab/kubernetes-cluster-viz';
 import { VisualDeployPipeline } from '@/components/lab/visual-deploy-pipeline';
 import { IncidentHistory } from '@/components/lab/incident-history';
+import { PostmortemButton } from '@/components/lab/postmortem-button';
 import { CanaryAnalysis } from '@/components/lab/canary-analysis';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Terminal, 
-  Activity, 
-  ShieldAlert, 
+import { CpuUsageChart } from '@/components/lab/cpu-chart';
+import { MemoryUsageChart } from '@/components/lab/memory-chart';
+import { ApiResponseTimeChart } from '@/components/lab/api-response-chart';
+import { Button } from '@/components/ui-mui';
+import {
   PlayCircle,
   Forward,
   Undo,
-  GaugeCircle,
-  Layers,
-  ChevronUp,
-  ChevronDown
+  Loader2,
+  History,
+  BarChart3,
+  Route,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { cn } from '@/lib/utils';
-import type { DeployConfig, Locale, Translations } from '@/lib/types';
+import type { Locale, Translations } from '@/lib/types';
 import { translations as localeTable } from '@/data/locales';
-
-const sidebarTabs = ['cluster', 'pipeline', 'metrics'] as const;
-type SidebarTab = typeof sidebarTabs[number];
-const isSidebarTab = (value: string): value is SidebarTab =>
-  sidebarTabs.includes(value as SidebarTab);
+import { AriaLiveRegion } from '@/components/shared/aria-live-region';
+import { HelpModal } from '@/components/lab/help-modal';
+import { GuidedTour, buildLabTourSteps } from '@/components/onboarding/guided-tour';
+import { LabConfirmDialogs } from '@/components/lab/lab-confirm-dialogs';
+import { LabCommandPalette } from '@/components/lab/lab-command-palette';
+import { useLabActions } from '@/hooks/use-lab-actions';
 
 interface ImmersiveLabLayoutProps {
   locale?: Locale;
   translations?: Translations;
 }
 
+type SidePanel = 'pipeline' | 'incidents' | 'metrics';
+
 export function ImmersiveLabLayout({
   locale = 'en',
   translations = localeTable.en,
 }: ImmersiveLabLayoutProps = {}) {
+  const t = translations.lab;
+  const [sidePanel, setSidePanel] = useState<SidePanel>('pipeline');
+  const lab = useLabActions(translations);
   const {
     runtimeLogs,
     monitoringData,
@@ -50,346 +59,230 @@ export function ImmersiveLabLayout({
     pipelineStatus,
     incidents,
     canaryMetrics,
-    runChaos,
-    runDeployment,
-  } = useLabSimulation();
+    terminalRef,
+    latestCpu,
+    latestLatency,
+    currentMemoryUsagePercent,
+    totalPods,
+    activeChaosCount,
+    handleQuickAction,
+    startDeployment,
+    promoteCanary,
+    handleRollbackClick,
+    handleChaosClick,
+    onTerminalCommand,
+  } = lab;
 
-  const [activeSidebar, setActiveSidebar] = useState<SidebarTab>('cluster');
-  const [isBottomPanelExpanded, setIsBottomPanelExpanded] = useState(true);
-  const terminalRef = useRef<{ setCommand: (command: string) => void; setActiveTab: (tab: 'terminal' | 'logs') => void }>(null);
+  const deployState = isDeploying ? 'running' : pipelineStatus === 'paused_canary' ? 'paused' : 'idle';
 
-  const cpuUsage = Number(monitoringData.cpuData[monitoringData.cpuData.length - 1]?.usage || 0);
-  const memoryUsage = Number(monitoringData.memoryData[monitoringData.memoryData.length - 1]?.usage || 0);
-  const p95Latency = Number(monitoringData.apiResponseData[monitoringData.apiResponseData.length - 1]?.p95 || 0);
-  const glassPanel = "supports-[backdrop-filter]:backdrop-blur-2xl border border-slate-200/70 bg-white/85 text-slate-900 shadow-[0_35px_120px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-black/40 dark:text-white dark:shadow-[0_35px_120px_rgba(0,0,0,0.6)]";
-  const quickBarSurface = "supports-[backdrop-filter]:backdrop-blur-xl border-b border-slate-200/70 bg-white/75 text-slate-600 dark:border-white/10 dark:bg-black/40 dark:text-white";
-  const bottomPanelSurface = "supports-[backdrop-filter]:backdrop-blur-xl border-t border-slate-200/70 bg-white/80 text-slate-900 dark:border-white/10 dark:bg-black/40 dark:text-white";
-
-  const handleQuickAction = (command: string) => {
-    if (terminalRef.current) {
-      terminalRef.current.setActiveTab('terminal');
-      terminalRef.current.setCommand(command);
-    }
-  };
-
-  const handleBackgroundAction = (action: () => void) => {
-    if (terminalRef.current) {
-      terminalRef.current.setActiveTab('logs');
-    }
-    action();
-    
-    window.dispatchEvent(new CustomEvent('lab_activity', {
-      detail: { type: 'lab_interaction', data: {} }
-    }));
-  };
-
-  const parseDeployCommand = (cmd: string): DeployConfig | null => {
-    const parts = cmd.split(' ');
-    if (parts[0] !== 'deploy') return null;
-
-    const config: DeployConfig = { 
-      strategy: 'canary', 
-      weight: 10, 
-      version: `v1.${Math.floor(Math.random() * 9) + 1}.0` 
-    };
-    
-    for (let i = 1; i < parts.length; i++) {
-      if (parts[i] === '--strategy' && parts[i + 1]) {
-        config.strategy = parts[i + 1];
-      }
-      if (parts[i] === '--weight' && parts[i + 1]) {
-        config.weight = parseInt(parts[i + 1], 10) || 10;
-      }
-      if (parts[i] === '--version' && parts[i + 1]) {
-        config.version = parts[i + 1];
-      }
-    }
-    return config;
-  };
+  const quickActions = [
+    { label: 'get pods', cmd: 'kubectl get pods' },
+    { label: 'helm list', cmd: 'helm list' },
+    { label: 'deploy', cmd: 'deploy --weight=20', color: 'primary' as const },
+    { label: 'chaos:pod', cmd: 'chaos pod_failure', color: 'error' as const },
+    { label: 'chaos:latency', cmd: 'chaos latency', color: 'error' as const },
+  ];
 
   return (
-    <div className="h-screen w-full overflow-hidden text-slate-900 dark:text-white bg-[radial-gradient(circle_at_top,_#f5fff8,_#e6f7ef_45%,_#d8f0ea_80%)] dark:bg-gradient-to-br dark:from-black dark:via-gray-950 dark:to-gray-900">
-      {/* Header Bar */}
-      <div className={cn("h-14 flex items-center justify-between px-6", quickBarSurface)}>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Terminal className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />
-            <span className="font-mono text-sm font-bold text-emerald-600 dark:text-emerald-400">dev.tvignoli.com</span>
-          </div>
-          <Badge variant="outline" className="border-emerald-500/30 text-emerald-600 text-xs dark:text-emerald-400">
-            LIVE
-          </Badge>
-        </div>
+    <Box className="lab-md3-theme" sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <Paper
+        elevation={0}
+        component="header"
+        sx={{
+          px: 2,
+          py: 1.5,
+          borderRadius: 0,
+          borderBottom: '1px solid var(--md-sys-color-outline-variant)',
+          bgcolor: 'var(--md-sys-color-surface-container)',
+        }}
+      >
+        {/* Right padding reserves space for the fixed layout selector (exit affordance). */}
+        <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1, pr: { xs: '110px', md: '120px' } }}>
+          <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+              {t.title}
+            </Typography>
+            <Chip size="small" label={t.live} sx={{ bgcolor: 'var(--md-sys-color-tertiary-container)', fontWeight: 600 }} />
+          </Stack>
+          <Stack direction="row" spacing={2} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
+            <Typography variant="caption" suppressHydrationWarning>CPU {latestCpu}%</Typography>
+            <Typography variant="caption" suppressHydrationWarning>Mem {currentMemoryUsagePercent}%</Typography>
+            <Typography variant="caption" color={latestLatency > 200 ? 'warning.main' : 'inherit'} suppressHydrationWarning>
+              P95 {latestLatency}ms
+            </Typography>
+            <LabCommandPalette
+              translations={translations}
+              onRunCommand={lab.runTerminalCommand}
+              onChaos={lab.handleChaosClick}
+            />
+            <HelpModal translations={translations} />
+            <GuidedTour
+              tourId="lab-tour"
+              autoStart={false}
+              steps={buildLabTourSteps(translations)}
+              labels={t.tour}
+            />
+          </Stack>
+        </Stack>
+      </Paper>
 
-        {/* Real-time Metrics */}
-        <div className="flex items-center gap-6">
-          <MetricBadge label="CPU" value={`${cpuUsage}%`} status={cpuUsage > 70 ? 'warning' : 'ok'} />
-          <MetricBadge label="MEM" value={`${memoryUsage}%`} status={memoryUsage > 80 ? 'warning' : 'ok'} />
-          <MetricBadge label="P95" value={`${p95Latency}ms`} status={p95Latency > 200 ? 'warning' : 'ok'} />
-        </div>
-      </div>
-
-      {/* Main Layout */}
-      <div className="flex h-[calc(100vh-3.5rem)] gap-4 px-4 pb-4">
-        {/* Left Sidebar - Visualization */}
-        <div className={cn("w-96 overflow-y-auto rounded-3xl p-3", glassPanel)}>
-          <Tabs
-            value={activeSidebar}
-            onValueChange={(value) => {
-              if (isSidebarTab(value)) {
-                setActiveSidebar(value);
-              }
-            }}
-            className="w-full"
-          >
-            <TabsList className="w-full grid grid-cols-3 rounded-2xl border border-slate-200/70 bg-white/60 text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-white">
-              <TabsTrigger value="cluster" className="data-[state=active]:bg-emerald-500/10 data-[state=active]:text-emerald-500">
-                <Layers className="h-4 w-4 mr-2" />
-                Cluster
-              </TabsTrigger>
-              <TabsTrigger value="pipeline" className="data-[state=active]:bg-blue-500/10 data-[state=active]:text-blue-500">
-                <Activity className="h-4 w-4 mr-2" />
-                Pipeline
-              </TabsTrigger>
-              <TabsTrigger value="metrics" className="data-[state=active]:bg-purple-500/10 data-[state=active]:text-purple-500">
-                <GaugeCircle className="h-4 w-4 mr-2" />
-                Metrics
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="cluster" className="p-4">
-              <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-400 uppercase tracking-wider">Kubernetes Cluster</h3>
-                <KubernetesClusterViz cluster={cluster} />
-              </div>
-            </TabsContent>
-
-            <TabsContent value="pipeline" className="p-4">
-              <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-400 uppercase tracking-wider">CI/CD Pipeline</h3>
-                <VisualDeployPipeline pipelineStages={pipeline} />
-                
-                {pipelineStatus === 'paused_canary' && canaryMetrics && (
-                  <div className="mt-4">
-                    <CanaryAnalysis metrics={canaryMetrics} />
-                  </div>
-                )}
-
-                <div className="flex flex-col gap-2 mt-4">
-                  {pipelineStatus === 'paused_canary' ? (
-                    <>
-                      <Button 
-                        onClick={() => handleBackgroundAction(() => runDeployment('promote'))}
-                        className="w-full bg-emerald-600 hover:bg-emerald-500"
-                      >
-                        <Forward className="mr-2 h-4 w-4" />
-                        Promote Canary
-                      </Button>
-                      <Button 
-                        onClick={() => handleBackgroundAction(() => runDeployment('rollback'))}
-                        variant="destructive"
-                        className="w-full"
-                      >
-                        <Undo className="mr-2 h-4 w-4" />
-                        Rollback
-                      </Button>
-                    </>
-                  ) : (
-                    <Button 
-                      onClick={() => handleBackgroundAction(() => runDeployment('start'))}
-                      disabled={isDeploying}
-                      className="w-full bg-blue-600 hover:bg-blue-500"
-                    >
-                      <PlayCircle className="mr-2 h-4 w-4" />
-                      Run Deployment
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="metrics" className="p-4">
-              <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-400 uppercase tracking-wider">System Metrics</h3>
-                <MetricCard title="CPU Usage" value={`${cpuUsage}%`} trend="+2.3%" />
-                <MetricCard title="Memory" value={`${memoryUsage}%`} trend="-1.1%" />
-                <MetricCard title="API Latency (P95)" value={`${p95Latency}ms`} trend="+5ms" />
-                <MetricCard 
-                  title="Deployments (7d)" 
-                  value={monitoringData.deploymentData.filter(d => d.status === 'success').reduce((acc, d) => acc + d.count, 0).toString()}
-                  trend="+12"
-                />
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-
-        {/* Center - Terminal (Main Focus) */}
-        <div className={cn("flex-1 flex flex-col rounded-3xl overflow-hidden", glassPanel)}>
-          {/* Quick Actions Bar */}
-          <div className={cn("h-12 flex items-center px-4 gap-2 overflow-x-auto", quickBarSurface)}>
-            <span className="text-xs text-gray-700 dark:text-gray-300 font-mono mr-2 uppercase tracking-[0.25em]">Quick</span>
-            <QuickAction onClick={() => handleQuickAction('kubectl get pods')} label="get pods" />
-            <QuickAction onClick={() => handleQuickAction('helm list')} label="helm list" />
-            <QuickAction onClick={() => handleQuickAction('deploy --weight=20')} label="deploy" variant="primary" />
-            <QuickAction onClick={() => handleBackgroundAction(() => runChaos('pod_failure'))} label="chaos:pod" variant="danger" />
-            <QuickAction onClick={() => handleBackgroundAction(() => runChaos('latency'))} label="chaos:latency" variant="danger" />
-            <QuickAction onClick={() => handleBackgroundAction(() => runChaos('cpu_spike'))} label="chaos:cpu" variant="danger" />
-          </div>
-
-          {/* Terminal Area */}
-          <div className="flex-1 overflow-hidden bg-black dark:bg-black">
+      <Box sx={{ flex: 1, display: 'flex', flexDirection: { xs: 'column', lg: 'row' }, minHeight: 0 }}>
+        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, borderRight: { lg: '1px solid var(--md-sys-color-outline-variant)' } }}>
+          <Box id="cluster" sx={{ p: 2, borderBottom: '1px solid var(--md-sys-color-outline-variant)', bgcolor: 'var(--md-sys-color-surface-container-low)' }}>
+            <Typography variant="overline" sx={{ color: 'var(--md-sys-color-on-surface-variant)', mb: 1, display: 'block' }}>
+              {t.sections.cluster}
+            </Typography>
+            <Box sx={{ minHeight: 120, maxHeight: 180, overflow: 'auto' }}>
+              <KubernetesClusterViz cluster={cluster} />
+            </Box>
+          </Box>
+          <Box id="lab-terminal" sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, p: 2 }}>
             <InteractiveTerminal
               ref={terminalRef}
               runtimeLogs={runtimeLogs}
               cluster={cluster}
               locale={locale}
               translations={translations}
-              onCommand={(cmd) => {
-                const [command] = cmd.trim().split(' ');
-                if (command === 'deploy' || command === 'chaos') {
-                  const deployConfig = command === 'deploy' ? parseDeployCommand(cmd) : null;
-                  const scenario = command === 'chaos' ? cmd.trim().split(' ')[1] ?? 'latency' : null;
-                  handleBackgroundAction(() => {
-                    if (command === 'deploy') {
-                      runDeployment('start', deployConfig || undefined);
-                    } else {
-                      runChaos(scenario || 'latency');
-                    }
-                  });
-                  if (command === 'deploy') {
-                    return {
-                      output: [
-                        'Pipeline request accepted. Synthesizing manifests...',
-                        `strategy: ${deployConfig?.strategy ?? 'canary'}  weight: ${deployConfig?.weight ?? 10}%  version: ${deployConfig?.version ?? 'auto'}`,
-                        'Track progress in the Pipeline + Canary panels hugging the terminal.',
-                      ],
-                      contextHint: 'Visual cues around the lab sync with this command.',
-                      suggestion: 'Once stages flip, run `kubectl get pods` to verify workloads.',
-                      streamingSteps: [
-                        '[busy] acquiring build artifacts...',
-                        '[sync] publishing image to registry...',
-                        '[ready] applying rollout to cluster...',
-                      ],
-                    };
-                  }
-                  return {
-                    output: [
-                      `Chaos scenario "${scenario}" armed. Fault injection stays inside this lab cluster.`,
-                      'Watch Incidents + Metrics tabs for blast-radius telemetry.',
-                    ],
-                    contextHint: 'Auto-chaos toggles remain unaffected.',
-                    suggestion: 'Use `status` to confirm steady state after recovery.',
-                    streamingSteps: [
-                      '[busy] priming chaos controllers...',
-                      `[sync] issuing ${scenario} disruption...`,
-                    ],
-                  };
-                }
-                return null;
-              }}
+              visualVariant="md3"
+              onCommand={onTerminalCommand}
             />
-          </div>
-        </div>
-      </div>
+          </Box>
+        </Box>
 
-      {/* Bottom Panel - Incidents & Logs */}
-      <AnimatePresence>
-        {isBottomPanelExpanded && (
-          <motion.div
-            initial={{ height: 0 }}
-            animate={{ height: '200px' }}
-            exit={{ height: 0 }}
-            className={cn("overflow-hidden rounded-3xl rounded-t-none", bottomPanelSurface)}
+        <Box
+          sx={{
+            width: { xs: '100%', lg: 400 },
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: 0,
+            bgcolor: 'var(--md-sys-color-surface-container-low)',
+          }}
+        >
+          <Tabs
+            value={sidePanel}
+            onChange={(_, v) => setSidePanel(v)}
+            variant="fullWidth"
+            sx={{
+              borderBottom: '1px solid var(--md-sys-color-outline-variant)',
+              minHeight: 48,
+              '& .MuiTab-root': { minHeight: 48, textTransform: 'none', fontWeight: 600 },
+            }}
           >
-            <div className="h-full overflow-y-auto p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <ShieldAlert className="h-4 w-4 text-orange-400" />
-                  <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300">Incident History</h3>
-                  <Badge variant="outline" className="text-xs">{incidents.length}</Badge>
-                </div>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => setIsBottomPanelExpanded(false)}
-                  className="h-6 w-6 p-0"
-                >
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-              </div>
-              <IncidentHistory incidents={incidents} />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            <Tab value="pipeline" label={t.sections.pipeline} icon={<Route size={16} />} iconPosition="start" />
+            <Tab value="incidents" label={t.sections.incidents} icon={<History size={16} />} iconPosition="start" />
+            <Tab value="metrics" label={t.metrics.title} icon={<BarChart3 size={16} />} iconPosition="start" />
+          </Tabs>
 
-      {!isBottomPanelExpanded && (
-        <div className={cn("h-8 flex items-center justify-center rounded-3xl rounded-t-none", bottomPanelSurface)}>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setIsBottomPanelExpanded(true)}
-            className="h-6 text-xs"
-          >
-            <ChevronUp className="h-3 w-3 mr-1" />
-            Show Incidents ({incidents.length})
-          </Button>
-        </div>
-      )}
-    </div>
-  );
-}
+          <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
+            {sidePanel === 'pipeline' && (
+              <Stack id="pipeline" spacing={2}>
+                <VisualDeployPipeline pipelineStages={pipeline} />
+                {pipelineStatus === 'paused_canary' && canaryMetrics && <CanaryAnalysis metrics={canaryMetrics} />}
+                {pipelineStatus === 'paused_canary' ? (
+                  <Stack spacing={1}>
+                    <Button fullWidth onClick={promoteCanary} startIcon={<Forward size={16} />}>
+                      {t.actions.promote}
+                    </Button>
+                    <Button fullWidth variant="destructive" onClick={handleRollbackClick} disabled={isDeploying} startIcon={<Undo size={16} />}>
+                      {isDeploying ? t.actions.rollingBack : t.actions.rollback}
+                    </Button>
+                  </Stack>
+                ) : (
+                  <Button
+                    fullWidth
+                    onClick={() => startDeployment()}
+                    disabled={isDeploying}
+                    startIcon={isDeploying ? <Loader2 size={16} className="animate-spin" /> : <PlayCircle size={16} />}
+                  >
+                    {isDeploying ? t.actions.deploying : t.actions.deploy}
+                  </Button>
+                )}
+              </Stack>
+            )}
+            {sidePanel === 'incidents' && (
+              <Stack id="incident-history" spacing={1.5} sx={{ alignItems: 'flex-start' }}>
+                <PostmortemButton
+                  translations={translations}
+                  incidents={incidents}
+                  logs={runtimeLogs}
+                  successfulDeploys={lab.successfulDeploys}
+                />
+                <IncidentHistory incidents={incidents} translations={translations} />
+              </Stack>
+            )}
+            {sidePanel === 'metrics' && (
+              <Stack id="lab-metrics" spacing={2}>
+                <Box>
+                  <Typography variant="subtitle2" color="primary">{t.metrics.cpu} {latestCpu}%</Typography>
+                  <Box sx={{ height: 80 }}><CpuUsageChart data={monitoringData.cpuData} compact /></Box>
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2">{t.metrics.memory} {currentMemoryUsagePercent}%</Typography>
+                  <Box sx={{ height: 80 }}><MemoryUsageChart data={monitoringData.memoryData} compact /></Box>
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2">{t.metrics.latency} {latestLatency}ms</Typography>
+                  <Box sx={{ height: 80 }}><ApiResponseTimeChart data={monitoringData.apiResponseData} compact /></Box>
+                </Box>
+              </Stack>
+            )}
+          </Box>
+        </Box>
+      </Box>
 
-// Helper Components
-function MetricBadge({ label, value, status }: { label: string; value: string; status: 'ok' | 'warning' }) {
-  return (
-    <div className="flex items-center gap-2">
-      <span className="text-xs text-gray-700 dark:text-gray-400 font-mono uppercase tracking-wide">{label}</span>
-      <span className={cn(
-        "text-sm font-mono font-semibold",
-        status === 'ok' ? 'text-emerald-600 dark:text-emerald-400' : 'text-orange-500 dark:text-orange-400'
-      )}>
-        {value}
-      </span>
-    </div>
-  );
-}
+      <Paper
+        elevation={0}
+        component="footer"
+        sx={{
+          px: 2,
+          py: 1,
+          borderTop: '1px solid var(--md-sys-color-outline-variant)',
+          bgcolor: 'var(--md-sys-color-surface-container)',
+        }}
+      >
+        <Stack id="lab-quick-actions" direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap', mb: 1 }}>
+          {quickActions.map((action) => (
+            <Chip
+              key={action.cmd}
+              label={action.label}
+              size="small"
+              clickable
+              onClick={() => (action.cmd.startsWith('chaos') ? handleChaosClick(action.cmd.split(' ')[1]) : handleQuickAction(action.cmd))}
+              sx={{
+                fontWeight: 600,
+                ...(action.color === 'error'
+                  ? { color: 'var(--md-sys-color-error)', borderColor: 'var(--md-sys-color-error)' }
+                  : {}),
+              }}
+              variant="outlined"
+            />
+          ))}
+        </Stack>
+        <Stack direction="row" spacing={2} sx={{ flexWrap: 'wrap' }}>
+          <Typography variant="caption" color="text.secondary">dev-cluster</Typography>
+          <Typography variant="caption" color="text.secondary" suppressHydrationWarning>{totalPods} pods</Typography>
+          <Typography variant="caption" color="text.secondary">{cluster.nodes.length} nodes</Typography>
+          <Typography variant="caption" color="text.secondary">deploy: {deployState}</Typography>
+          <Typography variant="caption" color={activeChaosCount > 0 ? 'warning.main' : 'text.secondary'}>
+            chaos: {activeChaosCount} active
+          </Typography>
+        </Stack>
+      </Paper>
 
-function MetricCard({ title, value, trend }: { title: string; value: string; trend: string }) {
-  const isPositive = trend.startsWith('+');
-  return (
-    <div className="rounded-2xl border border-slate-200/70 bg-white/85 p-4 shadow-[0_15px_45px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-gray-900/60">
-      <div className="text-xs text-gray-700 dark:text-gray-400 mb-1 uppercase tracking-wide">{title}</div>
-      <div className="flex items-end justify-between">
-        <div className="text-2xl font-semibold text-slate-900 dark:text-white">{value}</div>
-        <div className={cn(
-          "text-xs font-mono",
-          isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'
-        )}>
-          {trend}
-        </div>
-      </div>
-    </div>
-  );
-}
+      <AriaLiveRegion message={lab.pipelineAnnouncement} priority="polite" id="immersive-pipeline-announcement" />
+      <AriaLiveRegion message={lab.incidentAnnouncement} priority="assertive" id="immersive-incident-announcement" />
 
-function QuickAction({ onClick, label, variant = 'default' }: { onClick: () => void; label: string; variant?: 'default' | 'primary' | 'danger' }) {
-  const variants = {
-    default: 'bg-white/80 border border-slate-200/70 text-slate-700 shadow-[0_10px_30px_rgba(15,23,42,0.08)] hover:bg-white dark:bg-gray-800/60 dark:border-white/15 dark:text-white',
-    primary: 'bg-emerald-500/15 border border-emerald-200 text-emerald-700 hover:bg-emerald-500/25 dark:bg-emerald-500/20 dark:border-emerald-400/40 dark:text-emerald-100',
-    danger: 'bg-rose-500/10 border border-rose-200 text-rose-600 hover:bg-rose-500/20 dark:bg-red-600/20 dark:border-red-500/40 dark:text-red-100',
-  };
-
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "px-3 py-1 rounded-full text-xs font-mono whitespace-nowrap transition-colors",
-        variants[variant]
-      )}
-    >
-      {label}
-    </button>
+      <LabConfirmDialogs
+        translations={translations}
+        showRollbackConfirm={lab.showRollbackConfirm}
+        setShowRollbackConfirm={lab.setShowRollbackConfirm}
+        onRollbackConfirm={lab.handleRollbackConfirm}
+        showChaosConfirm={lab.showChaosConfirm}
+        setShowChaosConfirm={lab.setShowChaosConfirm}
+        pendingChaosScenario={lab.pendingChaosScenario}
+        onChaosConfirm={lab.handleChaosConfirm}
+        onChaosCancel={lab.handleChaosCancel}
+      />
+    </Box>
   );
 }

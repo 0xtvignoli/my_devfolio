@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" role="img" aria-label="GitOps">
+  <defs><linearGradient id="go-bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0d1220"/><stop offset="100%" stop-color="#101f38"/></linearGradient></defs>
+  <rect width="600" height="400" fill="url(#go-bg)"/>
+  <text x="40" y="52" fill="#4da3ff" font-family="monospace" font-size="14">~ gitops · argocd</text>
+  <!-- reconcile loop -->
+  <path d="M300 130 A90 90 0 1 1 210 220" fill="none" stroke="#4da3ff" stroke-width="3" opacity="0.8"/>
+  <polygon points="210,220 200,200 224,204" fill="#4da3ff"/>
+  <g font-family="monospace" font-size="12">
+    <rect x="250" y="105" width="110" height="46" rx="6" fill="#0f1a2e" stroke="#30d158" stroke-width="1.5"/><text x="272" y="133" fill="#e0e8f4">git repo</text>
+    <rect x="360" y="200" width="120" height="46" rx="6" fill="#0f1a2e" stroke="#ff9f0a" stroke-width="1.5"/><text x="378" y="228" fill="#e0e8f4">cluster</text>
+    <rect x="120" y="200" width="120" height="46" rx="6" fill="#0f1a2e" stroke="#4da3ff" stroke-width="1.5"/><text x="138" y="228" fill="#e0e8f4">reconcile</text>
+  </g>
+  <text x="300" y="300" text-anchor="middle" fill="#30d158" font-family="monospace" font-size="13">desired state == live state ✓</text>
+  <text x="40" y="372" fill="#6e7d92" font-family="monospace" font-size="12">declarative · pull-based · continuous reconciliation</text>
+</svg>

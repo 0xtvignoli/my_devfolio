@@ -1,23 +1,26 @@
-import type {Metadata} from 'next';
+import type {Metadata, Viewport} from 'next';
 import './globals.css';
-import { inter, spaceGrotesk, sourceCodePro } from './fonts';
+import { jetbrainsMono, ibmPlexMono } from './fonts';
 import { cn } from '@/lib/utils';
 import { GoogleAnalytics } from '@/components/analytics/google-analytics';
 import { Suspense } from 'react';
-import { resolveLocale } from '@/lib/i18n/server';
+import { resolveLocaleFromHeaders, getTranslations } from '@/lib/i18n/server';
 import { SiteProviders } from '@/components/providers/site-providers';
+import { JsonLd } from '@/components/seo/json-ld';
+import { buildPersonSchema, buildWebsiteSchema, buildProfilePageSchema } from '@/lib/seo/structured-data';
+import { AUTHOR_NAME, DEFAULT_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/seo/constants';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://tvignoli.com'),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Thomas Vignoli - Senior DevOps Engineer Portfolio',
-    template: '%s | Thomas Vignoli'
+    default: `${AUTHOR_NAME} - Senior DevOps Engineer Portfolio`,
+    template: `%s | ${AUTHOR_NAME}`,
   },
-  description: 'Senior DevOps Engineer specializing in Kubernetes, Cloud Infrastructure, CI/CD, and Site Reliability Engineering. Explore my interactive lab, projects, and technical articles.',
+  description: DEFAULT_DESCRIPTION,
   keywords: ['DevOps', 'Kubernetes', 'Cloud Infrastructure', 'CI/CD', 'Docker', 'Terraform', 'AWS', 'GCP', 'Azure', 'SRE', 'Site Reliability Engineering', 'Monitoring', 'Observability'],
-  authors: [{ name: 'Thomas Vignoli' }],
-  creator: 'Thomas Vignoli',
-  publisher: 'Thomas Vignoli',
+  authors: [{ name: AUTHOR_NAME }],
+  creator: AUTHOR_NAME,
+  publisher: AUTHOR_NAME,
   robots: {
     index: true,
     follow: true,
@@ -33,28 +36,26 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     alternateLocale: ['it_IT'],
-    url: 'https://tvignoli.com',
-    siteName: 'Thomas Vignoli - DevOps Portfolio',
-    title: 'Thomas Vignoli - Senior DevOps Engineer',
-    description: 'Senior DevOps Engineer specializing in Kubernetes, Cloud Infrastructure, CI/CD, and Site Reliability Engineering',
-    images: [
-      {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'Thomas Vignoli DevOps Portfolio',
-      },
-    ],
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: `${AUTHOR_NAME} - Senior DevOps Engineer`,
+    description: DEFAULT_DESCRIPTION,
   },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Thomas Vignoli - Senior DevOps Engineer',
-    description: 'Senior DevOps Engineer specializing in Kubernetes, Cloud Infrastructure, and CI/CD',
-    images: ['/og-image.png'],
-  },
-  verification: {
-    google: 'your-google-verification-code',
-  },
+  ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? { verification: { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION } }
+    : {}),
+};
+
+/* viewportFit: 'cover' is what makes env(safe-area-inset-*) resolve to anything
+   other than 0 — the bottom nav and the marketing main padding both depend on it. */
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#fdfcfc' },
+    { media: '(prefers-color-scheme: dark)', color: '#201d1d' },
+  ],
 };
 
 export default async function RootLayout({
@@ -62,24 +63,37 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const locale = await resolveLocale();
+  const locale = await resolveLocaleFromHeaders();
+  const t = getTranslations(locale);
 
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
+        <JsonLd data={[buildPersonSchema(), buildWebsiteSchema(), buildProfilePageSchema()]} />
+        {/* Feed discovery. Emitted here rather than via Metadata.alternates because
+            every page sets its own `alternates` (canonical + hreflang), which would
+            drop these. */}
+        <link rel="alternate" type="application/rss+xml" title="Articles (EN)" href="/en/feed.xml" />
+        <link rel="alternate" type="application/rss+xml" title="Articoli (IT)" href="/it/feed.xml" />
         <Suspense fallback={null}>
           <GoogleAnalytics GA_MEASUREMENT_ID={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || ''} />
         </Suspense>
       </head>
-      <body 
+      <body
         className={cn(
-          "font-body antialiased",
-          inter.variable, 
-          spaceGrotesk.variable, 
-          sourceCodePro.variable
+          "font-mono antialiased",
+          jetbrainsMono.variable,
+          ibmPlexMono.variable
         )}
+        suppressHydrationWarning
       >
-        <SiteProviders>
+        {/* Strip data-cursor-ref injected by Cursor IDE browser/extension to avoid hydration mismatch */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var strip=function(){var r=document.querySelectorAll("[data-cursor-ref]");for(var i=0;i<r.length;i++)r[i].removeAttribute("data-cursor-ref");};strip();var o=new MutationObserver(strip);o.observe(document.documentElement,{attributes:true,attributeFilter:["data-cursor-ref"],subtree:true});})();`,
+          }}
+        />
+        <SiteProviders skipLabel={t.a11y.skipToContent}>
           {children}
         </SiteProviders>
       </body>

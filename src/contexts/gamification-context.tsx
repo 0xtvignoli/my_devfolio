@@ -39,15 +39,6 @@ export interface Challenge {
   maxProgress: number;
 }
 
-export interface LeaderboardEntry {
-  rank: number;
-  username: string;
-  level: number;
-  xp: number;
-  achievements: number;
-  avatar?: string;
-}
-
 export interface RecentActivity {
   id: string;
   type: 'achievement' | 'xp' | 'challenge' | 'level';
@@ -59,7 +50,6 @@ interface GamificationContextType {
   userProgress: UserProgress;
   achievements: Achievement[];
   challenges: Challenge[];
-  leaderboard: LeaderboardEntry[];
   recentActivities: RecentActivity[];
   isLoading: boolean;
   
@@ -149,7 +139,7 @@ const INITIAL_ACHIEVEMENTS: Achievement[] = [
   {
     id: 'infrastructure_guru',
     title: 'Infrastructure Guru',
-    description: 'Complete all lab sections',
+    description: 'Run 7 deployments in the lab',
     icon: '🏗️',
     rarity: 'legendary',
     points: 500,
@@ -225,7 +215,6 @@ const generateDailyChallenges = (existingChallenges?: Challenge[]): Challenge[] 
 
 export const GamificationProvider = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast();
-  const isUpdatingRef = useRef(false);
   
   const [userProgress, setUserProgress] = useState<UserProgress>({
     level: 1,
@@ -240,7 +229,6 @@ export const GamificationProvider = ({ children }: { children: React.ReactNode }
   
   const [achievements, setAchievements] = useState<Achievement[]>(INITIAL_ACHIEVEMENTS);
   const [challenges, setChallenges] = useState<Challenge[]>([]);
-  const [leaderboard] = useState<LeaderboardEntry[]>([]);
   const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
   const [isLoading] = useState(false);
   const timeoutRefs = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
@@ -367,9 +355,9 @@ export const GamificationProvider = ({ children }: { children: React.ReactNode }
   }, []);
 
   const earnXP = useCallback((amount: number, source: string) => {
-    if (isUpdatingRef.current) return; // Prevent concurrent updates
-    isUpdatingRef.current = true;
-    
+    // Functional setState already serializes concurrent updates against the latest
+    // state, so no lock is needed — dropping the lock stops XP being lost when a
+    // deploy completion and an achievement unlock fire in the same tick.
     setUserProgress(prev => {
       const newTotalXp = prev.totalXp + amount;
       const newLevel = calculateLevelFromXP(newTotalXp);
@@ -409,13 +397,6 @@ export const GamificationProvider = ({ children }: { children: React.ReactNode }
         xpToNextLevel,
         lastActivity: new Date()
       };
-      
-      // Reset the updating flag after state update
-      const timeout2 = setTimeout(() => {
-        isUpdatingRef.current = false;
-        timeoutRefs.current.delete(timeout2);
-      }, 100);
-      timeoutRefs.current.add(timeout2);
       
       return result;
     });
@@ -563,6 +544,9 @@ export const GamificationProvider = ({ children }: { children: React.ReactNode }
           earnXP(5, 'Terminal Usage');
           updateAchievementProgress('terminal_master');
           break;
+        case 'mission_completed':
+          earnXP(50, 'Guided Mission');
+          break;
       }
     };
 
@@ -574,7 +558,6 @@ export const GamificationProvider = ({ children }: { children: React.ReactNode }
     userProgress,
     achievements,
     challenges,
-    leaderboard,
     recentActivities,
     isLoading,
     earnXP,

@@ -1,0 +1,11 @@
+# Local state and secrets — never commit these.
+*.tfstate
+*.tfstate.*
+.terraform/
+terraform.tfvars
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json

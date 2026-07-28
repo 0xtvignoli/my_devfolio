@@ -1,0 +1,14 @@
+# CodeSandbox Templates Directory
+
+This directory contains Terraform templates for CodeSandbox integration.
+
+Each template should have:
+- main.tf
+- variables.tf
+- outputs.tf
+- README.md
+
+See CODESANDBOX_SETUP_GUIDE.md for instructions on creating sandboxes.
+
+
+

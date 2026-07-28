@@ -1,12 +1,15 @@
 'use client';
 
+import React from 'react';
 import { projects } from '@/data/content/projects';
 import { experiences } from '@/data/content/experiences';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import type { KubernetesCluster, Locale, Pod, Translations } from '@/lib/types';
-import { AlertTriangle, Check, Clipboard, FileTerminal, Loader2, Power, Sparkles } from 'lucide-react';
-import { Button } from '../ui/button';
+import { AlertTriangle, FileTerminal, Loader2, Power, Code2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useDeviceDetection } from '@/hooks/use-device-detection';
+import { cn } from '@/lib/utils';
+import { CodePlayground } from './code-playground';
 
 type CommandOutput = string | string[] | null;
 type CommandStatus = 'running' | 'success' | 'error';
@@ -55,12 +58,15 @@ interface InteractiveTerminalProps {
   onCommand: (command: string) => CommandOutput | CommandExecutionResult | null;
   locale: Locale;
   translations: Translations;
+  visualVariant?: 'cyber' | 'md3';
 }
 
 const HISTORY_STORAGE_KEY = 'lab_terminal_history';
 
 const AUTOCOMPLETE_COMMANDS = [
   'help',
+  'ask what has Thomas built with Kubernetes?',
+  'ask summarize his experience',
   'ls',
   'ls projects',
   'ls experience',
@@ -197,31 +203,29 @@ const getAllPods = (cluster: KubernetesCluster): Pod[] => {
 };
 
 const StatusPill = ({ status }: { status?: CommandStatus }) => {
+  // Real-shell semantics: exit 0 is silent. Only surface running / error.
   if (status === 'running') {
     return (
-      <span className="flex items-center gap-1 text-xs text-amber-300">
-        <Loader2 className="h-3 w-3 animate-spin" />
+      <span className="inline-flex items-center gap-1 text-xs text-amber-400">
+        <Loader2 className="h-3 w-3 animate-spin" aria-hidden />
         running
       </span>
     );
   }
-
   if (status === 'error') {
     return (
-      <span className="flex items-center gap-1 text-xs text-red-400">
-        <AlertTriangle className="h-3 w-3" />
-        error
+      <span className="inline-flex items-center gap-1 text-xs text-red-400">
+        <AlertTriangle className="h-3 w-3" aria-hidden />
+        exit 1
       </span>
     );
   }
-
-  return (
-    <span className="flex items-center gap-1 text-xs text-emerald-300">
-      <Check className="h-3 w-3" />
-      ok
-    </span>
-  );
+  return null;
 };
+
+// Regex patterns for link detection (defined outside component for performance)
+const URL_REGEX = /(https?:\/\/[^\s]+)/g;
+const EMAIL_REGEX = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g;
 
 const CommandOutputDisplay = ({ output }: { output: CommandOutput }) => {
   const [hasCopied, setHasCopied] = useState(false);
@@ -237,47 +241,159 @@ const CommandOutputDisplay = ({ output }: { output: CommandOutput }) => {
     }).catch(() => setHasCopied(false));
   };
 
+  // Render output with clickable links and emails
+  const renderOutput = (text: string) => {
+    const parts: Array<{ type: 'url' | 'email' | 'text'; content: string }> = [];
+    let lastIndex = 0;
+    
+    // Find all URLs and emails
+    const matches: Array<{ type: 'url' | 'email'; index: number; content: string }> = [];
+    
+    let match;
+    URL_REGEX.lastIndex = 0;
+    while ((match = URL_REGEX.exec(text)) !== null) {
+      matches.push({ type: 'url', index: match.index, content: match[0] });
+    }
+    
+    EMAIL_REGEX.lastIndex = 0;
+    while ((match = EMAIL_REGEX.exec(text)) !== null) {
+      matches.push({ type: 'email', index: match.index, content: match[0] });
+    }
+    
+    // Sort matches by index
+    matches.sort((a, b) => a.index - b.index);
+    
+    // Build parts array
+    matches.forEach((match) => {
+      if (match.index > lastIndex) {
+        parts.push({ type: 'text', content: text.slice(lastIndex, match.index) });
+      }
+      parts.push({ type: match.type, content: match.content });
+      lastIndex = match.index + match.content.length;
+    });
+    
+    if (lastIndex < text.length) {
+      parts.push({ type: 'text', content: text.slice(lastIndex) });
+    }
+    
+    if (parts.length === 0) {
+      parts.push({ type: 'text', content: text });
+    }
+
+    return parts.map((part, index) => {
+      if (part.type === 'url') {
+        return (
+          <a
+            key={index}
+            href={part.content}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[#4da3ff] hover:underline hover:text-[#4da3ff] transition-colors font-semibold hover:bg-[#4da3ff]/10 px-1 rounded"
+          >
+            {part.content}
+          </a>
+        );
+      } else if (part.type === 'email') {
+        return (
+          <a
+            key={index}
+            href={`mailto:${part.content}`}
+            className="text-[#4da3ff] hover:underline hover:text-[#4da3ff] transition-colors font-semibold hover:bg-[#4da3ff]/10 px-1 rounded"
+          >
+            {part.content}
+          </a>
+        );
+      }
+      return <span key={index}>{part.content}</span>;
+    });
+  };
+
   return (
-    <div className="relative group mt-2 rounded border border-slate-800/80 bg-black/40 px-3 py-2 text-slate-200">
-      <Button
-        size="icon"
-        variant="ghost"
-        className="absolute top-1 right-1 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-        onClick={copyToClipboard}
+    <div className="relative group/out">
+      <button
         type="button"
+        onClick={copyToClipboard}
+        className="absolute right-0 -top-0.5 opacity-0 group-hover/out:opacity-100 focus-visible:opacity-100 transition-opacity text-[10px] leading-none px-1.5 py-1 rounded-[4px] border border-[#3a3636] bg-[#201d1d] text-[#9a9898] hover:text-[#fdfcfc] hover:border-[#4da3ff] focus-visible:outline-1 focus-visible:outline-[#4da3ff]"
+        aria-label="Copy output"
       >
-        {hasCopied ? <Check className="h-4 w-4 text-emerald-400" /> : <Clipboard className="h-4 w-4" />}
-        <span className="sr-only">Copy output</span>
-      </Button>
-      <pre className="whitespace-pre-wrap text-xs leading-relaxed">{textToCopy}</pre>
+        {hasCopied ? 'copied' : 'copy'}
+      </button>
+      <pre className="whitespace-pre-wrap break-words text-[13px] leading-relaxed font-mono text-[#c9c6c6] m-0">
+        {lines.map((line, lineIndex) => (
+          <React.Fragment key={lineIndex}>
+            {renderOutput(line)}
+            {lineIndex < lines.length - 1 && '\n'}
+          </React.Fragment>
+        ))}
+      </pre>
     </div>
   );
 };
 
-export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) => void, setActiveTab: (tab: 'terminal' | 'logs') => void }, InteractiveTerminalProps>(({ runtimeLogs, cluster, onCommand, locale, translations }, ref) => {
+export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) => void, runCommand: (command: string) => void, setActiveTab: (tab: 'terminal' | 'logs' | 'playground') => void, getCommands: () => string[] }, InteractiveTerminalProps>(({ runtimeLogs, cluster, onCommand, locale, translations, visualVariant = 'cyber' }, ref) => {
+  const isMd3 = visualVariant === 'md3';
   const [input, setInput] = useState('');
   const [history, setHistory] = useState<TerminalEntry[]>([]);
-  const [activeTab, setActiveTab] = useState<'terminal' | 'logs'>('terminal');
+  const [activeTab, setActiveTab] = useState<'terminal' | 'logs' | 'playground'>('terminal');
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const [storedCommands, setStoredCommands] = useState<string[]>([]);
+  // Mirror for the imperative handle, which is created once and would otherwise
+  // close over the initial empty array.
+  const storedCommandsRef = useRef<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [suggestions, setSuggestions] = useState<Suggestion[]>(contextualSuggestions.default);
+  const [sessionMeta, setSessionMeta] = useState<SessionMeta | null>(null);
+  const { isTouchDevice } = useDeviceDetection();
 
-  const sessionRef = useRef<SessionMeta>(createSessionMeta());
-  const promptRef = useRef(`[${sessionRef.current.user}@${sessionRef.current.host} ~]`);
+  const sessionRef = useRef<SessionMeta | null>(null);
+  const promptRef = useRef<string>('[infra@control-plane-1 ~]');
   const endOfHistoryRef = useRef<HTMLDivElement>(null);
   const endOfLogsRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const terminalRef = useRef<HTMLDivElement>(null);
   const systemIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const meta = createSessionMeta();
+    sessionRef.current = meta;
+    promptRef.current = `[${meta.user}@${meta.host} ~]`;
+    setSessionMeta(meta);
+  }, []);
+
+  // Click to focus functionality
+  useEffect(() => {
+    const handleClick = () => {
+      inputRef.current?.focus();
+    };
+    
+    if (terminalRef.current) {
+      terminalRef.current.addEventListener('click', handleClick);
+    }
+    
+    return () => {
+      if (terminalRef.current) {
+        terminalRef.current.removeEventListener('click', handleClick);
+      }
+    };
+  }, []);
 
   useImperativeHandle(ref, () => ({
     setCommand: (command: string) => {
       setInput(command);
       inputRef.current?.focus();
     },
-    setActiveTab: (tab: 'terminal' | 'logs') => {
+    runCommand: (command: string) => {
+      // Runs the full submission pipeline (streaming, latency, history),
+      // as if the user typed the command and pressed Enter.
+      setActiveTab('terminal');
+      handleCommandExecutionRef.current?.(command);
+    },
+    setActiveTab: (tab: 'terminal' | 'logs' | 'playground') => {
       setActiveTab(tab);
-    }
+    },
+    // The terminal owns the only complete command log: `ask` and `clear` return
+    // before onCommand fires, so the parent hook never sees them.
+    getCommands: () => storedCommandsRef.current,
   }));
 
   const fileSystem = useMemo(() => ({
@@ -309,6 +425,38 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
     setHistory(prev => [...prev.slice(-80), { ...entry, id }]);
     return id;
   }, []);
+
+  // ASCII Art Welcome Message (first time only)
+  useEffect(() => {
+    const hasSeenWelcome = localStorage.getItem('lab_terminal_welcome_seen');
+    if (!hasSeenWelcome) {
+      const welcomeMessage = `╔═══════════════════════════════════════════════════════════════╗
+║                                                               ║
+║   ██████╗ ███████╗██╗   ██╗ ██████╗ ██████╗ ███████╗███████╗  ║
+║   ██╔══██╗██╔════╝██║   ██║██╔═══██╗██╔══██╗██╔════╝██╔═══╝   ║
+║   ██║  ██║█████╗  ██║   ██║██║   ██║██║  ██║█████╗  █████╗    ║
+║   ██║  ██║██╔══╝  ╚██╗ ██╔╝██║   ██║██║  ██║██╔══╝  ██╔══╝    ║
+║   ██████╔╝███████╗ ╚████╔╝ ╚██████╔╝██████╔╝███████╗███████╗  ║
+║   ╚═════╝ ╚══════╝  ╚═══╝   ╚═════╝ ╚═════╝ ╚══════╝╚══════╝  ║
+║                                                               ║
+║   [SYSTEM INITIALIZED] - DevOps Lab Terminal v2.0             ║
+║   Welcome to your mission console. Type 'help' to begin.      ║
+╚═══════════════════════════════════════════════════════════════╝`;
+      
+      // Add welcome message before system boot sequence
+      setTimeout(() => {
+        pushEntry({
+          command: '/welcome',
+          output: welcomeMessage,
+          timestamp: new Date().toLocaleTimeString(),
+          status: 'success',
+          isSystem: true,
+          prompt: 'system',
+        });
+        localStorage.setItem('lab_terminal_welcome_seen', 'true');
+      }, 50);
+    }
+  }, [pushEntry]);
 
   const updateEntry = useCallback((id: string, updater: (entry: TerminalEntry) => TerminalEntry) => {
     setHistory(prev => prev.map(entry => entry.id === id ? updater(entry) : entry));
@@ -366,6 +514,7 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
   }, []);
 
   useEffect(() => {
+    storedCommandsRef.current = storedCommands;
     if (storedCommands.length === 0) {
       localStorage.removeItem(HISTORY_STORAGE_KEY);
       return;
@@ -432,6 +581,10 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
       case 'help':
         return {
           output: [
+            '╔═══════════════════════════════════════════════════════════════╗',
+            '║                    AVAILABLE COMMANDS                         ║',
+            '╚═══════════════════════════════════════════════════════════════╝',
+            '',
             'SYSTEM COMMANDS:',
             '  help                - Show this panel',
             '  ls [path]           - List workspace directories',
@@ -442,6 +595,7 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
             '  uptime              - Show session uptime',
             '',
             'LAB COMMANDS:',
+            '  ask <question>                               - Ask the AI about Thomas’ work',
             '  deploy [--strategy] [--weight] [--version]   - Trigger pipeline',
             '  chaos <scenario>                             - Run chaos experiment',
             '  status                                       - Show control-plane vitals',
@@ -450,6 +604,8 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
             '  kubectl get|describe|logs ...',
             '  helm list|status <release>',
             '  git status|log|branch|remote -v',
+            '',
+            '💡 Use Tab for autocomplete, ↑/↓ for history, or click "Help" button for full documentation.',
           ],
           contextHint: 'Everything in this terminal is wired to the lab simulator. Experiment freely.',
           suggestion: 'Try `kubectl get pods` or `deploy --strategy=canary --weight=20`',
@@ -457,7 +613,7 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
       case 'whoami':
         return {
           output: 'infra@control-plane (DevOps Engineer orchestrating this lab). Access level: root-equivalent within the sandbox.',
-          contextHint: 'Session fingerprint derived from signed cookie via middleware.',
+          contextHint: 'Ephemeral sandbox session — no real auth, nothing leaves your browser.',
         };
       case 'pwd':
         return {
@@ -736,6 +892,42 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
     }
   }, [cluster, fileSystem, onCommand, storedCommands]);
 
+  // `ask` is the one async command: it calls the server-side AI assistant and
+  // streams the answer into the already-created entry via appendOutput/finalizeEntry.
+  const runAssistant = useCallback(async (rawInput: string, entryId: string) => {
+    const question = rawInput.replace(/^ask\s*/i, '').trim();
+    if (!question) {
+      finalizeEntry(entryId, {
+        output: ['Usage: ask <question>  —  e.g. `ask what has Thomas built with Kubernetes?`'],
+        status: 'error',
+      });
+      return;
+    }
+    window.dispatchEvent(new CustomEvent('lab_activity', {
+      detail: { type: 'terminal_command', data: { command: 'ask' } },
+    }));
+    appendOutput(entryId, '🤖 querying portfolio assistant…');
+    try {
+      const res = await fetch('/api/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question }),
+      });
+      const data = await res.json().catch(() => ({} as Record<string, string>));
+      const answer = data.answer ?? data.error ?? 'No response from assistant.';
+      finalizeEntry(entryId, {
+        output: String(answer).split('\n'),
+        status: res.ok ? 'success' : 'error',
+        contextHint: 'Answered by Gemini over the real portfolio data (projects, skills, experience).',
+      });
+    } catch {
+      finalizeEntry(entryId, {
+        output: ['Assistant unreachable — network error.'],
+        status: 'error',
+      });
+    }
+  }, [appendOutput, finalizeEntry]);
+
   const handleCommandExecution = useCallback((commandInput: string) => {
     const trimmedInput = commandInput.trim();
     if (!trimmedInput) return;
@@ -758,6 +950,14 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
       prompt: promptRef.current,
     });
 
+    if (baseCommand === 'ask') {
+      void runAssistant(trimmedInput, entryId);
+      setStoredCommands(prev => [...prev, trimmedInput]);
+      setInput('');
+      setHistoryIndex(-1);
+      return;
+    }
+
     const result = executeCommand(trimmedInput);
     const steps = result.skipStreaming ? [] : result.streamingSteps ?? streamingSteps[baseCommand] ?? [];
     steps.forEach((line, index) => {
@@ -772,7 +972,13 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
     setStoredCommands(prev => [...prev, trimmedInput]);
     setInput('');
     setHistoryIndex(-1);
-  }, [appendOutput, executeCommand, finalizeEntry, getLatency, pushEntry, pushSystemMessage]);
+  }, [appendOutput, executeCommand, finalizeEntry, getLatency, pushEntry, pushSystemMessage, runAssistant]);
+
+  // Keeps the imperative runCommand handle pointing at the latest closure.
+  const handleCommandExecutionRef = useRef(handleCommandExecution);
+  useEffect(() => {
+    handleCommandExecutionRef.current = handleCommandExecution;
+  }, [handleCommandExecution]);
 
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'ArrowUp') {
@@ -820,125 +1026,228 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
   };
 
   const handleTabChange = (value: string) => {
-    if (value === 'terminal' || value === 'logs') {
-      setActiveTab(value);
+    if (value === 'terminal' || value === 'logs' || value === 'playground') {
+      setActiveTab(value as 'terminal' | 'logs' | 'playground');
     }
   };
 
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-      <TabsList className="grid w-full grid-cols-2 bg-slate-900/60 dark:bg-slate-900/60">
+      <TabsList
+        className={cn(
+          'grid w-full grid-cols-3 rounded-t-lg rounded-b-none p-0 gap-0 text-xs sm:text-sm',
+          isMd3
+            ? 'bg-[var(--md-sys-color-surface-container-high)] border border-[var(--md-sys-color-outline-variant)] font-sans'
+            : 'bg-[#201d1d] border border-[#3a3636] font-mono'
+        )}
+        aria-label="Terminal view selection"
+      >
         <TabsTrigger 
           value="terminal"
-          className="data-[state=active]:bg-slate-800/80 data-[state=active]:text-white data-[state=inactive]:bg-slate-900/40 data-[state=inactive]:text-slate-400"
+          className={cn(
+            'rounded-tl-lg rounded-tr-none gap-1 sm:gap-1.5 py-2 px-2 border-0 border-r last:border-r-0 transition-colors duration-200 focus-visible:ring-2',
+            isMd3
+              ? 'border-[var(--md-sys-color-outline-variant)] data-[state=active]:bg-[var(--md-sys-color-primary-container)] data-[state=active]:text-[var(--md-sys-color-on-primary-container)] data-[state=active]:border-b-2 data-[state=active]:border-[var(--md-sys-color-primary)] data-[state=inactive]:text-[var(--md-sys-color-on-surface-variant)] data-[state=inactive]:hover:bg-[var(--md-sys-color-surface-container)] focus-visible:ring-[var(--md-sys-color-primary)]'
+              : 'border-[#3a3636] data-[state=active]:bg-[#4da3ff]/15 data-[state=active]:text-[#4da3ff] data-[state=active]:border-b-2 data-[state=active]:border-[#4da3ff] data-[state=inactive]:bg-[#302c2c] data-[state=inactive]:text-[#9a9898] data-[state=inactive]:hover:bg-[#3a3636] data-[state=inactive]:hover:text-[#c9c6c6] focus-visible:ring-[#4da3ff]'
+          )}
+          aria-label="Terminal Core tab"
+          title="Terminal"
         >
-          <FileTerminal className="mr-2 h-4 w-4" />
-          Terminal Core
+          <FileTerminal className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" aria-hidden />
+          <span className="hidden sm:inline">{isMd3 ? 'Terminal' : '[ Terminal ]'}</span>
+          <span className="sm:hidden">{isMd3 ? 'Cmd' : '[ Cmd ]'}</span>
         </TabsTrigger>
         <TabsTrigger 
           value="logs"
-          className="data-[state=active]:bg-slate-800/80 data-[state=active]:text-white data-[state=inactive]:bg-slate-900/40 data-[state=inactive]:text-slate-400"
+          className={cn(
+            'rounded-none gap-1 sm:gap-1.5 py-2 px-2 border-0 border-r last:border-r-0 transition-colors duration-200 focus-visible:ring-2',
+            isMd3
+              ? 'border-[var(--md-sys-color-outline-variant)] data-[state=active]:bg-[var(--md-sys-color-primary-container)] data-[state=active]:text-[var(--md-sys-color-on-primary-container)] data-[state=active]:border-b-2 data-[state=active]:border-[var(--md-sys-color-primary)] data-[state=inactive]:text-[var(--md-sys-color-on-surface-variant)] data-[state=inactive]:hover:bg-[var(--md-sys-color-surface-container)] focus-visible:ring-[var(--md-sys-color-primary)]'
+              : 'border-[#3a3636] data-[state=active]:bg-[#4da3ff]/15 data-[state=active]:text-[#4da3ff] data-[state=active]:border-b-2 data-[state=active]:border-[#4da3ff] data-[state=inactive]:bg-[#302c2c] data-[state=inactive]:text-[#9a9898] data-[state=inactive]:hover:bg-[#3a3636] data-[state=inactive]:hover:text-[#c9c6c6] focus-visible:ring-[#4da3ff]'
+          )}
+          aria-label="Runtime Logs tab"
+          title="Logs"
         >
-          <Power className="mr-2 h-4 w-4" />
-          Runtime Logs
+          <Power className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" aria-hidden />
+          <span className="hidden sm:inline">{isMd3 ? 'Logs' : '[ Logs ]'}</span>
+          <span className="sm:hidden">{isMd3 ? 'Log' : '[ Log ]'}</span>
+        </TabsTrigger>
+        <TabsTrigger 
+          value="playground"
+          className={cn(
+            'rounded-tl-none rounded-tr-lg gap-1 sm:gap-1.5 py-2 px-2 border-0 transition-colors duration-200 focus-visible:ring-2',
+            isMd3
+              ? 'data-[state=active]:bg-[var(--md-sys-color-primary-container)] data-[state=active]:text-[var(--md-sys-color-on-primary-container)] data-[state=active]:border-b-2 data-[state=active]:border-[var(--md-sys-color-primary)] data-[state=inactive]:text-[var(--md-sys-color-on-surface-variant)] data-[state=inactive]:hover:bg-[var(--md-sys-color-surface-container)] focus-visible:ring-[var(--md-sys-color-primary)]'
+              : 'data-[state=active]:bg-[#4da3ff]/15 data-[state=active]:text-[#4da3ff] data-[state=active]:border-b-2 data-[state=active]:border-[#4da3ff] data-[state=inactive]:bg-[#302c2c] data-[state=inactive]:text-[#9a9898] data-[state=inactive]:hover:bg-[#3a3636] data-[state=inactive]:hover:text-[#c9c6c6] focus-visible:ring-[#4da3ff]'
+          )}
+          aria-label="Code Playground tab"
+          title="Playground"
+        >
+          <Code2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" aria-hidden />
+          <span className="hidden sm:inline">{isMd3 ? 'Playground' : '[ Playground ]'}</span>
+          <span className="sm:hidden">{isMd3 ? 'Play' : '[ Play ]'}</span>
         </TabsTrigger>
       </TabsList>
       <TabsContent value="terminal">
         <div
-          className="bg-slate-950 text-slate-100 font-mono rounded-b-md h-[28rem] text-sm border border-slate-900/70 shadow-inner flex flex-col"
+          ref={terminalRef}
+          className="relative font-mono rounded-b-[4px] text-sm flex flex-col cursor-text overflow-hidden bg-[#1a1717] text-[#fdfcfc] border border-[#3a3636] h-[26rem] sm:h-[30rem] lg:h-[34rem]"
           onClick={() => {
             setHasUserInteracted(true);
             inputRef.current?.focus();
           }}
         >
-          <div className="border-b border-slate-900/80 px-4 py-2 text-xs text-slate-400 flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
-            <span>Last login: {sessionRef.current.lastLogin} from {sessionRef.current.ip} on {sessionRef.current.tty}</span>
-            <span>{sessionRef.current.distro} • {sessionRef.current.kernel}</span>
+          {/* Title bar */}
+          <div className="flex items-center gap-2 px-3 sm:px-4 py-2 border-b border-[#3a3636] bg-[#201d1d] text-xs shrink-0">
+            <div className="flex gap-1.5" aria-hidden>
+              <span className="w-3 h-3 rounded-full bg-red-500" />
+              <span className="w-3 h-3 rounded-full bg-yellow-500" />
+              <span className="w-3 h-3 rounded-full bg-green-500" />
+            </div>
+            <span className="ml-1 text-[#9a9898] truncate">
+              {sessionMeta ? `${sessionMeta.user}@${sessionMeta.host}` : 'infra@control-plane'}
+              <span className="hidden sm:inline text-[#9a9898]"> — DevOps Lab</span>
+            </span>
+            <span className="ml-auto inline-flex items-center gap-1.5 text-[#30d158] shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#30d158] animate-pulse" aria-hidden />
+              live
+            </span>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
-            {history.map(entry => (
-              <div
-                key={entry.id}
-                className={`rounded-lg border border-slate-900/60 px-3 py-2 ${entry.isSystem ? 'bg-slate-900/60' : 'bg-slate-950/40'}`}
-              >
-                <div className="flex items-center justify-between text-xs text-slate-500">
-                  <span className="flex items-center gap-2">
-                    <span className={entry.isSystem ? 'text-cyan-300' : 'text-emerald-300'}>
-                      {entry.isSystem ? '[system]' : promptRef.current}
-                    </span>
-                    <span>{entry.timestamp}</span>
-                  </span>
-                  <StatusPill status={entry.status} />
+          {/* MOTD / last login */}
+          <div className="px-3 sm:px-4 py-1.5 border-b border-[#302c2c] bg-[#201d1d] text-[11px] text-[#9a9898] truncate shrink-0" suppressHydrationWarning>
+            {sessionMeta ? (
+              <>Last login: {sessionMeta.lastLogin} from {sessionMeta.ip}<span className="hidden md:inline"> · {sessionMeta.distro} · {sessionMeta.kernel}</span></>
+            ) : (
+              <>Last login: <span className="animate-pulse">connecting…</span></>
+            )}
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-3 space-y-1.5 text-[13px] leading-relaxed relative z-0">
+            {history.map((entry) =>
+              entry.isSystem ? (
+                <div key={entry.id} className="text-[#9a9898] break-words">
+                  <span className="text-[#9a9898]">{entry.timestamp} </span>
+                  {ensureArray(entry.output).join(' ')}
                 </div>
-                {!entry.isSystem && entry.command && (
-                  <div className="mt-1 flex items-center gap-2 text-slate-100">
-                    <span className="text-emerald-400">❯</span>
-                    <span>{entry.command}</span>
-                  </div>
-                )}
-                <CommandOutputDisplay output={entry.output} />
-                {entry.contextHint && (
-                  <p className="mt-2 text-xs text-slate-400">{entry.contextHint}</p>
-                )}
-                {entry.suggestion && (
-                  <p className="mt-1 text-xs text-emerald-400 flex items-center gap-1">
-                    <Sparkles className="h-3 w-3" />
-                    {entry.suggestion}
-                  </p>
-                )}
-              </div>
-            ))}
+              ) : (
+                <div key={entry.id} className="break-words">
+                  {entry.command && (
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      <span className="text-[#4da3ff] shrink-0">{entry.prompt}</span>
+                      <span className="text-[#fdfcfc] break-all">{entry.command}</span>
+                      {(entry.status === 'running' || entry.status === 'error') && (
+                        <span className="ml-auto shrink-0">
+                          <StatusPill status={entry.status} />
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  <CommandOutputDisplay output={entry.output} />
+                  {entry.contextHint && (
+                    <div className="text-[#9a9898] mt-0.5"># {entry.contextHint}</div>
+                  )}
+                  {entry.suggestion && (
+                    <div className="text-[#9a9898] mt-0.5">→ {entry.suggestion}</div>
+                  )}
+                </div>
+              )
+            )}
             <div ref={endOfHistoryRef} />
           </div>
 
-          <div className="border-t border-slate-900/70 px-4 py-2 text-xs text-slate-400 flex flex-wrap gap-3">
-            {suggestions.map(suggestion => (
+          <div className="flex gap-2 overflow-x-auto px-3 sm:px-4 py-2 border-t border-[#302c2c] bg-[#201d1d] shrink-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {suggestions.map((suggestion) => (
               <button
                 key={suggestion.command}
                 type="button"
                 onClick={() => handleSuggestionClick(suggestion.command)}
-                className="flex flex-col rounded border border-slate-800/60 px-3 py-2 text-left transition hover:border-emerald-500/60 hover:text-slate-100"
+                title={suggestion.helper}
+                className={cn(
+                  "shrink-0 inline-flex items-center gap-1.5 rounded-[4px] border border-[#3a3636] bg-[#302c2c] px-2.5 whitespace-nowrap text-xs text-[#c9c6c6]",
+                  "hover:border-[#4da3ff] hover:bg-[#3a3636] hover:text-[#fdfcfc] transition-colors",
+                  "focus-visible:outline-1 focus-visible:outline-[#4da3ff]",
+                  isTouchDevice ? "py-2 min-h-[40px]" : "py-1"
+                )}
+                aria-label={`Run: ${suggestion.label} — ${suggestion.helper}`}
               >
-                <span className="text-slate-100 text-xs font-semibold">{suggestion.label}</span>
-                <span className="text-[10px] text-slate-500">{suggestion.helper}</span>
+                <span className="text-[#4da3ff]" aria-hidden>$</span>
+                {suggestion.label}
               </button>
             ))}
           </div>
 
-          <form onSubmit={(e) => e.preventDefault()} className="px-4 py-3 border-t border-slate-900/80">
+          <form onSubmit={(e) => e.preventDefault()} className="px-3 sm:px-4 py-2.5 border-t border-[#3a3636] bg-[#201d1d] shrink-0">
             <label htmlFor="terminal-input" className="sr-only">Terminal input</label>
-            <div className="flex items-center gap-2">
-              <span className="text-emerald-400">{promptRef.current}</span>
-              <div className="relative w-full">
-                <input
-                  ref={inputRef}
-                  id="terminal-input"
-                  name="terminal-input"
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={handleInputKeyDown}
-                  className="bg-transparent border-none text-slate-100 focus:ring-0 w-full p-0"
-                  autoComplete="off"
-                  placeholder="Type a command..."
-                />
-                <span className="absolute left-0 top-0 pointer-events-none">
-                  <span className="invisible">{input}</span>
-                  <span className="animate-pulse">_</span>
-                </span>
-              </div>
+            {/* Compact windows: the prompt (~200px) and the input can't share a row —
+                below sm it took the whole line and left the field 10px wide. */}
+            <div className="flex items-baseline gap-2 max-sm:flex-col max-sm:items-stretch max-sm:gap-0">
+              <span className="text-[#4da3ff] shrink-0 whitespace-nowrap max-sm:text-xs">
+                {sessionMeta ? promptRef.current : 'infra@control-plane:~$'}
+              </span>
+              <input
+                ref={inputRef}
+                id="terminal-input"
+                name="terminal-input"
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleInputKeyDown}
+                className={cn(
+                  "flex-1 min-w-0 bg-transparent border-none text-[#fdfcfc] p-0 caret-[#4da3ff]",
+                  "focus-visible:outline-hidden focus-visible:ring-0",
+                  "placeholder:text-[#646262]",
+                  isTouchDevice ? "text-base min-h-[40px]" : "text-[13px]"
+                )}
+                autoComplete="off"
+                placeholder="type a command — try 'help'"
+                aria-label="Terminal command input"
+              />
             </div>
           </form>
+
+          {/* Footer hints (desktop) */}
+          <div className="hidden sm:block px-4 py-2 border-t border-[#302c2c] bg-[#201d1d] text-[11px] text-[#9a9898] shrink-0">
+            <span className="text-[#4da3ff]">help</span> commands · <span className="text-[#c9c6c6]">↑/↓</span> history · <span className="text-[#c9c6c6]">Tab</span> autocomplete · <span className="text-[#c9c6c6]">Ctrl+C</span> interrupt
+          </div>
         </div>
       </TabsContent>
       <TabsContent value="logs">
-        <div className="bg-slate-950 text-slate-100 font-mono p-4 rounded-b-md h-96 text-sm overflow-y-auto">
-          {runtimeLogs.map((log, index) => (
-            <div key={`log-${index}`} className="whitespace-pre-wrap text-slate-100">{log}</div>
-          ))}
-          <div ref={endOfLogsRef} />
+        <div className="relative font-mono rounded-b-[4px] flex flex-col overflow-hidden bg-[#1a1717] text-[#fdfcfc] border border-[#3a3636] h-[26rem] sm:h-[30rem] lg:h-[34rem]">
+          {/* Header */}
+          <div className="flex items-center gap-2 px-3 sm:px-4 py-2 border-b border-[#3a3636] bg-[#201d1d] text-xs shrink-0">
+            <span className="text-[#9a9898] truncate">
+              tail -f <span className="text-[#9a9898]">/var/log/lab-agent.log</span>
+            </span>
+            <span className="ml-auto text-[#9a9898] shrink-0">{runtimeLogs.length} lines</span>
+            <span className="inline-flex items-center gap-1.5 text-[#30d158] shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#30d158] animate-pulse" aria-hidden />
+              live
+            </span>
+          </div>
+          {/* Log stream */}
+          <div className="flex-1 overflow-y-auto py-2 text-[13px] leading-relaxed" role="log" aria-live="polite">
+            {runtimeLogs.length === 0 ? (
+              <div className="px-4 py-10 text-center text-[#9a9898]">In attesa di eventi runtime…</div>
+            ) : (
+              runtimeLogs.map((log, index) => (
+                <div
+                  key={`log-${index}`}
+                  className="flex gap-3 px-3 sm:px-4 hover:bg-[#302c2c]/50 transition-colors"
+                >
+                  <span className="shrink-0 select-none text-right tabular-nums text-[#524d4d] w-7 sm:w-9" aria-hidden>
+                    {index + 1}
+                  </span>
+                  <span className="whitespace-pre-wrap break-words text-[#c9c6c6]">{log}</span>
+                </div>
+              ))
+            )}
+            <div ref={endOfLogsRef} />
+          </div>
         </div>
+      </TabsContent>
+      <TabsContent value="playground">
+        <CodePlayground locale={locale} translations={translations} />
       </TabsContent>
     </Tabs>
   );

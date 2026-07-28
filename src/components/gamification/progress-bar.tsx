@@ -1,9 +1,9 @@
 "use client";
 
 import React from 'react';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import LinearProgress from '@mui/material/LinearProgress';
+import Chip from '@mui/material/Chip';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui-mui';
 import { Trophy, Star, Zap } from 'lucide-react';
 import { useGamification } from '@/contexts/gamification-context';
 import { motion } from 'framer-motion';
@@ -12,22 +12,22 @@ export const UserProgressBar = () => {
   const { userProgress, getProgressPercentage } = useGamification();
   
   const getTitleColor = (level: number) => {
-    if (level >= 20) return 'text-purple-600 dark:text-purple-400';
-    if (level >= 15) return 'text-yellow-600 dark:text-yellow-400';
-    if (level >= 10) return 'text-blue-600 dark:text-blue-400';
-    if (level >= 5) return 'text-green-600 dark:text-green-400';
-    return 'text-gray-600 dark:text-gray-400';
+    if (level >= 20) return 'text-primary';
+    if (level >= 15) return 'text-amber-600 dark:text-amber-400';
+    if (level >= 10) return 'text-primary';
+    if (level >= 5) return 'text-emerald-600 dark:text-emerald-400';
+    return 'text-muted-foreground';
   };
 
   const getTitleIcon = (level: number) => {
-    if (level >= 20) return <Trophy className="h-4 w-4 text-purple-600 dark:text-purple-400" />;
-    if (level >= 15) return <Star className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />;
-    if (level >= 10) return <Zap className="h-4 w-4 text-blue-600 dark:text-blue-400" />;
-    return <Star className="h-4 w-4 text-gray-600 dark:text-gray-400" />;
+    if (level >= 20) return <Trophy className="h-4 w-4 text-primary" />;
+    if (level >= 15) return <Star className="h-4 w-4 text-amber-600 dark:text-amber-400" />;
+    if (level >= 10) return <Zap className="h-4 w-4 text-primary" />;
+    return <Star className="h-4 w-4 text-muted-foreground" />;
   };
 
   return (
-    <Card className="bg-gradient-to-r from-background/50 to-muted/50 backdrop-blur-sm border-primary/20">
+    <Card className="border-border">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -36,9 +36,7 @@ export const UserProgressBar = () => {
               Level {userProgress.level}
             </span>
           </div>
-          <Badge variant="secondary" className="bg-primary/10 text-primary">
-            {userProgress.totalXp.toLocaleString()} XP
-          </Badge>
+          <Chip label={`${userProgress.totalXp.toLocaleString()} XP`} size="small" color="primary" variant="outlined" />
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -52,10 +50,7 @@ export const UserProgressBar = () => {
             animate={{ width: '100%' }}
             transition={{ duration: 0.5 }}
           >
-            <Progress 
-              value={getProgressPercentage()} 
-              className="h-3 bg-muted"
-            />
+            <LinearProgress variant="determinate" value={getProgressPercentage()} sx={{ height: 8, borderRadius: 4 }} />
           </motion.div>
           <div className="flex justify-between text-xs text-muted-foreground dark:text-muted-foreground">
             <span>{userProgress.xp} XP</span>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" role="img" aria-label="CI/CD">
+  <defs><linearGradient id="ci-bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0d1220"/><stop offset="100%" stop-color="#101f38"/></linearGradient>
+  <linearGradient id="ci-pipe" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#4da3ff"/><stop offset="100%" stop-color="#30d158"/></linearGradient></defs>
+  <rect width="600" height="400" fill="url(#ci-bg)"/>
+  <text x="40" y="52" fill="#4da3ff" font-family="monospace" font-size="14">~ ci/cd pipeline</text>
+  <line x1="80" y1="210" x2="520" y2="210" stroke="url(#ci-pipe)" stroke-width="3" opacity="0.7"/>
+  <g font-family="monospace" font-size="11">
+    <rect x="70" y="175" width="95" height="70" rx="8" fill="#0f1a2e" stroke="#4da3ff" stroke-width="1.5"/><text x="92" y="205" fill="#e0e8f4">push</text><text x="86" y="225" fill="#64748b">git</text>
+    <rect x="195" y="175" width="95" height="70" rx="8" fill="#0f1a2e" stroke="#4da3ff" stroke-width="1.5"/><text x="222" y="205" fill="#e0e8f4">test</text><text x="212" y="225" fill="#64748b">lint+ci</text>
+    <rect x="320" y="175" width="95" height="70" rx="8" fill="#0f1a2e" stroke="#ff9f0a" stroke-width="1.5"/><text x="345" y="205" fill="#e0e8f4">build</text><text x="338" y="225" fill="#64748b">docker</text>
+    <rect x="445" y="175" width="95" height="70" rx="8" fill="#0f1a2e" stroke="#30d158" stroke-width="1.5"/><text x="470" y="205" fill="#e0e8f4">ship</text><text x="466" y="225" fill="#64748b">prod</text>
+  </g>
+  <text x="40" y="372" fill="#6e7d92" font-family="monospace" font-size="12">github actions · runners · deploy gates</text>
+</svg>

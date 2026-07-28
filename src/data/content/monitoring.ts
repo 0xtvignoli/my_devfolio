@@ -68,13 +68,21 @@ export const getInitialPipeline = (config?: DeployConfig): PipelineStage[] => {
             details: 'helm upgrade --install devops-folio-staging ./charts/devops-folio --namespace staging',
             baseDuration: 3500,
         },
-        {
-            name: 'Deploy Canary',
-            status: 'Queued',
-            duration: '-',
-            details: `helm upgrade --install devops-folio-canary ./charts/devops-folio --set image.tag=${deployConfig.version} --set trafficSplit=${deployConfig.weight}`,
-            baseDuration: 4000,
-        },
+        deployConfig.strategy === 'canary'
+            ? {
+                  name: 'Deploy Canary',
+                  status: 'Queued',
+                  duration: '-',
+                  details: `helm upgrade --install devops-folio-canary ./charts/devops-folio --set image.tag=${deployConfig.version} --set trafficSplit=${deployConfig.weight}`,
+                  baseDuration: 4000,
+              }
+            : {
+                  name: 'Deploy Green',
+                  status: 'Queued',
+                  duration: '-',
+                  details: `helm upgrade --install devops-folio-green ./charts/devops-folio --set image.tag=${deployConfig.version} --namespace production`,
+                  baseDuration: 4000,
+              },
         {
             name: 'Deploy Prod',
             status: 'Queued',

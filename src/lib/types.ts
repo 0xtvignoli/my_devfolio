@@ -6,12 +6,26 @@ export interface Translations {
     experience: string;
     articles: string;
     lab: string;
+    missionProgress: string;
+  };
+  mobileNav: {
+    home: string;
+    portfolio: string;
+    contact: string;
+    ariaLabel: string;
   };
   hero: {
     title: string;
     subtitle: string;
+    badge: string;
     ctaPortfolio: string;
+    ctaLab: string;
     ctaContact: string;
+    labPreviewTitle: string;
+    labPreviewSubtitle: string;
+    tryLabTitle?: string;
+    tryLabDescription?: string;
+    tryLabCta?: string;
   };
   skills: {
     title: string;
@@ -20,26 +34,65 @@ export interface Translations {
   portfolio: {
     title: string;
     viewAll: string;
+    pageSubtitle?: string;
   };
   experience: {
     title: string;
+    pageSubtitle?: string;
   };
   articles: {
     title: string;
     viewAll: string;
+    pageSubtitle?: string;
+    emptyTitle?: string;
+    emptyDescription?: string;
+    filterLabel: string;
+    filterAll: string;
+    /** Contains `{count}`. */
+    filterCount: string;
+    related: string;
   };
   contact: {
     title: string;
     description: string;
     email: string;
+    emailLabel: string;
+    openingEmailClient: string;
+    emailClientOpened: string;
+    buttonText: string;
+    copyEmail: string;
+    emailCopied: string;
+  };
+  ask: {
+    title: string;
+    description: string;
+    placeholder: string;
+    submit: string;
+    thinking: string;
+    error: string;
+  };
+  cv: {
+    title: string;
+    subtitle: string;
+    print: string;
   };
   footer: {
     copy: string;
+    cv: string;
   };
   theme: {
     light: string;
     dark: string;
     system: string;
+  };
+  a11y: {
+    skipToContent: string;
+  };
+  errorBoundary: {
+    title: string;
+    description: string;
+    reload: string;
+    goHome: string;
   };
   article: {
     back: string;
@@ -49,7 +102,250 @@ export interface Translations {
   project: {
     github: string;
     demo: string;
-  }
+    metricsLabel: string;
+  };
+  codesandbox: {
+    title: string;
+    description: string;
+    tryIt: string;
+    openInSandbox: string;
+    copyLink: string;
+    linkCopied: string;
+    templates: {
+      eks: string;
+      vpc: string;
+      rds: string;
+      s3: string;
+      cicd: string;
+    };
+  };
+  lab: {
+    title: string;
+    subtitle: string;
+    live: string;
+    terminal: {
+      title: string;
+      description: string;
+      connected: string;
+    };
+    missionControl: {
+      title: string;
+      description: string;
+      sandboxTitle: string;
+      sandboxDescription: string;
+      autoChaos: string;
+      autoChaosDescription: string;
+    };
+    metrics: {
+      title: string;
+      cpu: string;
+      memory: string;
+      latency: string;
+      deploys: string;
+      cpuHint: string;
+      memoryHint: string;
+      latencyHint: string;
+      deploysHint: string;
+    };
+    postmortem: {
+      download: string;
+    };
+    permalink: {
+      share: string;
+      copy: string;
+      copied: string;
+      empty: string;
+    };
+    ci: {
+      title: string;
+      subtitle: string;
+      real: string;
+      /** Placeholders: {green} {total} */
+      summary: string;
+      viewWorkflow: string;
+    };
+    slo: {
+      title: string;
+      subtitle: string;
+      hint: string;
+      budgetRemaining: string;
+      burnRate: string;
+      consumed: string;
+      latencyObjective: string;
+      met: string;
+      missed: string;
+      healthy: string;
+      warning: string;
+      exhausted: string;
+      /** Placeholders: {availability} {days} {latency} {budget} */
+      objective: string;
+      /** Placeholder: {hours} */
+      exhaustsIn: string;
+    };
+    sections: {
+      incidents: string;
+      incidentsSubtitle: string;
+      cluster: string;
+      pipeline: string;
+      pipelineSubtitle: string;
+    };
+    margin: {
+      title: string;
+      subtitle: string;
+      marginPerReq: string;
+      throughput: string;
+      grossMargin: string;
+      revenue: string;
+      cost: string;
+      margin: string;
+      hint: string;
+      simulated: string;
+    };
+    actions: {
+      promote: string;
+      rollback: string;
+      deploy: string;
+      deploying: string;
+      rollingBack: string;
+      run: string;
+    };
+    layout: {
+      label: string;
+      standard: string;
+      immersive: string;
+      standardHint: string;
+      immersiveHint: string;
+      ariaLabel: string;
+    };
+    macros: {
+      clusterPulse: { label: string; description: string };
+      canary: { label: string; description: string };
+      blueGreen: { label: string; description: string };
+      chaosPod: { label: string; description: string };
+      chaosLatency: { label: string; description: string };
+    };
+    dialogs: {
+      rollbackTitle: string;
+      rollbackDescription: string;
+      chaosTitle: string;
+      chaosDescription: string;
+      cancel: string;
+    };
+    toasts: {
+      pipelinePausedTitle: string;
+      pipelinePausedDescription: string;
+      deploySuccessTitle: string;
+      deploySuccessDescription: string;
+      deployFailedTitle: string;
+      rollbackStartedDescription: string;
+      chaosInjectedDescription: string;
+    };
+    announcements: {
+      pipelinePaused: string;
+      pipelineCompleted: string;
+      pipelineFailed: string;
+      newIncident: string;
+      cpuChanged: string;
+      latencyChanged: string;
+    };
+    empty: {
+      incidentsTitle: string;
+      incidentsDescription: string;
+      tryCommand: string;
+    };
+    incidentTable: {
+      status: string;
+      type: string;
+      duration: string;
+      timestamp: string;
+      ariaLabel: string;
+    };
+    help: {
+      buttonLabel: string;
+      title: string;
+      description: string;
+      tipLabel: string;
+      tip: string;
+      categories: {
+        key: 'system' | 'lab' | 'kubernetes' | 'helm' | 'git';
+        title: string;
+        commands: { cmd: string; desc: string }[];
+      }[];
+    };
+    missions: {
+      cardTitle: string;
+      cardSubtitle: string;
+      start: string;
+      runForMe: string;
+      completedTitle: string;
+      xpBadge: string;
+      doneBadge: string;
+      items: {
+        canary: {
+          title: string;
+          description: string;
+          completedDescription: string;
+          steps: {
+            deploy: { title: string; description: string };
+            analyze: { title: string; description: string };
+            decide: { title: string; description: string };
+          };
+        };
+        chaos: {
+          title: string;
+          description: string;
+          completedDescription: string;
+          steps: {
+            inject: { title: string; description: string };
+            observe: { title: string; description: string };
+          };
+        };
+        bluegreen: {
+          title: string;
+          description: string;
+          completedDescription: string;
+          steps: {
+            deploy: { title: string; description: string };
+            cutover: { title: string; description: string };
+          };
+        };
+      };
+    };
+    palette: {
+      buttonLabel: string;
+      placeholder: string;
+      noResults: string;
+      groups: { commands: string; actions: string; navigate: string };
+    };
+    demo: {
+      banner: string;
+      takeControl: string;
+    };
+    beacon: {
+      pipelineRunning: string;
+      newIncident: string;
+    };
+    tour: {
+      start: string;
+      restart: string;
+      previous: string;
+      next: string;
+      finish: string;
+      close: string;
+      stepOf: string;
+      steps: {
+        welcome: { title: string; description: string; action: string };
+        terminal: { title: string; description: string };
+        quickActions: { title: string; description: string };
+        missionControl: { title: string; description: string };
+        metrics: { title: string; description: string };
+        cluster: { title: string; description: string };
+        pipeline: { title: string; description: string };
+        incidents: { title: string; description: string };
+        complete: { title: string; description: string; action: string };
+      };
+    };
+  };
 }
 
 export interface Project {
@@ -61,6 +357,8 @@ export interface Project {
   imageHint: string;
   githubUrl?: string;
   demoUrl?: string;
+  codesandboxId?: string;
+  metrics?: { label: Record<Locale, string>; value: string }[];
 }
 
 export interface Experience {
@@ -79,6 +377,11 @@ export type ArticleContent = {
     type: 'paragraph';
     content: string;
 } | {
+    /** Items support inline `code` and [text](href) — see lib/inline-markup.ts */
+    type: 'list';
+    ordered?: boolean;
+    items: string[];
+} | {
     type: 'code';
     language: string;
     code: string;
@@ -91,6 +394,10 @@ export interface Article {
   date: string;
   author: string;
   content: ArticleContent[];
+  /** Untranslated technical terms, like project tags — used for filtering and related posts. */
+  tags: string[];
+  imageUrl?: string;
+  imageHint?: string;
 }
 
 // --- Lab Specific Types ---

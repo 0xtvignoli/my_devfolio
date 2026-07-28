@@ -1,91 +1,678 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "tailwindcss-animate";
 
-@layer base {
-  :root {
-    --background: 148 60% 97%;
-    --foreground: 200 20% 10%;
-    --card: 148 45% 99%;
-    --card-foreground: 200 20% 8%;
-    --popover: 148 40% 98%;
-    --popover-foreground: 200 25% 8%;
-    --primary: 154 82% 38%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 151 32% 92%;
-    --secondary-foreground: 200 25% 15%;
-    --muted: 151 32% 92%;
-    --muted-foreground: 200 10% 35%;
-    --accent: 151 96% 38.8%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 2 84% 58%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 152 24% 85%;
-    --input: 152 24% 85%;
-    --ring: 154 82% 38%;
-    --chart-1: 154 100% 47%;
-    --chart-2: 157 55% 67%;
-    --chart-3: 200 88% 30%;
-    --chart-4: 175 40% 45%;
-    --chart-5: 320 65% 55%;
-    --radius: 0.75rem;
-    --bg-primary: #f0fdf4;
-    --bg-secondary: #e6f7ef;
-    --neon-accent: #00a86b;
-    --neon-accent-muted: #04c267;
-    --text-primary-soft: #065f46;
-    --text-muted-soft: #047857;
-    --accent-gradient: linear-gradient(135deg, #00a86b, #00b4d8);
-    --glow-soft: 0 0 40px rgba(0, 168, 107, 0.15);
-    --radius-pill: 999px;
+/* ---------------------------------------------------------------------------
+   Design tokens – OpenCode "manpage" system
+   A terminal-native, monospaced identity: warm cream canvas, near-black ink,
+   flat surfaces (no shadows / gradients / glass), 1px hairline rules, and a
+   single dark surface reserved for TUI mockups.
+     canvas #fdfcfc · ink #201d1d · hairline rgba(15,0,0,0.12)
+   The Apple-HIG accent ramp (blue/green/amber/red) is reserved for the
+   in-product TUI (lab charts / terminal), never for marketing chrome.
+   --------------------------------------------------------------------------- */
+:root {
+  /* Monospaced font stack (Berkeley Mono substitute) */
+  --font-mono-stack: var(--font-jetbrains-mono), var(--font-ibm-plex-mono),
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  --font-headline: var(--font-mono-stack);
+  --font-body: var(--font-mono-stack);
+  --font-mono: var(--font-mono-stack);
+
+  /* shadcn semantic tokens (HSL channels) — mapped to the OpenCode palette */
+  --background: 0 20% 99%;        /* canvas  #fdfcfc */
+  --foreground: 0 5% 12%;         /* ink     #201d1d */
+  --card: 0 20% 99%;              /* cards sit on canvas, no raised surface */
+  --card-foreground: 0 5% 12%;
+  --popover: 0 20% 99%;
+  --popover-foreground: 0 5% 12%;
+  --primary: 0 5% 12%;            /* ink is the brand's only "color" */
+  --primary-foreground: 0 20% 99%;
+  --secondary: 0 9% 94%;          /* surface-card #f1eeee */
+  --secondary-foreground: 0 5% 12%;
+  --muted: 0 6% 97%;              /* surface-soft #f8f7f7 */
+  --muted-foreground: 0 1% 39%;   /* mute    #646262 */
+  --accent: 0 9% 94%;             /* monochrome hover tint (surface-card) */
+  --accent-foreground: 0 5% 12%;
+  --destructive: 4 100% 59%;      /* danger  #ff3b30 (semantic only) */
+  --destructive-foreground: 0 20% 99%;
+  --border: 0 5% 87%;             /* hairline (solid approximation) */
+  --input: 0 5% 87%;
+  --ring: 0 5% 12%;               /* flat ink focus ring, no halo */
+  /* Charts belong to the in-product TUI → keep the semantic ramp */
+  --chart-1: 211 100% 50%;        /* accent  #007aff */
+  --chart-2: 135 64% 50%;         /* success #30d158 */
+  --chart-3: 36 100% 52%;         /* warning #ff9f0a */
+  --chart-4: 240 3% 44%;          /* stone   #6e6e73 */
+  --chart-5: 4 100% 59%;          /* danger  #ff3b30 */
+  --radius: 0.25rem;              /* 4px on interactive elements */
+
+  /* OpenCode palette as raw hex primitives (for MUI + direct use) */
+  --oc-canvas: #fdfcfc;
+  --oc-surface-soft: #f8f7f7;
+  --oc-surface-card: #f1eeee;
+  --oc-surface-dark: #201d1d;
+  --oc-surface-dark-elevated: #302c2c;
+  --oc-ink: #201d1d;
+  --oc-ink-deep: #0f0000;
+  --oc-body: #424245;
+  --oc-mute: #646262;
+  --oc-stone: #6e6e73;
+  --oc-ash: #9a9898;
+  --oc-on-dark: #fdfcfc;
+  --oc-on-dark-mute: #9a9898;
+  --oc-hairline: rgba(15, 0, 0, 0.12);
+  --oc-hairline-strong: #646262;
+  --oc-accent: #007aff;
+  --oc-success: #30d158;
+  --oc-warning: #ff9f0a;
+  --oc-danger: #ff3b30;
+
+  /* Legacy MD3 aliases repointed to the OpenCode palette (kept for compat) */
+  --md-primary: var(--oc-ink);
+  --md-on-primary: var(--oc-canvas);
+  --md-primary-container: var(--oc-surface-card);
+  --md-surface: var(--oc-canvas);
+  --md-surface-container: var(--oc-surface-soft);
+  --md-on-surface: var(--oc-ink);
+  --md-on-surface-variant: var(--oc-mute);
+  --md-outline: #e0dede;
+  --bg-primary: var(--oc-canvas);
+  --bg-secondary: var(--oc-surface-soft);
+  --accent-primary: var(--oc-ink);
+  --accent-muted: var(--oc-mute);
+  --text-primary-soft: var(--oc-ink);
+  --text-muted-soft: var(--oc-mute);
+  /* Flat system: no gradients, no shadows */
+  --accent-gradient: var(--oc-ink);
+  --elevation-soft: none;
+  --radius-pill: 9999px;
+  --neon-accent: var(--oc-ink);
+  --neon-accent-muted: var(--oc-mute);
+  --glow-soft: none;
+  /* Spacing scale (4px base) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  /* "Glass" tokens flattened to opaque cream + hairline (no blur, no shadow) */
+  --glass-bg: var(--oc-canvas);
+  --glass-bg-strong: var(--oc-canvas);
+  --glass-border: #e0dede;
+  --glass-blur: 0px;
+  --glass-shadow: none;
+}
+
+.dark {
+  /* Coherent inversion: near-black canvas, cream ink. Same flat system. */
+  --background: 0 5% 12%;         /* surface-dark #201d1d */
+  --foreground: 0 20% 99%;        /* cream ink */
+  --card: 0 5% 18%;               /* surface-dark-elevated #302c2c */
+  --card-foreground: 0 20% 99%;
+  --popover: 0 5% 18%;
+  --popover-foreground: 0 20% 99%;
+  --primary: 0 20% 99%;           /* on dark, cream is the CTA fill */
+  --primary-foreground: 0 5% 12%;
+  --secondary: 0 5% 24%;
+  --secondary-foreground: 0 20% 99%;
+  --muted: 0 5% 18%;
+  --muted-foreground: 0 2% 60%;   /* ash #9a9898 */
+  --accent: 0 5% 24%;
+  --accent-foreground: 0 20% 99%;
+  --destructive: 4 90% 66%;
+  --destructive-foreground: 0 5% 12%;
+  --border: 0 4% 25%;
+  --input: 0 4% 25%;
+  --ring: 0 20% 99%;
+  --chart-1: 211 90% 66%;
+  --chart-2: 135 55% 62%;
+  --chart-3: 36 90% 62%;
+  --chart-4: 0 2% 60%;
+  --chart-5: 4 90% 66%;
+
+  --md-primary: var(--oc-canvas);
+  --md-on-primary: var(--oc-ink);
+  --md-primary-container: var(--oc-surface-dark-elevated);
+  --md-surface: var(--oc-surface-dark);
+  --md-surface-container: var(--oc-surface-dark-elevated);
+  --md-on-surface: var(--oc-canvas);
+  --md-on-surface-variant: var(--oc-ash);
+  --md-outline: #3a3636;
+  --bg-primary: var(--oc-surface-dark);
+  --bg-secondary: var(--oc-surface-dark-elevated);
+  --accent-primary: var(--oc-canvas);
+  --accent-muted: var(--oc-ash);
+  --text-primary-soft: var(--oc-canvas);
+  --text-muted-soft: var(--oc-ash);
+  --accent-gradient: var(--oc-canvas);
+  --elevation-soft: none;
+  --neon-accent: var(--oc-canvas);
+  --neon-accent-muted: var(--oc-ash);
+  --glow-soft: none;
+  --glass-bg: var(--oc-surface-dark);
+  --glass-bg-strong: var(--oc-surface-dark);
+  --glass-border: #3a3636;
+  --glass-blur: 0px;
+  --glass-shadow: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Tailwind v4 theme: map semantic vars to --color-* so utilities (bg-background, etc.) work
+   --------------------------------------------------------------------------- */
+@theme inline {
+  /* Typography – the whole system is monospaced (font-sans === font-mono) */
+  --font-sans: var(--font-mono-stack);
+  --font-mono: var(--font-mono-stack);
+  --font-headline: var(--font-mono-stack);
+  --font-body: var(--font-mono-stack);
+  --font-family-headline: var(--font-mono-stack);
+  --font-family-body: var(--font-mono-stack);
+  --font-family-mono: var(--font-mono-stack);
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-pill: var(--radius-pill);
+  /* Accordion (from tailwind.config) */
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  @keyframes accordion-down {
+    from { height: 0; }
+    to { height: var(--radix-accordion-content-height); }
   }
- 
-  .dark {
-    --background: 200 88% 3.3%;
-    --foreground: 148 100% 95%;
-    --card: 175 87% 6%;
-    --card-foreground: 148 100% 90%;
-    --popover: 200 88% 4.5%;
-    --popover-foreground: 148 100% 95%;
-    --primary: 154 100% 47.5%;
-    --primary-foreground: 200 88% 3%;
-    --secondary: 175 50% 9%;
-    --secondary-foreground: 148 100% 90%;
-    --muted: 175 40% 12%;
-    --muted-foreground: 157 55% 66.5%;
-    --accent: 151 96% 38.8%;
-    --accent-foreground: 200 88% 3%;
-    --destructive: 2 80% 40%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 175 40% 18%;
-    --input: 175 40% 18%;
-    --ring: 154 100% 47.5%;
-    --chart-1: 154 100% 47.5%;
-    --chart-2: 157 55% 66.5%;
-    --chart-3: 200 45% 40%;
-    --chart-4: 320 65% 55%;
-    --chart-5: 40 80% 60%;
-    --bg-primary: #010b10;
-    --bg-secondary: #021d1b;
-    --neon-accent: #00f28a;
-    --neon-accent-muted: #04c267;
-    --text-primary-soft: #e6fff2;
-    --text-muted-soft: #7ad9b6;
-    --accent-gradient: linear-gradient(135deg, #00f28a, #00b4d8);
-    --glow-soft: 0 0 40px rgba(0, 242, 138, 0.25);
-    --radius-pill: 999px;
+  @keyframes accordion-up {
+    from { height: var(--radix-accordion-content-height); }
+    to { height: 0; }
   }
 }
- 
+
+/* ---------------------------------------------------------------------------
+   Base layer (plain CSS – v4 @apply in base/components has limitations)
+   --------------------------------------------------------------------------- */
 @layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
   body {
-    @apply bg-background text-foreground;
+    /* Define the mono stack HERE (not on :root): next/font only sets
+       --font-jetbrains-mono / --font-ibm-plex-mono on <body>, so the inner
+       var()s only resolve at body level. Declaring it on :root computes to
+       an invalid value and falls back to serif everywhere. */
+    --font-mono-stack: var(--font-jetbrains-mono), var(--font-ibm-plex-mono),
+      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+      "Courier New", monospace;
+    --font-sans: var(--font-mono-stack);
+    --font-mono: var(--font-mono-stack);
+    --font-headline: var(--font-mono-stack);
+    --font-body: var(--font-mono-stack);
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    /* Guarantee monospace inheritance everywhere (MUI, Radix, prose) */
+    font-family: var(--font-mono-stack);
   }
-  
   ::selection {
-    @apply bg-primary/80 text-primary-foreground;
+    background-color: hsl(var(--foreground));
+    color: hsl(var(--background));
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Component-style classes (plain CSS)
+   --------------------------------------------------------------------------- */
+@layer components {
+  .ui-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.25rem;
+    border-radius: 0.25rem; /* 4px, interactive */
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 2;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+  .ui-btn:hover {
+    background-color: hsl(var(--foreground) / 0.85);
+  }
+  .ui-btn:focus-visible {
+    outline: 1px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+  .ui-btn:active {
+    background-color: var(--oc-ink-deep);
+  }
+  .ui-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .ui-btn.destructive {
+    background-color: hsl(var(--destructive));
+    color: hsl(var(--destructive-foreground));
+  }
+  .ui-btn.destructive:focus-visible {
+    outline-color: hsl(var(--destructive));
+  }
+
+  /* Flat "panel" utility – no glass, no blur, no shadow. Just cream + hairline. */
+  .glass-panel {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    box-shadow: none;
+  }
+
+  .truncate-responsive {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  @media (min-width: 1024px) {
+    .truncate-responsive {
+      max-width: 100%;
+    }
+  }
+
+  .line-clamp-1-responsive {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  button:focus-visible {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+  a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+  /* Opt prose back out of the touch-target floor above: WCAG 2.5.8 exempts
+     inline text links, and inline-flex stops them wrapping mid-paragraph.
+     Written as an override rather than `a:not(.prose a)` because Lightning CSS
+     lowers a complex :not() by dropping it — the selector silently became `a`. */
+  .prose a {
+    min-height: 0;
+    display: inline;
+    align-items: normal;
+  }
+  @media (hover: none) and (pointer: coarse) {
+    button:active,
+    a:active,
+    [role="button"]:active {
+      opacity: 0.75;
+    }
+  }
+
+  /* Lab – Material Design 3 surfaces */
+  .lab-md3-theme {
+    /* OpenCode cream surface ladder + Apple-HIG accents (in-product TUI) */
+    --md-sys-color-primary: #007aff;
+    --md-sys-color-on-primary: #ffffff;
+    --md-sys-color-primary-container: #e4eeff;
+    --md-sys-color-on-primary-container: #002a5c;
+    --md-sys-color-secondary-container: #f1eeee;
+    --md-sys-color-on-secondary-container: #201d1d;
+    --md-sys-color-surface: #fdfcfc;
+    --md-sys-color-surface-dim: #f1eeee;
+    --md-sys-color-surface-container-lowest: #ffffff;
+    --md-sys-color-surface-container-low: #f8f7f7;
+    --md-sys-color-surface-container: #f1eeee;
+    --md-sys-color-surface-container-high: #e9e5e5;
+    --md-sys-color-surface-container-highest: #e0dede;
+    --md-sys-color-on-surface: #201d1d;
+    --md-sys-color-on-surface-variant: #646262;
+    --md-sys-color-outline: #646262;
+    --md-sys-color-outline-variant: #e0dede;
+    --md-sys-color-error: #ff3b30;
+    --md-sys-color-on-error-container: #7a0f0a;
+    --md-sys-color-error-container: #ffe5e3;
+    --md-sys-color-tertiary: #1f9e4a;
+    --md-sys-color-on-tertiary-container: #0a3d1c;
+    --md-sys-color-tertiary-container: #d8f5e1;
+    --md-sys-color-warning: #ff9f0a;
+    --md-sys-color-warning-container: #fff0d6;
+    --lab-radius-xl: 0px;
+    --lab-radius-lg: 0px;
+    --lab-radius-md: 0px;
+    --lab-elevation-1: none;
+    --lab-elevation-2: none;
+  }
+  .dark .lab-md3-theme {
+    --md-sys-color-primary: #4da3ff;
+    --md-sys-color-on-primary: #002a5c;
+    --md-sys-color-primary-container: #14345c;
+    --md-sys-color-on-primary-container: #d6e6ff;
+    --md-sys-color-secondary-container: #302c2c;
+    --md-sys-color-on-secondary-container: #fdfcfc;
+    --md-sys-color-surface: #201d1d;
+    --md-sys-color-surface-dim: #201d1d;
+    --md-sys-color-surface-container-lowest: #1a1717;
+    --md-sys-color-surface-container-low: #262222;
+    --md-sys-color-surface-container: #302c2c;
+    --md-sys-color-surface-container-high: #3a3636;
+    --md-sys-color-surface-container-highest: #444040;
+    --md-sys-color-on-surface: #fdfcfc;
+    --md-sys-color-on-surface-variant: #b8b5b5;
+    --md-sys-color-outline: #6e6e73;
+    --md-sys-color-outline-variant: #3a3636;
+    --md-sys-color-error: #ff6961;
+    --md-sys-color-on-error-container: #ffd9d6;
+    --md-sys-color-error-container: #5c1d1a;
+    --md-sys-color-tertiary: #4ade80;
+    --md-sys-color-on-tertiary-container: #cdf5d9;
+    --md-sys-color-tertiary-container: #14401f;
+    --md-sys-color-warning: #ffb340;
+    --md-sys-color-warning-container: #4a3410;
+    --lab-elevation-1: none;
+    --lab-elevation-2: none;
+  }
+  .lab-md3-theme {
+    background-color: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    font-family: var(--font-body), system-ui, sans-serif;
+  }
+  .lab-md3-theme .lab-md3-surface {
+    background-color: var(--md-sys-color-surface-container-low);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--lab-radius-lg);
+    box-shadow: var(--lab-elevation-1);
+  }
+  .lab-md3-theme .lab-md3-surface-high {
+    background-color: var(--md-sys-color-surface-container-high);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--lab-radius-lg);
+  }
+  .lab-md3-theme .lab-md3-metric-tonal {
+    background-color: var(--md-sys-color-surface-container);
+    border-radius: var(--lab-radius-md);
+    border: 1px solid var(--md-sys-color-outline-variant);
+  }
+
+  /* MD3 terminal overrides */
+  .lab-md3-theme .lab-terminal-md3 [data-slot="tabs-list"] {
+    font-family: var(--font-body), system-ui, sans-serif;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-entry-output {
+    border-color: var(--md-sys-color-outline-variant) !important;
+    background: var(--md-sys-color-surface-container) !important;
+    color: var(--md-sys-color-on-surface) !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-link {
+    color: var(--md-sys-color-primary) !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-prompt {
+    color: var(--md-sys-color-primary) !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-input-area {
+    border-color: var(--md-sys-color-outline-variant) !important;
+    background: var(--md-sys-color-surface-container) !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-footer {
+    border-color: var(--md-sys-color-outline-variant) !important;
+    background: var(--md-sys-color-surface-container-low) !important;
+    color: var(--md-sys-color-on-surface-variant) !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 kbd {
+    background: var(--md-sys-color-surface-container-highest) !important;
+    border: 1px solid var(--md-sys-color-outline-variant) !important;
+    color: var(--md-sys-color-on-surface) !important;
+    box-shadow: none !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-history-entry {
+    border-color: var(--md-sys-color-outline-variant) !important;
+    background: var(--md-sys-color-surface-container) !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-history-entry:hover {
+    background: var(--md-sys-color-surface-container-high) !important;
+    border-color: var(--md-sys-color-outline) !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-entry-label {
+    color: var(--md-sys-color-primary) !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-entry-time {
+    color: var(--md-sys-color-on-surface-variant) !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-entry-command {
+    color: var(--md-sys-color-on-surface) !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-entry-command span {
+    color: var(--md-sys-color-on-surface) !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-entry-suggestion svg {
+    color: var(--md-sys-color-tertiary) !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-entry-cursor {
+    color: var(--md-sys-color-primary) !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-entry-hint {
+    color: var(--md-sys-color-on-surface-variant) !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-entry-suggestion {
+    color: var(--md-sys-color-tertiary) !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-suggestions {
+    border-color: var(--md-sys-color-outline-variant) !important;
+    background: var(--md-sys-color-surface-container) !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-suggestion-btn {
+    border-color: var(--md-sys-color-outline-variant) !important;
+    background: var(--md-sys-color-surface-container-high) !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-suggestion-btn:hover {
+    border-color: var(--md-sys-color-primary) !important;
+    background: var(--md-sys-color-primary-container) !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-suggestion-label {
+    color: var(--md-sys-color-on-surface) !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-suggestion-helper {
+    color: var(--md-sys-color-on-surface-variant) !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-input-field {
+    color: var(--md-sys-color-on-surface) !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-input-field::placeholder {
+    color: var(--md-sys-color-on-surface-variant) !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-input-cursor {
+    color: var(--md-sys-color-primary) !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-logs-panel {
+    background: var(--md-sys-color-surface-container-lowest) !important;
+    color: var(--md-sys-color-on-surface) !important;
+    border-color: var(--md-sys-color-outline-variant) !important;
+    font-family: var(--font-body), system-ui, sans-serif;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-log-line {
+    color: var(--md-sys-color-on-surface) !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-log-line:hover {
+    background: var(--md-sys-color-surface-container) !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-status-pill-ok {
+    background: var(--md-sys-color-primary-container) !important;
+    border-color: var(--md-sys-color-primary) !important;
+    color: var(--md-sys-color-on-primary-container) !important;
+    box-shadow: none !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-status-pill-running {
+    background: var(--md-sys-color-tertiary-container) !important;
+    border-color: var(--md-sys-color-tertiary) !important;
+    color: var(--md-sys-color-on-tertiary-container) !important;
+    box-shadow: none !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-status-pill-error {
+    background: var(--md-sys-color-error-container) !important;
+    border-color: var(--md-sys-color-error) !important;
+    color: var(--md-sys-color-on-error-container) !important;
+    box-shadow: none !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-copy-btn {
+    background: var(--md-sys-color-surface-container-highest) !important;
+    border-color: var(--md-sys-color-outline-variant) !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-copy-btn:hover {
+    background: var(--md-sys-color-primary-container) !important;
+    border-color: var(--md-sys-color-primary) !important;
+  }
+  .lab-md3-theme .lab-terminal-md3 .terminal-session-loading {
+    color: var(--md-sys-color-on-surface-variant) !important;
+  }
+
+  /* Legacy terminal theme (kept for terminal internals) */
+  .lab-terminal-theme {
+    /* OpenCode dark TUI surface */
+    --lab-bg: #201d1d;
+    --lab-surface: #302c2c;
+    --lab-border: #3a3636;
+    --lab-text: #fdfcfc;
+    --lab-text-muted: #9a9898;
+    --lab-primary: #4da3ff;
+    --lab-primary-dark: #007aff;
+    --lab-accent: #30d158;
+    --lab-accent-violet: #9a9898;
+    --lab-accent-violet-dark: #b8b5b5;
+    --lab-accent-cyan: #4da3ff;
+    --lab-accent-amber: #ff9f0a;
+    --lab-accent-red: #ff6961;
+    --lab-radius: 0px;
+    --lab-radius-pill: var(--radius-pill);
+  }
+  .dark .lab-terminal-theme {
+    --lab-primary: #4da3ff;
+    --lab-accent-violet: #9a9898;
+  }
+  .lab-terminal-theme {
+    background-color: var(--lab-bg);
+    color: var(--lab-text);
+    font-family: var(--font-family-mono), ui-monospace, monospace;
+  }
+  .lab-terminal-theme .lab-tty-frame {
+    border: 1px solid var(--lab-border);
+    background-color: var(--lab-surface);
+    border-radius: var(--lab-radius);
+  }
+  .lab-terminal-theme .lab-tty-titlebar {
+    border-bottom: 1px solid var(--lab-border);
+    padding: var(--space-2) var(--space-3);
+    font-size: 0.75rem;
+    color: var(--lab-text-muted);
+    background-color: var(--lab-bg);
+    border-radius: var(--lab-radius) var(--lab-radius) 0 0;
+  }
+  .lab-terminal-theme .lab-prompt {
+    color: var(--lab-accent);
+  }
+  /* Immersive (geek) – full-screen TUI palette */
+  .lab-immersive-theme {
+    --lab-bg: #201d1d;
+    --lab-surface: #302c2c;
+    --lab-border: #3a3636;
+    --lab-text: #fdfcfc;
+    --lab-text-muted: #9a9898;
+    --lab-accent: #30d158;
+    --lab-accent-amber: #ff9f0a;
+    --lab-accent-red: #ff6961;
+  }
+
+  /* Responsive text truncation utilities */
+  .truncate-responsive {
+    @apply truncate;
+    @apply lg:max-w-full;
+  }
+
+  /* Better ellipsis support */
+  .line-clamp-1-responsive {
+    @apply line-clamp-1;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+}
+
+/* Immersive lab mode: hide site chrome so the overlay is truly fullscreen.
+   !important is required to beat MUI's unlayered emotion styles. */
+body.lab-immersive-active {
+  overflow: hidden !important;
+}
+body.lab-immersive-active header.MuiAppBar-root,
+body.lab-immersive-active [data-lab-breadcrumb] {
+  display: none !important;
+}
+
+/* Print: /cv is meant to come out as a PDF. Strip site chrome, force ink-on-paper
+   colours (the dark theme would print as a black rectangle), and keep each role
+   on one page. !important beats MUI's unlayered emotion styles. */
+@media print {
+  header.MuiAppBar-root,
+  footer,
+  nav,
+  [data-print-hide] {
+    display: none !important;
+  }
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  [data-print-root] {
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  [data-print-root] * {
+    color: #000 !important;
+  }
+  [data-print-root] a {
+    text-decoration: underline;
+  }
+  .break-inside-avoid {
+    break-inside: avoid;
   }
 }
