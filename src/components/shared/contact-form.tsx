@@ -52,12 +52,16 @@ export function ContactForm({ translations }: { translations: Translations }) {
         }),
       });
 
-      if (response.ok) {
+      const payload = await response.json().catch(() => ({}));
+
+      // A 200 is not success on its own: delivery failures answer 200 with
+      // ok:false, because Cloudflare eats the body of any 5xx from the origin.
+      if (response.ok && payload.ok) {
         setStatus('sent');
         form.reset();
         return;
       }
-      const payload = await response.json().catch(() => ({}));
+
       setFieldError(
         response.status === 429 ? t.errorRateLimited : payload.field ? t.errorField : t.error
       );
