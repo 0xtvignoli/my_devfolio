@@ -71,6 +71,7 @@ export const en: Translations = {
     submit: "Ask",
     thinking: "Thinking…",
     error: "The assistant is unavailable right now. Try again in a moment.",
+    fallbackCta: "Email me the question instead →",
   },
   cv: {
     title: "CV",

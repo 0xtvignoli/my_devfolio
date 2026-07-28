@@ -71,6 +71,7 @@ export const it: Translations = {
     submit: "Chiedi",
     thinking: "Sto pensando…",
     error: "L'assistente non è disponibile ora. Riprova tra un momento.",
+    fallbackCta: "Scrivimi la domanda per email →",
   },
   cv: {
     title: "CV",
