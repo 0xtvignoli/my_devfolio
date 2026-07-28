@@ -1,4 +1,5 @@
 import { ai } from './genkit';
+import { hasAssistantKey } from './config';
 import { projects } from '@/data/content/projects';
 import { experiences } from '@/data/content/experiences';
 
@@ -32,14 +33,7 @@ You print to a terminal: reply in plain text, no markdown headings, keep it unde
 If the answer isn't in the context, say so briefly and suggest what you can answer instead.
 Reply in the same language as the question.`;
 
-/** True when a Google GenAI key is configured server-side (googleAI reads these). */
-export function hasAssistantKey(): boolean {
-  return Boolean(
-    process.env.GEMINI_API_KEY ||
-      process.env.GOOGLE_API_KEY ||
-      process.env.GOOGLE_GENAI_API_KEY
-  );
-}
+export { hasAssistantKey } from './config';
 
 export async function answerPortfolioQuestion(question: string): Promise<string> {
   const q = question.trim();

@@ -46,6 +46,11 @@ export interface Translations {
     pageSubtitle?: string;
     emptyTitle?: string;
     emptyDescription?: string;
+    filterLabel: string;
+    filterAll: string;
+    /** Contains `{count}`. */
+    filterCount: string;
+    related: string;
   };
   contact: {
     title: string;
@@ -55,9 +60,25 @@ export interface Translations {
     openingEmailClient: string;
     emailClientOpened: string;
     buttonText: string;
+    copyEmail: string;
+    emailCopied: string;
+  };
+  ask: {
+    title: string;
+    description: string;
+    placeholder: string;
+    submit: string;
+    thinking: string;
+    error: string;
+  };
+  cv: {
+    title: string;
+    subtitle: string;
+    print: string;
   };
   footer: {
     copy: string;
+    cv: string;
   };
   theme: {
     light: string;
@@ -125,6 +146,41 @@ export interface Translations {
       memoryHint: string;
       latencyHint: string;
       deploysHint: string;
+    };
+    postmortem: {
+      download: string;
+    };
+    permalink: {
+      share: string;
+      copy: string;
+      copied: string;
+      empty: string;
+    };
+    ci: {
+      title: string;
+      subtitle: string;
+      real: string;
+      /** Placeholders: {green} {total} */
+      summary: string;
+      viewWorkflow: string;
+    };
+    slo: {
+      title: string;
+      subtitle: string;
+      hint: string;
+      budgetRemaining: string;
+      burnRate: string;
+      consumed: string;
+      latencyObjective: string;
+      met: string;
+      missed: string;
+      healthy: string;
+      warning: string;
+      exhausted: string;
+      /** Placeholders: {availability} {days} {latency} {budget} */
+      objective: string;
+      /** Placeholder: {hours} */
+      exhaustsIn: string;
     };
     sections: {
       incidents: string;
@@ -321,6 +377,11 @@ export type ArticleContent = {
     type: 'paragraph';
     content: string;
 } | {
+    /** Items support inline `code` and [text](href) — see lib/inline-markup.ts */
+    type: 'list';
+    ordered?: boolean;
+    items: string[];
+} | {
     type: 'code';
     language: string;
     code: string;
@@ -333,6 +394,8 @@ export interface Article {
   date: string;
   author: string;
   content: ArticleContent[];
+  /** Untranslated technical terms, like project tags — used for filtering and related posts. */
+  tags: string[];
   imageUrl?: string;
   imageHint?: string;
 }

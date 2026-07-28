@@ -4,7 +4,7 @@ import { test, expect, devices } from '@playwright/test';
 // webkit: this checks layout, and webkit isn't in the installed browser set.
 test.use({ ...devices['iPhone SE'], browserName: 'chromium' });
 
-const ROUTES = ['/en', '/en/portfolio', '/en/experience', '/en/articles', '/en/lab'];
+const ROUTES = ['/en', '/en/portfolio', '/en/experience', '/en/articles', '/en/lab', '/en/cv'];
 
 for (const route of ROUTES) {
   test(`${route} does not scroll horizontally on a 320px viewport`, async ({ page }) => {

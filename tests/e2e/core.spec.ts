@@ -71,6 +71,78 @@ test('articles list page shows articles and links to slug', async ({ page }) => 
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 });
 
+test('machine endpoints are served, not swallowed by the locale redirect', async ({ request }) => {
+  const feed = await request.get('/en/feed.xml');
+  expect(feed.status()).toBe(200);
+  expect(feed.headers()['content-type']).toContain('application/rss+xml');
+  expect(await feed.text()).toContain('<rss');
+
+  // /llms.txt has no locale prefix — it only works because proxy.ts excludes it.
+  const llms = await request.get('/llms.txt');
+  expect(llms.status()).toBe(200);
+  expect(await llms.text()).toContain('## Articles');
+});
+
+test('lab surfaces real CI evidence and the SLO panel', async ({ page }) => {
+  await page.goto('/en/lab');
+  // Rows come from the GitHub API at build time; the panel hides itself if the
+  // fetch failed, so a visible heading means real data made it through.
+  await expect(page.getByRole('heading', { name: /Terraform CI/i })).toBeVisible();
+  await expect(page.getByText(/\d+\/\d+ green/)).toBeVisible();
+  await expect(page.locator('#ci a[href*="/actions/runs/"]').first()).toBeVisible();
+
+  await expect(page.getByRole('heading', { name: /error budget/i })).toBeVisible();
+  await expect(page.getByText('Burn rate')).toBeVisible();
+});
+
+test('a session permalink replays every command it carries', async ({ page }) => {
+  await page.goto('/en/lab?cmd=kubectl+get+pods&cmd=status');
+  const terminal = page.locator('#lab-terminal');
+  // Staggered replay: first at ~800ms, the second ~1.8s later.
+  await expect(terminal.getByText('kubectl get pods').first()).toBeVisible({ timeout: 15_000 });
+  await expect(terminal.getByText('status', { exact: true }).first()).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole('button', { name: /replays this session/i })).toBeVisible();
+});
+
+test('tag filter narrows the article list and All restores it', async ({ page }) => {
+  await page.goto('/en/articles');
+  const cards = page.locator('a[href^="/en/articles/"]');
+  const total = await cards.count();
+  expect(total).toBeGreaterThan(1);
+
+  await page.getByRole('button', { name: 'Kubernetes', exact: true }).click();
+  const filtered = await cards.count();
+  expect(filtered).toBeGreaterThan(0);
+  expect(filtered).toBeLessThan(total);
+
+  await page.getByRole('button', { name: 'All', exact: true }).click();
+  expect(await cards.count()).toBe(total);
+});
+
+test('cv page renders from site data and is printable', async ({ page }) => {
+  await page.goto('/en/cv');
+  await expect(page.getByRole('heading', { level: 1, name: /Thomas Vignoli/ })).toBeVisible();
+  // Sections are generated from experiences/projects — empty means the data broke.
+  await expect(page.getByRole('heading', { level: 3 }).first()).toBeVisible();
+  await expect(page.getByRole('button', { name: /Print/i })).toBeVisible();
+
+  const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
+  const critical = results.violations.filter((v) => v.impact === 'critical');
+  expect(critical, `Critical a11y violations: ${JSON.stringify(critical, null, 2)}`).toEqual([]);
+});
+
+test('ask widget posts to the assistant and renders a reply', async ({ page }) => {
+  await page.goto('/en');
+  const input = page.getByLabel('Ask about my work');
+  // The widget is only rendered when a model key was present at build time.
+  test.skip((await input.count()) === 0, 'no model key in this environment — widget hidden by design');
+  await input.fill('what has he built with Kubernetes?');
+  await page.getByRole('button', { name: /^Ask$/ }).click();
+  // Without a server key the endpoint answers "Assistant offline…" — either way
+  // a non-empty reply proves the wiring end to end.
+  await expect(page.locator('[aria-live="polite"] pre')).not.toBeEmpty({ timeout: 20_000 });
+});
+
 test('legacy root path redirects to locale prefix', async ({ page }) => {
   await page.goto('/');
   await expect(page).toHaveURL(/\/(en|it)\/?$/);

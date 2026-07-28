@@ -77,6 +77,15 @@ Questo sito è deployato su Vercel con un dominio personalizzato. Il deployment 
 - **Design Flow Nexus** - Palette neon (`--bg-primary`, `--neon-accent`, glow) e CTA stile command panel
 - **Responsive Design** - Ottimizzato per mobile con layout a colonne singole e componenti dinamici
 - **Analytics & Lab Tools** - Integrazione con Vercel Analytics e simulatore osservabilità interattivo
+- **Feed & agent discovery** - RSS per locale (`/{locale}/feed.xml`) e `/llms.txt` generati dagli stessi dati delle pagine
+- **CV stampabile** - `/cv` generato da `experiences` + `projects`, con `@media print` per l'export PDF dal browser
+- **Articoli con tag** - Filtro per argomento su `/articles` e correlati per tag condivisi a fondo articolo
+- **Assistant pubblico** - Il box "ask" in home usa lo stesso `/api/ask` del terminale, e resta nascosto se il server non ha una chiave modello
+- **Prova CI nel lab** - Le run reali di `terraform-ci` lette dall'API GitHub a build time: il resto del lab è simulato, quel pannello no
+- **SLO ed error budget** - Budget di disponibilità, burn rate e proiezione di esaurimento calcolati dagli stessi segnali del lab
+- **Permalink di sessione** - Un link che riesegue i comandi eseguiti (`?cmd=` ripetuto), per condividere la demo esatta
+- **Postmortem export** - La sessione del lab (incidenti + log tape) si esporta come postmortem markdown con follow-up per tipo di guasto
+- **Rate limiting a due livelli** - Backstop in-process su `/api/ask` più la regola edge applicata da `scripts/cloudflare-apply-security.sh`
 
 ## Contact
 
