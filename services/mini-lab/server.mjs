@@ -23,12 +23,25 @@ const MAX_HEAVY = Number(process.env.MAX_HEAVY) || 3; // concurrent heavy (k3s) 
 // + idle cluster reaping if this ever runs hot.
 let heavyRunning = 0;
 
+// Bound on tracked keys. This is a long-lived process, unlike the serverless
+// twin of this limiter in the site, so one Map entry per visiting IP kept
+// forever is a real leak rather than a theoretical one.
+const MAX_TRACKED_IPS = 5000;
 const hits = new Map();
 function rateLimited(ip) {
   const now = Date.now();
   const recent = (hits.get(ip) ?? []).filter((t) => now - t < RATE_WINDOW_MS);
   recent.push(now);
   hits.set(ip, recent);
+
+  // Evict IPs whose window has fully expired. Only scans once the map is big, so
+  // the common path stays O(1).
+  if (hits.size > MAX_TRACKED_IPS) {
+    for (const [key, times] of hits) {
+      if (times.every((t) => now - t >= RATE_WINDOW_MS)) hits.delete(key);
+    }
+  }
+
   return recent.length > RATE_LIMIT;
 }
 
@@ -80,7 +93,14 @@ function runStep(step, env, res, timeoutMs) {
 }
 
 const server = createServer(async (req, res) => {
-  const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress || 'unknown';
+  // The README puts a reverse proxy in front (Caddy, or a Cloudflare Tunnel).
+  // cf-connecting-ip is a single value; x-forwarded-for is a list each proxy in
+  // the chain appends to, so reading it by position is guesswork.
+  const ip =
+    req.headers['cf-connecting-ip'] ||
+    req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
+    req.socket.remoteAddress ||
+    'unknown';
   const url = (req.url || '').split('?')[0];
 
   if (req.method === 'OPTIONS') {
