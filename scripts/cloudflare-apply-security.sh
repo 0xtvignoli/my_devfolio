@@ -238,6 +238,10 @@ RL_REQUESTS="${RATELIMIT_REQUESTS:-5}"
 RL_PERIOD="${RATELIMIT_PERIOD:-10}"
 RL_TIMEOUT="${RATELIMIT_TIMEOUT:-10}"
 
+# `enabled` is stated explicitly rather than left to the API's default: the rule
+# came back accepted and summarised, yet 24 requests inside one window all passed,
+# and "created but not enabled" was the one variable not yet eliminated. JSON has
+# no comments, so this note lives out here.
 RATELIMIT_PAYLOAD=$(cat <<EOF
 {
   "rules": [
@@ -245,6 +249,7 @@ RATELIMIT_PAYLOAD=$(cat <<EOF
       "description": "Rate limit AI assistant endpoint (LLM cost protection)",
       "expression": "(http.request.uri.path eq \"$RL_PATH\")",
       "action": "block",
+      "enabled": true,
       "ratelimit": {
         "characteristics": ["ip.src", "cf.colo.id"],
         "period": $RL_PERIOD,
@@ -275,6 +280,7 @@ for r in json.load(sys.stdin).get('result', {}).get('rules', []):
     rl = r.get('ratelimit', {})
     print('  rule:', r.get('description'))
     print('  limit:', rl.get('requests_per_period'), 'req /', rl.get('period'), 's → block', rl.get('mitigation_timeout'), 's')
+    print('  enabled:', r.get('enabled'), '  (False here means it is configured but not filtering)')
 " 2>/dev/null || echo "  (applied, but the response could not be summarised)"
 fi
 
@@ -305,6 +311,7 @@ print(json.dumps({
         'expression': expression,
         'action': 'set_config',
         'action_parameters': {'email_obfuscation': False},
+        'enabled': True,
     }]
 }))
 " "$CV_PATHS")
@@ -323,6 +330,7 @@ import sys, json
 for r in json.load(sys.stdin).get('result', {}).get('rules', []):
     print('  rule:', r.get('description'))
     print('  where:', r.get('expression'))
+    print('  enabled:', r.get('enabled'))
 " 2>/dev/null || echo "  (applied, but the response could not be summarised)"
 fi
 
