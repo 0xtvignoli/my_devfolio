@@ -50,6 +50,11 @@ function buildDevelopmentContentSecurityPolicy(): string {
     "img-src 'self' data: https: blob:",
     "connect-src 'self' ws: wss: http: https:",
     "worker-src 'self' blob:",
+    // Without this the policy falls back to default-src 'self' for frames, which
+    // blocks the Turnstile iframe — so the contact form could never be exercised
+    // locally even though production allows it. A dev policy that forbids what
+    // production permits hides bugs instead of catching them.
+    "frame-src 'self' https:",
     "frame-ancestors 'self'",
     "base-uri 'self'",
     "form-action 'self'",

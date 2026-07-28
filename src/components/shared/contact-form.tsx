@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Script from 'next/script';
 import { Loader2, Send } from 'lucide-react';
 import { CONTACT_LIMITS } from '@/lib/contact-validation';
@@ -10,6 +10,20 @@ import type { Translations } from '@/lib/types';
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
 type Status = 'idle' | 'sending' | 'sent' | 'error';
+
+type TurnstileApi = {
+  render: (
+    el: HTMLElement,
+    opts: { sitekey: string; callback: (token: string) => void; 'error-callback'?: () => void; 'expired-callback'?: () => void }
+  ) => string;
+  remove: (id: string) => void;
+};
+
+declare global {
+  interface Window {
+    turnstile?: TurnstileApi;
+  }
+}
 
 const fieldClass = cn(
   'w-full min-h-[44px] px-3 py-2 text-sm bg-transparent text-foreground',
@@ -28,6 +42,52 @@ export function ContactForm({ translations }: { translations: Translations }) {
   const t = translations.contactForm;
   const [status, setStatus] = useState<Status>('idle');
   const [fieldError, setFieldError] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const widgetRef = useRef<HTMLDivElement>(null);
+
+  /**
+   * Explicit rendering, not Turnstile's implicit mode. Implicit scans the DOM
+   * once, when api.js loads. next/script does not re-execute a script it has
+   * already loaded, so reaching this page through an in-app navigation left the
+   * widget unrendered and every submit earning a 403 with no visible cause.
+   * Rendering on mount works on first load and on client navigation alike.
+   */
+  useEffect(() => {
+    if (!TURNSTILE_SITE_KEY || !widgetRef.current) return;
+    let id: string | undefined;
+    let cancelled = false;
+
+    const mount = () => {
+      if (cancelled || !window.turnstile || !widgetRef.current) return false;
+      id = window.turnstile.render(widgetRef.current, {
+        sitekey: TURNSTILE_SITE_KEY,
+        callback: (t) => setToken(t),
+        'error-callback': () => setToken(null),
+        // Tokens expire after a few minutes; drop it so the guard below catches
+        // a stale one instead of the server rejecting timeout-or-duplicate.
+        'expired-callback': () => setToken(null),
+      });
+      return true;
+    };
+
+    // api.js may not have finished loading when this mounts.
+    if (!mount()) {
+      const poll = setInterval(() => {
+        if (mount()) clearInterval(poll);
+      }, 200);
+      setTimeout(() => clearInterval(poll), 15_000);
+      return () => {
+        cancelled = true;
+        clearInterval(poll);
+        if (id) window.turnstile?.remove(id);
+      };
+    }
+
+    return () => {
+      cancelled = true;
+      if (id) window.turnstile?.remove(id);
+    };
+  }, []);
 
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -36,11 +96,11 @@ export function ContactForm({ translations }: { translations: Translations }) {
     const form = event.currentTarget;
     const data = new FormData(form);
 
-    // Turnstile writes cf-turnstile-response into the form once it has solved.
-    // If it hasn't, submitting only earns a 403 — say so instead, since the cause
-    // is on this page (script blocked, still solving) and not in the message.
-    const turnstileToken = data.get('cf-turnstile-response');
-    if (TURNSTILE_SITE_KEY && !turnstileToken) {
+    // The token comes from the render callback, not from a hidden input: with
+    // explicit rendering there is no input to read. If it isn't there the submit
+    // could only earn a 403, and the cause is on this page — script blocked, or
+    // still solving — not in the message.
+    if (TURNSTILE_SITE_KEY && !token) {
       setFieldError(t.errorChallenge);
       setStatus('error');
       return;
@@ -58,7 +118,7 @@ export function ContactForm({ translations }: { translations: Translations }) {
           email: data.get('email'),
           message: data.get('message'),
           company: data.get('company'), // honeypot
-          turnstileToken,
+          turnstileToken: token,
         }),
       });
 
@@ -158,7 +218,10 @@ export function ContactForm({ translations }: { translations: Translations }) {
           <input id="contact-company" name="company" type="text" tabIndex={-1} autoComplete="off" />
         </div>
 
-        {TURNSTILE_SITE_KEY && <div className="cf-turnstile" data-sitekey={TURNSTILE_SITE_KEY} />}
+        {/* No `cf-turnstile` class and no data-sitekey: this is rendered explicitly
+            by the effect above, and the class would make api.js also render it
+            implicitly, giving two widgets. */}
+        {TURNSTILE_SITE_KEY && <div ref={widgetRef} />}
 
         <div className="flex items-center gap-3 flex-wrap">
           <button
