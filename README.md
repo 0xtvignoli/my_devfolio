@@ -1,99 +1,52 @@
-# Thomas Vignoli - DevOps Engineer Portfolio
+# Thomas Vignoli — portfolio
 
 [![terraform-ci](https://github.com/0xtvignoli/my_devfolio/actions/workflows/terraform-ci.yml/badge.svg)](https://github.com/0xtvignoli/my_devfolio/actions/workflows/terraform-ci.yml)
 
 > Every Terraform module in this repo is `validate`d and `plan`ned against a real AWS API — [floci](https://github.com/floci-io/floci), a local AWS emulator — in CI, with the VPC module fully `apply`d. No cloud account, no cloud spend.
 
-## About
+Next.js (App Router) on Vercel behind Cloudflare, TypeScript, Tailwind v4, Bun. Static pages in English and Italian.
 
-Questo sito è un portfolio personale costruito con Next.js (App Router), TypeScript, Tailwind CSS e componenti shadcn/ui.
-La codebase è ora suddivisa in due route group principali:
+## Pages
 
-- `src/app/(marketing)` ospita le pagine statiche/SSR (home, portfolio, articoli, experience) e condivide layout, header e footer ottimizzati per server rendering.
-- `src/app/(lab)` contiene il laboratorio interattivo con provider client-side dedicati (theme e simulazione).
+| Route | What |
+|---|---|
+| `/` | Home: latest writing, selected work, experience, contact |
+| `/articles`, `/articles/[slug]` | Articles, filterable by tag. Content in `src/data/content/articles.ts` |
+| `/portfolio` | Projects with figures. Content in `src/data/content/projects.ts` |
+| `/experience`, `/cv` | Same data; `/cv` prints to PDF |
+| `/lab` | **Observatory**: aggregated, daily-updated data on what the internet sends to this site, plus case studies (articles tagged `Case study`) |
 
-## Technologies Used
+`/dashboard`, `/live` and `/shell` redirect to `/lab` (removed in the 11/2026 redesign).
 
-This project is built with:
+## Design
 
-- **Next.js 15** con App Router, Server Actions e route groups `(marketing)/(lab)`
-- **TypeScript** e **Bun** (installazioni con `bun install`, script con `bun run`)
-- **Tailwind CSS** con design tokens neon ispirati a Flow Nexus
-- **shadcn/ui / Radix UI** per i componenti interattivi
-- **Next Image Optimization** e middleware per host-based routing
-- **Vercel Analytics & Speed Insights** per osservabilità
+Editorial: Newsreader (serif) for headings and long-form text, Inter for interface, JetBrains Mono for dates and code. White/ink with one cobalt accent, 1px rules instead of cards, light/dark following the system. Tokens in `src/app/globals.css`.
+
+## Observatory
+
+`scripts/observatory.ts` runs before every `next build`: it queries Cloudflare's HTTP analytics (last 14 days) and writes `src/data/observatory.json`.
+
+- **Token**: Vercel env `CLOUDFLARE_ANALYTICS_TOKEN` (Zone → Analytics → Read, this zone only) and `CLOUDFLARE_ZONE_ID`. Without them, or if Cloudflare fails, the committed file is kept.
+- **Daily refresh**: `.github/workflows/observatory.yml` calls a Vercel deploy hook (`VERCEL_DEPLOY_HOOK` repo secret) at 05:17 UTC.
+- **Privacy and injection**: no IPs are queried; paths and user agents are reduced to labels from `src/lib/observatory/classify.ts` before anything is written.
 
 ## Development
 
-### Prerequisites
+```bash
+bun install
+cp .env.example .env.local   # everything optional: without keys the contact form falls back to mailto
+bun run dev                  # http://localhost:9004
+bun run test                 # unit tests
+bun run test:e2e             # Playwright
+bun run observatory          # refresh the Observatory data (needs the two Cloudflare variables)
+```
 
-- Node.js 20+ (coerente con ambiente Vercel)
+## Security
 
-### Getting Started
+- `scripts/cloudflare-apply-security.sh` applies the edge configuration: Bot Fight, AI Labyrinth, rate limit and the only write route (`/api/contact/send`); every other POST/PUT/PATCH/DELETE gets a 403 at the edge.
+- CSP and security headers in `src/proxy.ts`.
+- Dependabot weekly on `develop`.
 
-1. **Clone the repository**
-   ```bash
-   git clone <your-repo-url>
-   cd my_devfolio
-   ```
+## Deploy
 
-2. **Install dependencies**
-   ```bash
-   bun install
-   ```
-
-3. **Setup environment variables**
-   ```bash
-   cp .env.example .env.local
-   # Everything is optional: without keys the contact form falls back to mailto
-   ```
-
-4. **Start the development server**
-   ```bash
-   bun run dev
-   ```
-
-5. **Open your browser**
-   Navigate to `http://localhost:9004` to view the application.
-
-### Available Scripts
-
-- `bun run dev` - Avvia dev server (Turbopack)
-- `bun run build` - Build per produzione
-- `bun run start` - Avvia server produzione (usa .next)
-- `bun run lint` - Esegue ESLint
-- `bun run typecheck` - Controllo statico dei tipi
-- `bun run test` - Test unitari e di integrazione
-
-## Deployment
-
-Questo sito è deployato su Vercel con un dominio personalizzato. Il deployment è automaticamente attivato con i push sul branch principale. Non impostare manualmente la Output Directory (usa `.next`). Rimuovere eventuali valori “dist” nelle impostazioni del progetto.
-
-## Features
-
-- **Server-first rendering** - Le pagine marketing sono SSR/SSG, il lab vive in un gruppo client isolato
-- **Locale management** - Cookie `locale` bootstrap via middleware, switch con Server Action (`setLocaleAction`) e refresh
-- **Design Flow Nexus** - Palette neon (`--bg-primary`, `--neon-accent`, glow) e CTA stile command panel
-- **Responsive Design** - Ottimizzato per mobile con layout a colonne singole e componenti dinamici
-- **Analytics & Lab Tools** - Integrazione con Vercel Analytics e simulatore osservabilità interattivo
-- **Feed & agent discovery** - RSS per locale (`/{locale}/feed.xml`) e `/llms.txt` generati dagli stessi dati delle pagine
-- **CV stampabile** - `/cv` generato da `experiences` + `projects`, con `@media print` per l'export PDF dal browser
-- **Articoli con tag** - Filtro per argomento su `/articles` e correlati per tag condivisi a fondo articolo
-- **Assistant pubblico** - Il box "ask" in home usa lo stesso `/api/ask` del terminale, e resta nascosto se il server non ha una chiave modello
-- **Prova CI nel lab** - Le run reali di `terraform-ci` lette dall'API GitHub a build time: il resto del lab è simulato, quel pannello no
-- **SLO ed error budget** - Budget di disponibilità, burn rate e proiezione di esaurimento calcolati dagli stessi segnali del lab
-- **Permalink di sessione** - Un link che riesegue i comandi eseguiti (`?cmd=` ripetuto), per condividere la demo esatta
-- **Postmortem export** - La sessione del lab (incidenti + log tape) si esporta come postmortem markdown con follow-up per tipo di guasto
-- **Rate limiting** - Backstop in-process su `/api/ask` (con cache delle risposte). `scripts/cloudflare-apply-security.sh` aggiunge una regola edge, ma verifica prima che i record DNS siano **proxied**: con la nuvola grigia le regole Cloudflare vengono accettate dall'API e non eseguite mai — lo script ora lo dice invece di implicare protezione
-
-## Contact
-
-Per richieste professionali, si prega di contattare attraverso le informazioni fornite sul sito web.
-
-## License
-
-This project is private and proprietary.
-
-## Notes
-
-Il precedente setup Vite è stato sostituito da Next.js; file come `index.html` non sono più necessari per il deploy su Vercel. La pipeline utilizza Bun per tutte le installazioni/build.
+`develop` → merge `--no-ff` into `main` → Vercel production deploy.

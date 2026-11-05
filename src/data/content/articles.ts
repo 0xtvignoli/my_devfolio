@@ -2,6 +2,12 @@ import type { Article, Locale } from "@/lib/types";
 
 const articlesContent: Omit<Article, 'title' | 'description' | 'content'>[] = [
   {
+    slug: 'react2shell-scan-case-study',
+    tags: ['Case study', 'Next.js', 'WAF', 'Incident response'],
+    date: '2026-11-05',
+    author: 'Thomas Vignoli',
+  },
+  {
     slug: 'x402-agent-native-api-monetization',
     tags: ['x402', 'Monetization', 'Cloudflare', 'AI Agents'],
     date: '2026-07-08',
@@ -84,6 +90,80 @@ const articlesContent: Omit<Article, 'title' | 'description' | 'content'>[] = [
 ];
 
 const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'description' | 'content'>>> = {
+  'react2shell-scan-case-study': {
+    en: {
+      title: 'Case study: a React2Shell scan against this site',
+      description: 'Eleven POST requests, three cloud addresses, one unused Server Action. What the edge saw, what could not be checked, and the four changes that closed the door.',
+      content: [
+        { type: 'heading', level: 2, content: 'What arrived' },
+        { type: 'paragraph', content: 'Between 23 and 29 October, eleven `POST /en` requests reached the home page from three addresses in Google Cloud ranges, in short bursts mixed with probes for `.env` and other config files. A static page has no reason to receive a POST. On a Next.js site it means one thing: someone is trying to invoke a Server Action, the mechanism behind React2Shell (CVE-2025-55182) and the critical React Server Components advisories that followed it.' },
+        { type: 'paragraph', content: 'All eleven got a 500 from the origin. That is not a defence, just an exception: the payload did not match an action the app knew how to run.' },
+        { type: 'heading', level: 2, content: 'Why it mattered' },
+        { type: 'list', items: [
+          'The site was already patched for React2Shell itself, but five newer advisories (three critical: React Server Components, the `use cache` directive and image optimisation of SVGs) were fixed only in later releases.',
+          'The app still shipped a Server Action nobody called: a leftover locale switcher. An action that exists is an endpoint, whether or not the UI uses it.',
+          'Every page accepted POST. The firewall had no opinion about write methods.',
+        ] },
+        { type: 'heading', level: 2, content: 'What could not be checked' },
+        { type: 'paragraph', content: 'The hosting plan keeps request logs for one hour, so the origin side of those 500s was gone before anyone looked. The only record was Cloudflare\'s HTTP analytics: 14 days of aggregated requests, with path, method, status and country, but no bodies. Enough to see the attempts; not enough to prove they failed. The honest verdict is: compromise unlikely, not ruled out.' },
+        { type: 'heading', level: 2, content: 'What changed' },
+        { type: 'list', ordered: true, items: [
+          'Full dependency upgrade: Next.js 16.4.5, React 19.2.9, sharp 0.35.5. `bun audit` went from 7 critical findings to none.',
+          'The unused Server Action and its configuration were deleted. The site now has no action to invoke.',
+          'A Cloudflare custom rule allows write methods only on the one route that needs them, the contact form. Everything else gets a 403 at the edge, before the app runs.',
+          '`dangerouslyAllowSVG` was turned off: every SVG on the site is served as a file, so the image optimiser never needed it.',
+        ] },
+        { type: 'code', language: 'text', code: `(http.request.method in {"POST" "PUT" "PATCH" "DELETE"}
+  and not http.request.uri.path in {"/api/contact/send"}
+  and not starts_with(http.request.uri.path, "/cdn-cgi/"))
+→ block` },
+        { type: 'paragraph', content: 'After the deploy, the same request returns 403 from the edge; the contact form still works. The rule lives in the repository as a script, so it can be reviewed and re-applied instead of being a click in a dashboard.' },
+        { type: 'heading', level: 2, content: 'Lessons' },
+        { type: 'list', items: [
+          'Delete what you do not use. The cheapest patch for a Server Action vulnerability is not having a Server Action.',
+          'Allow-list write methods at the edge. A content site needs POST in one or two places; say so in the firewall.',
+          'Retention is a security control. One hour of logs means every investigation starts too late; this Observatory now keeps a daily aggregate.',
+          'Still open: rotating the API keys the app holds, as a precaution against the case that cannot be ruled out.',
+        ] },
+      ],
+    },
+    it: {
+      title: 'Caso studio: una scansione React2Shell contro questo sito',
+      description: 'Undici richieste POST, tre indirizzi cloud, una Server Action inutilizzata. Cosa ha visto l\'edge, cosa non si è potuto verificare e le quattro modifiche che hanno chiuso la porta.',
+      content: [
+        { type: 'heading', level: 2, content: 'Cosa è arrivato' },
+        { type: 'paragraph', content: 'Tra il 23 e il 29 ottobre undici richieste `POST /en` hanno raggiunto la home da tre indirizzi in range di Google Cloud, a brevi raffiche insieme a scansioni di `.env` e altri file di configurazione. Una pagina statica non ha motivo di ricevere una POST. Su un sito Next.js significa una cosa: qualcuno prova a invocare una Server Action, il meccanismo dietro React2Shell (CVE-2025-55182) e gli advisory critici sui React Server Components arrivati dopo.' },
+        { type: 'paragraph', content: 'Tutte e undici hanno ricevuto un 500 dall\'origin. Non è una difesa, solo un\'eccezione: il payload non corrispondeva a un\'azione che l\'app sapesse eseguire.' },
+        { type: 'heading', level: 2, content: 'Perché contava' },
+        { type: 'list', items: [
+          'Il sito era già aggiornato per React2Shell, ma cinque advisory più recenti (tre critici: React Server Components, la direttiva `use cache` e l\'ottimizzazione immagini degli SVG) erano corretti solo in release successive.',
+          'L\'app conteneva ancora una Server Action che nessuno chiamava: un vecchio selettore di lingua. Un\'azione che esiste è un endpoint, che l\'interfaccia la usi o no.',
+          'Ogni pagina accettava POST. Il firewall non aveva regole sui metodi di scrittura.',
+        ] },
+        { type: 'heading', level: 2, content: 'Cosa non si è potuto verificare' },
+        { type: 'paragraph', content: 'Il piano di hosting conserva i log delle richieste per un\'ora, quindi il lato origin di quei 500 era già sparito quando li abbiamo cercati. L\'unica traccia erano le analytics HTTP di Cloudflare: 14 giorni di richieste aggregate, con path, metodo, status e paese, ma senza body. Abbastanza per vedere i tentativi, non per dimostrare che siano falliti. Il verdetto onesto: compromissione improbabile, non esclusa.' },
+        { type: 'heading', level: 2, content: 'Cosa è cambiato' },
+        { type: 'list', ordered: true, items: [
+          'Aggiornamento completo delle dipendenze: Next.js 16.4.5, React 19.2.9, sharp 0.35.5. `bun audit` è passato da 7 finding critici a zero.',
+          'La Server Action inutilizzata e la sua configurazione sono state eliminate. Il sito non ha più azioni da invocare.',
+          'Una custom rule di Cloudflare permette i metodi di scrittura solo sull\'unica route che li usa, il form contatti. Tutto il resto riceve un 403 all\'edge, prima che l\'app giri.',
+          '`dangerouslyAllowSVG` è stato disattivato: ogni SVG del sito è servito come file, l\'ottimizzatore di immagini non ne aveva bisogno.',
+        ] },
+        { type: 'code', language: 'text', code: `(http.request.method in {"POST" "PUT" "PATCH" "DELETE"}
+  and not http.request.uri.path in {"/api/contact/send"}
+  and not starts_with(http.request.uri.path, "/cdn-cgi/"))
+→ block` },
+        { type: 'paragraph', content: 'Dopo il deploy la stessa richiesta riceve 403 dall\'edge; il form contatti funziona. La regola vive nel repository come script, così si può rivedere e riapplicare invece di essere un click in una dashboard.' },
+        { type: 'heading', level: 2, content: 'Lezioni' },
+        { type: 'list', items: [
+          'Elimina ciò che non usi. La patch più economica per una vulnerabilità delle Server Action è non avere Server Action.',
+          'Metti in allow-list i metodi di scrittura all\'edge. Un sito di contenuti ha bisogno di POST in uno o due punti: scrivilo nel firewall.',
+          'La retention è un controllo di sicurezza. Un\'ora di log significa che ogni indagine parte in ritardo; questo Osservatorio ora tiene un aggregato giornaliero.',
+          'Ancora aperto: ruotare le chiavi API dell\'app, per precauzione contro il caso che non si può escludere.',
+        ] },
+      ],
+    },
+  },
   'x402-agent-native-api-monetization': {
     en: {
       title: 'Getting Paid by Machines: Monetizing APIs with x402 and Pay Per Crawl',
@@ -2219,6 +2299,9 @@ kubectl get vpa api -o jsonpath="{.status.recommendation.containerRecommendation
     },
   },
 };
+
+/** Articles with this tag are listed as case studies on /lab. */
+export const CASE_STUDY_TAG = 'Case study';
 
 export function getArticles(locale: Locale): Article[] {
   return articlesContent.map(article => ({

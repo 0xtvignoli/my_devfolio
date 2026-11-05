@@ -1,0 +1,22 @@
+# Daily rebuild so /lab shows fresh data: the build runs scripts/observatory.ts
+# against Cloudflare (token in Vercel env), this only pokes the deploy hook.
+name: observatory
+
+on:
+  schedule:
+    - cron: '17 5 * * *'   # 05:17 UTC, after the previous UTC day has closed
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger Vercel production deploy
+        env:
+          HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: |
+          test -n "$HOOK" || { echo "VERCEL_DEPLOY_HOOK secret missing"; exit 1; }
+          curl -fsS -X POST "$HOOK" >/dev/null

@@ -1,13 +1,16 @@
 'use client';
 
 import { Printer } from 'lucide-react';
-import { Button } from '@/components/ui-mui';
 
-/** Print / save-as-PDF. The browser's own dialog beats shipping a PDF generator. */
 export function PrintButton({ label }: { label: string }) {
   return (
-    <Button variant="outline" size="sm" onClick={() => window.print()} startIcon={<Printer size={14} />}>
+    <button
+      type="button"
+      onClick={() => window.print()}
+      className="inline-flex min-h-11 items-center gap-2 border border-foreground px-4 text-sm font-medium hover:bg-foreground hover:text-background"
+    >
+      <Printer size={14} aria-hidden />
       {label}
-    </Button>
+    </button>
   );
 }

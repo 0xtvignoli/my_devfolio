@@ -83,25 +83,17 @@ export function buildArticleSchema(options: {
   };
 }
 
-export function buildLabSchema() {
+/** The Observatory is published as a Dataset: aggregated, dated, with a method. */
+export function buildObservatorySchema(o: { name: string; description: string; path: string; from: string; to: string }) {
   return {
     '@context': 'https://schema.org',
-    '@type': 'SoftwareApplication',
-    name: 'Interactive DevOps Lab',
-    applicationCategory: 'DeveloperApplication',
-    operatingSystem: 'Web',
-    description:
-      'Interactive laboratory for DevOps practices including Kubernetes cluster management, CI/CD pipelines, and chaos engineering',
-    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-    author: { '@id': `${SITE_URL}/#person` },
-    featureList: [
-      'Interactive Terminal',
-      'Kubernetes Cluster Visualization',
-      'CI/CD Pipeline Simulation',
-      'Chaos Engineering',
-      'Real-time Monitoring',
-      'Gamification System',
-    ],
+    '@type': 'Dataset',
+    name: o.name,
+    description: o.description,
+    url: `${SITE_URL}${o.path}`,
+    temporalCoverage: `${o.from}/${o.to}`,
+    creator: { '@id': `${SITE_URL}/#person` },
+    isAccessibleForFree: true,
   };
 }
 

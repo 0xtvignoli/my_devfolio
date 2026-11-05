@@ -28,7 +28,7 @@ export function GET() {
     `- [Portfolio](${abs(localizedPath(locale, '/portfolio'))}): ${projects.length} engineering projects with outcome metrics.`,
     `- [Experience](${abs(localizedPath(locale, '/experience'))}): roles and timeline.`,
     `- [Articles](${abs(localizedPath(locale, '/articles'))}): ${articles.length} technical articles.`,
-    `- [Lab](${abs(localizedPath(locale, '/lab'))}): interactive DevOps simulator — deploy pipeline with canary and blue/green, chaos experiments, k8s topology, incident timeline, per-request margin model.`,
+    `- [Lab](${abs(localizedPath(locale, '/lab'))}): security observatory — aggregated, daily-updated data on the probes and exploit attempts this site receives, and which defence stopped them; plus incident case studies.`,
     '',
     '## Feeds',
     '',
@@ -52,8 +52,7 @@ export function GET() {
     '',
     '## Notes',
     '',
-    '- The Lab is a simulation: no production system is exposed and no real infrastructure is mutated.',
-    '- /shell runs bash compiled to WebAssembly, client-side.',
+    '- The Observatory publishes aggregates only: no IP addresses, and request paths are reduced to fixed categories.',
     '',
   ].join('\n');
 

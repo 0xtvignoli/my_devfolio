@@ -138,49 +138,6 @@ function withLocaleHeader(response: NextResponse, locale: string) {
   return response;
 }
 
-// --- Experimental /shell route: real bash-on-WASIX rendered in xterm.js ------
-// @wasmer/sdk needs SharedArrayBuffer (threads) → the page must be cross-origin
-// isolated (COOP+COEP) AND its CSP must permit WebAssembly + workers. Both are
-// scoped to /shell ONLY, so the rest of the site keeps its strict CSP and its
-// cross-origin resources (analytics, Google Fonts, CodeSandbox) keep working.
-function buildShellContentSecurityPolicy(): string {
-  // esm.sh serves the unbundled @wasmer/sdk (see real-shell.tsx for why); the
-  // SDK then pulls the bash package from the Wasmer registry.
-  return [
-    "default-src 'self'",
-    // static.cloudflareinsights.com: the proxy injects its analytics beacon here
-    // too, and this page has its own policy — so fixing the site-wide CSP left
-    // /shell logging a violation on every load. Negligible next to what this
-    // policy already permits (esm.sh can serve arbitrary JS, by necessity).
-    "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' blob: https://esm.sh https://static.cloudflareinsights.com",
-    "style-src 'self' 'unsafe-inline'",
-    "font-src 'self' data:",
-    "img-src 'self' data: blob:",
-    "connect-src 'self' https://esm.sh https://registry.wasmer.io https://*.wasmer.io https://cloudflareinsights.com blob: data:",
-    "worker-src 'self' blob: https://esm.sh",
-    "child-src 'self' blob:",
-    "frame-ancestors 'none'",
-    "base-uri 'self'",
-  ].join('; ');
-}
-
-function applyShellIsolationHeaders(response: NextResponse, req?: NextRequest) {
-  response.headers.set('X-Content-Type-Options', 'nosniff');
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  response.headers.set(
-    'Content-Security-Policy',
-    isDevelopmentEnvironment(req)
-      ? buildDevelopmentContentSecurityPolicy()
-      : buildShellContentSecurityPolicy()
-  );
-  // credentialless (not require-corp) keeps cross-origin isolation on while being
-  // permissive on cross-origin subresources, so the page won't hard-break.
-  response.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
-  response.headers.set('Cross-Origin-Embedder-Policy', 'credentialless');
-  response.headers.set('Cross-Origin-Resource-Policy', 'same-origin');
-  return response;
-}
-
 // Host-based routing, locale path redirects, and security headers
 export function proxy(req: NextRequest) {
   const url = req.nextUrl.clone();
@@ -211,15 +168,8 @@ export function proxy(req: NextRequest) {
 
   if (isDevSubdomain) {
     const stripped = stripLocaleFromPath(path);
-    const labAllowed =
-      stripped === '/' ||
-      stripped.startsWith('/lab') ||
-      stripped.startsWith('/shell');
-
-    if (!labAllowed) {
-      url.pathname = localizedPath(pathLocale, '/lab');
-      response = NextResponse.rewrite(url);
-    } else if (stripped === '/') {
+    // dev.tvignoli.com serves only the lab.
+    if (!stripped.startsWith('/lab')) {
       url.pathname = localizedPath(pathLocale, '/lab');
       response = NextResponse.rewrite(url);
     } else {
@@ -235,10 +185,7 @@ export function proxy(req: NextRequest) {
     maxAge: 60 * 60 * 24 * 365,
   });
 
-  const withLocale = withLocaleHeader(response, pathLocale);
-  return stripLocaleFromPath(path).startsWith('/shell')
-    ? applyShellIsolationHeaders(withLocale, req)
-    : applySecurityHeaders(withLocale, req);
+  return applySecurityHeaders(withLocaleHeader(response, pathLocale), req);
 }
 
 export const config = {

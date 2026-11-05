@@ -4,7 +4,6 @@ import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '@/lib/i18n/config';
 import { localizedPath } from '@/lib/i18n/paths';
 import { SITE_URL } from '@/lib/seo/constants';
 
-// /shell is absent: a noIndex experiment.
 const STATIC_PATHS = ['', '/portfolio', '/lab', '/experience', '/articles', '/cv'] as const;
 
 /** hreflang alternates including x-default (→ default locale) for a locale-agnostic path. */

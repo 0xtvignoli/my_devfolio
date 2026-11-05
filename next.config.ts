@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
   },
   // Removed in the 11/2026 redesign; old links and indexed URLs land on the lab.
   async redirects() {
-    return ['dashboard', 'live'].map((p) => ({
+    return ['dashboard', 'live', 'shell'].map((p) => ({
       source: `/:locale(en|it)/${p}`,
       destination: '/:locale/lab',
       permanent: true,

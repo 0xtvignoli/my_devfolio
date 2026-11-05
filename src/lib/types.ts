@@ -147,211 +147,28 @@ export interface Translations {
     };
   };
   lab: {
+    kicker: string;
     title: string;
-    subtitle: string;
-    live: string;
-    terminal: {
-      title: string;
-      description: string;
-      connected: string;
-    };
-    missionControl: {
-      title: string;
-      description: string;
-      sandboxTitle: string;
-      sandboxDescription: string;
-      autoChaos: string;
-      autoChaosDescription: string;
-    };
-    metrics: {
-      title: string;
-      cpu: string;
-      memory: string;
-      latency: string;
-      deploys: string;
-      cpuHint: string;
-      memoryHint: string;
-      latencyHint: string;
-      deploysHint: string;
-    };
-    postmortem: {
-      download: string;
-    };
-    permalink: {
-      share: string;
-      copy: string;
-      copied: string;
-      empty: string;
-    };
-    ci: {
-      title: string;
-      subtitle: string;
-      real: string;
-      /** Placeholders: {green} {total} */
-      summary: string;
-      viewWorkflow: string;
-    };
-    slo: {
-      title: string;
-      subtitle: string;
-      hint: string;
-      budgetRemaining: string;
-      burnRate: string;
-      consumed: string;
-      latencyObjective: string;
-      met: string;
-      missed: string;
-      healthy: string;
-      warning: string;
-      exhausted: string;
-      /** Placeholders: {availability} {days} {latency} {budget} */
-      objective: string;
-      /** Placeholder: {hours} */
-      exhaustsIn: string;
-    };
-    sections: {
-      incidents: string;
-      incidentsSubtitle: string;
-      cluster: string;
-      pipeline: string;
-      pipelineSubtitle: string;
-    };
-    margin: {
-      title: string;
-      subtitle: string;
-      marginPerReq: string;
-      throughput: string;
-      grossMargin: string;
-      revenue: string;
-      cost: string;
-      margin: string;
-      hint: string;
-      simulated: string;
-    };
-    actions: {
-      promote: string;
-      rollback: string;
-      deploy: string;
-      deploying: string;
-      rollingBack: string;
-      run: string;
-    };
-    layout: {
-      label: string;
-      standard: string;
-      immersive: string;
-      standardHint: string;
-      immersiveHint: string;
-      ariaLabel: string;
-    };
-    macros: {
-      clusterPulse: { label: string; description: string };
-      canary: { label: string; description: string };
-      blueGreen: { label: string; description: string };
-      chaosPod: { label: string; description: string };
-      chaosLatency: { label: string; description: string };
-    };
-    dialogs: {
-      rollbackTitle: string;
-      rollbackDescription: string;
-      chaosTitle: string;
-      chaosDescription: string;
-      cancel: string;
-    };
-    toasts: {
-      pipelinePausedTitle: string;
-      pipelinePausedDescription: string;
-      deploySuccessTitle: string;
-      deploySuccessDescription: string;
-      deployFailedTitle: string;
-      rollbackStartedDescription: string;
-      chaosInjectedDescription: string;
-    };
-    announcements: {
-      pipelinePaused: string;
-      pipelineCompleted: string;
-      pipelineFailed: string;
-      newIncident: string;
-      cpuChanged: string;
-      latencyChanged: string;
-    };
-    empty: {
-      incidentsTitle: string;
-      incidentsDescription: string;
-      tryCommand: string;
-    };
-    incidentTable: {
-      status: string;
-      type: string;
-      duration: string;
-      timestamp: string;
-      ariaLabel: string;
-    };
-    help: {
-      buttonLabel: string;
-      title: string;
-      description: string;
-      tipLabel: string;
-      tip: string;
-      categories: {
-        key: 'system' | 'lab' | 'kubernetes' | 'helm' | 'git';
-        title: string;
-        commands: { cmd: string; desc: string }[];
-      }[];
-    };
-    missions: {
-      cardTitle: string;
-      cardSubtitle: string;
-      start: string;
-      runForMe: string;
-      completedTitle: string;
-      xpBadge: string;
-      doneBadge: string;
-      items: {
-        canary: {
-          title: string;
-          description: string;
-          completedDescription: string;
-          steps: {
-            deploy: { title: string; description: string };
-            analyze: { title: string; description: string };
-            decide: { title: string; description: string };
-          };
-        };
-        chaos: {
-          title: string;
-          description: string;
-          completedDescription: string;
-          steps: {
-            inject: { title: string; description: string };
-            observe: { title: string; description: string };
-          };
-        };
-        bluegreen: {
-          title: string;
-          description: string;
-          completedDescription: string;
-          steps: {
-            deploy: { title: string; description: string };
-            cutover: { title: string; description: string };
-          };
-        };
-      };
-    };
-    palette: {
-      buttonLabel: string;
-      placeholder: string;
-      noResults: string;
-      groups: { commands: string; actions: string; navigate: string };
-    };
-    demo: {
-      banner: string;
-      takeControl: string;
-    };
-    beacon: {
-      pipelineRunning: string;
-      newIncident: string;
-    };
+    intro: string;
+    updated: string;
+    stats: { requests: string; hostile: string; stopped: string; maze: string };
+    stoppedNote: string;
+    mazeNote: string;
+    dailyTitle: string;
+    dailyCaption: string;
+    lookingForTitle: string;
+    lookingForIntro: string;
+    categories: Record<'secrets' | 'cms' | 'admin' | 'traversal' | 'app-exploit' | 'other', string>;
+    targetsTitle: string;
+    countriesTitle: string;
+    clientsTitle: string;
+    defensesTitle: string;
+    caseStudiesTitle: string;
+    methodTitle: string;
+    method: string[];
+    requestsLabel: string;
+    peak: string;
+    dateLabel: string;
   };
 }
 
@@ -407,72 +224,3 @@ export interface Article {
   imageHint?: string;
 }
 
-// --- Lab Specific Types ---
-
-export interface TimeSeriesData {
-    time: string;
-    [key: string]: number | string;
-}
-
-export interface DeploymentData {
-    date: string;
-    status: 'success' | 'failure';
-    count: number;
-}
-
-export interface MonitoringData {
-  cpuData: TimeSeriesData[];
-  memoryData: TimeSeriesData[];
-  apiResponseData: TimeSeriesData[];
-  deploymentData: DeploymentData[];
-}
-
-export interface PipelineStage {
-  name: string;
-  icon?: React.ElementType;
-  status: 'Success' | 'In Progress' | 'Failed' | 'Queued';
-  duration: string;
-  details: string;
-  baseDuration: number;
-}
-
-export interface Pod {
-    name: string;
-    service: string;
-    status: 'Running' | 'Pending' | 'Error';
-    cpu: string;
-    memory: string;
-    ip: string;
-    isCanary?: boolean;
-    traffic?: number;
-}
-
-export interface Node {
-    name: string;
-    cpu: string;
-    memory: string;
-    pods: Pod[];
-}
-
-export interface KubernetesCluster {
-    nodes: Node[];
-}
-
-export interface Incident {
-  id: string;
-  timestamp: Date;
-  type: 'Pod Failure' | 'API Latency' | 'CPU Spike';
-  duration: string;
-  status: 'Resolved' | 'Investigating';
-}
-
-export interface CanaryMetrics {
-    baseline: { latency: number; errorRate: number, cpu: number };
-    canary: { latency: number; errorRate: number, cpu: number };
-}
-
-export interface DeployConfig {
-    strategy: string;
-    weight: number;
-    version: string;
-}
