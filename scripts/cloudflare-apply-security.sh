@@ -260,7 +260,7 @@ RATELIMIT_PAYLOAD=$(cat <<EOF
 {
   "rules": [
     {
-      "description": "Rate limit AI assistant endpoint (LLM cost protection)",
+      "description": "Rate limit contact form (spam / mail quota)",
       "expression": "(http.request.uri.path eq \"$RL_PATH\")",
       "action": "block",
       "enabled": true,
