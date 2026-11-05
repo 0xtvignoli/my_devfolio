@@ -120,6 +120,9 @@ export const it: Translations = {
   },
   article: {
     minRead: "min di lettura",
+    contents: "Indice",
+    onThisPage: "In questa pagina",
+    anchor: "Link alla sezione",
     back: "Torna agli articoli",
     author: "Di",
     published: "Pubblicato il",

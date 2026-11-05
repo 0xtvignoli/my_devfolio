@@ -122,6 +122,9 @@ export interface Translations {
   };
   article: {
     minRead: string;
+    contents: string;
+    onThisPage: string;
+    anchor: string;
     back: string;
     author: string;
     published: string;
