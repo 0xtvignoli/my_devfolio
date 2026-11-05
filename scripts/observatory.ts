@@ -95,6 +95,7 @@ for (const { count, dimensions: d } of overview) {
 }
 
 const categories = new Map<string, number>();
+const categoryByDay = new Map<string, Map<string, number>>();
 const targets = new Map<string, number>();
 const targetCategory = new Map<string, Category>();
 const countries = new Map<string, number>();
@@ -112,6 +113,8 @@ for (const { count, dimensions: d } of [...failed, ...writes]) {
   hostile += count;
   add(hostileByDay, String(d.date), count);
   add(categories, category, count);
+  if (!categoryByDay.has(category)) categoryByDay.set(category, new Map());
+  add(categoryByDay.get(category)!, String(d.date), count);
   if (category !== 'other') {
     add(targets, target, count);
     targetCategory.set(target, category);
@@ -130,6 +133,11 @@ const out: Observatory = {
     date,
     requests: requestsByDay.get(date) ?? 0,
     hostile: hostileByDay.get(date) ?? 0,
+  })),
+  // Per-category daily counts, aligned with `daily`, for the trend lines.
+  categoryDaily: CATEGORIES.filter((c) => categoryByDay.has(c)).map((category) => ({
+    category,
+    counts: [...requestsByDay.keys()].sort().map((date) => categoryByDay.get(category)?.get(date) ?? 0),
   })),
   categories: CATEGORIES.map((category) => ({ category, count: categories.get(category) ?? 0 })).filter((c) => c.count > 0),
   targets: top(targets, 10).map(([target, count]) => ({ target, category: targetCategory.get(target)!, count })),
