@@ -8,6 +8,13 @@ export interface Translations {
     lab: string;
     cv: string;
   };
+  notFound: {
+    title: string;
+    tryPalette: string;
+    counted: string;
+    writing: string;
+    observatory: string;
+  };
   palette: {
     open: string;
     label: string;
@@ -191,6 +198,20 @@ export interface Translations {
     requestsLabel: string;
     peak: string;
     dateLabel: string;
+    trendsTitle: string;
+    trendsIntro: string;
+    trends: {
+      inDays: string;
+      note: string;
+      sentence: string;
+      peak: string;
+      verbDoubled: string;
+      verbTripled: string;
+      verbTimes: string;
+      verbRose: string;
+      verbFell: string;
+      subjects: Record<'secrets' | 'cms' | 'admin' | 'traversal' | 'app-exploit' | 'other', string>;
+    };
   };
 }
 
