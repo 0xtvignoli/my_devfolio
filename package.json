@@ -59,7 +59,7 @@
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.4.5",
     "genkit-cli": "^1.45.0",
-    "happy-dom": "^20.14.6",
+    "happy-dom": "^21.0.4",
     "postcss": "^8.5.32",
     "tailwindcss": "^4.3.4",
     "typescript": "^6.0.3"
