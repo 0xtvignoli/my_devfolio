@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
-import { MarketingBottomNav } from "@/components/mobile/marketing-bottom-nav";
 import { getTranslations, resolveLocaleParam } from "@/lib/i18n/server";
 import type { Locale } from "@/lib/types";
 
@@ -18,14 +17,10 @@ export default async function MarketingLayout({ children, params }: MarketingLay
   return (
     <div className="flex min-h-screen flex-col">
       <Header locale={locale} translations={translations} />
-      <main
-        id="main-content"
-        className="flex-1 pb-[calc(72px+env(safe-area-inset-bottom,0px))] md:pb-0"
-      >
+      <main id="main-content" className="flex-1">
         {children}
       </main>
       <Footer locale={locale} />
-      <MarketingBottomNav locale={locale} translations={translations} />
     </div>
   );
 }

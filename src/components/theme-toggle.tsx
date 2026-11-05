@@ -1,43 +1,28 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import { Moon, Sun } from "lucide-react"
-import { useTheme } from "next-themes"
+import { Moon, Sun } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import type { Translations } from '@/lib/types';
 
-import { Button } from '@/components/ui-mui'
-import type { Translations } from "@/lib/types"
-
-interface ThemeToggleProps {
-  labels: Translations["theme"]
-}
-
-export function ThemeToggle({ labels }: ThemeToggleProps) {
-  const { resolvedTheme, setTheme } = useTheme()
-  const [mounted, setMounted] = React.useState(false)
-
-  React.useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  const isDark = mounted && resolvedTheme === "dark"
-  // aria-label announces the target theme (what a click switches to).
-  const label = mounted ? (isDark ? labels.light : labels.dark) : "Toggle theme"
-
+/**
+ * Square, ink-bordered: the only boxed control in the header, on purpose.
+ * Both icons and both labels are in the markup and CSS picks by the `.dark`
+ * class next-themes sets before paint, so there is no mounted-guard and
+ * nothing changes on hydration.
+ */
+export function ThemeToggle({ labels }: { labels: Translations['theme'] }) {
+  const { resolvedTheme, setTheme } = useTheme();
   return (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={() => setTheme(isDark ? "light" : "dark")}
-      aria-label={label}
-      title={mounted ? label : undefined}
+    <button
+      type="button"
+      onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+      className="inline-flex h-11 w-11 items-center justify-center border border-foreground text-foreground transition-colors hover:bg-foreground hover:text-background"
     >
-      {/* Sun on light, Moon on dark — driven by the active app theme (next-themes),
-          not Tailwind's dark: variant (which here follows the OS, not the app). */}
-      {isDark ? (
-        <Moon className="h-[1.2rem] w-[1.2rem]" />
-      ) : (
-        <Sun className="h-[1.2rem] w-[1.2rem]" />
-      )}
-    </Button>
-  )
+      {/* The label names the target theme: what a click switches to. */}
+      <span className="sr-only dark:hidden">{labels.dark}</span>
+      <span className="sr-only hidden dark:inline">{labels.light}</span>
+      <Moon className="h-[18px] w-[18px] dark:hidden" strokeWidth={1.6} aria-hidden />
+      <Sun className="hidden h-[18px] w-[18px] dark:block" strokeWidth={1.6} aria-hidden />
+    </button>
+  );
 }

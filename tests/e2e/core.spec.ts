@@ -5,55 +5,42 @@ const HOME = '/en';
 
 test('home hero renders primary CTAs', async ({ page }) => {
   await page.goto(HOME);
-  await expect(
-    page.getByRole('heading', { name: /Senior DevOps Engineer & Cloud Architect/i })
-  ).toBeVisible();
-  await expect(page.getByRole('link', { name: /View Projects/i })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: /I build infrastructure/i })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Selected work/i })).toBeVisible();
 });
 
-test('locale switcher toggles language and refreshes copy', async ({ page }) => {
-  await page.goto(HOME);
-  const switcher = page.getByRole('button', { name: /switch language/i });
-  await expect(switcher).toContainText(/EN|IT/);
-  await switcher.click();
-  await expect(page).toHaveURL(/\/it\/?$/);
-  await expect(page.getByRole('link', { name: /Vedi Progetti|View Projects/i })).toBeVisible();
+test('locale switcher links to the same page in the other language', async ({ page }) => {
+  await page.goto('/en/portfolio');
+  await page.getByRole('link', { name: 'Italiano' }).click();
+  await expect(page).toHaveURL(/\/it\/portfolio\/?$/);
+  await expect(page.getByRole('heading', { level: 1, name: 'Lavori' })).toBeVisible();
 });
 
-test('lab page loads telemetry widgets', async ({ page }) => {
+test('observatory renders real aggregates and the case studies', async ({ page }) => {
   await page.goto('/en/lab');
-  await expect(page.getByRole('heading', { name: /Incident history/i })).toBeVisible();
-  await expect(page.getByRole('heading', { name: /Cluster topology/i })).toBeVisible();
-  await expect(page.getByRole('heading', { name: /Deploy pipeline/i })).toBeVisible();
-  await expect(page.getByRole('heading', { name: /Command Interface/i })).toBeVisible();
-});
+  await expect(page.getByRole('heading', { level: 1, name: 'Observatory' })).toBeVisible();
+  // The four headline figures are numbers, not placeholders.
+  await expect(page.locator('dl dd').first()).toHaveText(/^\d[\d,.]*/);
+  await expect(page.getByRole('heading', { name: 'What they look for' })).toBeVisible();
+  await expect(page.locator('a[href="/en/articles/react2shell-scan-case-study"]')).toBeVisible();
 
-test('lab layout toggle switches to immersive view and back with Escape', async ({ page }) => {
-  await page.goto('/en/lab');
-  const immersiveToggle = page.getByRole('button', { name: /Focus:/i });
-  await expect(immersiveToggle).toBeVisible();
-  await immersiveToggle.click();
-  // Site header is hidden in immersive mode.
-  await expect(page.getByRole('navigation', { name: 'Primary' })).toBeHidden();
-  await page.keyboard.press('Escape');
-  await expect(page.getByRole('navigation', { name: 'Primary' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: /Incident history/i })).toBeVisible();
-});
-
-test('lab page has no critical a11y violations (axe)', async ({ page }) => {
-  await page.goto('/en/lab');
-  await expect(page.getByRole('heading', { name: /Incident history/i })).toBeVisible();
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
   const critical = results.violations.filter((v) => v.impact === 'critical');
   expect(critical, `Critical a11y violations: ${JSON.stringify(critical, null, 2)}`).toEqual([]);
 });
 
+test('removed experiments redirect to the lab', async ({ request }) => {
+  for (const path of ['/en/dashboard', '/en/live', '/it/shell']) {
+    const response = await request.get(path, { maxRedirects: 0 });
+    expect(response.status(), path).toBe(308);
+    expect(response.headers()['location']).toMatch(/\/(en|it)\/lab$/);
+  }
+});
+
 test('theme toggle switches between light and dark', async ({ page }) => {
   await page.goto(HOME);
-  // The button is labelled with the theme a click switches TO, and it renders a
-  // pre-hydration placeholder ("Toggle theme") first — matching Light|Dark is
-  // what proves React took over. Which one it starts on depends on the runner's
-  // colour scheme, so assert the flip rather than a fixed direction.
+  // The button is labelled with the theme a click switches TO. Which one it
+  // starts on depends on the runner's colour scheme, so assert the flip.
   const toggle = page.getByRole('button', { name: /^(Light|Dark)$/ });
   await expect(toggle).toBeVisible();
   const startedDark = ((await page.locator('html').getAttribute('class')) ?? '').includes('dark');
@@ -63,7 +50,7 @@ test('theme toggle switches between light and dark', async ({ page }) => {
 
 test('articles list page shows articles and links to slug', async ({ page }) => {
   await page.goto('/en/articles');
-  await expect(page.getByRole('heading', { name: /articles|articoli/i })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Writing' })).toBeVisible();
   const firstArticleLink = page.locator('a[href^="/en/articles/"]').first();
   await expect(firstArticleLink).toBeVisible();
   await firstArticleLink.click();
@@ -81,27 +68,6 @@ test('machine endpoints are served, not swallowed by the locale redirect', async
   const llms = await request.get('/llms.txt');
   expect(llms.status()).toBe(200);
   expect(await llms.text()).toContain('## Articles');
-});
-
-test('lab surfaces real CI evidence and the SLO panel', async ({ page }) => {
-  await page.goto('/en/lab');
-  // Rows come from the GitHub API at build time; the panel hides itself if the
-  // fetch failed, so a visible heading means real data made it through.
-  await expect(page.getByRole('heading', { name: /Terraform CI/i })).toBeVisible();
-  await expect(page.getByText(/\d+\/\d+ green/)).toBeVisible();
-  await expect(page.locator('#ci a[href*="/actions/runs/"]').first()).toBeVisible();
-
-  await expect(page.getByRole('heading', { name: /error budget/i })).toBeVisible();
-  await expect(page.getByText('Burn rate')).toBeVisible();
-});
-
-test('a session permalink replays every command it carries', async ({ page }) => {
-  await page.goto('/en/lab?cmd=kubectl+get+pods&cmd=status');
-  const terminal = page.locator('#lab-terminal');
-  // Staggered replay: first at ~800ms, the second ~1.8s later.
-  await expect(terminal.getByText('kubectl get pods').first()).toBeVisible({ timeout: 15_000 });
-  await expect(terminal.getByText('status', { exact: true }).first()).toBeVisible({ timeout: 15_000 });
-  await expect(page.getByRole('button', { name: /replays this session/i })).toBeVisible();
 });
 
 test('tag filter narrows the article list and All restores it', async ({ page }) => {
@@ -129,18 +95,6 @@ test('cv page renders from site data and is printable', async ({ page }) => {
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
   const critical = results.violations.filter((v) => v.impact === 'critical');
   expect(critical, `Critical a11y violations: ${JSON.stringify(critical, null, 2)}`).toEqual([]);
-});
-
-test('ask widget posts to the assistant and renders a reply', async ({ page }) => {
-  await page.goto('/en');
-  const input = page.getByLabel('Ask about my work');
-  // The widget is only rendered when a model key was present at build time.
-  test.skip((await input.count()) === 0, 'no model key in this environment — widget hidden by design');
-  await input.fill('what has he built with Kubernetes?');
-  await page.getByRole('button', { name: /^Ask$/ }).click();
-  // Without a server key the endpoint answers "Assistant offline…" — either way
-  // a non-empty reply proves the wiring end to end.
-  await expect(page.locator('[aria-live="polite"] pre')).not.toBeEmpty({ timeout: 20_000 });
 });
 
 // The address used to be inside the Translations bundle, which Header and the
@@ -200,23 +154,6 @@ test('the contact endpoint validates before it reveals anything', async ({ reque
   expect(typeof payload.ok).toBe('boolean');
   // Locally there is no provider key, so ok:false with a reason is correct.
   if (!payload.ok) expect(['not_configured', 'send_failed']).toContain(payload.reason);
-});
-
-// /live used to tell visitors to "set NEXT_PUBLIC_MINILAB_URL" — internal
-// configuration on a page that the home page linked to.
-test('the live page never shows internal configuration to a visitor', async ({ request }) => {
-  const live = await (await request.get('/en/live')).text();
-  expect(live.includes('NEXT_PUBLIC_MINILAB_URL'), '/live leaks an env var name').toBe(false);
-  expect(live.includes('mini-lab'), '/live leaks an internal service name').toBe(false);
-
-  const offline = live.includes('Live mode is offline');
-  const home = await (await request.get('/en')).text();
-  if (offline) {
-    // No backend configured: the landing page must not send anyone to a dead end.
-    expect(home.includes('href="/en/live"'), 'home links to an offline page').toBe(false);
-  } else {
-    expect(home.includes('href="/en/live"'), 'home should link Live Ops when it works').toBe(true);
-  }
 });
 
 test('legacy root path redirects to locale prefix', async ({ page }) => {

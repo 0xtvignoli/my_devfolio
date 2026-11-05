@@ -5,8 +5,8 @@
 #   - Bot Fight Mode
 #   - Block AI bots (training scrapers)
 #   - AI Labyrinth (crawler honeypot)
-#   - Rate limiting on /api/ask (LLM cost protection)
-#   - Write methods (POST/PUT/PATCH/DELETE) only on the two API routes that take them
+#   - Rate limiting on /api/contact/send (spam / mail-quota protection)
+#   - Write methods (POST/PUT/PATCH/DELETE) only on the one API route that takes them
 #   - Email Obfuscation off on /cv only (so the printable CV prints an address)
 #   - Turnstile widget bootstrap (account-level)
 #
@@ -217,9 +217,10 @@ print('  crawler_protection:', r.get('crawler_protection'))
 " 2>/dev/null || echo "  (applied, but the response could not be summarised)"
 fi
 
-# Rate limiting on the AI endpoint. /api/ask calls a paid LLM, and the in-app
-# limiter (src/app/api/ask/route.ts) counts per serverless instance — it can't
-# see a burst spread across instances. This edge rule is the one that holds.
+# Rate limiting on the contact form, the only route that does work per request
+# (it sends mail on a quota). The in-app limiter (src/app/api/contact/send/route.ts)
+# counts per serverless instance — it can't see a burst spread across instances.
+# This edge rule is the one that holds.
 #
 # Free-plan ceiling: 1 rule, period 10s, mitigation 10s, characteristic = IP,
 # expression limited to path/verified-bot. On Pro+ raise RATELIMIT_PERIOD and
@@ -235,7 +236,7 @@ fi
 # PUT on the phase entrypoint REPLACES every rule in the http_ratelimit phase —
 # that's what makes this script idempotent, but any rule added by hand in the
 # dashboard is overwritten. Add it here instead.
-RL_PATH="${RATELIMIT_PATH:-/api/ask}"
+RL_PATH="${RATELIMIT_PATH:-/api/contact/send}"
 RL_REQUESTS="${RATELIMIT_REQUESTS:-5}"
 RL_PERIOD="${RATELIMIT_PERIOD:-10}"
 RL_TIMEOUT="${RATELIMIT_TIMEOUT:-10}"
@@ -249,11 +250,12 @@ RL_TIMEOUT="${RATELIMIT_TIMEOUT:-10}"
 # invocation opens its own connection and the counter does not accumulate across
 # them. Send the burst down ONE keep-alive connection instead:
 #
-#   U=https://tvignoli.com/api/ask
-#   curl -sS -H 'Content-Type: application/json' -d '{"question":"ping"}' \
+#   U=https://tvignoli.com/api/contact/send
+#   curl -sS -H 'Content-Type: application/json' -d '{}' \
 #     -o /dev/null -w "%{http_code} " $U $U $U $U $U $U $U
 #
-# Expected: 200 up to the limit, then 429 with Cloudflare's `error code: 1015`.
+# Expected: 400 (invalid body) up to the limit, then 429 with Cloudflare's
+# `error code: 1015`.
 RATELIMIT_PAYLOAD=$(cat <<EOF
 {
   "rules": [
@@ -313,7 +315,7 @@ fi
 #
 # Same PUT-the-phase-entrypoint idiom as above: it REPLACES every custom rule in
 # the zone. On Free that is up to 5 rules; any added in the dashboard is lost.
-WRITE_PATHS="${WRITE_PATHS:-/api/ask /api/contact/send}"
+WRITE_PATHS="${WRITE_PATHS:-/api/contact/send}"
 
 FIREWALL_PAYLOAD=$(python3 -c "
 import json, sys
@@ -324,7 +326,7 @@ expression = ('(http.request.method in {\"POST\" \"PUT\" \"PATCH\" \"DELETE\"}'
 print(json.dumps({
     'rules': [{
         'ref': 'write_methods_api_only',
-        'description': 'Allow write methods only on /api/ask and /api/contact/send',
+        'description': 'Allow write methods only on ' + ' and '.join(sys.argv[1].split()),
         'expression': expression,
         'action': 'block',
         'enabled': True,
@@ -445,6 +447,6 @@ echo "  Verify in dashboard: Security → Security Insights"
 echo "  security.txt is served from /.well-known/security.txt (app repo)"
 echo "  robots.txt blocks AI training crawlers; search bots remain allowed (origin-served,"
 echo "  so that part works with or without the proxy)."
-echo "  /api/ask rate limit: verify in Security → WAF → Rate limiting rules — and note it"
+echo "  $RL_PATH rate limit: verify in Security → WAF → Rate limiting rules — and note it"
 echo "  only fires on proxied records (see the check at the top of this run)."
 [[ ${#FAILURES[@]} -eq 0 ]]

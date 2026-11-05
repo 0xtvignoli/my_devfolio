@@ -1,8 +1,5 @@
-import Link from 'next/link';
-import { ArticleCard } from '@/components/shared/article-card';
+import { ArticleRow } from '@/components/shared/article-row';
 import { ArticleFilter } from '@/components/shared/article-filter';
-import { EmptyState } from '@/components/shared/empty-state';
-import { Button } from '@/components/ui-mui';
 import { getArticles } from '@/data/content/articles';
 import { getTranslations, resolveLocaleParam } from '@/lib/i18n/server';
 import { localizedPath } from '@/lib/i18n/paths';
@@ -58,42 +55,19 @@ export default async function ArticlesPage({ params }: ArticlesPageProps) {
           ]),
         ]}
       />
-      <div className="container mx-auto px-4 py-16 max-w-6xl">
-        <section className="mb-12 border-b border-border pb-6" aria-labelledby="articles-heading">
-          <h1 id="articles-heading" className="font-headline text-3xl md:text-4xl font-bold tracking-tight text-foreground">
-            <span aria-hidden className="text-muted-foreground mr-2">#</span>
-            {t.nav.articles}
-          </h1>
-          {t.articles.pageSubtitle && (
-            <p className="text-base text-muted-foreground mt-3 max-w-2xl">
-              {t.articles.pageSubtitle}
-            </p>
-          )}
-        </section>
-        {articles.length === 0 ? (
-          <EmptyState
-            title={t.articles.emptyTitle ?? 'No articles yet'}
-            description={t.articles.emptyDescription}
-            action={
-              <Button asChild variant="outline">
-                <Link href={localizedPath(locale)}>
-                  {locale === 'it' ? 'Torna alla home' : 'Back to home'}
-                </Link>
-              </Button>
-            }
-          />
-        ) : (
-          <ArticleFilter
-            label={t.articles.filterLabel}
-            allLabel={t.articles.filterAll}
-            countTemplate={t.articles.filterCount}
-            items={articles.map((article) => ({
-              slug: article.slug,
-              tags: article.tags,
-              card: <ArticleCard article={article} locale={locale} translations={t} />,
-            }))}
-          />
-        )}
+      <div className="mx-auto max-w-[1120px] px-4 pb-24 pt-12 sm:px-8 sm:pt-20">
+        <h1 className="font-serif text-[clamp(40px,5vw,60px)] font-normal leading-[1.05] tracking-[-0.02em]">{t.nav.articles}</h1>
+        <p className="mb-12 mt-5 max-w-[600px] text-[19px] text-muted-foreground">{t.articles.pageSubtitle}</p>
+        <ArticleFilter
+          label={t.articles.filterLabel}
+          allLabel={t.articles.filterAll}
+          countTemplate={t.articles.filterCount}
+          items={articles.map((article) => ({
+            slug: article.slug,
+            tags: article.tags,
+            row: <ArticleRow article={article} locale={locale} />,
+          }))}
+        />
       </div>
     </>
   );

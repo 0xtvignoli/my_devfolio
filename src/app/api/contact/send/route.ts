@@ -16,7 +16,7 @@ export const dynamic = 'force-dynamic';
  * supply-chain surface for nothing. Swapping provider means editing sendEmail().
  */
 
-// A public form is a spam target. Deliberately tighter than /api/ask: nobody
+// A public form is a spam target: nobody
 // legitimately sends three messages in ten minutes.
 const rateLimited = createRateLimiter(3, 10 * 60_000);
 
