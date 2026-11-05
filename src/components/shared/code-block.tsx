@@ -1,42 +1,37 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { Check, Clipboard } from "lucide-react"
-import { Button } from '@/components/ui-mui'
+import { useState } from 'react';
+import { Check, Clipboard } from 'lucide-react';
 
 interface CodeBlockProps {
-  code: string
-  language: string
+  code: string;
+  language: string;
 }
 
 export function CodeBlock({ code, language }: CodeBlockProps) {
-  const [hasCopied, setHasCopied] = useState(false)
+  const [copied, setCopied] = useState(false);
 
-  const copyToClipboard = () => {
+  const copy = () => {
     navigator.clipboard.writeText(code).then(() => {
-      setHasCopied(true)
-      setTimeout(() => {
-        setHasCopied(false)
-      }, 2000)
-    })
-  }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
 
   return (
-    <div className="relative group my-4">
-      <pre className="bg-secondary p-4 rounded-[4px] border border-border overflow-x-auto">
-        <code className={`font-mono text-sm language-${language}`}>
-          {code}
-        </code>
+    <div className="group relative my-7">
+      <pre className="overflow-x-auto bg-muted p-6 font-mono text-sm leading-[1.6]">
+        <code className={`language-${language}`}>{code}</code>
       </pre>
-      <Button
-        size="icon"
-        variant="ghost"
-        className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-        onClick={copyToClipboard}
+      {/* Visible on hover and on keyboard focus; always visible on touch, which has no hover. */}
+      <button
+        type="button"
+        onClick={copy}
+        className="absolute right-1 top-1 inline-flex h-11 w-11 items-center justify-center text-muted-foreground hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:hover)]:opacity-0"
       >
-        {hasCopied ? <Check className="h-4 w-4 text-green-500" /> : <Clipboard className="h-4 w-4" />}
-        <span className="sr-only">Copy code</span>
-      </Button>
+        {copied ? <Check className="h-4 w-4" aria-hidden /> : <Clipboard className="h-4 w-4" aria-hidden />}
+        <span className="sr-only">{copied ? 'Copied' : 'Copy code'}</span>
+      </button>
     </div>
-  )
+  );
 }

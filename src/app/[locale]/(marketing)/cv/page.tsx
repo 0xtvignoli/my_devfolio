@@ -1,6 +1,7 @@
 import { experiences } from '@/data/content/experiences';
 import { projects } from '@/data/content/projects';
 import { PrintButton } from '@/components/shared/print-button';
+import { ExperienceDescription } from '@/components/shared/experience-description';
 import { JsonLd } from '@/components/seo/json-ld';
 import { buildBreadcrumbSchema } from '@/lib/seo/structured-data';
 import { getTranslations, resolveLocaleParam } from '@/lib/i18n/server';
@@ -31,38 +32,6 @@ export async function generateMetadata({ params }: CvPageProps): Promise<Metadat
   });
 }
 
-/** Experience copy is prose with "- " bullet lines; render those as a real list. */
-function Description({ text }: { text: string }) {
-  const blocks: Array<{ kind: 'p' | 'ul'; lines: string[] }> = [];
-  for (const line of text.split('\n').map((l) => l.trim()).filter(Boolean)) {
-    const isBullet = line.startsWith('- ');
-    const last = blocks.at(-1);
-    const kind = isBullet ? 'ul' : 'p';
-    if (last?.kind === kind) last.lines.push(isBullet ? line.slice(2) : line);
-    else blocks.push({ kind, lines: [isBullet ? line.slice(2) : line] });
-  }
-
-  return (
-    <>
-      {blocks.map((block, index) =>
-        block.kind === 'ul' ? (
-          <ul key={index} className="my-2 list-disc pl-5 space-y-1 text-sm text-muted-foreground">
-            {block.lines.map((line, i) => (
-              <li key={i}>{line}</li>
-            ))}
-          </ul>
-        ) : (
-          block.lines.map((line, i) => (
-            <p key={`${index}-${i}`} className="my-2 text-sm text-muted-foreground leading-relaxed">
-              {line}
-            </p>
-          ))
-        )
-      )}
-    </>
-  );
-}
-
 export default async function CvPage({ params }: CvPageProps) {
   const { locale: localeParam } = await params;
   const locale: Locale = resolveLocaleParam(localeParam);
@@ -76,18 +45,18 @@ export default async function CvPage({ params }: CvPageProps) {
           { name: t.cv.title, path: localizedPath(locale, '/cv') },
         ])}
       />
-      <div className="container mx-auto px-4 py-12 max-w-3xl" data-print-root>
-        <header className="border-b border-border pb-6 mb-8">
+      <div className="mx-auto max-w-[760px] px-4 pb-24 pt-12 sm:px-8 sm:pt-20" data-print-root>
+        <header className="mb-12 border-b border-border pb-8">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <h1 className="font-headline text-3xl font-bold tracking-tight text-foreground">{AUTHOR_NAME}</h1>
-              <p className="text-base text-muted-foreground mt-1">{t.hero.badge}</p>
+              <h1 className="font-serif text-[clamp(40px,5vw,56px)] font-normal leading-[1.05] tracking-[-0.02em]">{AUTHOR_NAME}</h1>
+              <p className="mt-3 text-lg text-muted-foreground">{t.home.kicker}</p>
             </div>
             <div data-print-hide>
               <PrintButton label={t.cv.print} />
             </div>
           </div>
-          <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1 list-none p-0 m-0 text-sm text-muted-foreground">
+          <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-1 text-[15px] text-muted-foreground">
             <li>
               {/* Server-rendered: the address is in the href and the link text, and
                   nowhere in any client payload. NOTE: Cloudflare's email
@@ -112,46 +81,43 @@ export default async function CvPage({ params }: CvPageProps) {
           </ul>
         </header>
 
-        <section className="mb-8" aria-labelledby="cv-skills">
-          <h2 id="cv-skills" className="font-headline text-lg font-bold mb-3 text-foreground">
-            <span aria-hidden className="text-muted-foreground mr-2">##</span>
+        <section className="mb-12" aria-labelledby="cv-skills">
+          <h2 id="cv-skills" className="mb-5 border-t border-foreground pt-4 font-serif text-[26px] font-medium">
             {t.skills.title}
           </h2>
-          <p className="text-sm text-muted-foreground leading-relaxed">{t.skills.list.join(' · ')}</p>
+          <p className="leading-relaxed text-muted-foreground">{t.skills.list.join(' · ')}</p>
         </section>
 
-        <section className="mb-8" aria-labelledby="cv-experience">
-          <h2 id="cv-experience" className="font-headline text-lg font-bold mb-3 text-foreground">
-            <span aria-hidden className="text-muted-foreground mr-2">##</span>
+        <section className="mb-12" aria-labelledby="cv-experience">
+          <h2 id="cv-experience" className="mb-5 border-t border-foreground pt-4 font-serif text-[26px] font-medium">
             {t.experience.title}
           </h2>
-          <div className="space-y-6">
+          <div className="space-y-9">
             {experiences.map((experience) => (
               <div key={`${experience.company}-${experience.date[locale]}`} className="break-inside-avoid">
                 <div className="flex flex-wrap items-baseline justify-between gap-x-3">
-                  <h3 className="font-bold text-foreground">
-                    {experience.title[locale]} — {experience.company}
+                  <h3 className="font-serif text-[22px] font-medium">
+                    {experience.title[locale]} <span className="text-muted-foreground">— {experience.company.trim()}</span>
                   </h3>
-                  <span className="text-sm text-muted-foreground">{experience.date[locale]}</span>
+                  <span className="font-mono text-[13px] text-muted-foreground">{experience.date[locale]}</span>
                 </div>
-                <Description text={experience.description[locale]} />
-                <p className="text-xs text-muted-foreground mt-2">{experience.tags.join(' · ')}</p>
+                <ExperienceDescription text={experience.description[locale]} />
+                <p className="mt-3 text-sm text-muted-foreground">{experience.tags.join(' · ')}</p>
               </div>
             ))}
           </div>
         </section>
 
         <section aria-labelledby="cv-projects">
-          <h2 id="cv-projects" className="font-headline text-lg font-bold mb-3 text-foreground">
-            <span aria-hidden className="text-muted-foreground mr-2">##</span>
+          <h2 id="cv-projects" className="mb-5 border-t border-foreground pt-4 font-serif text-[26px] font-medium">
             {t.portfolio.title}
           </h2>
-          <ul className="space-y-4 list-none p-0 m-0">
+          <ul className="space-y-6">
             {projects.map((project) => (
               <li key={project.id} className="break-inside-avoid">
-                <h3 className="font-bold text-foreground text-sm">{project.title[locale]}</h3>
-                <p className="text-sm text-muted-foreground my-1 leading-relaxed">{project.description[locale]}</p>
-                <p className="text-xs text-muted-foreground">
+                <h3 className="font-serif text-xl font-medium">{project.title[locale]}</h3>
+                <p className="my-1.5 leading-relaxed">{project.description[locale]}</p>
+                <p className="text-sm text-muted-foreground">
                   {[
                     project.tags.join(' · '),
                     ...(project.metrics ?? []).map((metric) => `${metric.label[locale]}: ${metric.value}`),

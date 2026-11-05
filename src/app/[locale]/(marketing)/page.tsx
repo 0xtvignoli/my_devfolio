@@ -3,12 +3,12 @@ import { projects } from '@/data/content/projects';
 import { experiences } from '@/data/content/experiences';
 import { getArticles } from '@/data/content/articles';
 import { ContactSection } from '@/components/shared/contact-section';
+import { ArticleRow } from '@/components/shared/article-row';
 import { isContactFormConfigured } from '@/lib/contact-config';
 import { getTranslations, resolveLocaleParam } from '@/lib/i18n/server';
 import { localizedPath } from '@/lib/i18n/paths';
 import { createPageMetadata } from '@/lib/seo/metadata';
 import { AUTHOR_NAME } from '@/lib/seo/constants';
-import { formatDate } from '@/lib/format-date';
 import type { Locale } from '@/lib/types';
 import type { Metadata } from 'next';
 
@@ -82,22 +82,7 @@ export default async function Home({ params }: HomePageProps) {
         />
         <ol className="mt-2">
           {articles.map((article) => (
-            <li key={article.slug} className="border-b border-border">
-              <Link
-                href={localizedPath(locale, `/articles/${article.slug}`)}
-                className="group flex flex-wrap items-baseline gap-x-10 gap-y-2 py-6"
-              >
-                <time dateTime={article.date} className="min-w-[120px] font-mono text-[13px] text-muted-foreground">
-                  {formatDate(article.date, locale)}
-                </time>
-                <span className="block min-w-0 max-w-[760px] flex-[1_1_320px]">
-                  <span className="block font-serif text-[23px] leading-[1.25] tracking-[-0.01em] group-hover:underline group-hover:underline-offset-4 sm:text-[25px]">
-                    {article.title}
-                  </span>
-                  <span className="mt-2 block text-[15px] text-muted-foreground">{article.tags.join(' · ')}</span>
-                </span>
-              </Link>
-            </li>
+            <ArticleRow key={article.slug} article={article} locale={locale} />
           ))}
         </ol>
       </section>
@@ -109,9 +94,9 @@ export default async function Home({ params }: HomePageProps) {
           link={{ href: localizedPath(locale, '/portfolio'), label: t.home.allProjects }}
         />
         <div className="mt-10 grid grid-cols-[repeat(auto-fit,minmax(min(100%,440px),1fr))] gap-x-16 gap-y-14">
-          {featured.map((project, i) => (
+          {featured.map((project) => (
             <article key={project.id}>
-              <p className="mb-3 font-mono text-[13px] text-link">{String(i + 1).padStart(2, '0')}</p>
+              <p className="mb-3 font-mono text-[13px] text-link">{String(projects.indexOf(project) + 1).padStart(2, '0')}</p>
               <h3 className="font-serif text-[26px] font-medium leading-[1.2]">
                 <Link href={`${localizedPath(locale, '/portfolio')}#${project.id}`} className="hover:underline hover:underline-offset-4">
                   {project.title[locale]}

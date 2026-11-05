@@ -119,6 +119,7 @@ export const it: Translations = {
     goHome: "Torna al Lab",
   },
   article: {
+    minRead: "min di lettura",
     back: "Torna agli articoli",
     author: "Di",
     published: "Pubblicato il",

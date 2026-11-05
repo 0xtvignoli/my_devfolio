@@ -121,6 +121,7 @@ export interface Translations {
     goHome: string;
   };
   article: {
+    minRead: string;
     back: string;
     author: string;
     published: string;

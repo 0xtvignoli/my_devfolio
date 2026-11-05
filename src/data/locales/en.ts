@@ -119,6 +119,7 @@ export const en: Translations = {
     goHome: "Go to Lab Home",
   },
   article: {
+    minRead: "min read",
     back: "Back to articles",
     author: "By",
     published: "Published on",
