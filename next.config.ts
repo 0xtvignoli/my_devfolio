@@ -9,11 +9,6 @@ const nextConfig: NextConfig = {
     contentDispositionType: 'inline',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
-  experimental: {
-    serverActions: {
-      bodySizeLimit: '2mb',
-    },
-  },
 };
 
 export default nextConfig;

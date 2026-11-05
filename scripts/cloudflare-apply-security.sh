@@ -6,6 +6,7 @@
 #   - Block AI bots (training scrapers)
 #   - AI Labyrinth (crawler honeypot)
 #   - Rate limiting on /api/ask (LLM cost protection)
+#   - Write methods (POST/PUT/PATCH/DELETE) only on the two API routes that take them
 #   - Email Obfuscation off on /cv only (so the printable CV prints an address)
 #   - Turnstile widget bootstrap (account-level)
 #
@@ -23,6 +24,7 @@
 #     **DNS**                Read    GET /zones/:id/dns_records  (proxied check)
 #     **Bot Management**     Edit    GET+PUT /zones/:id/bot_management
 #     **Zone WAF**           Edit    PUT .../rulesets/phases/http_ratelimit/…
+#                                    PUT .../rulesets/phases/http_request_firewall_custom/…
 #     **Config Rules**       Edit    PUT .../rulesets/phases/http_config_settings/…
 #
 #   Zone Resources: Include → Specific zone → your zone.
@@ -291,6 +293,59 @@ for r in json.load(sys.stdin).get('result', {}).get('rules', []):
     print('  rule:', r.get('description'))
     print('  limit:', rl.get('requests_per_period'), 'req /', rl.get('period'), 's → block', rl.get('mitigation_timeout'), 's')
     print('  enabled:', r.get('enabled'), '  (False here means it is configured but not filtering)')
+" 2>/dev/null || echo "  (applied, but the response could not be summarised)"
+fi
+
+# Write methods only where the app accepts them.
+#
+# A POST to a page is how Next.js invokes a Server Action, and that request path
+# is where the October 2026 RCEs lived (GHSA-xqc2-xf4c-x3h3, GHSA-673q-mjm6-r5xr).
+# Between 23 and 29/10 scanners on Google Cloud IPs sent POST /en and got 500s.
+# The site uses no Server Action, so no page has a reason to accept a write: only
+# the two route handlers the browser calls with POST (ask widget / lab terminal,
+# contact form). Everything else is blocked at the edge before it reaches Vercel.
+#
+# /cdn-cgi/ is excluded: Cloudflare serves it itself (Bot Fight challenges POST to
+# /cdn-cgi/challenge-platform/), so it never reaches the origin, and blocking it
+# would lock out exactly the visitors a challenge is meant to let through.
+#
+# Adding a POST route handler means adding its path here, or it answers 403.
+#
+# Same PUT-the-phase-entrypoint idiom as above: it REPLACES every custom rule in
+# the zone. On Free that is up to 5 rules; any added in the dashboard is lost.
+WRITE_PATHS="${WRITE_PATHS:-/api/ask /api/contact/send}"
+
+FIREWALL_PAYLOAD=$(python3 -c "
+import json, sys
+paths = ' '.join(f'\"{p}\"' for p in sys.argv[1].split())
+expression = ('(http.request.method in {\"POST\" \"PUT\" \"PATCH\" \"DELETE\"}'
+              f' and not http.request.uri.path in {{{paths}}}'
+              ' and not starts_with(http.request.uri.path, \"/cdn-cgi/\"))')
+print(json.dumps({
+    'rules': [{
+        'ref': 'write_methods_api_only',
+        'description': 'Allow write methods only on /api/ask and /api/contact/send',
+        'expression': expression,
+        'action': 'block',
+        'enabled': True,
+    }]
+}))
+" "$WRITE_PATHS")
+
+echo "→ Blocking write methods outside $WRITE_PATHS..."
+FW_RESULT=$(cf_api PUT "/zones/$ZONE_ID/rulesets/phases/http_request_firewall_custom/entrypoint" "$FIREWALL_PAYLOAD")
+if ! cf_ok "$FW_RESULT"; then
+  echo "  ✗ write-method rule NOT applied:"
+  cf_why "$FW_RESULT"
+  echo "    Needs Zone → WAF → Edit on the token."
+  FAILURES+=("write-method rule outside $WRITE_PATHS")
+elif [[ "$DRY_RUN" != true ]]; then
+  echo "$FW_RESULT" | python3 -c "
+import sys, json
+for r in json.load(sys.stdin).get('result', {}).get('rules', []):
+    print('  rule:', r.get('description'))
+    print('  where:', r.get('expression'))
+    print('  enabled:', r.get('enabled'))
 " 2>/dev/null || echo "  (applied, but the response could not be summarised)"
 fi
 
