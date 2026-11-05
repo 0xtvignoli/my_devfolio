@@ -17,7 +17,7 @@ interface SiteProvidersProps {
 export function SiteProviders({ children, skipLabel }: SiteProvidersProps) {
   return (
     <AppRouterCacheProvider>
-      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
         <MuiThemeProviderWrapper>
           <SnackbarProvider>
             <MotionConfig reducedMotion="user">

@@ -1,24 +1,16 @@
 import Link from 'next/link';
-import { ViewAllLink } from '@/components/shared/view-all-link';
-import { ProjectCard } from '@/components/shared/project-card';
-import { SectionHeading } from '@/components/shared/section-heading';
 import { projects } from '@/data/content/projects';
-import { ExperienceTimeline } from '@/components/experience-timeline';
-import { ArticleCard } from '@/components/shared/article-card';
+import { experiences } from '@/data/content/experiences';
 import { getArticles } from '@/data/content/articles';
-import { EnhancedHero } from '@/components/enhanced-hero';
 import { ContactSection } from '@/components/shared/contact-section';
 import { isContactFormConfigured } from '@/lib/contact-config';
-import { ProfileAvatar } from '@/components/shared/profile-avatar';
 import { getTranslations, resolveLocaleParam } from '@/lib/i18n/server';
 import { localizedPath } from '@/lib/i18n/paths';
 import { createPageMetadata } from '@/lib/seo/metadata';
 import { AUTHOR_NAME } from '@/lib/seo/constants';
+import { formatDate } from '@/lib/format-date';
 import type { Locale } from '@/lib/types';
 import type { Metadata } from 'next';
-import Container from '@mui/material/Container';
-import Stack from '@mui/material/Stack';
-import Box from '@mui/material/Box';
 
 export const dynamic = 'force-static';
 
@@ -26,165 +18,151 @@ type HomePageProps = {
   params: Promise<{ locale: string }>;
 };
 
+/** Hand-picked, in this order: breadth first, then the current focus. */
+const FEATURED_PROJECT_IDS = ['project-1', 'project-6', 'project-5', 'project-7'];
+
 export async function generateMetadata({ params }: HomePageProps): Promise<Metadata> {
   const { locale: localeParam } = await params;
   const locale = resolveLocaleParam(localeParam);
   const t = getTranslations(locale);
   return createPageMetadata({
-    title: `${AUTHOR_NAME} - Senior DevOps Engineer Portfolio`,
-    description: t.hero.subtitle,
+    title: `${AUTHOR_NAME} — ${t.home.kicker}`,
+    description: t.home.intro,
     path: '/',
     locale,
   });
+}
+
+/** First sentence only: the list is a table of contents, the page has the rest. */
+function firstSentence(text: string): string {
+  const end = text.indexOf('. ');
+  return end === -1 ? text : text.slice(0, end + 1);
+}
+
+function SectionHead({ id, title, link }: { id: string; title: string; link?: { href: string; label: string } }) {
+  return (
+    <div className="flex items-baseline justify-between gap-4 border-t border-foreground pt-5">
+      <h2 id={id} className="font-serif text-[30px] font-medium tracking-[-0.01em]">{title}</h2>
+      {link && (
+        <Link href={link.href} className="py-2 text-[15px] text-muted-foreground hover:text-foreground">
+          {link.label}
+        </Link>
+      )}
+    </div>
+  );
 }
 
 export default async function Home({ params }: HomePageProps) {
   const { locale: localeParam } = await params;
   const locale: Locale = resolveLocaleParam(localeParam);
   const t = getTranslations(locale);
-  const articles = getArticles(locale);
-
-  const featuredProjects = projects.slice(0, 2);
-  const featuredArticles = articles.slice(0, 2);
+  const articles = getArticles(locale).slice(0, 5);
+  const featured = FEATURED_PROJECT_IDS.map((id) => projects.find((p) => p.id === id)).filter((p) => p !== undefined);
+  const section = 'mx-auto max-w-[1120px] px-4 pb-24 sm:px-8';
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 }, px: { xs: 2, md: 3 } }}>
-      <EnhancedHero
-        locale={locale}
-        title={t.hero.title}
-        subtitle={t.hero.subtitle}
-        badge={t.hero.badge}
-        ctaPortfolio={t.hero.ctaPortfolio}
-        ctaLab={t.hero.ctaLab}
-        ctaContact={t.hero.ctaContact}
-        labPreviewTitle={t.hero.labPreviewTitle}
-        labPreviewSubtitle={t.hero.labPreviewSubtitle}
-      />
+    <>
+      <section className="mx-auto max-w-[1120px] px-4 pb-24 pt-14 sm:px-8 sm:pb-28 sm:pt-24">
+        <p className="mb-7 text-sm font-medium uppercase tracking-[0.08em] text-link">{t.home.kicker}</p>
+        <h1 className="max-w-[900px] font-serif text-[clamp(40px,6vw,76px)] font-normal leading-[1.05] tracking-[-0.025em]">
+          {t.home.headline}
+        </h1>
+        <p className="mt-9 max-w-[600px] text-[19px] text-muted-foreground">{t.home.intro}</p>
+        <div className="mt-11 flex flex-wrap gap-8 font-medium">
+          <a href="#work" className="border-b border-foreground py-2.5">{t.home.ctaWork}</a>
+          <a href="#contact" className="py-2.5 text-muted-foreground hover:text-foreground">{t.home.ctaContact}</a>
+        </div>
+      </section>
 
-      <Stack component="section" id="about" aria-label={locale === 'it' ? 'Profilo' : 'Profile'} sx={{ py: 4 }}>
-        <ProfileAvatar locale={locale} name={AUTHOR_NAME} role={t.hero.badge} />
-      </Stack>
-
-      {t.hero.tryLabTitle && t.hero.tryLabCta && (
-        <Box
-          component="section"
-          aria-labelledby="try-lab-heading"
-          sx={{
-            py: 3,
-            px: 2.5,
-            borderRadius: 0,
-            border: '1px solid',
-            borderColor: 'divider',
-          }}
-        >
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          spacing={2}
-          sx={{
-            alignItems: { sm: 'center' },
-            justifyContent: 'space-between',
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-            <Box component="span" aria-hidden sx={{ fontWeight: 700, color: 'text.primary', lineHeight: 1.6 }}>{'>_'}</Box>
-            <Box>
-              <h2 id="try-lab-heading" className="font-headline text-lg font-bold text-foreground" style={{ margin: 0 }}>
-                {t.hero.tryLabTitle}
-              </h2>
-              {t.hero.tryLabDescription && (
-                <p className="text-sm text-muted-foreground" style={{ margin: '4px 0 0' }}>
-                  {t.hero.tryLabDescription}
-                </p>
-              )}
-            </Box>
-          </Box>
-          <Stack direction="row" spacing={2} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
-            <Link
-              href={localizedPath(locale, '/lab')}
-              className="font-medium text-foreground underline underline-offset-4 hover:opacity-70 focus-visible:outline focus-visible:outline-1 focus-visible:outline-ring shrink-0 inline-flex items-center gap-2 min-h-[44px] min-w-[44px] justify-center"
-            >
-              {t.hero.tryLabCta}
-              <span aria-hidden className="font-bold no-underline">→</span>
-            </Link>
-            {/* Native <a>: /shell needs a full-document load for its COOP/COEP
-                isolation headers to apply (see proxy.ts). */}
-            <a
-              href={localizedPath(locale, '/shell')}
-              title="Real bash, running in your browser via WebAssembly"
-              className="text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground inline-flex items-center min-h-[44px]"
-            >
-              Shell
-            </a>
-          </Stack>
-        </Stack>
-        </Box>
-      )}
-
-      <Stack component="section" id="skills" spacing={3} sx={{ py: 6 }}>
-        <SectionHeading variant="h2" marker="##" sx={{ mb: 3, fontSize: '1.5rem' }}>
-          {t.skills.title}
-        </SectionHeading>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-          {t.skills.list.map((skill) => (
-            <Box
-              key={skill}
-              sx={{
-                px: 1.25,
-                py: 0.25,
-                borderRadius: '4px',
-                fontSize: '0.875rem',
-                fontWeight: 400,
-                color: 'text.secondary',
-                border: '1px solid',
-                borderColor: 'divider',
-              }}
-            >
-              {skill}
-            </Box>
+      <section aria-labelledby="writing-heading" className={section}>
+        <SectionHead
+          id="writing-heading"
+          title={t.home.writing}
+          link={{ href: localizedPath(locale, '/articles'), label: t.home.allArticles }}
+        />
+        <ol className="mt-2">
+          {articles.map((article) => (
+            <li key={article.slug} className="border-b border-border">
+              <Link
+                href={localizedPath(locale, `/articles/${article.slug}`)}
+                className="group flex flex-wrap items-baseline gap-x-10 gap-y-2 py-6"
+              >
+                <time dateTime={article.date} className="min-w-[120px] font-mono text-[13px] text-muted-foreground">
+                  {formatDate(article.date, locale)}
+                </time>
+                <span className="block min-w-0 max-w-[760px] flex-[1_1_320px]">
+                  <span className="block font-serif text-[23px] leading-[1.25] tracking-[-0.01em] group-hover:underline group-hover:underline-offset-4 sm:text-[25px]">
+                    {article.title}
+                  </span>
+                  <span className="mt-2 block text-[15px] text-muted-foreground">{article.tags.join(' · ')}</span>
+                </span>
+              </Link>
+            </li>
           ))}
-        </Box>
-      </Stack>
+        </ol>
+      </section>
 
-      <Stack component="section" id="portfolio" spacing={3} sx={{ py: 6 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-          <SectionHeading variant="h2" marker="##" rule={false} sx={{ fontSize: '1.5rem' }}>
-            {t.portfolio.title}
-          </SectionHeading>
-          <ViewAllLink href={localizedPath(locale, '/portfolio')}>{t.portfolio.viewAll}</ViewAllLink>
-        </Box>
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
-          {featuredProjects.map((project) => (
-            <ProjectCard key={project.id} project={project} locale={locale} translations={t} />
+      <section id="work" aria-labelledby="work-heading" className={section}>
+        <SectionHead
+          id="work-heading"
+          title={t.home.work}
+          link={{ href: localizedPath(locale, '/portfolio'), label: t.home.allProjects }}
+        />
+        <div className="mt-10 grid grid-cols-[repeat(auto-fit,minmax(min(100%,440px),1fr))] gap-x-16 gap-y-14">
+          {featured.map((project, i) => (
+            <article key={project.id}>
+              <p className="mb-3 font-mono text-[13px] text-link">{String(i + 1).padStart(2, '0')}</p>
+              <h3 className="font-serif text-[26px] font-medium leading-[1.2]">
+                <Link href={`${localizedPath(locale, '/portfolio')}#${project.id}`} className="hover:underline hover:underline-offset-4">
+                  {project.title[locale]}
+                </Link>
+              </h3>
+              <p className="mt-3 text-muted-foreground">{firstSentence(project.description[locale])}</p>
+              <p className="mt-3.5 text-sm text-muted-foreground">{project.tags.slice(0, 4).join(' · ')}</p>
+            </article>
           ))}
-        </Box>
-      </Stack>
+        </div>
+      </section>
 
-      <Stack component="section" id="experience" spacing={3} sx={{ py: 6 }}>
-        <SectionHeading variant="h2" marker="##" sx={{ mb: 3, fontSize: '1.5rem' }}>
-          {t.experience.title}
-        </SectionHeading>
-        <ExperienceTimeline locale={locale} />
-      </Stack>
-
-      <Stack component="section" id="articles" spacing={3} sx={{ py: 6 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-          <SectionHeading variant="h2" marker="##" rule={false} sx={{ fontSize: '1.5rem' }}>
-            {t.articles.title}
-          </SectionHeading>
-          <ViewAllLink href={localizedPath(locale, '/articles')}>{t.articles.viewAll}</ViewAllLink>
-        </Box>
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
-          {featuredArticles.map((article) => (
-            <ArticleCard key={article.slug} article={article} locale={locale} translations={t} />
+      <section aria-labelledby="experience-heading" className={section}>
+        <SectionHead
+          id="experience-heading"
+          title={t.home.experience}
+          link={{ href: localizedPath(locale, '/experience'), label: `${t.nav.experience} →` }}
+        />
+        <dl className="mt-4">
+          {experiences.map((job) => (
+            <div key={job.company} className="flex flex-wrap gap-x-10 gap-y-1 border-b border-border py-5">
+              <dt className="flex-[0_0_160px] pt-1 font-mono text-[13px] text-muted-foreground">{job.date[locale]}</dt>
+              <dd className="min-w-0 flex-[1_1_400px]">
+                <span className="font-semibold">{job.title[locale]}</span>{' '}
+                <span className="text-muted-foreground">— {job.company.trim()}</span>
+              </dd>
+            </div>
           ))}
-        </Box>
-      </Stack>
+        </dl>
+        <Link href={localizedPath(locale, '/cv')} className="mt-5 inline-block py-2.5 text-[15px] font-medium">
+          {t.home.fullCv}
+        </Link>
+      </section>
 
-      <ContactSection
-        translations={t}
-        locale={locale}
-        formEnabled={isContactFormConfigured()}
-      />
-    </Container>
+      <section aria-labelledby="lab-heading" className={section}>
+        <div className="flex flex-wrap items-center justify-between gap-8 bg-muted p-6 sm:p-10">
+          <div className="min-w-0 flex-[1_1_420px]">
+            <p className="mb-2.5 font-mono text-[13px] text-link">{t.home.labPrompt}</p>
+            <h2 id="lab-heading" className="font-serif text-[28px] font-medium">{t.home.labTitle}</h2>
+            <p className="mt-2.5 max-w-[560px] text-muted-foreground">{t.home.labBody}</p>
+          </div>
+          <Link
+            href={localizedPath(locale, '/lab')}
+            className="bg-foreground px-[22px] py-3.5 text-[15px] font-medium text-background hover:opacity-90"
+          >
+            {t.home.labCta}
+          </Link>
+        </div>
+      </section>
+
+      <ContactSection translations={t} formEnabled={isContactFormConfigured()} />
+    </>
   );
 }

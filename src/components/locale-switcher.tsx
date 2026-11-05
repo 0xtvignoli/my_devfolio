@@ -1,37 +1,36 @@
-"use client";
+'use client';
 
-import { useTransition } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { Button } from '@/components/ui-mui';
-import type { Locale } from "@/lib/types";
-import { switchLocaleInPath } from "@/lib/i18n/paths";
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { SUPPORTED_LOCALES } from '@/lib/i18n/config';
+import { switchLocaleInPath } from '@/lib/i18n/paths';
+import type { Locale } from '@/lib/types';
 
-interface LocaleSwitcherProps {
-  locale: Locale;
-}
+const NAMES: Record<Locale, string> = { en: 'English', it: 'Italiano' };
 
-export function LocaleSwitcher({ locale }: LocaleSwitcherProps) {
-  const router = useRouter();
-  const pathname = usePathname() || "/";
-  const [isPending, startTransition] = useTransition();
-
-  const toggleLocale = () => {
-    const nextLocale: Locale = locale === "en" ? "it" : "en";
-    const nextPath = switchLocaleInPath(pathname, nextLocale);
-    startTransition(() => {
-      router.push(nextPath);
-    });
-  };
-
+/** "EN / IT" as plain links: the current one is ink, the other muted. */
+export function LocaleSwitcher({ locale }: { locale: Locale }) {
+  const pathname = usePathname() || '/';
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={toggleLocale}
-      aria-label="Switch language"
-      disabled={isPending}
-    >
-      {isPending ? "..." : locale.toUpperCase()}
-    </Button>
+    <span className="inline-flex items-center text-[15px]">
+      {SUPPORTED_LOCALES.map((l, i) => (
+        <span key={l} className="inline-flex items-center">
+          {i > 0 && <span aria-hidden className="px-1 text-muted-foreground">/</span>}
+          {l === locale ? (
+            <span aria-current="true" className="py-2.5 text-foreground">{l.toUpperCase()}</span>
+          ) : (
+            <Link
+              href={switchLocaleInPath(pathname, l)}
+              hrefLang={l}
+              lang={l}
+              aria-label={NAMES[l]}
+              className="py-2.5 text-muted-foreground hover:text-foreground"
+            >
+              {l.toUpperCase()}
+            </Link>
+          )}
+        </span>
+      ))}
+    </span>
   );
 }

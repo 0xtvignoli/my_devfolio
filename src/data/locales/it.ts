@@ -2,10 +2,30 @@ import type { Translations } from "@/lib/types";
 
 export const it: Translations = {
   nav: {
-    portfolio: "Portfolio",
+    portfolio: "Lavori",
     experience: "Esperienza",
     articles: "Articoli",
     lab: "Lab",
+    cv: "CV",
+  },
+  home: {
+    kicker: "Tech Lead · DevOps & Cloud",
+    headline: "Costruisco infrastrutture che restano in piedi, sicure e sostenibili nei costi.",
+    intro: "Kubernetes, Terraform e automazione su AWS e GCP. Oggi tech lead in LIV4; prima DevOps engineer in CRIF.",
+    ctaWork: "Lavori scelti →",
+    ctaContact: "Scrivimi",
+    writing: "Articoli",
+    allArticles: "Tutti gli articoli →",
+    work: "Lavori scelti",
+    allProjects: "Tutti i progetti →",
+    experience: "Esperienza",
+    fullCv: "CV completo →",
+    labPrompt: "$ kubectl get lab",
+    labTitle: "Il Lab",
+    labBody: "Un cluster Kubernetes simulato nel browser: fai deploy, rompi qualcosa apposta e guardalo riprendersi. Niente di reale viene toccato.",
+    labCta: "Apri il Lab →",
+    contactTitle: "Lavori a qualcosa che deve restare in piedi?",
+    contactCta: "Scrivimi →",
   },
   mobileNav: {
     home: "Home",
@@ -81,7 +101,7 @@ export const it: Translations = {
     print: "Stampa / PDF",
   },
   footer: {
-    copy: "© 2026 Thomas Vignoli. Tutti i diritti riservati.",
+    copy: "© 2026 Thomas Vignoli",
     cv: "[cv]",
   },
   theme: {

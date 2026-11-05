@@ -2,10 +2,30 @@ import type { Translations } from "@/lib/types";
 
 export const en: Translations = {
   nav: {
-    portfolio: "Portfolio",
+    portfolio: "Work",
     experience: "Experience",
-    articles: "Articles",
+    articles: "Writing",
     lab: "Lab",
+    cv: "CV",
+  },
+  home: {
+    kicker: "Tech Lead · DevOps & Cloud",
+    headline: "I build infrastructure that stays up, stays secure, and stays affordable.",
+    intro: "Kubernetes, Terraform and automation on AWS and GCP. Currently tech lead at LIV4; before that, DevOps engineer at CRIF.",
+    ctaWork: "Selected work →",
+    ctaContact: "Get in touch",
+    writing: "Writing",
+    allArticles: "All articles →",
+    work: "Selected work",
+    allProjects: "All projects →",
+    experience: "Experience",
+    fullCv: "Full CV →",
+    labPrompt: "$ kubectl get lab",
+    labTitle: "The Lab",
+    labBody: "A simulated Kubernetes cluster in the browser: deploy, break things on purpose, and watch it recover. Nothing real is touched.",
+    labCta: "Open the Lab →",
+    contactTitle: "Working on something that has to stay up?",
+    contactCta: "Write to me →",
   },
   mobileNav: {
     home: "Home",
@@ -81,7 +101,7 @@ export const en: Translations = {
     print: "Print / PDF",
   },
   footer: {
-    copy: "© 2026 Thomas Vignoli. All rights reserved.",
+    copy: "© 2026 Thomas Vignoli",
     cv: "[cv]",
   },
   theme: {

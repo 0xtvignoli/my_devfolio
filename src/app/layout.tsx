@@ -1,6 +1,6 @@
 import type {Metadata, Viewport} from 'next';
 import './globals.css';
-import { jetbrainsMono, ibmPlexMono } from './fonts';
+import { mono, sans, serif } from './fonts';
 import { cn } from '@/lib/utils';
 import { GoogleAnalytics } from '@/components/analytics/google-analytics';
 import { Suspense } from 'react';
@@ -67,7 +67,9 @@ export default async function RootLayout({
   const t = getTranslations(locale);
 
   return (
-    <html lang={locale} suppressHydrationWarning>
+    // Font variables on <html>, not <body>: the tokens that read them live on
+    // :root, and a var() unresolved there falls back to the browser default.
+    <html lang={locale} className={cn(sans.variable, serif.variable, mono.variable)} suppressHydrationWarning>
       <head>
         <JsonLd data={[buildPersonSchema(), buildWebsiteSchema(), buildProfilePageSchema()]} />
         {/* Feed discovery. Emitted here rather than via Metadata.alternates because
@@ -79,14 +81,7 @@ export default async function RootLayout({
           <GoogleAnalytics GA_MEASUREMENT_ID={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || ''} />
         </Suspense>
       </head>
-      <body
-        className={cn(
-          "font-mono antialiased",
-          jetbrainsMono.variable,
-          ibmPlexMono.variable
-        )}
-        suppressHydrationWarning
-      >
+      <body suppressHydrationWarning>
         {/* Strip data-cursor-ref injected by Cursor IDE browser/extension to avoid hydration mismatch */}
         <script
           dangerouslySetInnerHTML={{

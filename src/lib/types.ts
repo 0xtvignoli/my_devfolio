@@ -6,6 +6,26 @@ export interface Translations {
     experience: string;
     articles: string;
     lab: string;
+    cv: string;
+  };
+  home: {
+    kicker: string;
+    headline: string;
+    intro: string;
+    ctaWork: string;
+    ctaContact: string;
+    writing: string;
+    allArticles: string;
+    work: string;
+    allProjects: string;
+    experience: string;
+    fullCv: string;
+    labPrompt: string;
+    labTitle: string;
+    labBody: string;
+    labCta: string;
+    contactTitle: string;
+    contactCta: string;
   };
   mobileNav: {
     home: string;
