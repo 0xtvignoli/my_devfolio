@@ -1,6 +1,11 @@
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
+  // Inlined at build so /lab/status reports the build it belongs to.
+  env: {
+    BUILD_TIME: new Date().toISOString(),
+    COMMIT_SHA: process.env.VERCEL_GIT_COMMIT_SHA ?? '',
+  },
   // Playwright reaches the dev server via 127.0.0.1; allow it for dev assets.
   allowedDevOrigins: ['127.0.0.1'],
   images: {

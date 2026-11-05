@@ -212,6 +212,26 @@ export interface Translations {
       verbFell: string;
       subjects: Record<'secrets' | 'cms' | 'admin' | 'traversal' | 'app-exploit' | 'other', string>;
     };
+    statusLink: string;
+  };
+  status: {
+    kicker: string;
+    title: string;
+    intro: string;
+    ok: string;
+    warn: string;
+    unknown: string;
+    legend: string;
+    deploy: string;
+    deployDetail: string;
+    localBuild: string;
+    vsMain: string;
+    upToDate: string;
+    behind: string;
+    unreachable: string;
+    data: string;
+    dataFresh: string;
+    dataStale: string;
   };
 }
 
