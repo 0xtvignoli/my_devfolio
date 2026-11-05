@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import type { Article as ArticleType, Locale } from '@/lib/types';
 import { getArticle, getArticleSlugs, getRelatedArticles } from '@/data/content/articles';
 import { CodeBlock } from '@/components/shared/code-block';
+import { CaseStudySummary } from '@/components/shared/case-study-summary';
 import { InlineText } from '@/components/shared/inline-text';
 import { cn } from '@/lib/utils';
 import { headingIds } from '@/lib/heading-ids';
@@ -169,6 +170,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           <time dateTime={article.date} className="font-mono text-[13px]">{formatDate(article.date, locale)}</time>
           <span>{readingMinutes(article)} {t.article.minRead}</span>
         </p>
+        {article.caseStudy && <CaseStudySummary caseStudy={article.caseStudy} timelineLabel={t.article.timeline} />}
         {showToc && (
           <div className="lg:hidden">
             <ArticleTocDisclosure items={toc} label={t.article.contents} />

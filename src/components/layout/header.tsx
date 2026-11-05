@@ -4,9 +4,10 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { LocaleSwitcher } from '@/components/locale-switcher';
+import { CommandPalette, type PaletteEntry } from '@/components/command-palette';
 import { cn } from '@/lib/utils';
 import { AUTHOR_NAME } from '@/lib/seo/constants';
-import { localizedPath, stripLocaleFromPath } from '@/lib/i18n/paths';
+import { localizedPath, stripLocaleFromPath, switchLocaleInPath } from '@/lib/i18n/paths';
 import type { Locale, Translations } from '@/lib/types';
 
 function isActivePath(currentPath: string, itemPath: string): boolean {
@@ -17,8 +18,9 @@ function isActivePath(currentPath: string, itemPath: string): boolean {
  * One row, no drawer: five short items wrap onto a second line on a phone,
  * which is cheaper and more honest than a hamburger hiding four links.
  */
-export function Header({ locale, translations }: { locale: Locale; translations: Translations }) {
-  const currentPath = stripLocaleFromPath(usePathname() ?? '/');
+export function Header({ locale, translations, paletteEntries }: { locale: Locale; translations: Translations; paletteEntries: PaletteEntry[] }) {
+  const pathname = usePathname() ?? '/';
+  const currentPath = stripLocaleFromPath(pathname);
   const links = [
     { path: '/portfolio', label: translations.nav.portfolio },
     { path: '/articles', label: translations.nav.articles },
@@ -55,6 +57,11 @@ export function Header({ locale, translations }: { locale: Locale; translations:
           );
         })}
         <LocaleSwitcher locale={locale} />
+        <CommandPalette
+          entries={paletteEntries}
+          t={translations.palette}
+          otherLocaleHref={switchLocaleInPath(pathname, locale === 'en' ? 'it' : 'en')}
+        />
         <ThemeToggle labels={translations.theme} />
       </nav>
     </header>
