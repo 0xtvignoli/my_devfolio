@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import observatoryData from '@/data/observatory.json';
 import { ArticleRow } from '@/components/shared/article-row';
 import { DailyChart } from '@/components/observatory/daily-chart';
@@ -157,6 +158,11 @@ export default async function LabPage({ params }: LabPageProps) {
               <li key={line}>{line}</li>
             ))}
           </ul>
+          <p className="mt-6">
+            <Link className="text-link underline-offset-4 hover:underline" href={localizedPath(locale, '/lab/status')}>
+              {t.lab.statusLink}
+            </Link>
+          </p>
         </div>
       </section>
     </>
