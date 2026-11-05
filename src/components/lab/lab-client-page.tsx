@@ -39,7 +39,6 @@ import { PermalinkButton } from '@/components/lab/permalink-button';
 import { CanaryAnalysis } from '@/components/lab/canary-analysis';
 import { AriaLiveRegion } from '@/components/shared/aria-live-region';
 import { HelpModal } from '@/components/lab/help-modal';
-import { GuidedTour, buildLabTourSteps } from '@/components/onboarding/guided-tour';
 import { LabHeroHeader } from '@/components/lab/md3/lab-hero-header';
 import { LabMetricCard } from '@/components/lab/md3/lab-metric-card';
 import { LabMarginPanel } from '@/components/lab/lab-margin-panel';
@@ -190,20 +189,6 @@ export function LabClientPage({ locale, translations, ciRuns }: LabClientPagePro
                 labPath={localizedPath(locale, '/lab')}
               />
               <HelpModal translations={translations} />
-              <GuidedTour
-                tourId="lab-tour"
-                autoStart={false}
-                steps={buildLabTourSteps(translations)}
-                labels={t.tour}
-              />
-              <Link
-                href={localizedPath(locale, '/live')}
-                className="inline-flex items-center gap-1 rounded-[8px] border border-[var(--md-sys-color-outline-variant)] px-2 py-1 text-xs font-medium text-[var(--md-sys-color-on-surface-variant)] transition-colors hover:text-[var(--md-sys-color-primary)] hover:border-[var(--md-sys-color-primary)]"
-                title="Live Ops — real commands vs emulated AWS"
-              >
-                <Radio size={14} aria-hidden />
-                <span className="hidden sm:inline">Live Ops</span>
-              </Link>
               {/* Native <a>, not Next <Link>: /shell needs a full-document load so
                   its COOP/COEP isolation headers take effect (a soft SPA nav
                   leaves crossOriginIsolated=false and bash can't run). */}

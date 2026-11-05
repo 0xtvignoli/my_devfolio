@@ -6,7 +6,6 @@ export const it: Translations = {
     experience: "Esperienza",
     articles: "Articoli",
     lab: "Lab",
-    missionProgress: "Progressi Missione",
   },
   mobileNav: {
     home: "Home",
@@ -75,15 +74,6 @@ export const it: Translations = {
     errorRateLimited: "Troppi messaggi in poco tempo. Riprova tra qualche minuto.",
     errorChallenge: "La verifica anti-spam non si è completata. Ricarica la pagina e riprova, oppure usa il pulsante email qui sopra.",
     privacy: "Usati solo per risponderti. Non salvati, non condivisi.",
-  },
-  ask: {
-    title: "Chiedi del mio lavoro",
-    description: "Le risposte vengono dai progetti e dalle esperienze reali di questo sito — niente inventato.",
-    placeholder: "es. cosa ha costruito con Kubernetes?",
-    submit: "Chiedi",
-    thinking: "Sto pensando…",
-    error: "L'assistente non è disponibile ora. Riprova tra un momento.",
-    fallbackCta: "Scrivimi la domanda per email →",
   },
   cv: {
     title: "CV",
@@ -169,13 +159,6 @@ export const it: Translations = {
       copy: "Copia un link che riesegue questa sessione",
       copied: "Link della sessione copiato",
       empty: "Esegui prima un comando — non c'è ancora nulla da rieseguire.",
-    },
-    liveOps: {
-      offlineTitle: "La modalità live è offline in questo momento",
-      offlineBody: "Questa non è una simulazione: esegue comandi reali contro un AWS emulato su un backend che ospito io, quindi non è acceso ventiquattr'ore. Il lab fa tutto anche senza.",
-      offlineCta: "Apri il lab",
-      unreachable: "Il backend live non risponde. È una macchina che gestisco io — riprova più tardi, o intanto usa il lab.",
-      connecting: "Connessione…",
     },
     ci: {
       title: "Terraform CI — run reali",
@@ -415,55 +398,6 @@ export const it: Translations = {
     beacon: {
       pipelineRunning: "Pipeline in esecuzione",
       newIncident: "Nuovo incidente",
-    },
-    tour: {
-      start: "Tour",
-      restart: "Riavvia tour",
-      previous: "Indietro",
-      next: "Avanti",
-      finish: "Fine",
-      close: "Chiudi tour",
-      stepOf: "{current} di {total}",
-      steps: {
-        welcome: {
-          title: "👋 Benvenuto nel DevOps Lab!",
-          description: "Un ambiente interattivo per esplorare pratiche DevOps, Kubernetes, pipeline CI/CD e chaos engineering. Ti faccio fare un giro!",
-          action: "Inizia il tour",
-        },
-        terminal: {
-          title: "💻 Terminale interattivo",
-          description: "Esegui comandi come kubectl, helm e git. Digita \"help\" per vedere tutti i comandi disponibili. ↑/↓ per la cronologia, Tab per l'autocomplete.",
-        },
-        quickActions: {
-          title: "⚡ Azioni rapide",
-          description: "Scorciatoie per le operazioni più comuni. Perfette per sperimentare senza digitare i comandi.",
-        },
-        missionControl: {
-          title: "🎛️ Mission Control",
-          description: "Attiva l'Auto-Chaos ed esegui le macro: deploy canary, cutover blue/green ed esperimenti chaos.",
-        },
-        metrics: {
-          title: "📊 Metriche in tempo reale",
-          description: "Monitora CPU, memoria, latenza e statistiche di deploy. I dati si aggiornano live mentre interagisci col lab.",
-        },
-        cluster: {
-          title: "☸️ Cluster Kubernetes",
-          description: "Visualizza il cluster in tempo reale. Clicca sui pod per vedere i dettagli e monitorarne lo stato.",
-        },
-        pipeline: {
-          title: "🚀 Pipeline CI/CD",
-          description: "Esegui deploy con strategie canary o blue-green e osserva il rollout avanzare stage per stage.",
-        },
-        incidents: {
-          title: "🔥 Storico incidenti",
-          description: "Gli esperimenti chaos e gli eventi di sistema vengono registrati qui, con i tempi di recovery.",
-        },
-        complete: {
-          title: "🎉 Tutto pronto!",
-          description: "Esplora al tuo ritmo. Digita \"help\" nel terminale in qualsiasi momento, o passa il mouse sugli elementi per i tooltip.",
-          action: "Inizia a esplorare",
-        },
-      },
     },
   },
 };

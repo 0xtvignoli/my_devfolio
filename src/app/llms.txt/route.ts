@@ -53,7 +53,7 @@ export function GET() {
     '## Notes',
     '',
     '- The Lab is a simulation: no production system is exposed and no real infrastructure is mutated.',
-    '- /live runs curated commands against an emulated AWS; /shell runs bash compiled to WebAssembly, client-side.',
+    '- /shell runs bash compiled to WebAssembly, client-side.',
     '',
   ].join('\n');
 

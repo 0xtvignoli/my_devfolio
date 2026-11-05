@@ -66,8 +66,6 @@ const HISTORY_STORAGE_KEY = 'lab_terminal_history';
 
 const AUTOCOMPLETE_COMMANDS = [
   'help',
-  'ask what has Thomas built with Kubernetes?',
-  'ask summarize his experience',
   'ls',
   'ls projects',
   'ls experience',
@@ -392,7 +390,7 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
     setActiveTab: (tab: 'terminal' | 'logs' | 'playground') => {
       setActiveTab(tab);
     },
-    // The terminal owns the only complete command log: `ask` and `clear` return
+    // The terminal owns the only complete command log: `clear` returns
     // before onCommand fires, so the parent hook never sees them.
     getCommands: () => storedCommandsRef.current,
   }));
@@ -604,7 +602,6 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
             '  uptime              - Show session uptime',
             '',
             'LAB COMMANDS:',
-            '  ask <question>                               - Ask the AI about Thomas’ work',
             '  deploy [--strategy] [--weight] [--version]   - Trigger pipeline',
             '  chaos <scenario>                             - Run chaos experiment',
             '  status                                       - Show control-plane vitals',
@@ -901,42 +898,6 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
     }
   }, [cluster, fileSystem, onCommand, storedCommands]);
 
-  // `ask` is the one async command: it calls the server-side AI assistant and
-  // streams the answer into the already-created entry via appendOutput/finalizeEntry.
-  const runAssistant = useCallback(async (rawInput: string, entryId: string) => {
-    const question = rawInput.replace(/^ask\s*/i, '').trim();
-    if (!question) {
-      finalizeEntry(entryId, {
-        output: ['Usage: ask <question>  —  e.g. `ask what has Thomas built with Kubernetes?`'],
-        status: 'error',
-      });
-      return;
-    }
-    window.dispatchEvent(new CustomEvent('lab_activity', {
-      detail: { type: 'terminal_command', data: { command: 'ask' } },
-    }));
-    appendOutput(entryId, '🤖 querying portfolio assistant…');
-    try {
-      const res = await fetch('/api/ask', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question }),
-      });
-      const data = await res.json().catch(() => ({} as Record<string, string>));
-      const answer = data.answer ?? data.error ?? 'No response from assistant.';
-      finalizeEntry(entryId, {
-        output: String(answer).split('\n'),
-        status: res.ok ? 'success' : 'error',
-        contextHint: 'Answered by Gemini over the real portfolio data (projects, skills, experience).',
-      });
-    } catch {
-      finalizeEntry(entryId, {
-        output: ['Assistant unreachable — network error.'],
-        status: 'error',
-      });
-    }
-  }, [appendOutput, finalizeEntry]);
-
   const handleCommandExecution = useCallback((commandInput: string) => {
     const trimmedInput = commandInput.trim();
     if (!trimmedInput) return;
@@ -959,14 +920,6 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
       prompt: promptRef.current,
     });
 
-    if (baseCommand === 'ask') {
-      void runAssistant(trimmedInput, entryId);
-      setStoredCommands(prev => [...prev, trimmedInput]);
-      setInput('');
-      setHistoryIndex(-1);
-      return;
-    }
-
     const result = executeCommand(trimmedInput);
     const steps = result.skipStreaming ? [] : result.streamingSteps ?? streamingSteps[baseCommand] ?? [];
     steps.forEach((line, index) => {
@@ -981,7 +934,7 @@ export const InteractiveTerminal = forwardRef<{ setCommand: (command: string) =>
     setStoredCommands(prev => [...prev, trimmedInput]);
     setInput('');
     setHistoryIndex(-1);
-  }, [appendOutput, executeCommand, finalizeEntry, getLatency, pushEntry, pushSystemMessage, runAssistant]);
+  }, [appendOutput, executeCommand, finalizeEntry, getLatency, pushEntry, pushSystemMessage]);
 
   // Keeps the imperative runCommand handle pointing at the latest closure.
   const handleCommandExecutionRef = useRef(handleCommandExecution);

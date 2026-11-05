@@ -61,18 +61,6 @@ function buildDevelopmentContentSecurityPolicy(): string {
   ].join('; ');
 }
 
-// Origin of the optional mini-lab backend (live lab), so the /live page may
-// fetch it. Only its origin is allowed, and only when configured.
-function miniLabOrigin(): string | null {
-  const url = process.env.NEXT_PUBLIC_MINILAB_URL;
-  if (!url) return null;
-  try {
-    return new URL(url).origin;
-  } catch {
-    return null;
-  }
-}
-
 // Turnstile needs its own script origin and an iframe. Added only when a site key
 // is configured, so the CSP stays tight until the widget actually exists —
 // widening it for a dormant feature is a permanent cost for no current benefit.
@@ -105,7 +93,6 @@ function buildContentSecurityPolicy(): string {
     // api.js talks back to its own origin from the parent document, not only
     // from inside the iframe.
     turnstileEnabled ? TURNSTILE_ORIGIN : null,
-    miniLabOrigin(),
   ]
     .filter(Boolean)
     .join(' ');
@@ -227,9 +214,7 @@ export function proxy(req: NextRequest) {
     const labAllowed =
       stripped === '/' ||
       stripped.startsWith('/lab') ||
-      stripped.startsWith('/shell') ||
-      stripped.startsWith('/live') ||
-      stripped.startsWith('/dashboard');
+      stripped.startsWith('/shell');
 
     if (!labAllowed) {
       url.pathname = localizedPath(pathLocale, '/lab');

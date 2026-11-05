@@ -6,7 +6,6 @@ export interface Translations {
     experience: string;
     articles: string;
     lab: string;
-    missionProgress: string;
   };
   mobileNav: {
     home: string;
@@ -77,15 +76,6 @@ export interface Translations {
     errorRateLimited: string;
     errorChallenge: string;
     privacy: string;
-  };
-  ask: {
-    title: string;
-    description: string;
-    placeholder: string;
-    submit: string;
-    thinking: string;
-    error: string;
-    fallbackCta: string;
   };
   cv: {
     title: string;
@@ -171,13 +161,6 @@ export interface Translations {
       copy: string;
       copied: string;
       empty: string;
-    };
-    liveOps: {
-      offlineTitle: string;
-      offlineBody: string;
-      offlineCta: string;
-      unreachable: string;
-      connecting: string;
     };
     ci: {
       title: string;
@@ -347,26 +330,6 @@ export interface Translations {
     beacon: {
       pipelineRunning: string;
       newIncident: string;
-    };
-    tour: {
-      start: string;
-      restart: string;
-      previous: string;
-      next: string;
-      finish: string;
-      close: string;
-      stepOf: string;
-      steps: {
-        welcome: { title: string; description: string; action: string };
-        terminal: { title: string; description: string };
-        quickActions: { title: string; description: string };
-        missionControl: { title: string; description: string };
-        metrics: { title: string; description: string };
-        cluster: { title: string; description: string };
-        pipeline: { title: string; description: string };
-        incidents: { title: string; description: string };
-        complete: { title: string; description: string; action: string };
-      };
     };
   };
 }

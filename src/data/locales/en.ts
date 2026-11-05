@@ -6,7 +6,6 @@ export const en: Translations = {
     experience: "Experience",
     articles: "Articles",
     lab: "Lab",
-    missionProgress: "Mission Progress",
   },
   mobileNav: {
     home: "Home",
@@ -75,15 +74,6 @@ export const en: Translations = {
     errorRateLimited: "Too many messages in a short time. Try again in a few minutes.",
     errorChallenge: "The anti-spam check didn't complete. Reload the page and try again, or use the email button above.",
     privacy: "Used only to reply. Not stored, not shared.",
-  },
-  ask: {
-    title: "Ask about my work",
-    description: "Answers come from the real projects and experience on this site — nothing invented.",
-    placeholder: "e.g. what has he built with Kubernetes?",
-    submit: "Ask",
-    thinking: "Thinking…",
-    error: "The assistant is unavailable right now. Try again in a moment.",
-    fallbackCta: "Email me the question instead →",
   },
   cv: {
     title: "CV",
@@ -169,13 +159,6 @@ export const en: Translations = {
       copy: "Copy a link that replays this session",
       copied: "Session link copied",
       empty: "Run a command first — there's nothing to replay yet.",
-    },
-    liveOps: {
-      offlineTitle: "Live mode is offline right now",
-      offlineBody: "This one isn't a simulation: it runs real commands against an emulated AWS on a backend I host myself, so it isn't up around the clock. The lab does everything without it.",
-      offlineCta: "Open the lab",
-      unreachable: "The live backend isn't answering. It's a machine I run myself — try again later, or use the lab in the meantime.",
-      connecting: "Connecting…",
     },
     ci: {
       title: "Terraform CI — real runs",
@@ -415,55 +398,6 @@ export const en: Translations = {
     beacon: {
       pipelineRunning: "Pipeline running",
       newIncident: "New incident",
-    },
-    tour: {
-      start: "Tour",
-      restart: "Restart tour",
-      previous: "Previous",
-      next: "Next",
-      finish: "Finish",
-      close: "Close tour",
-      stepOf: "{current} of {total}",
-      steps: {
-        welcome: {
-          title: "👋 Welcome to the DevOps Lab!",
-          description: "An interactive environment to explore DevOps practices, Kubernetes, CI/CD pipelines, and chaos engineering. Let me show you around!",
-          action: "Start tour",
-        },
-        terminal: {
-          title: "💻 Interactive terminal",
-          description: "Execute commands like kubectl, helm, and git. Type \"help\" to see all available commands. Press ↑/↓ for history, Tab for autocomplete.",
-        },
-        quickActions: {
-          title: "⚡ Quick actions",
-          description: "Use these shortcuts for common operations. Perfect for rapid experimentation without typing commands.",
-        },
-        missionControl: {
-          title: "🎛️ Mission Control",
-          description: "Toggle Auto-Chaos and run curated macros: canary deploys, blue/green cutovers, and chaos experiments.",
-        },
-        metrics: {
-          title: "📊 Real-time metrics",
-          description: "Monitor CPU, memory, latency, and deployment stats. All data updates live as you interact with the lab.",
-        },
-        cluster: {
-          title: "☸️ Kubernetes cluster",
-          description: "Visualize the cluster in real time. Click on pods to see details and monitor their health status.",
-        },
-        pipeline: {
-          title: "🚀 CI/CD pipeline",
-          description: "Deploy with canary or blue-green strategies and watch the rollout progress through each stage.",
-        },
-        incidents: {
-          title: "🔥 Incident history",
-          description: "Chaos experiments and system events are logged here, including recovery times.",
-        },
-        complete: {
-          title: "🎉 You're all set!",
-          description: "Start exploring at your own pace. Type \"help\" in the terminal anytime, or hover over elements for tooltips.",
-          action: "Start exploring",
-        },
-      },
     },
   },
 };

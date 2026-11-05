@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { Mail } from 'lucide-react';
-import { AskWidget } from '@/components/shared/ask-widget';
 import { ContactForm } from '@/components/shared/contact-form';
 import { localizedPath } from '@/lib/i18n/paths';
 import { CONTACT_EMAIL, SOCIAL_LINKS } from '@/lib/seo/constants';
@@ -9,9 +8,6 @@ import type { Locale, Translations } from '@/lib/types';
 interface ContactSectionProps {
   translations: Translations;
   locale: Locale;
-  /** False on a deploy without a model key — the widget stays hidden rather than
-      telling visitors to go set an env var. */
-  assistantEnabled?: boolean;
   /** False without a mail provider key: a form that drops messages is worse than
       no form, because the visitor believes they reached you. */
   formEnabled?: boolean;
@@ -31,7 +27,6 @@ interface ContactSectionProps {
 export function ContactSection({
   translations,
   locale,
-  assistantEnabled = false,
   formEnabled = false,
 }: ContactSectionProps) {
   const t = translations.contact;
@@ -80,11 +75,6 @@ export function ContactSection({
         </div>
       )}
 
-      {assistantEnabled && (
-        <div className="mt-6 max-w-2xl mx-auto">
-          <AskWidget translations={translations} />
-        </div>
-      )}
     </section>
   );
 }

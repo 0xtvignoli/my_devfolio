@@ -10,7 +10,7 @@ Questo sito è un portfolio personale costruito con Next.js (App Router), TypeSc
 La codebase è ora suddivisa in due route group principali:
 
 - `src/app/(marketing)` ospita le pagine statiche/SSR (home, portfolio, articoli, experience) e condivide layout, header e footer ottimizzati per server rendering.
-- `src/app/(lab)` contiene il laboratorio interattivo con provider client-side dedicati (theme, gamification e simulazione).
+- `src/app/(lab)` contiene il laboratorio interattivo con provider client-side dedicati (theme e simulazione).
 
 ## Technologies Used
 
@@ -45,9 +45,8 @@ This project is built with:
 3. **Setup environment variables**
    ```bash
    cp .env.example .env.local
-   # Edit .env.local and add your GEMINI_API_KEY
+   # Everything is optional: without keys the contact form falls back to mailto
    ```
-   Get your Gemini API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
 
 4. **Start the development server**
    ```bash

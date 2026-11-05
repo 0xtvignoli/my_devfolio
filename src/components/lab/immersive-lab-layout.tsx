@@ -31,7 +31,6 @@ import type { Locale, Translations } from '@/lib/types';
 import { translations as localeTable } from '@/data/locales';
 import { AriaLiveRegion } from '@/components/shared/aria-live-region';
 import { HelpModal } from '@/components/lab/help-modal';
-import { GuidedTour, buildLabTourSteps } from '@/components/onboarding/guided-tour';
 import { LabConfirmDialogs } from '@/components/lab/lab-confirm-dialogs';
 import { LabCommandPalette } from '@/components/lab/lab-command-palette';
 import { useLabActions } from '@/hooks/use-lab-actions';
@@ -116,12 +115,6 @@ export function ImmersiveLabLayout({
               onChaos={lab.handleChaosClick}
             />
             <HelpModal translations={translations} />
-            <GuidedTour
-              tourId="lab-tour"
-              autoStart={false}
-              steps={buildLabTourSteps(translations)}
-              labels={t.tour}
-            />
           </Stack>
         </Stack>
       </Paper>
