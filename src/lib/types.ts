@@ -220,8 +220,9 @@ export interface Project {
   title: Record<Locale, string>;
   description: Record<Locale, string>;
   tags: string[];
-  imageUrl: string;
-  imageHint: string;
+  /** Unused since the 11/2026 redesign (no covers); kept on older entries. */
+  imageUrl?: string;
+  imageHint?: string;
   githubUrl?: string;
   demoUrl?: string;
   codesandboxId?: string;
