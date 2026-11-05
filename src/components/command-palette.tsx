@@ -45,7 +45,7 @@ export function search<T extends { title: string }>(query: string, items: T[]): 
  */
 /** ⌘ on Apple keyboards, Ctrl elsewhere. Server render assumes Ctrl, the common case. */
 const noopSubscribe = () => () => {};
-function useIsMac(): boolean {
+export function useIsMac(): boolean {
   return useSyncExternalStore(
     noopSubscribe,
     () => /Mac|iPhone|iPad/.test(navigator.userAgent),

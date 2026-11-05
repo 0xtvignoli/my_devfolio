@@ -1,45 +1,49 @@
 import Link from 'next/link';
+import { Header } from '@/components/layout/header';
+import { Footer } from '@/components/layout/footer';
+import { RequestedPath, ShortcutLabel } from '@/components/requested-path';
+import { getTranslations, resolveLocaleFromHeaders } from '@/lib/i18n/server';
+import { localizedPath } from '@/lib/i18n/paths';
+import { paletteEntries } from '@/lib/palette-entries';
 
 export const metadata = {
-  title: '404 — Page not found',
+  title: '404',
+  robots: { index: false },
 };
 
-export default function NotFound() {
+/**
+ * Root not-found: rendered outside the (marketing) layout, so it brings its
+ * own header and footer. The locale comes from the x-locale header proxy.ts
+ * sets, falling back to Accept-Language.
+ */
+export default async function NotFound() {
+  const locale = await resolveLocaleFromHeaders();
+  const t = getTranslations(locale);
+  const n = t.notFound;
+
   return (
-    <main className="min-h-screen flex items-center justify-center bg-background text-foreground px-6 py-16">
-      <div className="w-full max-w-xl border border-border rounded-[4px] overflow-hidden font-mono">
-        {/* title bar */}
-        <div className="flex items-center gap-2 px-4 py-2 border-b border-border text-sm text-muted-foreground">
-          <span aria-hidden className="inline-flex gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-red-500" />
-            <span className="w-3 h-3 rounded-full bg-yellow-500" />
-            <span className="w-3 h-3 rounded-full bg-green-500" />
-          </span>
-          <span className="ml-1">~ 404</span>
-        </div>
-        {/* body */}
-        <div className="p-6 space-y-3 text-sm leading-relaxed">
-          <p>
-            <span className="text-muted-foreground">$ </span>cd requested-page
-          </p>
-          <p className="text-muted-foreground">bash: cd: requested-page: No such file or directory</p>
-          <h1 className="text-2xl font-bold pt-3">
-            <span aria-hidden className="text-muted-foreground mr-2">[x]</span>
-            404 — Page not found
-          </h1>
-          <p className="text-muted-foreground">
-            The page you requested doesn&apos;t exist or has moved.
-            <br />
-            La pagina richiesta non esiste o è stata spostata.
-          </p>
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 mt-2 text-foreground underline underline-offset-4 hover:opacity-70 focus-visible:outline focus-visible:outline-1 focus-visible:outline-ring"
-          >
-            <span aria-hidden className="font-bold">←</span> cd ~
-          </Link>
-        </div>
-      </div>
-    </main>
+    <div className="flex min-h-screen flex-col">
+      <Header locale={locale} translations={t} paletteEntries={paletteEntries(locale)} />
+      <main id="main-content" className="mx-auto w-full max-w-[1120px] flex-1 px-4 pb-24 pt-12 sm:px-8 sm:pt-20">
+        <p className="font-mono text-[15px] text-muted-foreground">
+          <span className="text-link">~/</span> cd <RequestedPath />
+        </p>
+        <p className="mt-1.5 font-mono text-[15px] text-destructive">cd: no such file or directory</p>
+        <h1 className="mt-10 font-serif text-[clamp(40px,6vw,64px)] font-normal leading-[1.05] tracking-[-0.02em]">{n.title}</h1>
+        <p className="mt-5 max-w-[600px] text-[19px] text-muted-foreground">
+          {n.tryPalette}{' '}
+          <kbd className="border border-border px-1.5 py-0.5 font-mono text-[15px] text-foreground">
+            <ShortcutLabel />
+          </kbd>
+          . {n.counted}
+        </p>
+        <p className="mt-9 flex flex-wrap gap-x-7 font-medium">
+          <Link href={localizedPath(locale)} className="border-b border-foreground py-2">cd ~ →</Link>
+          <Link href={localizedPath(locale, '/articles')} className="py-2 text-muted-foreground hover:text-foreground">{n.writing}</Link>
+          <Link href={localizedPath(locale, '/lab')} className="py-2 text-muted-foreground hover:text-foreground">{n.observatory}</Link>
+        </p>
+      </main>
+      <Footer locale={locale} />
+    </div>
   );
 }

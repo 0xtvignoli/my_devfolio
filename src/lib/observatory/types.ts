@@ -16,6 +16,8 @@ export interface Observatory {
     maze: number;
   };
   daily: { date: string; requests: number; hostile: number }[];
+  /** Same order of days as `daily`. Optional: files written before it existed lack it. */
+  categoryDaily?: { category: Category; counts: number[] }[];
   categories: { category: Category; count: number }[];
   targets: { target: string; category: Category; count: number }[];
   countries: { code: string; count: number }[];

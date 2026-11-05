@@ -2,6 +2,8 @@ import observatoryData from '@/data/observatory.json';
 import { ArticleRow } from '@/components/shared/article-row';
 import { DailyChart } from '@/components/observatory/daily-chart';
 import { BarList } from '@/components/observatory/bar-list';
+import { Trends } from '@/components/observatory/trends';
+import { computeTrends } from '@/lib/observatory/trends';
 import { JsonLd } from '@/components/seo/json-ld';
 import { CASE_STUDY_TAG, getArticles } from '@/data/content/articles';
 import { getTranslations, resolveLocaleParam } from '@/lib/i18n/server';
@@ -44,6 +46,7 @@ export default async function LabPage({ params }: LabPageProps) {
   const countryName = new Intl.DisplayNames([locale], { type: 'region' });
   const caseStudies = getArticles(locale).filter((a) => a.tags.includes(CASE_STUDY_TAG));
   const { totals } = data;
+  const trends = computeTrends(data);
   const pct = (n: number) => `${Math.round((n / totals.requests) * 100)}%`;
   const section = 'mx-auto max-w-[1120px] px-4 pb-24 sm:px-8';
 
@@ -94,6 +97,14 @@ export default async function LabPage({ params }: LabPageProps) {
         <p className="mb-8 mt-3 max-w-[640px] text-muted-foreground">{t.lab.dailyCaption}</p>
         <DailyChart daily={data.daily} locale={locale} labels={t.lab} />
       </section>
+
+      {trends.length > 0 && (
+        <section aria-labelledby="trends-heading" className={section}>
+          <H2 id="trends-heading">{t.lab.trendsTitle}</H2>
+          <p className="mb-8 mt-3 max-w-[640px] text-muted-foreground">{t.lab.trendsIntro}</p>
+          <Trends trends={trends} locale={locale} t={t.lab} />
+        </section>
+      )}
 
       <section aria-labelledby="looking-heading" className={section}>
         <H2 id="looking-heading">{t.lab.lookingForTitle}</H2>
