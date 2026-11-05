@@ -26,9 +26,8 @@ declare global {
 }
 
 const fieldClass = cn(
-  'w-full min-h-[44px] px-3 py-2 text-sm bg-transparent text-foreground',
-  'border border-border rounded-[4px] placeholder:text-muted-foreground',
-  'focus-visible:outline focus-visible:outline-1 focus-visible:outline-ring'
+  'w-full min-h-11 border-0 border-b border-input bg-transparent px-0 py-2 text-base text-foreground',
+  'placeholder:text-muted-foreground focus-visible:border-foreground focus-visible:outline-none'
 );
 
 /**
@@ -44,6 +43,10 @@ export function ContactForm({ translations }: { translations: Translations }) {
   const [fieldError, setFieldError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const widgetRef = useRef<HTMLDivElement>(null);
+  // Turnstile (script, iframe, its console noise) loads only once someone
+  // starts filling the form, not for every visitor of the home page. The
+  // challenge then solves while they type.
+  const [engaged, setEngaged] = useState(false);
 
   /**
    * Explicit rendering, not Turnstile's implicit mode. Implicit scans the DOM
@@ -53,7 +56,7 @@ export function ContactForm({ translations }: { translations: Translations }) {
    * Rendering on mount works on first load and on client navigation alike.
    */
   useEffect(() => {
-    if (!TURNSTILE_SITE_KEY || !widgetRef.current) return;
+    if (!TURNSTILE_SITE_KEY || !engaged || !widgetRef.current) return;
     let id: string | undefined;
     let cancelled = false;
 
@@ -87,7 +90,7 @@ export function ContactForm({ translations }: { translations: Translations }) {
       cancelled = true;
       if (id) window.turnstile?.remove(id);
     };
-  }, []);
+  }, [engaged]);
 
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -150,23 +153,23 @@ export function ContactForm({ translations }: { translations: Translations }) {
 
   if (status === 'sent') {
     return (
-      <div className="border border-border rounded-[4px] p-5 text-left" role="status">
-        <p className="text-sm text-foreground m-0">{t.sent}</p>
+      <div className="border-t border-foreground pt-5" role="status">
+        <p className="m-0 font-serif text-xl">{t.sent}</p>
       </div>
     );
   }
 
   return (
     <>
-      {TURNSTILE_SITE_KEY && (
+      {TURNSTILE_SITE_KEY && engaged && (
         <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
       )}
-      <form onSubmit={submit} className="border border-border rounded-[4px] p-5 text-left flex flex-col gap-3">
-        <h3 className="font-headline text-base font-bold text-foreground m-0">{t.title}</h3>
+      <form onSubmit={submit} onFocus={() => setEngaged(true)} className="flex flex-col gap-6 border-t border-border pt-6 text-left">
+        <h3 className="m-0 font-serif text-2xl font-medium">{t.title}</h3>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>
-            <label htmlFor="contact-name" className="block text-xs text-muted-foreground mb-1">
+            <label htmlFor="contact-name" className="mb-1 block text-sm text-muted-foreground">
               {t.name}
             </label>
             <input
@@ -181,7 +184,7 @@ export function ContactForm({ translations }: { translations: Translations }) {
             />
           </div>
           <div>
-            <label htmlFor="contact-email" className="block text-xs text-muted-foreground mb-1">
+            <label htmlFor="contact-email" className="mb-1 block text-sm text-muted-foreground">
               {t.email}
             </label>
             <input
@@ -197,7 +200,7 @@ export function ContactForm({ translations }: { translations: Translations }) {
         </div>
 
         <div>
-          <label htmlFor="contact-message" className="block text-xs text-muted-foreground mb-1">
+          <label htmlFor="contact-message" className="mb-1 block text-sm text-muted-foreground">
             {t.message}
           </label>
           <textarea
@@ -223,16 +226,11 @@ export function ContactForm({ translations }: { translations: Translations }) {
             implicitly, giving two widgets. */}
         {TURNSTILE_SITE_KEY && <div ref={widgetRef} />}
 
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
           <button
             type="submit"
             disabled={status === 'sending'}
-            className={cn(
-              'inline-flex items-center justify-center gap-2 min-h-[44px] px-4 rounded-[4px]',
-              'bg-primary text-primary-foreground text-sm font-medium',
-              'transition-colors hover:bg-foreground/85 disabled:opacity-50',
-              'focus-visible:outline focus-visible:outline-1 focus-visible:outline-ring focus-visible:outline-offset-2'
-            )}
+            className="inline-flex min-h-11 items-center justify-center gap-2 bg-foreground px-5 text-[15px] font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             {status === 'sending' ? (
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
@@ -241,7 +239,7 @@ export function ContactForm({ translations }: { translations: Translations }) {
             )}
             {status === 'sending' ? t.sending : t.submit}
           </button>
-          <p className="text-xs text-muted-foreground m-0">{t.privacy}</p>
+          <p className="m-0 text-sm text-muted-foreground">{t.privacy}</p>
         </div>
 
         <div aria-live="polite">
