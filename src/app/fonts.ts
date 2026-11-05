@@ -1,20 +1,26 @@
-import { JetBrains_Mono, IBM_Plex_Mono } from 'next/font/google'
+import { Inter, JetBrains_Mono, Newsreader } from 'next/font/google';
 
 /**
- * OpenCode-style typography: the whole site is monospaced.
- * Berkeley Mono is commercial, so we use JetBrains Mono (closest metric match)
- * with IBM Plex Mono as the documented secondary fallback.
+ * Editorial system (11/2026 redesign): serif for headings and long-form text,
+ * sans for interface, mono only for dates, code and the lab.
  */
-export const jetbrainsMono = JetBrains_Mono({
+export const serif = Newsreader({
+  subsets: ['latin'],
+  display: 'swap',
+  style: ['normal', 'italic'],
+  axes: ['opsz'],
+  variable: '--font-serif-face',
+});
+
+export const sans = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-sans-face',
+});
+
+export const mono = JetBrains_Mono({
   subsets: ['latin'],
   display: 'swap',
   weight: ['400', '500', '700'],
-  variable: '--font-jetbrains-mono',
-})
-
-export const ibmPlexMono = IBM_Plex_Mono({
-  subsets: ['latin'],
-  display: 'swap',
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-ibm-plex-mono',
-})
+  variable: '--font-mono-face',
+});

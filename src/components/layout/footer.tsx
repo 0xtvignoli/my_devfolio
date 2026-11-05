@@ -1,64 +1,21 @@
 import { getTranslations } from '@/lib/i18n/server';
-import { localizedPath } from '@/lib/i18n/paths';
 import { SOCIAL_LINKS } from '@/lib/seo/constants';
 import type { Locale } from '@/lib/types';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
-import Link from '@mui/material/Link';
 
-const footerLinkSx = {
-  color: 'text.secondary',
-  fontSize: '0.875rem',
-  textDecoration: 'none',
-  '&:hover': { color: 'text.primary', textDecoration: 'underline' },
-} as const;
+const linkClass = 'inline-block py-2 hover:text-foreground';
 
-export async function Footer({ locale }: { locale: Locale }) {
+export function Footer({ locale }: { locale: Locale }) {
   const t = getTranslations(locale);
-
   return (
-    <Box
-      component="footer"
-      sx={{
-        borderTop: 1,
-        borderColor: 'divider',
-        py: 4,
-        mt: 6,
-      }}
-    >
-      <Container maxWidth="lg">
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: { xs: 'column', md: 'row' },
-            justifyContent: 'space-between',
-            alignItems: { xs: 'flex-start', md: 'center' },
-            gap: 2,
-          }}
-        >
-          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
-            {t.footer.copy}
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 0, alignItems: 'center' }}>
-            <Link href={localizedPath(locale, '/cv')} sx={footerLinkSx}>
-              {t.footer.cv}
-            </Link>
-            <Box component="span" aria-hidden sx={{ color: 'text.disabled', px: 1.5, fontSize: '0.875rem' }}>
-              ·
-            </Box>
-            <Link href={SOCIAL_LINKS.github} target="_blank" rel="noopener noreferrer" sx={footerLinkSx} aria-label="GitHub">
-              [github]
-            </Link>
-            <Box component="span" aria-hidden sx={{ color: 'text.disabled', px: 1.5, fontSize: '0.875rem' }}>
-              ·
-            </Box>
-            <Link href={SOCIAL_LINKS.linkedin} target="_blank" rel="noopener noreferrer" sx={footerLinkSx} aria-label="LinkedIn">
-              [linkedin]
-            </Link>
-          </Box>
-        </Box>
-      </Container>
-    </Box>
+    <footer className="border-t border-border">
+      <div className="mx-auto flex max-w-[1120px] flex-wrap items-center justify-between gap-x-7 gap-y-2 px-4 py-8 text-sm text-muted-foreground sm:px-8">
+        <span>{t.footer.copy}</span>
+        <span className="flex flex-wrap gap-x-6">
+          <a href={SOCIAL_LINKS.linkedin} target="_blank" rel="noopener noreferrer" className={linkClass}>LinkedIn</a>
+          <a href={SOCIAL_LINKS.github} target="_blank" rel="noopener noreferrer" className={linkClass}>GitHub</a>
+          <a href={`/${locale}/feed.xml`} className={linkClass}>RSS</a>
+        </span>
+      </div>
+    </footer>
   );
 }

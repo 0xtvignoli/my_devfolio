@@ -1,0 +1,255 @@
+{
+  "generatedAt": "2026-11-05T14:48:01.020Z",
+  "from": "2026-10-23",
+  "to": "2026-11-05",
+  "totals": {
+    "requests": 25407,
+    "hostile": 10278,
+    "stopped": 5682,
+    "maze": 4572
+  },
+  "daily": [
+    {
+      "date": "2026-10-23",
+      "requests": 1601,
+      "hostile": 409
+    },
+    {
+      "date": "2026-10-24",
+      "requests": 525,
+      "hostile": 56
+    },
+    {
+      "date": "2026-10-25",
+      "requests": 509,
+      "hostile": 44
+    },
+    {
+      "date": "2026-10-26",
+      "requests": 1166,
+      "hostile": 315
+    },
+    {
+      "date": "2026-10-27",
+      "requests": 947,
+      "hostile": 184
+    },
+    {
+      "date": "2026-10-28",
+      "requests": 2430,
+      "hostile": 1315
+    },
+    {
+      "date": "2026-10-29",
+      "requests": 2199,
+      "hostile": 388
+    },
+    {
+      "date": "2026-10-30",
+      "requests": 1253,
+      "hostile": 648
+    },
+    {
+      "date": "2026-10-31",
+      "requests": 1814,
+      "hostile": 442
+    },
+    {
+      "date": "2026-11-01",
+      "requests": 2893,
+      "hostile": 1289
+    },
+    {
+      "date": "2026-11-02",
+      "requests": 2020,
+      "hostile": 540
+    },
+    {
+      "date": "2026-11-03",
+      "requests": 4538,
+      "hostile": 3373
+    },
+    {
+      "date": "2026-11-04",
+      "requests": 1472,
+      "hostile": 260
+    },
+    {
+      "date": "2026-11-05",
+      "requests": 2040,
+      "hostile": 1015
+    }
+  ],
+  "categories": [
+    {
+      "category": "secrets",
+      "count": 3392
+    },
+    {
+      "category": "cms",
+      "count": 1721
+    },
+    {
+      "category": "admin",
+      "count": 421
+    },
+    {
+      "category": "traversal",
+      "count": 129
+    },
+    {
+      "category": "app-exploit",
+      "count": 670
+    },
+    {
+      "category": "other",
+      "count": 3945
+    }
+  ],
+  "targets": [
+    {
+      "target": ".env",
+      "category": "secrets",
+      "count": 2358
+    },
+    {
+      "target": "PHP scripts",
+      "category": "cms",
+      "count": 1218
+    },
+    {
+      "target": "POST to a page",
+      "category": "app-exploit",
+      "count": 670
+    },
+    {
+      "target": "WordPress",
+      "category": "cms",
+      "count": 503
+    },
+    {
+      "target": "admin panels",
+      "category": "admin",
+      "count": 386
+    },
+    {
+      "target": "backups & dumps",
+      "category": "secrets",
+      "count": 318
+    },
+    {
+      "target": "config files",
+      "category": "secrets",
+      "count": 287
+    },
+    {
+      "target": "cloud credentials",
+      "category": "secrets",
+      "count": 231
+    },
+    {
+      "target": ".git",
+      "category": "secrets",
+      "count": 162
+    },
+    {
+      "target": "../ traversal",
+      "category": "traversal",
+      "count": 129
+    }
+  ],
+  "countries": [
+    {
+      "code": "FR",
+      "count": 3935
+    },
+    {
+      "code": "NL",
+      "count": 2558
+    },
+    {
+      "code": "US",
+      "count": 935
+    },
+    {
+      "code": "CA",
+      "count": 627
+    },
+    {
+      "code": "ID",
+      "count": 347
+    },
+    {
+      "code": "SG",
+      "count": 289
+    },
+    {
+      "code": "AU",
+      "count": 266
+    },
+    {
+      "code": "DE",
+      "count": 189
+    },
+    {
+      "code": "KR",
+      "count": 177
+    },
+    {
+      "code": "PL",
+      "count": 151
+    }
+  ],
+  "clients": [
+    {
+      "label": "browser-like",
+      "count": 5379
+    },
+    {
+      "label": "curl",
+      "count": 2908
+    },
+    {
+      "label": "search & AI crawlers",
+      "count": 1265
+    },
+    {
+      "label": "empty user agent",
+      "count": 456
+    },
+    {
+      "label": "other",
+      "count": 157
+    },
+    {
+      "label": "Go",
+      "count": 98
+    },
+    {
+      "label": "Python",
+      "count": 13
+    },
+    {
+      "label": "Wget",
+      "count": 1
+    }
+  ],
+  "defenses": [
+    {
+      "layer": "AI Labyrinth",
+      "count": 4572
+    },
+    {
+      "layer": "Cloudflare managed rules",
+      "count": 1362
+    },
+    {
+      "layer": "Bot Fight Mode",
+      "count": 593
+    },
+    {
+      "layer": "Custom WAF rule",
+      "count": 72
+    }
+  ]
+}
