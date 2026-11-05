@@ -93,26 +93,25 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
   'react2shell-scan-case-study': {
     en: {
       title: 'Case study: a React2Shell scan against this site',
-      description: 'Eleven POST requests, three cloud addresses, one unused Server Action. What the edge saw, what could not be checked, and the four changes that closed the door.',
+      description: 'Suspicious POST requests from cloud addresses and an unused Server Action. What the edge saw, what could not be verified, and the four changes that closed the door.',
       caseStudy: {
         facts: [
           { label: 'Window', value: '23 → 29 Oct 2026', mono: true },
           { label: 'Vector', value: 'POST /en · Server Action', mono: true },
           { label: 'Outcome', value: 'Compromise unlikely, not ruled out' },
-          { label: 'Status', value: 'Mitigated · 1 item open' },
+          { label: 'Status', value: 'Mitigated' },
         ],
         timeline: [
-          { when: '23 Oct', kind: 'event', title: 'First POST to a page', body: 'Eleven POST /en requests over a week, from three Google Cloud addresses, mixed with .env probes. All got a 500.' },
-          { when: '5 Nov', kind: 'decision', title: 'Edge data is the only record', body: 'Request logs keep one hour. Cloudflare analytics show the attempts, not the bodies: success cannot be ruled out.' },
+          { when: '23 Oct', kind: 'event', title: 'First POST to a page', body: 'Suspicious POST /en requests from Google Cloud addresses, mixed with .env probes. Each one got a 500.' },
+          { when: '5 Nov', kind: 'decision', title: 'Edge data is the only record', body: 'Cloudflare analytics show the attempts, not the request bodies: success cannot be ruled out.' },
           { when: '5 Nov', kind: 'event', title: 'Upgrade', body: 'Next.js 16.4.5 and React 19.2.9: seven critical audit findings down to zero.' },
           { when: '5 Nov', kind: 'event', title: 'Remove the surface', body: 'The unused Server Action is deleted; a WAF rule allows write methods on one route only.' },
-          { when: 'open', kind: 'decision', title: 'Rotate the app keys', body: 'A precaution against the case that cannot be excluded.' },
         ],
       },
       content: [
         { type: 'heading', level: 2, content: 'What arrived' },
-        { type: 'paragraph', content: 'Between 23 and 29 October, eleven `POST /en` requests reached the home page from three addresses in Google Cloud ranges, in short bursts mixed with probes for `.env` and other config files. A static page has no reason to receive a POST. On a Next.js site it means one thing: someone is trying to invoke a Server Action, the mechanism behind React2Shell (CVE-2025-55182) and the critical React Server Components advisories that followed it.' },
-        { type: 'paragraph', content: 'All eleven got a 500 from the origin. That is not a defence, just an exception: the payload did not match an action the app knew how to run.' },
+        { type: 'paragraph', content: 'Between 23 and 29 October, suspicious `POST /en` requests reached the home page from addresses in Google Cloud ranges, in short bursts mixed with probes for `.env` and other config files. A static page has no reason to receive a POST. On a Next.js site it means one thing: someone is trying to invoke a Server Action, the mechanism behind React2Shell (CVE-2025-55182) and the critical React Server Components advisories that followed it.' },
+        { type: 'paragraph', content: 'Every one of them got a 500 from the origin. That is not a defence, just an exception: the payload did not match an action the app knew how to run.' },
         { type: 'heading', level: 2, content: 'Why it mattered' },
         { type: 'list', items: [
           'The site was already patched for React2Shell itself, but five newer advisories (three critical: React Server Components, the `use cache` directive and image optimisation of SVGs) were fixed only in later releases.',
@@ -120,7 +119,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
           'Every page accepted POST. The firewall had no opinion about write methods.',
         ] },
         { type: 'heading', level: 2, content: 'What could not be checked' },
-        { type: 'paragraph', content: 'The hosting plan keeps request logs for one hour, so the origin side of those 500s was gone before anyone looked. The only record was Cloudflare\'s HTTP analytics: 14 days of aggregated requests, with path, method, status and country, but no bodies. Enough to see the attempts; not enough to prove they failed. The honest verdict is: compromise unlikely, not ruled out.' },
+        { type: 'paragraph', content: 'The only record was Cloudflare\'s HTTP analytics: aggregated requests, with path, method, status and country, but no bodies. Enough to see the attempts; not enough to prove they failed. The honest verdict is: compromise unlikely, not ruled out.' },
         { type: 'heading', level: 2, content: 'What changed' },
         { type: 'list', ordered: true, items: [
           'Full dependency upgrade: Next.js 16.4.5, React 19.2.9, sharp 0.35.5. `bun audit` went from 7 critical findings to none.',
@@ -137,33 +136,31 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         { type: 'list', items: [
           'Delete what you do not use. The cheapest patch for a Server Action vulnerability is not having a Server Action.',
           'Allow-list write methods at the edge. A content site needs POST in one or two places; say so in the firewall.',
-          'Retention is a security control. One hour of logs means every investigation starts too late; this Observatory now keeps a daily aggregate.',
-          'Still open: rotating the API keys the app holds, as a precaution against the case that cannot be ruled out.',
+          'Keep your own record. Aggregated edge data was the only trace of these requests; this Observatory now keeps a daily one.',
         ] },
       ],
     },
     it: {
       title: 'Caso studio: una scansione React2Shell contro questo sito',
-      description: 'Undici richieste POST, tre indirizzi cloud, una Server Action inutilizzata. Cosa ha visto l\'edge, cosa non si è potuto verificare e le quattro modifiche che hanno chiuso la porta.',
+      description: 'Richieste POST sospette da indirizzi cloud e una Server Action inutilizzata. Cosa ha visto l\'edge, cosa non si è potuto verificare e le quattro modifiche che hanno chiuso la porta.',
       caseStudy: {
         facts: [
           { label: 'Periodo', value: '23 → 29 ott 2026', mono: true },
           { label: 'Vettore', value: 'POST /en · Server Action', mono: true },
           { label: 'Esito', value: 'Compromissione improbabile, non esclusa' },
-          { label: 'Stato', value: 'Mitigato · 1 punto aperto' },
+          { label: 'Stato', value: 'Mitigato' },
         ],
         timeline: [
-          { when: '23 ott', kind: 'event', title: 'Prima POST a una pagina', body: 'Undici richieste POST /en in una settimana, da tre indirizzi Google Cloud, insieme a scansioni di .env. Tutte con un 500.' },
-          { when: '5 nov', kind: 'decision', title: 'L\'edge è l\'unica traccia', body: 'I log delle richieste durano un\'ora. Le analytics di Cloudflare mostrano i tentativi, non i body: il successo non si può escludere.' },
+          { when: '23 ott', kind: 'event', title: 'Prima POST a una pagina', body: 'Richieste POST /en sospette da indirizzi Google Cloud, insieme a scansioni di .env. Ognuna ha ricevuto un 500.' },
+          { when: '5 nov', kind: 'decision', title: 'L\'edge è l\'unica traccia', body: 'Le analytics di Cloudflare mostrano i tentativi, non il contenuto delle richieste: il successo non si può escludere.' },
           { when: '5 nov', kind: 'event', title: 'Aggiornamento', body: 'Next.js 16.4.5 e React 19.2.9: sette finding critici scesi a zero.' },
           { when: '5 nov', kind: 'event', title: 'Via la superficie', body: 'La Server Action inutilizzata è eliminata; una regola WAF permette i metodi di scrittura su una sola route.' },
-          { when: 'aperto', kind: 'decision', title: 'Ruotare le chiavi dell\'app', body: 'Precauzione contro il caso che non si può escludere.' },
         ],
       },
       content: [
         { type: 'heading', level: 2, content: 'Cosa è arrivato' },
-        { type: 'paragraph', content: 'Tra il 23 e il 29 ottobre undici richieste `POST /en` hanno raggiunto la home da tre indirizzi in range di Google Cloud, a brevi raffiche insieme a scansioni di `.env` e altri file di configurazione. Una pagina statica non ha motivo di ricevere una POST. Su un sito Next.js significa una cosa: qualcuno prova a invocare una Server Action, il meccanismo dietro React2Shell (CVE-2025-55182) e gli advisory critici sui React Server Components arrivati dopo.' },
-        { type: 'paragraph', content: 'Tutte e undici hanno ricevuto un 500 dall\'origin. Non è una difesa, solo un\'eccezione: il payload non corrispondeva a un\'azione che l\'app sapesse eseguire.' },
+        { type: 'paragraph', content: 'Tra il 23 e il 29 ottobre richieste `POST /en` sospette hanno raggiunto la home da indirizzi in range di Google Cloud, a brevi raffiche insieme a scansioni di `.env` e altri file di configurazione. Una pagina statica non ha motivo di ricevere una POST. Su un sito Next.js significa una cosa: qualcuno prova a invocare una Server Action, il meccanismo dietro React2Shell (CVE-2025-55182) e gli advisory critici sui React Server Components arrivati dopo.' },
+        { type: 'paragraph', content: 'Ognuna ha ricevuto un 500 dall\'origin. Non è una difesa, solo un\'eccezione: il payload non corrispondeva a un\'azione che l\'app sapesse eseguire.' },
         { type: 'heading', level: 2, content: 'Perché contava' },
         { type: 'list', items: [
           'Il sito era già aggiornato per React2Shell, ma cinque advisory più recenti (tre critici: React Server Components, la direttiva `use cache` e l\'ottimizzazione immagini degli SVG) erano corretti solo in release successive.',
@@ -171,7 +168,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
           'Ogni pagina accettava POST. Il firewall non aveva regole sui metodi di scrittura.',
         ] },
         { type: 'heading', level: 2, content: 'Cosa non si è potuto verificare' },
-        { type: 'paragraph', content: 'Il piano di hosting conserva i log delle richieste per un\'ora, quindi il lato origin di quei 500 era già sparito quando li abbiamo cercati. L\'unica traccia erano le analytics HTTP di Cloudflare: 14 giorni di richieste aggregate, con path, metodo, status e paese, ma senza body. Abbastanza per vedere i tentativi, non per dimostrare che siano falliti. Il verdetto onesto: compromissione improbabile, non esclusa.' },
+        { type: 'paragraph', content: 'L\'unica traccia erano le analytics HTTP di Cloudflare: richieste aggregate, con path, metodo, status e paese, ma senza body. Abbastanza per vedere i tentativi, non per dimostrare che siano falliti. Il verdetto onesto: compromissione improbabile, non esclusa.' },
         { type: 'heading', level: 2, content: 'Cosa è cambiato' },
         { type: 'list', ordered: true, items: [
           'Aggiornamento completo delle dipendenze: Next.js 16.4.5, React 19.2.9, sharp 0.35.5. `bun audit` è passato da 7 finding critici a zero.',
@@ -188,8 +185,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         { type: 'list', items: [
           'Elimina ciò che non usi. La patch più economica per una vulnerabilità delle Server Action è non avere Server Action.',
           'Metti in allow-list i metodi di scrittura all\'edge. Un sito di contenuti ha bisogno di POST in uno o due punti: scrivilo nel firewall.',
-          'La retention è un controllo di sicurezza. Un\'ora di log significa che ogni indagine parte in ritardo; questo Osservatorio ora tiene un aggregato giornaliero.',
-          'Ancora aperto: ruotare le chiavi API dell\'app, per precauzione contro il caso che non si può escludere.',
+          'Tieni una traccia tua. I dati aggregati dell\'edge erano l\'unica traccia di queste richieste; questo Osservatorio ora ne conserva una ogni giorno.',
         ] },
       ],
     },
