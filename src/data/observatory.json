@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-11-05T14:38:41.403Z",
+  "generatedAt": "2026-11-05T14:48:01.020Z",
   "from": "2026-10-23",
   "to": "2026-11-05",
   "totals": {
-    "requests": 25406,
-    "hostile": 11145,
+    "requests": 25407,
+    "hostile": 10278,
     "stopped": 5682,
     "maze": 4572
   },
@@ -12,17 +12,17 @@
     {
       "date": "2026-10-23",
       "requests": 1601,
-      "hostile": 476
+      "hostile": 409
     },
     {
       "date": "2026-10-24",
       "requests": 525,
-      "hostile": 58
+      "hostile": 56
     },
     {
       "date": "2026-10-25",
       "requests": 509,
-      "hostile": 46
+      "hostile": 44
     },
     {
       "date": "2026-10-26",
@@ -32,32 +32,32 @@
     {
       "date": "2026-10-27",
       "requests": 947,
-      "hostile": 190
+      "hostile": 184
     },
     {
       "date": "2026-10-28",
       "requests": 2430,
-      "hostile": 1424
+      "hostile": 1315
     },
     {
       "date": "2026-10-29",
       "requests": 2199,
-      "hostile": 474
+      "hostile": 388
     },
     {
       "date": "2026-10-30",
       "requests": 1253,
-      "hostile": 649
+      "hostile": 648
     },
     {
       "date": "2026-10-31",
       "requests": 1814,
-      "hostile": 451
+      "hostile": 442
     },
     {
       "date": "2026-11-01",
       "requests": 2893,
-      "hostile": 1384
+      "hostile": 1289
     },
     {
       "date": "2026-11-02",
@@ -67,39 +67,39 @@
     {
       "date": "2026-11-03",
       "requests": 4538,
-      "hostile": 3855
+      "hostile": 3373
     },
     {
       "date": "2026-11-04",
       "requests": 1472,
-      "hostile": 264
+      "hostile": 260
     },
     {
       "date": "2026-11-05",
-      "requests": 2039,
-      "hostile": 1019
+      "requests": 2040,
+      "hostile": 1015
     }
   ],
   "categories": [
     {
       "category": "secrets",
-      "count": 3887
+      "count": 3392
     },
     {
       "category": "cms",
-      "count": 2025
+      "count": 1721
     },
     {
       "category": "admin",
-      "count": 467
+      "count": 421
     },
     {
       "category": "traversal",
-      "count": 144
+      "count": 129
     },
     {
       "category": "app-exploit",
-      "count": 677
+      "count": 670
     },
     {
       "category": "other",
@@ -110,70 +110,70 @@
     {
       "target": ".env",
       "category": "secrets",
-      "count": 2581
+      "count": 2358
     },
     {
       "target": "PHP scripts",
       "category": "cms",
-      "count": 1393
+      "count": 1218
     },
     {
       "target": "POST to a page",
       "category": "app-exploit",
-      "count": 677
+      "count": 670
     },
     {
       "target": "WordPress",
       "category": "cms",
-      "count": 632
-    },
-    {
-      "target": "backups & dumps",
-      "category": "secrets",
-      "count": 443
+      "count": 503
     },
     {
       "target": "admin panels",
       "category": "admin",
-      "count": 408
+      "count": 386
     },
     {
-      "target": "config files",
+      "target": "backups & dumps",
       "category": "secrets",
       "count": 318
     },
     {
+      "target": "config files",
+      "category": "secrets",
+      "count": 287
+    },
+    {
       "target": "cloud credentials",
       "category": "secrets",
-      "count": 288
+      "count": 231
     },
     {
       "target": ".git",
       "category": "secrets",
-      "count": 215
+      "count": 162
     },
     {
       "target": "../ traversal",
       "category": "traversal",
-      "count": 144
+      "count": 129
     }
   ],
   "countries": [
     {
       "code": "FR",
-      "count": 4433
+      "count": 3935
     },
     {
       "code": "NL",
-      "count": 2574
+      "count": 2558
     },
     {
       "code": "US",
-      "count": 949
+      "count": 935
     },
     {
       "code": "CA",
-      "count": 630
+      "count": 627
     },
     {
       "code": "ID",
@@ -181,23 +181,23 @@
     },
     {
       "code": "SG",
-      "count": 291
-    },
-    {
-      "code": "PL",
-      "count": 276
+      "count": 289
     },
     {
       "code": "AU",
       "count": 266
     },
     {
-      "code": "IL",
-      "count": 207
+      "code": "DE",
+      "count": 189
     },
     {
-      "code": "AE",
-      "count": 198
+      "code": "KR",
+      "count": 177
+    },
+    {
+      "code": "PL",
+      "count": 151
     }
   ],
   "clients": [
@@ -214,12 +214,12 @@
       "count": 1265
     },
     {
-      "label": "other",
-      "count": 1024
-    },
-    {
       "label": "empty user agent",
       "count": 456
+    },
+    {
+      "label": "other",
+      "count": 157
     },
     {
       "label": "Go",

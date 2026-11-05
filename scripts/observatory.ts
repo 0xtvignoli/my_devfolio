@@ -102,6 +102,9 @@ const clients = new Map<string, number>();
 let hostile = 0;
 
 for (const { count, dimensions: d } of [...failed, ...writes]) {
+  // Cloudflare's own Early Hints prefetches replay the visitor's path and often
+  // time out (504): internal traffic, and counting it would double each probe.
+  if (/early hints$/i.test(String(d.userAgent))) continue;
   const { category, target } = classifyRequest(String(d.clientRequestHTTPMethodName), String(d.clientRequestPath));
   // Unclassified failures are mostly broken links and timeouts, not attacks —
   // unless the edge refused them.
