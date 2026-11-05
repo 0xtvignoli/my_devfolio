@@ -5,6 +5,8 @@ import { getArticle, getArticleSlugs, getRelatedArticles } from '@/data/content/
 import { CodeBlock } from '@/components/shared/code-block';
 import { InlineText } from '@/components/shared/inline-text';
 import { cn } from '@/lib/utils';
+import { headingIds } from '@/lib/heading-ids';
+import { ArticleToc, ArticleTocDisclosure, ReadingProgress, type TocItem } from '@/components/shared/article-toc';
 import { formatDate } from '@/lib/format-date';
 import { getTranslations, resolveLocaleParam } from '@/lib/i18n/server';
 import { localizedPath } from '@/lib/i18n/paths';
@@ -50,19 +52,41 @@ function readingMinutes(article: ArticleType): number {
   return Math.max(1, Math.round(text.split(/\s+/).length / 220));
 }
 
-const renderContent = (article: ArticleType) =>
+/** Every heading gets a stable id; level-2 ones also feed the contents list. */
+function outline(article: ArticleType) {
+  const headings = article.content.flatMap((item, index) => (item.type === 'heading' ? [{ index, item }] : []));
+  const ids = headingIds(headings.map((h) => h.item.content));
+  const idByIndex = new Map(headings.map((h, i) => [h.index, ids[i]]));
+  const toc: TocItem[] = headings
+    .map((h, i) => ({ level: h.item.level, id: ids[i], text: h.item.content }))
+    .filter((h) => h.level === 2)
+    .map(({ id, text }) => ({ id, text }));
+  return { idByIndex, toc };
+}
+
+const renderContent = (article: ArticleType, idByIndex: Map<number, string>, anchorLabel: string) =>
   article.content.map((item, index) => {
     switch (item.type) {
       case 'heading': {
         const Tag = `h${item.level}` as keyof React.JSX.IntrinsicElements;
+        const id = idByIndex.get(index)!;
         return (
           <Tag
             key={index}
+            id={id}
             className={cn(
-              'font-sans font-semibold tracking-[-0.01em]',
+              'group relative scroll-mt-8 font-sans font-semibold tracking-[-0.01em]',
               item.level === 2 ? 'mb-4 mt-12 text-[22px] leading-[1.3]' : 'mb-3 mt-9 text-lg leading-[1.35]',
             )}
           >
+            {/* Sits in the left margin on wide screens; visible on hover and focus. */}
+            <a
+              href={`#${id}`}
+              aria-label={`${anchorLabel}: ${item.content}`}
+              className="absolute -left-7 top-0 hidden w-6 font-mono text-base text-link opacity-0 focus-visible:opacity-100 group-hover:opacity-100 sm:inline-block"
+            >
+              #
+            </a>
             {item.content}
           </Tag>
         );
@@ -102,6 +126,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
   const articlePath = localizedPath(locale, `/articles/${slug}`);
   const related = getRelatedArticles(slug, locale);
+  const { idByIndex, toc } = outline(article);
+  // A short article needs no map.
+  const showToc = toc.length >= 3;
 
   return (
     <>
@@ -121,7 +148,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           ]),
         ]}
       />
-      <article className="mx-auto max-w-[680px] px-4 pb-24 pt-10 sm:px-6 sm:pt-[72px]">
+      <ReadingProgress targetId="article-body" />
+      <div className="mx-auto flex max-w-[1120px] justify-center gap-16 px-4 pb-24 pt-10 sm:px-8 sm:pt-[72px] lg:justify-between">
+      <article className="min-w-0 max-w-[680px] flex-1">
         <Link
           href={localizedPath(locale, '/articles')}
           className="inline-block py-2.5 text-sm text-muted-foreground hover:text-foreground"
@@ -140,8 +169,15 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           <time dateTime={article.date} className="font-mono text-[13px]">{formatDate(article.date, locale)}</time>
           <span>{readingMinutes(article)} {t.article.minRead}</span>
         </p>
+        {showToc && (
+          <div className="lg:hidden">
+            <ArticleTocDisclosure items={toc} label={t.article.contents} />
+          </div>
+        )}
 
-        <div className="mt-10 font-serif text-[19px] leading-[1.65] sm:text-[21px]">{renderContent(article)}</div>
+        <div id="article-body" className="mt-10 font-serif text-[19px] leading-[1.65] sm:text-[21px]">
+          {renderContent(article, idByIndex, t.article.anchor)}
+        </div>
 
         {related.length > 0 && (
           <nav aria-labelledby="related-heading" className="mt-[72px] border-t border-foreground pt-5">
@@ -161,6 +197,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           </nav>
         )}
       </article>
+      {showToc && (
+        <aside className="hidden w-[240px] shrink-0 pt-[118px] lg:block">
+          <ArticleToc items={toc} label={t.article.onThisPage} />
+        </aside>
+      )}
+      </div>
     </>
   );
 }
