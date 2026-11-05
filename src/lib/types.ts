@@ -26,6 +26,12 @@ export interface Translations {
     labCta: string;
     contactTitle: string;
     contactCta: string;
+    signalLabel: string;
+    signalHostile: string;
+    signalStopped: string;
+    signalTop: string;
+    signalCta: string;
+    caseStudy: string;
   };
   mobileNav: {
     home: string;
@@ -125,6 +131,7 @@ export interface Translations {
     contents: string;
     onThisPage: string;
     anchor: string;
+    timeline: string;
     back: string;
     author: string;
     published: string;
@@ -216,6 +223,13 @@ export type ArticleContent = {
     code: string;
 };
 
+/** Structured summary rendered above a case study's prose: facts strip and timeline. */
+export interface CaseStudy {
+  facts: { label: string; value: string; mono?: boolean }[];
+  /** `event` = something that happened, `decision` = something chosen or still open. */
+  timeline: { when: string; kind: 'event' | 'decision'; title: string; body: string }[];
+}
+
 export interface Article {
   slug: string;
   title: string;
@@ -227,5 +241,6 @@ export interface Article {
   tags: string[];
   imageUrl?: string;
   imageHint?: string;
+  caseStudy?: CaseStudy;
 }
 

@@ -89,11 +89,26 @@ const articlesContent: Omit<Article, 'title' | 'description' | 'content'>[] = [
   },
 ];
 
-const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'description' | 'content'>>> = {
+const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'description' | 'content' | 'caseStudy'>>> = {
   'react2shell-scan-case-study': {
     en: {
       title: 'Case study: a React2Shell scan against this site',
       description: 'Eleven POST requests, three cloud addresses, one unused Server Action. What the edge saw, what could not be checked, and the four changes that closed the door.',
+      caseStudy: {
+        facts: [
+          { label: 'Window', value: '23 → 29 Oct 2026', mono: true },
+          { label: 'Vector', value: 'POST /en · Server Action', mono: true },
+          { label: 'Outcome', value: 'Compromise unlikely, not ruled out' },
+          { label: 'Status', value: 'Mitigated · 1 item open' },
+        ],
+        timeline: [
+          { when: '23 Oct', kind: 'event', title: 'First POST to a page', body: 'Eleven POST /en requests over a week, from three Google Cloud addresses, mixed with .env probes. All got a 500.' },
+          { when: '5 Nov', kind: 'decision', title: 'Edge data is the only record', body: 'Request logs keep one hour. Cloudflare analytics show the attempts, not the bodies: success cannot be ruled out.' },
+          { when: '5 Nov', kind: 'event', title: 'Upgrade', body: 'Next.js 16.4.5 and React 19.2.9: seven critical audit findings down to zero.' },
+          { when: '5 Nov', kind: 'event', title: 'Remove the surface', body: 'The unused Server Action is deleted; a WAF rule allows write methods on one route only.' },
+          { when: 'open', kind: 'decision', title: 'Rotate the app keys', body: 'A precaution against the case that cannot be excluded.' },
+        ],
+      },
       content: [
         { type: 'heading', level: 2, content: 'What arrived' },
         { type: 'paragraph', content: 'Between 23 and 29 October, eleven `POST /en` requests reached the home page from three addresses in Google Cloud ranges, in short bursts mixed with probes for `.env` and other config files. A static page has no reason to receive a POST. On a Next.js site it means one thing: someone is trying to invoke a Server Action, the mechanism behind React2Shell (CVE-2025-55182) and the critical React Server Components advisories that followed it.' },
@@ -130,6 +145,21 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
     it: {
       title: 'Caso studio: una scansione React2Shell contro questo sito',
       description: 'Undici richieste POST, tre indirizzi cloud, una Server Action inutilizzata. Cosa ha visto l\'edge, cosa non si è potuto verificare e le quattro modifiche che hanno chiuso la porta.',
+      caseStudy: {
+        facts: [
+          { label: 'Periodo', value: '23 → 29 ott 2026', mono: true },
+          { label: 'Vettore', value: 'POST /en · Server Action', mono: true },
+          { label: 'Esito', value: 'Compromissione improbabile, non esclusa' },
+          { label: 'Stato', value: 'Mitigato · 1 punto aperto' },
+        ],
+        timeline: [
+          { when: '23 ott', kind: 'event', title: 'Prima POST a una pagina', body: 'Undici richieste POST /en in una settimana, da tre indirizzi Google Cloud, insieme a scansioni di .env. Tutte con un 500.' },
+          { when: '5 nov', kind: 'decision', title: 'L\'edge è l\'unica traccia', body: 'I log delle richieste durano un\'ora. Le analytics di Cloudflare mostrano i tentativi, non i body: il successo non si può escludere.' },
+          { when: '5 nov', kind: 'event', title: 'Aggiornamento', body: 'Next.js 16.4.5 e React 19.2.9: sette finding critici scesi a zero.' },
+          { when: '5 nov', kind: 'event', title: 'Via la superficie', body: 'La Server Action inutilizzata è eliminata; una regola WAF permette i metodi di scrittura su una sola route.' },
+          { when: 'aperto', kind: 'decision', title: 'Ruotare le chiavi dell\'app', body: 'Precauzione contro il caso che non si può escludere.' },
+        ],
+      },
       content: [
         { type: 'heading', level: 2, content: 'Cosa è arrivato' },
         { type: 'paragraph', content: 'Tra il 23 e il 29 ottobre undici richieste `POST /en` hanno raggiunto la home da tre indirizzi in range di Google Cloud, a brevi raffiche insieme a scansioni di `.env` e altri file di configurazione. Una pagina statica non ha motivo di ricevere una POST. Su un sito Next.js significa una cosa: qualcuno prova a invocare una Server Action, il meccanismo dietro React2Shell (CVE-2025-55182) e gli advisory critici sui React Server Components arrivati dopo.' },

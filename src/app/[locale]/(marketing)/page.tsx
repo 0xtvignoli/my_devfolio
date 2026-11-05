@@ -4,6 +4,7 @@ import { experiences } from '@/data/content/experiences';
 import { getArticles } from '@/data/content/articles';
 import { ContactSection } from '@/components/shared/contact-section';
 import { ArticleRow } from '@/components/shared/article-row';
+import { HomeSignal } from '@/components/observatory/home-signal';
 import { isContactFormConfigured } from '@/lib/contact-config';
 import { getTranslations, resolveLocaleParam } from '@/lib/i18n/server';
 import { localizedPath } from '@/lib/i18n/paths';
@@ -62,7 +63,7 @@ export default async function Home({ params }: HomePageProps) {
 
   return (
     <>
-      <section className="mx-auto max-w-[1120px] px-4 pb-24 pt-14 sm:px-8 sm:pb-28 sm:pt-24">
+      <section className="mx-auto max-w-[1120px] px-4 pb-16 pt-14 sm:px-8 sm:pb-20 sm:pt-24">
         <p className="mb-7 text-sm font-medium uppercase tracking-[0.08em] text-link">{t.home.kicker}</p>
         <h1 className="max-w-[900px] font-serif text-[clamp(40px,6vw,76px)] font-normal leading-[1.05] tracking-[-0.025em]">
           {t.home.headline}
@@ -73,6 +74,8 @@ export default async function Home({ params }: HomePageProps) {
           <a href="#contact" className="py-2.5 text-muted-foreground hover:text-foreground">{t.home.ctaContact}</a>
         </div>
       </section>
+
+      <HomeSignal locale={locale} t={t.home} />
 
       <section aria-labelledby="writing-heading" className={section}>
         <SectionHead
