@@ -86,7 +86,7 @@ const renderContent = (article: ArticleType) =>
         );
       }
       case 'code':
-        return <CodeBlock key={index} language={item.language} code={item.code} />;
+        return <CodeBlock key={index} language={item.language} filename={item.filename} code={item.code} />;
     }
   });
 

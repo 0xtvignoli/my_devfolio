@@ -28,11 +28,14 @@ export function Header({ locale, translations }: { locale: Locale; translations:
 
   return (
     <header data-site-header className="mx-auto flex w-full max-w-[1120px] flex-wrap items-center justify-between gap-x-8 gap-y-2 px-4 py-5 sm:px-8 sm:py-7">
-      <Link
-        href={localizedPath(locale)}
-        className="py-2 font-serif text-[22px] font-semibold tracking-[-0.01em] text-foreground"
-      >
-        {AUTHOR_NAME}
+      {/* The wordmark is a home path: ~/thomas-vignoli_ with a blinking cursor.
+          Screen readers get the plain name; the cursor holds still under
+          prefers-reduced-motion. */}
+      <Link href={localizedPath(locale)} aria-label={AUTHOR_NAME} className="py-2 font-mono text-[17px] font-medium text-foreground sm:text-lg">
+        <span aria-hidden>
+          <span className="text-link">~/</span>thomas-vignoli
+          <span className="animate-blink text-link motion-reduce:animate-none">_</span>
+        </span>
       </Link>
       <nav aria-label="Primary" className="flex flex-wrap items-center gap-x-6 gap-y-1 text-[15px] sm:gap-x-7">
         {links.map((link) => {

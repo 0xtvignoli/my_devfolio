@@ -208,6 +208,8 @@ export type ArticleContent = {
 } | {
     type: 'code';
     language: string;
+    /** Shown in the code block's title bar. */
+    filename?: string;
     code: string;
 };
 

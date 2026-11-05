@@ -35,6 +35,24 @@
   --chart-4: 60 1% 36%;
   --chart-5: 4 74% 49%;
   --radius: 0px;
+
+  /* Code: syntax colours for lib/highlight.ts (Shiki css-variables theme).
+     Each passes 4.5:1 on the code panel (--muted). */
+  --code-bar: 60 6% 91%;            /* #eaeae7 */
+  --code-foreground: #111111;
+  --code-background: transparent;
+  --code-token-comment: #5c5c5a;
+  --code-token-keyword: #1d4ed8;
+  --code-token-function: #6d28d9;
+  --code-token-parameter: #111111;
+  --code-token-string: #9a3412;
+  --code-token-string-expression: #9a3412;
+  --code-token-constant: #0f766e;
+  --code-token-punctuation: #5c5c5a;
+  --code-token-link: #1d4ed8;
+  --code-token-inserted: #0f766e;
+  --code-token-deleted: #b42318;
+  --code-token-changed: #9a3412;
 }
 
 .dark {
@@ -63,6 +81,21 @@
   --chart-3: 36 90% 62%;
   --chart-4: 60 1% 63%;
   --chart-5: 4 90% 66%;
+
+  --code-bar: 240 3% 13%;           /* #202022 */
+  --code-foreground: #ecece9;
+  --code-token-comment: #a1a1a0;
+  --code-token-keyword: #8ab4ff;
+  --code-token-function: #c4b5fd;
+  --code-token-parameter: #ecece9;
+  --code-token-string: #fdba74;
+  --code-token-string-expression: #fdba74;
+  --code-token-constant: #5eead4;
+  --code-token-punctuation: #a1a1a0;
+  --code-token-link: #8ab4ff;
+  --code-token-inserted: #5eead4;
+  --code-token-deleted: #ff8a80;
+  --code-token-changed: #fdba74;
 }
 
 /* ---------------------------------------------------------------------------
@@ -103,6 +136,10 @@
   --radius-lg: var(--radius);
   --radius-md: var(--radius);
   --radius-sm: var(--radius);
+  --animate-blink: blink 1.1s steps(1) infinite;
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
   @keyframes accordion-down {
@@ -149,6 +186,16 @@
 /* ---------------------------------------------------------------------------
    Component-style classes (plain CSS)
    --------------------------------------------------------------------------- */
+/* Shiki's <pre> inside CodeBlock: layout here, colours from the tokens above. */
+.code-block pre {
+  margin: 0;
+  padding: 1.5rem;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
 /* Print: /cv is meant to come out as a PDF. Strip site chrome, force ink-on-paper
    colours (the dark theme would print as a black rectangle), and keep each role
    on one page. !important beats component utilities. */
