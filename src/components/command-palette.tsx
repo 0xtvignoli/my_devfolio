@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import type { Translations } from '@/lib/types';
@@ -38,11 +38,21 @@ export function search<T extends { title: string }>(query: string, items: T[]): 
 }
 
 /**
- * ⌘K / Ctrl+K / "/" opens a native <dialog>: jump to any page, article or
+ * ⌘K (Mac) / Ctrl+K / "/" opens a native <dialog>: jump to any page, article or
  * project, plus a few commands. The contact command goes to the contact
  * section instead of carrying the address — the address stays in server HTML
  * only, where Cloudflare's obfuscation reaches it.
  */
+/** ⌘ on Apple keyboards, Ctrl elsewhere. Server render assumes Ctrl, the common case. */
+const noopSubscribe = () => () => {};
+function useIsMac(): boolean {
+  return useSyncExternalStore(
+    noopSubscribe,
+    () => /Mac|iPhone|iPad/.test(navigator.userAgent),
+    () => false,
+  );
+}
+
 export function CommandPalette({ entries, t, otherLocaleHref }: { entries: PaletteEntry[]; t: Translations['palette']; otherLocaleHref: string }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const input = useRef<HTMLInputElement>(null);
@@ -51,6 +61,7 @@ export function CommandPalette({ entries, t, otherLocaleHref }: { entries: Palet
   const router = useRouter();
   const { setTheme } = useTheme();
   const listId = useId();
+  const shortcut = useIsMac() ? '⌘K' : 'Ctrl K';
 
   const open = useCallback(() => {
     setQuery('');
@@ -59,10 +70,18 @@ export function CommandPalette({ entries, t, otherLocaleHref }: { entries: Palet
     input.current?.focus();
   }, []);
   const close = () => dialog.current?.close();
+  // Hand focus back to the page so the next keypress isn't swallowed by the hidden input.
+  const onClose = () => input.current?.blur();
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const typing = e.target instanceof HTMLElement && (e.target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName));
+      // Our own input keeps focus after the dialog closes, so it must not
+      // count as "typing somewhere": otherwise "/" stops working after the
+      // first use.
+      const typing =
+        e.target instanceof HTMLElement &&
+        !dialog.current?.contains(e.target) &&
+        (e.target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName));
       if (((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') || (e.key === '/' && !typing)) {
         e.preventDefault();
         if (dialog.current?.open) close();
@@ -111,14 +130,16 @@ export function CommandPalette({ entries, t, otherLocaleHref }: { entries: Palet
         type="button"
         onClick={open}
         aria-label={t.open}
+        aria-keyshortcuts="Meta+K Control+K /"
         className="hidden min-h-11 items-center border border-border px-2 font-mono text-xs text-muted-foreground hover:border-foreground hover:text-foreground sm:inline-flex"
       >
-        ⌘K
+        {shortcut}
       </button>
       <dialog
         ref={dialog}
         aria-label={t.label}
         onClick={(e) => e.target === dialog.current && close()}
+        onClose={onClose}
         className="m-0 mx-auto mt-[12vh] w-[min(640px,calc(100vw-32px))] border border-foreground bg-background p-0 font-mono text-foreground backdrop:bg-[rgb(17_17_17/0.35)]"
       >
         <label className="flex items-center gap-2.5 border-b border-border px-5 py-4 text-base">
@@ -174,7 +195,7 @@ export function CommandPalette({ entries, t, otherLocaleHref }: { entries: Palet
         <p className="flex gap-5 border-t border-border px-5 py-2.5 text-xs text-muted-foreground">
           <span>↑↓ {t.move}</span>
           <span>↵ {t.openHint}</span>
-          <span>⌘K · /</span>
+          <span>{shortcut} · /</span>
         </p>
       </dialog>
     </>
