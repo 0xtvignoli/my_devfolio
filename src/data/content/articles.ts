@@ -175,7 +175,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         { type: 'paragraph', content: 'The Monetization Gateway generalizes the idea to any caller and any resource: web pages, REST APIs, datasets, even MCP tools. It runs on x402, an open protocol where the buyer pays in stablecoin (USDC) and settlement lands peer-to-peer straight in the seller\'s wallet—sub-second, with fees down to fractions of a cent. This is the surface that matters if you sell APIs, not just articles.' },
         { type: 'heading', level: 2, content: 'The x402 handshake' },
         { type: 'paragraph', content: 'The flow is stateless and needs no prior relationship. The client requests a gated resource; the edge replies 402 with the price, the accepted asset, and a payment destination; the client pays and retries with proof; the edge verifies and returns 200. Because enforcement happens at Cloudflare\'s edge, your origin never sees unpaid traffic or the payment machinery.' },
-        { type: 'code', language: 'http', code: `# Pay Per Crawl — discovery-first flow (documented headers)
+        { type: 'code', language: 'http', filename: 'pay-per-crawl.http', code: `# Pay Per Crawl — discovery-first flow (documented headers)
 GET /research/2026-forecast.html
 < HTTP/1.1 402 Payment Required
 < crawler-price: USD 0.01
@@ -207,7 +207,7 @@ GET /research/2026-forecast.html
         { type: 'paragraph', content: 'Il Monetization Gateway generalizza l\'idea a qualunque chiamante e qualunque risorsa: pagine web, API REST, dataset, perfino tool MCP. Gira su x402, un protocollo aperto in cui il compratore paga in stablecoin (USDC) e il settlement arriva peer-to-peer direttamente nel wallet del venditore—sub-secondo, con commissioni fino a frazioni di centesimo. È questa la superficie che conta se vendi API, non solo articoli.' },
         { type: 'heading', level: 2, content: 'L\'handshake x402' },
         { type: 'paragraph', content: 'Il flusso è stateless e non richiede alcuna relazione pregressa. Il client chiede una risorsa protetta; l\'edge risponde 402 con il prezzo, l\'asset accettato e una destinazione di pagamento; il client paga e riprova allegando la prova; l\'edge verifica e restituisce 200. Poiché l\'enforcement avviene all\'edge di Cloudflare, il tuo origin non vede mai né il traffico non pagato né la macchina dei pagamenti.' },
-        { type: 'code', language: 'http', code: `# Pay Per Crawl — flusso discovery-first (header documentati)
+        { type: 'code', language: 'http', filename: 'pay-per-crawl.http', code: `# Pay Per Crawl — flusso discovery-first (header documentati)
 GET /research/2026-forecast.html
 < HTTP/1.1 402 Payment Required
 < crawler-price: USD 0.01
