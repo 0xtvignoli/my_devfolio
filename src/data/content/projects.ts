@@ -15,6 +15,23 @@ export const PROJECT_IMAGES = {
 
 export const projects: Project[] = [
   {
+    id: "project-10",
+    title: {
+      en: "Two-Node Homelab, Run Like Production",
+      it: "Homelab a due nodi, gestito come produzione",
+    },
+    description: {
+      en: "Two small servers behind a consumer router, declared in git: one Compose file per stack, nightly OS and container patching with a tag rule and Renovate, a daily Trivy CVE scan, age-encrypted and restic backups pulled off the disk they protect and restored on purpose, and 23 Grafana alert rules on ntfy, each explained by a local LLM that reads the container's last log lines. Reachable only over WireGuard, with a second IPv6 firewall on every node.",
+      it: "Due piccoli server dietro un router consumer, dichiarati in git: un file Compose per stack, aggiornamenti notturni di sistema e container con una regola sui tag e Renovate, scansione CVE giornaliera con Trivy, backup cifrati con age e restic portati via dal disco che proteggono e ripristinati apposta, e 23 regole di allarme Grafana su ntfy, ognuna spiegata da un LLM locale che legge le ultime righe di log del container. Raggiungibile solo via WireGuard, con un secondo firewall IPv6 su ogni nodo.",
+    },
+    tags: ["Homelab", "Docker", "Prometheus", "Grafana", "Loki", "WireGuard", "Trivy", "restic", "nftables"],
+    metrics: [
+      { label: { en: "Alert rules", it: "Regole di allarme" }, value: "23" },
+      { label: { en: "Failed job detected", it: "Job fallito rilevato" }, value: "~2 min" },
+      { label: { en: "CVEs on rebuilt images", it: "CVE sulle immagini ricostruite" }, value: "→ 0" },
+    ],
+  },
+  {
     id: "project-1",
     title: {
       en: "Multi-Cloud Kubernetes Platform",

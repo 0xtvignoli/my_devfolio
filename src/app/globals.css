@@ -194,6 +194,8 @@
   font-family: var(--font-mono);
   font-size: 14px;
   line-height: 1.6;
+  /* `!=` must read as typed, not as ≠: the code gets copied into a shell. */
+  font-variant-ligatures: none;
 }
 
 /* Print: /cv is meant to come out as a PDF. Strip site chrome, force ink-on-paper
