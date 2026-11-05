@@ -36,6 +36,11 @@ async function commitsBehindMain(sha: string): Promise<number | null> {
   }
 }
 
+/** Older than the daily refresh allows: the scheduled rebuild did not run. */
+function isStale(iso: string): boolean {
+  return Date.now() - Date.parse(iso) > STALE_MS;
+}
+
 export default async function StatusPage({ params }: Props) {
   const locale: Locale = resolveLocaleParam((await params).locale);
   const t = getTranslations(locale).status;
@@ -49,6 +54,7 @@ export default async function StatusPage({ params }: Props) {
   const { generatedAt } = observatoryData as Observatory;
   const behind = sha ? await commitsBehindMain(sha) : null;
   const short = sha.slice(0, 7);
+  const stale = isStale(generatedAt);
 
   const rows: { mark: Mark; label: string; detail: React.ReactNode; at?: string }[] = [
     {
@@ -69,9 +75,9 @@ export default async function StatusPage({ params }: Props) {
       detail: !sha ? t.localBuild : behind === null ? t.unreachable : behind === 0 ? t.upToDate : t.behind.replace('{n}', String(behind)),
     },
     {
-      mark: Date.now() - Date.parse(generatedAt) > STALE_MS ? 'warn' : 'ok',
+      mark: stale ? 'warn' : 'ok',
       label: t.data,
-      detail: Date.now() - Date.parse(generatedAt) > STALE_MS ? t.dataStale : t.dataFresh,
+      detail: stale ? t.dataStale : t.dataFresh,
       at: generatedAt,
     },
   ];
