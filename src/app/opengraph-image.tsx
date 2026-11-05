@@ -57,7 +57,7 @@ export default async function OpenGraphImage() {
           >
             ~$
           </div>
-          <span>devops-folio</span>
+          <span>~/thomas-vignoli</span>
         </div>
 
         {/* Dark TUI mockup — the single "visual moment" */}

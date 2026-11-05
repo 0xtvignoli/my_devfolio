@@ -1,37 +1,29 @@
-'use client';
-
-import { useState } from 'react';
-import { Check, Clipboard } from 'lucide-react';
+import { CopyButton } from '@/components/shared/copy-button';
+import { highlight } from '@/lib/highlight';
 
 interface CodeBlockProps {
   code: string;
   language: string;
+  filename?: string;
 }
 
-export function CodeBlock({ code, language }: CodeBlockProps) {
-  const [copied, setCopied] = useState(false);
-
-  const copy = () => {
-    navigator.clipboard.writeText(code).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  };
-
+/**
+ * Server component: the code is highlighted at build time and arrives as
+ * plain HTML. Only the copy button is a client island.
+ */
+export async function CodeBlock({ code, language, filename }: CodeBlockProps) {
+  // Our own article data, escaped by Shiki: never user input.
+  const html = await highlight(code, language);
   return (
-    <div className="group relative my-7">
-      <pre className="overflow-x-auto bg-muted p-6 font-mono text-sm leading-[1.6]">
-        <code className={`language-${language}`}>{code}</code>
-      </pre>
-      {/* Visible on hover and on keyboard focus; always visible on touch, which has no hover. */}
-      <button
-        type="button"
-        onClick={copy}
-        className="absolute right-1 top-1 inline-flex h-11 w-11 items-center justify-center text-muted-foreground hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:hover)]:opacity-0"
-      >
-        {copied ? <Check className="h-4 w-4" aria-hidden /> : <Clipboard className="h-4 w-4" aria-hidden />}
-        <span className="sr-only">{copied ? 'Copied' : 'Copy code'}</span>
-      </button>
-    </div>
+    <figure className="code-block my-7 border border-border bg-muted">
+      <figcaption className="flex items-center justify-between gap-4 border-b border-border bg-[hsl(var(--code-bar))] py-1 pl-5 pr-1 font-mono text-[13px] text-muted-foreground">
+        <span className="min-w-0 truncate text-foreground">{filename}</span>
+        <span className="flex items-center gap-1">
+          <span className="text-xs uppercase tracking-[0.08em]">{language}</span>
+          <CopyButton text={code} />
+        </span>
+      </figcaption>
+      <div dangerouslySetInnerHTML={{ __html: html }} />
+    </figure>
   );
 }
