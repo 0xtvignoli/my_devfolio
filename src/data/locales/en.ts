@@ -8,6 +8,18 @@ export const en: Translations = {
     lab: "Lab",
     cv: "CV",
   },
+  palette: {
+    open: "Open the command palette",
+    label: "Go to",
+    placeholder: "cd a page, article or project — or a command",
+    empty: "No match.",
+    move: "move",
+    openHint: "open",
+    themeHint: "switch theme",
+    langHint: "leggi in italiano",
+    mailHint: "write to me",
+    groups: { pages: "pages", articles: "articles", projects: "projects", commands: "commands" },
+  },
   home: {
     kicker: "Tech Lead · DevOps & Cloud",
     headline: "I build infrastructure that stays up, stays secure, and stays affordable.",

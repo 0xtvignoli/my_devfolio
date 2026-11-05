@@ -8,6 +8,18 @@ export interface Translations {
     lab: string;
     cv: string;
   };
+  palette: {
+    open: string;
+    label: string;
+    placeholder: string;
+    empty: string;
+    move: string;
+    openHint: string;
+    themeHint: string;
+    langHint: string;
+    mailHint: string;
+    groups: { pages: string; articles: string; projects: string; commands: string };
+  };
   home: {
     kicker: string;
     headline: string;

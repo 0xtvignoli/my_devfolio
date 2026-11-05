@@ -8,7 +8,7 @@ import type { CaseStudy } from '@/lib/types';
 export function CaseStudySummary({ caseStudy, timelineLabel }: { caseStudy: CaseStudy; timelineLabel: string }) {
   return (
     <>
-      <dl className="mt-8 grid grid-cols-[repeat(auto-fit,minmax(min(100%,140px),1fr))] gap-x-6 gap-y-4 border-b border-t border-b-border border-t-foreground py-5">
+      <dl className="mt-6 grid grid-cols-[repeat(auto-fit,minmax(min(100%,140px),1fr))] gap-x-6 gap-y-4 border-b border-t border-b-border border-t-foreground py-5">
         {caseStudy.facts.map((fact) => (
           <div key={fact.label}>
             <dt className="text-[13px] text-muted-foreground">{fact.label}</dt>
