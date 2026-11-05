@@ -430,7 +430,7 @@ print('    TURNSTILE_SECRET_KEY=<from Cloudflare dashboard>')
 else
   echo "→ Turnstile: set CLOUDFLARE_ACCOUNT_ID to auto-create a widget, or enable at:"
   echo "  https://dash.cloudflare.com/?to=/:account/turnstile"
-  echo "  (The home page now has a public ask form — a widget here is worth having.)"
+  echo "  (The contact form is the only public form — a widget there is worth having.)"
 fi
 
 echo ""
