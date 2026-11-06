@@ -1,47 +1,73 @@
+'use client';
+
+import { useState } from 'react';
 import { formatDate } from '@/lib/format-date';
-import type { Locale, Translations } from '@/lib/types';
+import { cn } from '@/lib/utils';
+import type { Locale } from '@/lib/types';
 
 interface DailyChartProps {
   daily: { date: string; requests: number; hostile: number }[];
   locale: Locale;
-  labels: Translations['lab'];
+  labels: { requests: string; hostile: string; peak: string; date: string };
 }
 
 const H = 220;
 const BAR_GAP = 2;
 
 /**
- * One series (hostile requests per day) as server-rendered SVG: no chart
- * library, no client JS. Each bar carries a native tooltip and the full figures
- * are in a table for screen readers; the axis shows only first, middle, last.
+ * One series (hostile requests per day) as SVG, no chart library. A readout
+ * above the bars starts on the peak day; tapping or hovering a bar shows that
+ * day instead, since a phone has no hover. The full figures are in a table for
+ * screen readers; the axis shows only first, middle, last.
  */
 export function DailyChart({ daily, locale, labels }: DailyChartProps) {
-  const requestsLabel = labels.requestsLabel;
-  const hostileLabel = labels.stats.hostile;
   const nf = new Intl.NumberFormat(locale === 'it' ? 'it-IT' : 'en-GB');
   const max = Math.max(...daily.map((d) => d.hostile), 1);
-  const peak = daily.reduce((a, b) => (b.hostile > a.hostile ? b : a), daily[0]);
+  const peakIndex = daily.reduce((best, d, i) => (d.hostile > daily[best].hostile ? i : best), 0);
+  const [selected, setSelected] = useState(peakIndex);
+  const day = daily[selected];
   const w = 100 / daily.length;
   const ticks = [0, Math.floor(daily.length / 2), daily.length - 1];
 
   return (
     <figure>
-      <svg viewBox={`0 0 100 ${H}`} preserveAspectRatio="none" className="block h-[220px] w-full" aria-hidden>
+      <p aria-hidden className="mb-3 flex flex-wrap justify-between gap-x-4 bg-muted px-3.5 py-2.5 text-sm">
+        <span>
+          {selected === peakIndex && <span className="text-muted-foreground">{labels.peak}: </span>}
+          <span className="font-medium">{formatDate(day.date, locale)}</span> · {nf.format(day.hostile)} {labels.hostile}
+        </span>
+        <span className="text-muted-foreground">
+          {nf.format(day.requests)} {labels.requests}
+        </span>
+      </p>
+      <svg
+        viewBox={`0 0 100 ${H}`}
+        preserveAspectRatio="none"
+        className="block h-[180px] w-full touch-pan-y sm:h-[220px]"
+        aria-hidden
+        onPointerLeave={(e) => e.pointerType === 'mouse' && setSelected(peakIndex)}
+      >
         <line x1="0" x2="100" y1={H - 0.5} y2={H - 0.5} className="stroke-border" strokeWidth="1" vectorEffect="non-scaling-stroke" />
         {daily.map((d, i) => {
           const h = Math.max((d.hostile / max) * (H - 24), d.hostile ? 2 : 0);
           return (
-            <g key={d.date} className="group">
+            <g key={d.date}>
               {/* Full-height hit target, wider than the bar. */}
-              <rect x={i * w} y="0" width={w} height={H} fill="transparent">
-                <title>{`${formatDate(d.date, locale)}: ${nf.format(d.hostile)} ${hostileLabel} / ${nf.format(d.requests)} ${requestsLabel}`}</title>
-              </rect>
+              <rect
+                x={i * w}
+                y="0"
+                width={w}
+                height={H}
+                fill="transparent"
+                onPointerEnter={() => setSelected(i)}
+                onPointerDown={() => setSelected(i)}
+              />
               <rect
                 x={i * w + BAR_GAP / 10}
                 y={H - h}
                 width={w - BAR_GAP / 5}
                 height={h}
-                className="pointer-events-none fill-link transition-opacity group-hover:opacity-70"
+                className={cn('pointer-events-none', i === selected ? 'fill-foreground' : 'fill-link')}
               />
             </g>
           );
@@ -58,12 +84,12 @@ export function DailyChart({ daily, locale, labels }: DailyChartProps) {
           </span>
         ))}
       </div>
-      <figcaption className="mt-4 text-sm text-muted-foreground">
-        {labels.peak}: {formatDate(peak.date, locale)}, {nf.format(peak.hostile)} {hostileLabel}.
-      </figcaption>
       <table className="sr-only">
+        <caption>
+          {labels.peak}: {formatDate(daily[peakIndex].date, locale)}, {nf.format(daily[peakIndex].hostile)} {labels.hostile}.
+        </caption>
         <thead>
-          <tr><th>{labels.dateLabel}</th><th>{hostileLabel}</th><th>{requestsLabel}</th></tr>
+          <tr><th>{labels.date}</th><th>{labels.hostile}</th><th>{labels.requests}</th></tr>
         </thead>
         <tbody>
           {daily.map((d) => (

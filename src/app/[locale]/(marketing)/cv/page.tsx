@@ -1,3 +1,4 @@
+import { JumpChips } from '@/components/shared/jump-chips';
 import { experiences } from '@/data/content/experiences';
 import { projects } from '@/data/content/projects';
 import { PrintButton } from '@/components/shared/print-button';
@@ -44,6 +45,14 @@ export default async function CvPage({ params }: CvPageProps) {
           { name: 'Home', path: localizedPath(locale) },
           { name: t.cv.title, path: localizedPath(locale, '/cv') },
         ])}
+      />
+      <JumpChips
+        label={t.onThisPage}
+        items={[
+          { id: 'cv-skills', text: t.skills.title },
+          { id: 'cv-experience', text: t.experience.title },
+          { id: 'cv-projects', text: t.portfolio.title },
+        ]}
       />
       <div className="mx-auto max-w-[760px] px-4 pb-24 pt-12 sm:px-8 sm:pt-20" data-print-root>
         <header className="mb-12 border-b border-border pb-8">

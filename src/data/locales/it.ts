@@ -7,6 +7,7 @@ export const it: Translations = {
     articles: "Articoli",
     lab: "Lab",
     cv: "CV",
+    menu: "Menu",
   },
   notFound: {
     title: "Questa pagina non esiste.",
@@ -81,7 +82,9 @@ export const it: Translations = {
     title: "Progetti in Evidenza",
     viewAll: "Vedi tutti i progetti",
     pageSubtitle: "Una raccolta dei miei lavori, dall'automazione infrastrutturale al deployment di applicazioni.",
+    backToIndex: "↑ Indice",
   },
+  onThisPage: "In questa pagina",
   experience: {
     title: "Percorso Professionale",
     pageSubtitle: "Il mio percorso professionale nel mondo DevOps e Cloud.",
@@ -174,6 +177,8 @@ export const it: Translations = {
     }
   },
   lab: {
+    showAll: "Mostra tutti ({count})",
+    jump: { daily: 'Per giorno', trends: 'Tendenze', looking: 'Cosa', where: 'Da dove', cases: 'Casi', method: 'Come' },
     kicker: "Security intelligence",
     title: "Osservatorio",
     intro: "Cosa ha mandato internet a questo sito nelle ultime due settimane, visto dall'edge di Cloudflare. Un sito statico, senza login e senza database, viene comunque sondato migliaia di volte a settimana.",
@@ -182,7 +187,7 @@ export const it: Translations = {
     stoppedNote: "Bloccate o sottoposte a challenge da Cloudflare, o rifiutate con un 403 prima di arrivare all'app.",
     mazeNote: "I crawler che ignorano robots.txt finiscono nell'AI Labyrinth di Cloudflare: pagine generate che non portano da nessuna parte.",
     dailyTitle: "Richieste ostili al giorno",
-    dailyCaption: "Scansioni e tentativi di exploit, per giorno UTC. Passa sopra una barra per il traffico totale del giorno.",
+    dailyCaption: "Scansioni e tentativi di exploit, per giorno UTC. Tocca o passa sopra una barra per leggere quel giorno.",
     lookingForTitle: "Cosa cercano",
     lookingForIntro: "Ogni richiesta ostile è ricondotta a un insieme fisso di categorie. Niente di ciò che scrive un attaccante viene pubblicato.",
     categories: {

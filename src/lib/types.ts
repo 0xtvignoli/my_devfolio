@@ -7,6 +7,7 @@ export interface Translations {
     articles: string;
     lab: string;
     cv: string;
+    menu: string;
   };
   notFound: {
     title: string;
@@ -79,7 +80,10 @@ export interface Translations {
     title: string;
     viewAll: string;
     pageSubtitle?: string;
+    backToIndex: string;
   };
+  /** Phone-only section links on long pages. */
+  onThisPage: string;
   experience: {
     title: string;
     pageSubtitle?: string;
@@ -177,6 +181,8 @@ export interface Translations {
   };
   lab: {
     kicker: string;
+    showAll: string;
+    jump: { daily: string; trends: string; looking: string; where: string; cases: string; method: string };
     title: string;
     intro: string;
     updated: string;

@@ -228,3 +228,10 @@
     break-inside: avoid;
   }
 }
+
+/* Phones: the header is a sticky 56 px bar (plus section chips on long pages), so anchors land below them. */
+@media (max-width: 639px) {
+  html {
+    scroll-padding-top: 7.5rem;
+  }
+}

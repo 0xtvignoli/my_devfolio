@@ -69,9 +69,10 @@ export default async function Home({ params }: HomePageProps) {
           {t.home.headline}
         </h1>
         <p className="mt-9 max-w-[600px] text-[19px] text-muted-foreground">{t.home.intro}</p>
-        <div className="mt-11 flex flex-wrap gap-8 font-medium">
-          <a href="#work" className="border-b border-foreground py-2.5">{t.home.ctaWork}</a>
-          <a href="#contact" className="py-2.5 text-muted-foreground hover:text-foreground">{t.home.ctaContact}</a>
+        {/* Phones: two equal buttons. From sm: today's quiet text links. */}
+        <div className="mt-11 grid grid-cols-2 gap-2.5 text-[15px] font-medium sm:flex sm:flex-wrap sm:gap-8 sm:text-base">
+          <a href="#work" className="flex min-h-12 items-center justify-center bg-foreground text-background sm:block sm:min-h-0 sm:border-b sm:border-foreground sm:bg-transparent sm:py-2.5 sm:text-foreground">{t.home.ctaWork}</a>
+          <a href="#contact" className="flex min-h-12 items-center justify-center border border-foreground sm:block sm:min-h-0 sm:border-0 sm:py-2.5 sm:text-muted-foreground sm:hover:text-foreground">{t.home.ctaContact}</a>
         </div>
       </section>
 

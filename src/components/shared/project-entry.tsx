@@ -38,19 +38,22 @@ export function ProjectEntry({ project, index, locale, translations }: ProjectEn
           <p className="mt-6 text-sm text-muted-foreground">{project.tags.join(' · ')}</p>
 
           {(project.githubUrl || project.demoUrl) && (
-            <p className="mt-4 flex flex-wrap gap-x-7 text-[15px] font-medium">
+            <p className="mt-4 flex flex-wrap gap-x-7 gap-y-2.5 text-[15px] font-medium">
               {project.githubUrl && (
-                <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="border-b border-foreground py-2">
+                <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="flex min-h-11 items-center justify-center border border-foreground px-4 sm:block sm:min-h-0 sm:border-x-0 sm:border-t-0 sm:px-0 sm:py-2">
                   {translations.project.github} →
                 </a>
               )}
               {project.demoUrl && (
-                <a href={project.demoUrl} target="_blank" rel="noopener noreferrer" className="border-b border-foreground py-2">
+                <a href={project.demoUrl} target="_blank" rel="noopener noreferrer" className="flex min-h-11 items-center justify-center border border-foreground px-4 sm:block sm:min-h-0 sm:border-x-0 sm:border-t-0 sm:px-0 sm:py-2">
                   {translations.project.demo} →
                 </a>
               )}
             </p>
           )}
+          <a href="#index" className="mt-3 inline-flex min-h-11 items-center text-[15px] text-muted-foreground sm:hidden">
+            {translations.portfolio.backToIndex}
+          </a>
         </div>
       </div>
     </article>

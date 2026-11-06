@@ -1,5 +1,6 @@
 'use client';
 
+import { Search } from 'lucide-react';
 import { useCallback, useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
@@ -131,9 +132,10 @@ export function CommandPalette({ entries, t, otherLocaleHref }: { entries: Palet
         onClick={open}
         aria-label={t.open}
         aria-keyshortcuts="Meta+K Control+K /"
-        className="hidden min-h-11 items-center border border-border px-2 font-mono text-xs text-muted-foreground hover:border-foreground hover:text-foreground sm:inline-flex"
+        className="inline-flex min-h-11 min-w-11 items-center justify-center text-muted-foreground hover:text-foreground sm:min-w-0 sm:border sm:border-border sm:px-2 sm:font-mono sm:text-xs sm:hover:border-foreground"
       >
-        {shortcut}
+        <Search aria-hidden className="size-[18px] sm:hidden" />
+        <span className="hidden sm:inline">{shortcut}</span>
       </button>
       <dialog
         ref={dialog}

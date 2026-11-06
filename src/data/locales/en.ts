@@ -7,6 +7,7 @@ export const en: Translations = {
     articles: "Writing",
     lab: "Lab",
     cv: "CV",
+    menu: "Menu",
   },
   notFound: {
     title: "This page doesn't exist.",
@@ -81,7 +82,9 @@ export const en: Translations = {
     title: "Featured Projects",
     viewAll: "View all projects",
     pageSubtitle: "A collection of my work, from infrastructure automation to application deployment.",
+    backToIndex: "↑ Index",
   },
+  onThisPage: "On this page",
   experience: {
     title: "Career Journey",
     pageSubtitle: "My professional journey and evolution in the world of DevOps and Cloud.",
@@ -174,6 +177,8 @@ export const en: Translations = {
     }
   },
   lab: {
+    showAll: "Show all {count}",
+    jump: { daily: 'Per day', trends: 'Trends', looking: 'What', where: 'Where', cases: 'Cases', method: 'How' },
     kicker: "Security intelligence",
     title: "Observatory",
     intro: "What the internet sent to this site over the last two weeks, as seen at the Cloudflare edge. A static site with no login and no database still gets probed thousands of times a week.",
@@ -182,7 +187,7 @@ export const en: Translations = {
     stoppedNote: "Blocked or challenged by Cloudflare, or refused with a 403 before reaching the app.",
     mazeNote: "Crawlers that ignore robots.txt get Cloudflare's AI Labyrinth: generated pages that lead nowhere.",
     dailyTitle: "Hostile requests per day",
-    dailyCaption: "Probes and exploit attempts, by UTC day. Hover a bar for the total traffic of that day.",
+    dailyCaption: "Probes and exploit attempts, by UTC day. Tap or hover a bar to read that day.",
     lookingForTitle: "What they look for",
     lookingForIntro: "Every hostile request is sorted into a fixed set of categories. Nothing an attacker typed is published.",
     categories: {
