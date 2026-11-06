@@ -7,14 +7,13 @@ import type { Locale, Translations } from '@/lib/types';
 const data = observatoryData as Observatory;
 
 /**
- * One line on the home page from the Observatory: yesterday's hostile
- * requests, the share stopped at the edge, the most wanted target. Static,
- * refreshed with the daily rebuild like /lab itself.
+ * One line on the home page from the Observatory, all over the same 14-day
+ * window as the top of /lab, so the first number matches the one a click away:
+ * hostile requests, the share stopped at the edge, the most wanted target.
+ * Static, refreshed with the daily rebuild like /lab itself.
  */
 export function HomeSignal({ locale, t }: { locale: Locale; t: Translations['home'] }) {
-  // The last entry is today so far; yesterday is the last complete day.
-  const yesterday = data.daily.at(-2) ?? data.daily.at(-1);
-  if (!yesterday) return null;
+  if (!data.totals.hostile) return null;
   const nf = new Intl.NumberFormat(locale === 'it' ? 'it-IT' : 'en-GB');
   const stopped = Math.min(100, Math.round((data.totals.stopped / Math.max(data.totals.hostile, 1)) * 100));
   const top = data.targets[0]?.target;
@@ -31,7 +30,7 @@ export function HomeSignal({ locale, t }: { locale: Locale; t: Translations['hom
         </span>
         <span className="flex flex-wrap items-baseline gap-x-12 gap-y-2">
           <span>
-            <span className="font-serif text-[34px] leading-none">{nf.format(yesterday.hostile)}</span>{' '}
+            <span className="font-serif text-[34px] leading-none">{nf.format(data.totals.hostile)}</span>{' '}
             <span className="text-[15px] text-muted-foreground">{t.signalHostile}</span>
           </span>
           <span>
