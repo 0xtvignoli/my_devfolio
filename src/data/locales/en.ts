@@ -178,6 +178,10 @@ export const en: Translations = {
   },
   lab: {
     showAll: "Show all {count}",
+    filterLabel: "Filter by kind of attack",
+    filterAll: "All",
+    filterSummary: "{part} of {total} hostile requests in 14 days",
+    defensesAllNote: "All kinds: Cloudflare reports defences without the path.",
     jump: { daily: 'Per day', trends: 'Trends', looking: 'What', where: 'Where', cases: 'Cases', method: 'How' },
     kicker: "Security intelligence",
     title: "Observatory",

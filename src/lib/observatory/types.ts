@@ -20,6 +20,13 @@ export interface Observatory {
   categoryDaily?: { category: Category; counts: number[] }[];
   categories: { category: Category; count: number }[];
   targets: { target: string; category: Category; count: number }[];
+  /** Top 5 targets, countries and clients inside each category, for the /lab filter. Optional: older files lack it. */
+  byCategory?: {
+    category: Category;
+    targets: { target: string; count: number }[];
+    countries: { code: string; count: number }[];
+    clients: { label: string; count: number }[];
+  }[];
   countries: { code: string; count: number }[];
   clients: { label: string; count: number }[];
   defenses: { layer: string; count: number }[];
