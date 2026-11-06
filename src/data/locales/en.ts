@@ -7,6 +7,7 @@ export const en: Translations = {
     articles: "Writing",
     lab: "Lab",
     cv: "CV",
+    menu: "Menu",
   },
   notFound: {
     title: "This page doesn't exist.",

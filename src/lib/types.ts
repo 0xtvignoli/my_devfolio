@@ -7,6 +7,7 @@ export interface Translations {
     articles: string;
     lab: string;
     cv: string;
+    menu: string;
   };
   notFound: {
     title: string;
