@@ -11,7 +11,9 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/', '/_next/'],
+        // /api/internal/backup/ is the robots.txt canary (Lab phase 3): listed
+        // here precisely so that bots reading Disallow as a map find it.
+        disallow: ['/api/', '/_next/', '/api/internal/backup/'],
       },
       // Block AI training/scraping bots (defense in depth with Cloudflare Block AI Bots).
       ...AI_TRAINING_CRAWLERS.map((userAgent) => ({
