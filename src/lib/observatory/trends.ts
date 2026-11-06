@@ -16,15 +16,17 @@ export interface Trend {
 const MIN_VOLUME = 20;
 
 /**
- * Week-over-week per category. The window holds 13 complete days plus today
- * so far (Cloudflare Free keeps 14 days), so "last week" is the 7 most recent
+ * Week-over-week per category. The window holds 13 complete days (Cloudflare
+ * Free keeps 14; older files also carry the build day so far), so "last week" is the 7 most recent
  * complete days and "the week before" the 6 preceding them — compared on daily
  * averages so the shorter base doesn't read as a drop.
  */
 export function computeTrends(data: Observatory): Trend[] {
   if (!data.categoryDaily) return [];
-  // The last day is the one the build ran on: partial, so left out.
-  const cut = data.daily.at(-1)?.date === data.to ? data.daily.length - 1 : data.daily.length;
+  // A day equal to the build day is partial, so left out. Windows that end at
+  // midnight (the build since Nov 2026) have none.
+  const buildDay = data.generatedAt.slice(0, 10);
+  const cut = data.daily.at(-1)?.date === buildDay ? data.daily.length - 1 : data.daily.length;
   const dates = data.daily.slice(0, cut).map((d) => d.date);
 
   return data.categoryDaily.map(({ category, counts }) => {

@@ -27,11 +27,13 @@ if (!TOKEN || !ZONE) {
   process.exit(0);
 }
 
-// Free plan: 14 days of history. 13 full days + today so far.
+// Free plan: 14 days of history. The window ends at the last UTC midnight, so it
+// holds 13 complete days whatever hour the build runs (the daily one is 00:01).
 const DAYS = 13;
 const LIMIT = 10_000;
-const to = new Date();
-const from = new Date(Date.UTC(to.getUTCFullYear(), to.getUTCMonth(), to.getUTCDate() - DAYS));
+const now = new Date();
+const to = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+const from = new Date(to.getTime() - DAYS * 86_400_000);
 
 type Row = { count: number; dimensions: Record<string, string | number> };
 
@@ -125,9 +127,10 @@ for (const { count, dimensions: d } of [...failed, ...writes]) {
 }
 
 const out: Observatory = {
-  generatedAt: to.toISOString(),
+  generatedAt: now.toISOString(),
   from: from.toISOString().slice(0, 10),
-  to: to.toISOString().slice(0, 10),
+  // Last day in the window, not the exclusive midnight bound.
+  to: new Date(to.getTime() - 1).toISOString().slice(0, 10),
   totals: { requests, hostile, stopped, maze },
   daily: [...requestsByDay.keys()].sort().map((date) => ({
     date,
