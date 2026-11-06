@@ -4,7 +4,7 @@ import type { Observatory } from './types';
 
 const dates = Array.from({ length: 14 }, (_, i) => `2026-10-${String(23 + i).padStart(2, '0')}`);
 const data = (categoryDaily: Observatory['categoryDaily']): Observatory => ({
-  generatedAt: '2026-11-05T05:00:00Z',
+  generatedAt: `${dates[13]}T05:00:00Z`,
   from: dates[0],
   to: dates[13],
   totals: { requests: 0, hostile: 0, stopped: 0, maze: 0 },
@@ -51,4 +51,13 @@ test('biggestMover ignores "other" and ranks drops and rises alike', () => {
   );
   expect(biggestMover(t)?.category).toBe('secrets');
   expect(computeTrends(data(undefined))).toEqual([]);
+});
+
+test('a window that ends at midnight keeps its last day', () => {
+  const counts = [...Array(13).fill(10), 40];
+  const midnight = { ...data([{ category: 'admin', counts }]), generatedAt: '2026-11-06T00:01:00Z' };
+  const [partial] = computeTrends(data([{ category: 'admin', counts }]));
+  const [complete] = computeTrends(midnight);
+  expect(partial.series.length).toBe(13);
+  expect(complete.series.length).toBe(14);
 });

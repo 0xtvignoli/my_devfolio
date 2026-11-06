@@ -4,7 +4,7 @@ name: observatory
 
 on:
   schedule:
-    - cron: '17 5 * * *'   # 05:17 UTC, after the previous UTC day has closed
+    - cron: '1 0 * * *'   # 00:01 UTC: the UTC day just closed, and the window ends at that midnight
   workflow_dispatch:
 
 permissions: {}
