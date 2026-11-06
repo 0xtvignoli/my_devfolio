@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "node node_modules/next/dist/bin/next dev --turbopack -p 9004",
-    "build": "bun scripts/observatory.ts && next build",
+    "build": "bun scripts/observatory.ts && bun scripts/decoys.ts && next build",
+    "decoys": "bun scripts/decoys.ts",
     "observatory": "bun scripts/observatory.ts",
     "build:bun": "bun --bun next build",
     "start": "next start",
@@ -44,7 +45,7 @@
     "happy-dom": "^21.0.4",
     "postcss": "^8.5.32",
     "tailwindcss": "^4.3.4",
-    "typescript": "^7.0.2"
+    "typescript": "~6.0.3"
   },
   "overrides": {
     "glob": "^10.5.0",
