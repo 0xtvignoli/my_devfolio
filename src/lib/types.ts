@@ -182,6 +182,7 @@ export interface Translations {
   lab: {
     kicker: string;
     showAll: string;
+    canariesLink: string;
     passwordsLink: string;
     filterLabel: string;
     filterAll: string;
@@ -225,6 +226,27 @@ export interface Translations {
       subjects: Record<'secrets' | 'cms' | 'admin' | 'traversal' | 'app-exploit' | 'other', string>;
     };
     statusLink: string;
+  };
+  canaries: {
+    kicker: string;
+    title: string;
+    intro: string;
+    stats: { planted: string; used: string; fastest: string };
+    channelsTitle: string;
+    channels: Record<'decoy-env' | 'html-comment' | 'robots' | 'docker' | 'github', { name: string; short: string; seenBy: string }>;
+    calls: Record<'identity' | 'list-buckets' | 'ec2' | 'iam' | 'other', string>;
+    status: { used: string; waiting: string; notPlanted: string; blocked: string };
+    /** Contains {d}. */
+    noUseAfter: string;
+    blockedAtPush: string;
+    timelineTitle: string;
+    timelineCaption: string;
+    dayUnit: string;
+    weekUnit: string;
+    howTitle: string;
+    how: string[];
+    updated: string;
+    back: string;
   };
   passwords: {
     kicker: string;

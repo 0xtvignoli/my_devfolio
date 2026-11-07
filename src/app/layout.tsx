@@ -1,3 +1,4 @@
+import { CanaryComment } from '@/components/seo/canary-comment';
 import type {Metadata, Viewport} from 'next';
 import './globals.css';
 import { mono, sans, serif } from './fonts';
@@ -91,6 +92,7 @@ export default async function RootLayout({
         <SiteProviders skipLabel={t.a11y.skipToContent}>
           {children}
         </SiteProviders>
+        <CanaryComment />
       </body>
     </html>
   );
