@@ -220,7 +220,7 @@ export const en: Translations = {
     peak: "Peak",
     dateLabel: "Date",
     trendsTitle: "Last 7 days vs the week before",
-    trendsIntro: "Each category with its line over the complete days in the window, and the change in its daily average. The sentence on top is written by the build from the biggest mover.",
+    trendsIntro: "Each category with its line over the complete days in the window, and the change in its daily average. The sentence on top follows the biggest mover; tap a row to filter the page by that category.",
     trends: {
       inDays: "in {n} days",
       note: "Compared on daily averages: the window holds 13 complete days, so the earlier stretch is six days long. Categories under 20 requests show no percentage.",

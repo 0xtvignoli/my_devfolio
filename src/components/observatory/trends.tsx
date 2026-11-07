@@ -1,5 +1,7 @@
 import { formatDate } from '@/lib/format-date';
 import { biggestMover, type Trend } from '@/lib/observatory/trends';
+import { cn } from '@/lib/utils';
+import type { Category } from '@/lib/observatory/classify';
 import type { Locale, Translations } from '@/lib/types';
 
 const W = 140;
@@ -36,22 +38,50 @@ function headline(t: Trend, labels: Translations['lab']['trends'], locale: Local
   return labels.sentence.replace('{what}', labels.subjects[t.category]).replace('{verb}', verb).replace('{peak}', peak);
 }
 
-export function Trends({ trends, locale, t }: { trends: Trend[]; locale: Locale; t: Translations['lab'] }) {
+/**
+ * With a category selected, the sentence speaks about that category and its
+ * row stays lit; rows the filter knows are buttons that set it.
+ */
+export function Trends({
+  trends,
+  locale,
+  t,
+  selected = null,
+  filterable = [],
+  onSelect,
+}: {
+  trends: Trend[];
+  locale: Locale;
+  t: Translations['lab'];
+  selected?: Category | null;
+  filterable?: Category[];
+  onSelect?: (category: Category) => void;
+}) {
   if (!trends.length) return null;
   const nf = new Intl.NumberFormat(locale === 'it' ? 'it-IT' : 'en-GB');
-  const mover = biggestMover(trends);
+  const picked = selected ? trends.find((x) => x.category === selected) : undefined;
+  const mover = selected ? (picked?.change != null ? picked : undefined) : biggestMover(trends);
   const shown = trends.filter((x) => x.total > 0);
 
   return (
     <>
       {mover && (
-        <p className="mb-8 bg-muted px-5 py-4 font-serif text-xl leading-snug sm:px-6 sm:text-2xl">{headline(mover, t.trends, locale)}</p>
+        <p aria-live="polite" className="mb-8 bg-muted px-5 py-4 font-serif text-xl leading-snug sm:px-6 sm:text-2xl">{headline(mover, t.trends, locale)}</p>
       )}
       <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,440px),1fr))] gap-x-16">
         {shown.map((trend) => {
           const label = t.categories[trend.category];
+          const Row = onSelect && filterable.includes(trend.category) ? 'button' : 'div';
           return (
-            <div key={trend.category} className="grid grid-cols-[minmax(0,1fr)_auto_76px] items-center gap-4 border-b border-border py-4">
+            <Row
+              key={trend.category}
+              {...(Row === 'button' && { type: 'button' as const, 'aria-pressed': selected === trend.category, onClick: () => onSelect!(trend.category) })}
+              className={cn(
+                'grid w-full grid-cols-[minmax(0,1fr)_auto_76px] items-center gap-4 border-b border-border py-4 text-left transition-opacity',
+                Row === 'button' && 'cursor-pointer hover:bg-muted/50',
+                selected && selected !== trend.category && 'opacity-40',
+              )}
+            >
               <div className="min-w-0">
                 <p className="text-[15px]">{label}</p>
                 <p className="font-mono text-[13px] text-muted-foreground">
@@ -64,7 +94,7 @@ export function Trends({ trends, locale, t }: { trends: Trend[]; locale: Locale;
               <p className={`text-right font-mono text-sm ${trend.change !== null && trend.change > 0.005 ? 'text-foreground' : 'text-muted-foreground'}`}>
                 {delta(trend.change)}
               </p>
-            </div>
+            </Row>
           );
         })}
       </div>
