@@ -102,6 +102,8 @@ const targets = new Map<string, number>();
 const targetCategory = new Map<string, Category>();
 const countries = new Map<string, number>();
 const clients = new Map<string, number>();
+// Same three lists, split by category, for the filter on /lab.
+const split = new Map<Category, { targets: Map<string, number>; countries: Map<string, number>; clients: Map<string, number> }>();
 let hostile = 0;
 
 for (const { count, dimensions: d } of [...failed, ...writes]) {
@@ -123,7 +125,13 @@ for (const { count, dimensions: d } of [...failed, ...writes]) {
   }
   const code = countryCode(String(d.clientCountryName));
   if (code) add(countries, code, count);
-  add(clients, classifyClient(String(d.userAgent)), count);
+  const client = classifyClient(String(d.userAgent));
+  add(clients, client, count);
+  if (!split.has(category)) split.set(category, { targets: new Map(), countries: new Map(), clients: new Map() });
+  const s = split.get(category)!;
+  if (category !== 'other') add(s.targets, target, count);
+  if (code) add(s.countries, code, count);
+  add(s.clients, client, count);
 }
 
 const out: Observatory = {
@@ -144,6 +152,15 @@ const out: Observatory = {
   })),
   categories: CATEGORIES.map((category) => ({ category, count: categories.get(category) ?? 0 })).filter((c) => c.count > 0),
   targets: top(targets, 10).map(([target, count]) => ({ target, category: targetCategory.get(target)!, count })),
+  byCategory: CATEGORIES.filter((c) => split.has(c)).map((category) => {
+    const s = split.get(category)!;
+    return {
+      category,
+      targets: top(s.targets, 5).map(([target, count]) => ({ target, count })),
+      countries: top(s.countries, 5).map(([code, count]) => ({ code, count })),
+      clients: top(s.clients, 5).map(([label, count]) => ({ label, count })),
+    };
+  }),
   countries: top(countries, 10).map(([code, count]) => ({ code, count })),
   clients: top(clients, 8).map(([label, count]) => ({ label, count })),
   defenses: top(defenses, 10).map(([layer, count]) => ({ layer, count })),

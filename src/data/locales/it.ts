@@ -179,6 +179,10 @@ export const it: Translations = {
   lab: {
     showAll: "Mostra tutti ({count})",
     passwordsLink: "I bot hanno provato la tua password? →",
+    filterLabel: "Filtra per tipo di attacco",
+    filterAll: "Tutte",
+    filterSummary: "{part} di {total} richieste ostili in 14 giorni",
+    defensesAllNote: "Tutti i tipi: Cloudflare non lega le difese al percorso.",
     jump: { daily: 'Per giorno', trends: 'Tendenze', looking: 'Cosa', where: 'Da dove', cases: 'Casi', method: 'Come' },
     kicker: "Security intelligence",
     title: "Osservatorio",

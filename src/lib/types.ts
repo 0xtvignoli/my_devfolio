@@ -183,6 +183,11 @@ export interface Translations {
     kicker: string;
     showAll: string;
     passwordsLink: string;
+    filterLabel: string;
+    filterAll: string;
+    /** Contains {part} and {total}. */
+    filterSummary: string;
+    defensesAllNote: string;
     jump: { daily: string; trends: string; looking: string; where: string; cases: string; method: string };
     title: string;
     intro: string;

@@ -1,8 +1,7 @@
 import Link from 'next/link';
 import observatoryData from '@/data/observatory.json';
 import { ArticleRow } from '@/components/shared/article-row';
-import { DailyChart } from '@/components/observatory/daily-chart';
-import { BarList } from '@/components/observatory/bar-list';
+import { ObservatoryExplorer } from '@/components/observatory/explorer';
 import { Trends } from '@/components/observatory/trends';
 import { JumpChips } from '@/components/shared/jump-chips';
 import { computeTrends } from '@/lib/observatory/trends';
@@ -45,7 +44,6 @@ export default async function LabPage({ params }: LabPageProps) {
   const locale: Locale = resolveLocaleParam(localeParam);
   const t = getTranslations(locale);
   const nf = new Intl.NumberFormat(locale === 'it' ? 'it-IT' : 'en-GB');
-  const countryName = new Intl.DisplayNames([locale], { type: 'region' });
   const caseStudies = getArticles(locale).filter((a) => a.tags.includes(CASE_STUDY_TAG));
   const { totals } = data;
   const trends = computeTrends(data);
@@ -106,56 +104,21 @@ export default async function LabPage({ params }: LabPageProps) {
         ]}
       />
 
-      <section aria-labelledby="daily-heading" className={section}>
-        <H2 id="daily-heading">{t.lab.dailyTitle}</H2>
-        <p className="mb-8 mt-3 max-w-[640px] text-muted-foreground">{t.lab.dailyCaption}</p>
-        <DailyChart
-          daily={data.daily}
-          locale={locale}
-          labels={{ requests: t.lab.requestsLabel, hostile: t.lab.stats.hostile, peak: t.lab.peak, date: t.lab.dateLabel }}
-        />
-      </section>
-
-      {trends.length > 0 && (
-        <section aria-labelledby="trends-heading" className={section}>
-          <H2 id="trends-heading">{t.lab.trendsTitle}</H2>
-          <p className="mb-8 mt-3 max-w-[640px] text-muted-foreground">{t.lab.trendsIntro}</p>
-          <Trends trends={trends} locale={locale} t={t.lab} />
-        </section>
-      )}
-
-      <section aria-labelledby="looking-heading" className={section}>
-        <H2 id="looking-heading">{t.lab.lookingForTitle}</H2>
-        <p className="mb-10 mt-3 max-w-[640px] text-muted-foreground">{t.lab.lookingForIntro}</p>
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,440px),1fr))] gap-x-16 gap-y-14">
-          <BarList items={data.categories.map((c) => ({ label: t.lab.categories[c.category], count: c.count }))} locale={locale} showAll={t.lab.showAll} />
-          <div>
-            <h3 className="mb-4 font-medium">{t.lab.targetsTitle}</h3>
-            <BarList items={data.targets.map((x) => ({ label: x.target, count: x.count, mono: true }))} locale={locale} showAll={t.lab.showAll} />
-          </div>
-        </div>
-      </section>
-
-      <section id="where" aria-label={`${t.lab.countriesTitle}, ${t.lab.clientsTitle}, ${t.lab.defensesTitle}`} className={section}>
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,300px),1fr))] gap-x-14 gap-y-14 border-t border-foreground pt-6">
-          <div>
-            <h2 className="mb-4 font-serif text-2xl font-medium">{t.lab.countriesTitle}</h2>
-            <BarList
-              items={data.countries.map((c) => ({ label: c.code === 'T1' ? 'Tor' : (countryName.of(c.code) ?? c.code), count: c.count }))}
-              locale={locale}
-              showAll={t.lab.showAll}
-            />
-          </div>
-          <div>
-            <h2 className="mb-4 font-serif text-2xl font-medium">{t.lab.clientsTitle}</h2>
-            <BarList items={data.clients.map((c) => ({ label: c.label, count: c.count }))} locale={locale} showAll={t.lab.showAll} />
-          </div>
-          <div>
-            <h2 className="mb-4 font-serif text-2xl font-medium">{t.lab.defensesTitle}</h2>
-            <BarList items={data.defenses.map((d) => ({ label: d.layer, count: d.count }))} locale={locale} showAll={t.lab.showAll} />
-          </div>
-        </div>
-      </section>
+      <ObservatoryExplorer
+        data={data}
+        locale={locale}
+        t={t.lab}
+        section={section}
+        trends={
+          trends.length > 0 && (
+            <section aria-labelledby="trends-heading" className={section}>
+              <H2 id="trends-heading">{t.lab.trendsTitle}</H2>
+              <p className="mb-8 mt-3 max-w-[640px] text-muted-foreground">{t.lab.trendsIntro}</p>
+              <Trends trends={trends} locale={locale} t={t.lab} />
+            </section>
+          )
+        }
+      />
 
       {caseStudies.length > 0 && (
         <section aria-labelledby="cases-heading" className={section}>
