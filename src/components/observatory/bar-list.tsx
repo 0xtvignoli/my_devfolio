@@ -6,6 +6,8 @@ interface BarListProps {
   locale: Locale;
   /** Contains `{count}`. When given, rows past the fifth fold into a native <details>. */
   showAll?: string;
+  /** Label of the row the page filter picked; the others recede. */
+  active?: string;
 }
 
 const VISIBLE = 5;
@@ -14,13 +16,13 @@ const VISIBLE = 5;
  * Ranked magnitudes as a list: label and value in text, a thin bar for the
  * shape. One series, one colour, so no legend; the numbers are the table.
  */
-export function BarList({ items, locale, showAll }: BarListProps) {
+export function BarList({ items, locale, showAll, active }: BarListProps) {
   const nf = new Intl.NumberFormat(locale === 'it' ? 'it-IT' : 'en-GB');
   const max = Math.max(...items.map((i) => i.count), 1);
   const fold = showAll !== undefined && items.length > VISIBLE + 1;
   const rows = (list: BarListProps['items']) =>
     list.map((item) => (
-      <li key={item.label}>
+      <li key={item.label} aria-current={item.label === active || undefined} className={cn('transition-opacity', active && item.label !== active && 'opacity-40')}>
         <div className="flex items-baseline justify-between gap-4 text-[15px]">
           <span className={cn('min-w-0 truncate', item.mono && 'font-mono text-[13px]')}>{item.label}</span>
           <span className="font-mono text-[13px] tabular-nums text-muted-foreground">{nf.format(item.count)}</span>

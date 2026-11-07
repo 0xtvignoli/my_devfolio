@@ -3,9 +3,11 @@
 import { useSyncExternalStore, type ReactNode } from 'react';
 import { DailyChart } from '@/components/observatory/daily-chart';
 import { BarList } from '@/components/observatory/bar-list';
+import { Trends } from '@/components/observatory/trends';
 import { cn } from '@/lib/utils';
 import type { Category } from '@/lib/observatory/classify';
 import type { Observatory } from '@/lib/observatory/types';
+import type { Trend } from '@/lib/observatory/trends';
 import type { Locale, Translations } from '@/lib/types';
 
 const EVENT = 'lab:filter';
@@ -30,9 +32,9 @@ function H2({ id, children }: { id: string; children: ReactNode }) {
 }
 
 /**
- * Daily chart, "what they look for" and "where from", driven by one category
- * filter. Trends sit between them unchanged (passed in, server-rendered), and
- * "what stopped them" stays global: Cloudflare gives defences without a path.
+ * Daily chart, trends, "what they look for" and "where from", driven by one
+ * category filter; a trend row is a filter too. "What stopped them" stays
+ * global: Cloudflare gives defences without a path.
  */
 export function ObservatoryExplorer({
   data,
@@ -45,7 +47,7 @@ export function ObservatoryExplorer({
   locale: Locale;
   t: Translations['lab'];
   section: string;
-  trends: ReactNode;
+  trends: Trend[];
 }) {
   const raw = useSyncExternalStore(subscribe, readCat, () => null);
   const split = data.byCategory?.find((c) => c.category === raw);
@@ -65,6 +67,7 @@ export function ObservatoryExplorer({
   const label = (c: Category) => t.categories[c];
   const share = cat ? data.categories.find((c) => c.category === cat)?.count ?? 0 : 0;
   const nf = new Intl.NumberFormat(locale === 'it' ? 'it-IT' : 'en-GB');
+  const chips = data.categories.map((c) => c.category).filter((c) => c !== 'other');
 
   const chip = (value: Category | null, text: string) => (
     <button
@@ -88,7 +91,7 @@ export function ObservatoryExplorer({
         <p className="mb-6 mt-3 max-w-[640px] text-muted-foreground">{t.dailyCaption}</p>
         <div role="group" aria-label={t.filterLabel} className="-mx-4 mb-3 flex gap-2 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0">
           {chip(null, t.filterAll)}
-          {data.categories.filter((c) => c.category !== 'other').map((c) => chip(c.category, label(c.category)))}
+          {chips.map((c) => chip(c, label(c)))}
         </div>
         <p aria-live="polite" className="mb-4 font-mono text-[13px] text-muted-foreground">
           {cat ? t.filterSummary.replace('{part}', nf.format(share)).replace('{total}', nf.format(data.totals.hostile)) : ' '}
@@ -101,13 +104,31 @@ export function ObservatoryExplorer({
         />
       </section>
 
-      {trends}
+      {trends.length > 0 && (
+        <section aria-labelledby="trends-heading" className={section}>
+          <H2 id="trends-heading">{t.trendsTitle}</H2>
+          <p className="mb-8 mt-3 max-w-[640px] text-muted-foreground">{t.trendsIntro}</p>
+          <Trends
+            trends={trends}
+            locale={locale}
+            t={t}
+            selected={cat}
+            filterable={chips}
+            onSelect={(c) => select(c === cat ? null : c)}
+          />
+        </section>
+      )}
 
       <section aria-labelledby="looking-heading" className={section}>
         <H2 id="looking-heading">{t.lookingForTitle}</H2>
         <p className="mb-10 mt-3 max-w-[640px] text-muted-foreground">{t.lookingForIntro}</p>
         <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,440px),1fr))] gap-x-16 gap-y-14">
-          <BarList items={data.categories.map((c) => ({ label: label(c.category), count: c.count }))} locale={locale} showAll={t.showAll} />
+          <BarList
+            items={data.categories.map((c) => ({ label: label(c.category), count: c.count }))}
+            locale={locale}
+            showAll={t.showAll}
+            active={cat ? label(cat) : undefined}
+          />
           <div>
             <h3 className="mb-4 font-medium">
               {t.targetsTitle}
