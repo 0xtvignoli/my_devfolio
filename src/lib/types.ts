@@ -182,6 +182,11 @@ export interface Translations {
   lab: {
     kicker: string;
     showAll: string;
+    filterLabel: string;
+    filterAll: string;
+    /** Contains {part} and {total}. */
+    filterSummary: string;
+    defensesAllNote: string;
     jump: { daily: string; trends: string; looking: string; where: string; cases: string; method: string };
     title: string;
     intro: string;
