@@ -220,7 +220,7 @@ export const it: Translations = {
     peak: "Picco",
     dateLabel: "Data",
     trendsTitle: "Ultimi 7 giorni contro la settimana prima",
-    trendsIntro: "Ogni categoria con la sua linea sui giorni completi della finestra e la variazione della media giornaliera. La frase in alto la scrive la build a partire dalla categoria che si è mossa di più.",
+    trendsIntro: "Ogni categoria con la sua linea sui giorni completi della finestra e la variazione della media giornaliera. La frase in alto segue la categoria che si è mossa di più; tocca una riga per filtrare la pagina su quella categoria.",
     trends: {
       inDays: "in {n} giorni",
       note: "Confronto sulle medie giornaliere: la finestra ha 13 giorni completi, quindi il periodo precedente è di sei giorni. Le categorie sotto le 20 richieste non mostrano percentuali.",

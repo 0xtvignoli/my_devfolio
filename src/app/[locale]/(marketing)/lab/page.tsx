@@ -2,7 +2,6 @@ import Link from 'next/link';
 import observatoryData from '@/data/observatory.json';
 import { ArticleRow } from '@/components/shared/article-row';
 import { ObservatoryExplorer } from '@/components/observatory/explorer';
-import { Trends } from '@/components/observatory/trends';
 import { JumpChips } from '@/components/shared/jump-chips';
 import { computeTrends } from '@/lib/observatory/trends';
 import { JsonLd } from '@/components/seo/json-ld';
@@ -109,15 +108,7 @@ export default async function LabPage({ params }: LabPageProps) {
         locale={locale}
         t={t.lab}
         section={section}
-        trends={
-          trends.length > 0 && (
-            <section aria-labelledby="trends-heading" className={section}>
-              <H2 id="trends-heading">{t.lab.trendsTitle}</H2>
-              <p className="mb-8 mt-3 max-w-[640px] text-muted-foreground">{t.lab.trendsIntro}</p>
-              <Trends trends={trends} locale={locale} t={t.lab} />
-            </section>
-          )
-        }
+        trends={trends}
       />
 
       {caseStudies.length > 0 && (
