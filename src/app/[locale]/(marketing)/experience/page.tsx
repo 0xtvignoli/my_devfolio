@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: ExperiencePageProps): Promise
   const t = getTranslations(locale);
   return createPageMetadata({
     title: t.experience.title,
-    description: t.experience.pageSubtitle ?? t.hero.subtitle,
+    description: t.experience.pageSubtitle,
     path: '/experience',
     locale,
   });
