@@ -4,7 +4,7 @@ import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '@/lib/i18n/config';
 import { localizedPath } from '@/lib/i18n/paths';
 import { SITE_URL } from '@/lib/seo/constants';
 
-const STATIC_PATHS = ['', '/portfolio', '/lab', '/lab/status', '/experience', '/articles', '/cv'] as const;
+const STATIC_PATHS = ['', '/portfolio', '/lab', '/lab/passwords', '/lab/status', '/experience', '/articles', '/cv'] as const;
 
 /** hreflang alternates including x-default (→ default locale) for a locale-agnostic path. */
 function hreflangAlternates(pathWithoutLocale: string) {

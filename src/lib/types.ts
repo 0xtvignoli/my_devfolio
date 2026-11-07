@@ -182,6 +182,7 @@ export interface Translations {
   lab: {
     kicker: string;
     showAll: string;
+    passwordsLink: string;
     filterLabel: string;
     filterAll: string;
     /** Contains {part} and {total}. */
@@ -224,6 +225,29 @@ export interface Translations {
       subjects: Record<'secrets' | 'cms' | 'admin' | 'traversal' | 'app-exploit' | 'other', string>;
     };
     statusLink: string;
+  };
+  passwords: {
+    kicker: string;
+    title: string;
+    intro: string;
+    checkTitle: string;
+    privacyLine: string;
+    inputLabel: string;
+    check: string;
+    /** Contains {n}. */
+    triedTitle: string;
+    /** Contains {rank}. */
+    triedDetail: string;
+    notTriedTitle: string;
+    notTriedDetail: string;
+    /** Contains {n}. */
+    listSize: string;
+    noData: string;
+    kindsTitle: string;
+    kinds: { sameAsUser: string; vendorDefault: string; keyboardWalk: string; digitsOnly: string; other: string };
+    howTitle: string;
+    how: string[];
+    back: string;
   };
   status: {
     kicker: string;
