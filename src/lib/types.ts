@@ -234,7 +234,9 @@ export interface Translations {
     stats: { planted: string; used: string; fastest: string };
     channelsTitle: string;
     channels: Record<'decoy-env' | 'html-comment' | 'robots' | 'docker' | 'github', { name: string; short: string; seenBy: string }>;
-    calls: Record<'identity' | 'list-buckets' | 'ec2' | 'iam' | 'other', string>;
+    calls: Record<'identity' | 'secrets' | 'ai' | 'email' | 'data' | 'compute' | 'network' | 'iam' | 'other', string>;
+    /** Contains {n}. */
+    callsCount: string;
     status: { used: string; waiting: string; notPlanted: string; blocked: string };
     /** Contains {d}. */
     noUseAfter: string;

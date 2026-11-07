@@ -38,6 +38,7 @@ export default async function CanariesPage({ params }: Props) {
   const locale: Locale = resolveLocaleParam((await params).locale);
   const t = getTranslations(locale);
   const c = t.canaries;
+  const nf = new Intl.NumberFormat(locale === 'it' ? 'it-IT' : 'en-GB');
   const planted = CANARIES.filter((x) => x.plantedAt);
   const used = planted.filter((x) => x.firstUseAt);
   const fastest = used.length ? Math.min(...used.map((x) => wait(x)!)) : null;
@@ -80,7 +81,9 @@ export default async function CanariesPage({ params }: Props) {
               <span className="font-medium">{c.channels[x.id].name}</span>
               <span className="text-[15px] text-muted-foreground">{c.channels[x.id].seenBy}</span>
               <span className="font-serif text-[22px] leading-tight">{after(x)}</span>
-              <span className="font-mono text-[13px] text-muted-foreground">{x.calls.length ? x.calls.map((k) => c.calls[k]).join(' · ') : '—'}</span>
+              <span className="font-mono text-[13px] text-muted-foreground">{x.calls.length ? x.calls.map((k) => c.calls[k]).join(' · ') : '—'}
+                {x.hits ? <span className="block">{c.callsCount.replace('{n}', nf.format(x.hits))}</span> : null}
+              </span>
               <span className={cn('justify-self-start font-mono text-[11px] uppercase tracking-[0.06em] sm:justify-self-end', x.firstUseAt ? 'text-foreground' : 'text-muted-foreground')}>
                 {status(x)}
               </span>
