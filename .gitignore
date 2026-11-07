@@ -61,3 +61,6 @@ dist-ssr
 # Playwright
 /test-results/
 /playwright-report/
+
+# Written at build from the decoy VM (scripts/decoys.ts); never committed.
+src/data/decoys.json

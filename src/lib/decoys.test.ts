@@ -57,3 +57,19 @@ for (const [name, input] of rejected) {
     expect(parseDecoys(input)).toBeNull();
   });
 }
+
+test('keeps password hashes and kinds when well formed', () => {
+  const d = parseDecoys(withSsh({ passwordKinds: { vendorDefault: 3, other: 1 }, passwordHashes: [{ h: '0123456789abcdef', n: 3 }] }));
+  expect(d?.ssh.passwordHashes).toEqual([{ h: '0123456789abcdef', n: 3 }]);
+  expect(d?.ssh.passwordKinds).toEqual({ vendorDefault: 3, other: 1 });
+});
+
+test('rejects a password entry that is not a short hex hash', () => {
+  expect(parseDecoys(withSsh({ passwordHashes: [{ h: 'hunter2', n: 1 }] }))).toBeNull();
+  expect(parseDecoys(withSsh({ passwordHashes: [{ h: '0123456789ABCDEF', n: 1 }] }))).toBeNull();
+  expect(parseDecoys(withSsh({ passwordKinds: { '<b>': 1 } }))).toBeNull();
+});
+
+test('files without the password fields still parse', () => {
+  expect(parseDecoys(valid)?.ssh.passwordHashes).toBeUndefined();
+});

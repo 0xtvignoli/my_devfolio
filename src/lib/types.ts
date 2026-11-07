@@ -182,6 +182,13 @@ export interface Translations {
   lab: {
     kicker: string;
     showAll: string;
+    canariesLink: string;
+    passwordsLink: string;
+    filterLabel: string;
+    filterAll: string;
+    /** Contains {part} and {total}. */
+    filterSummary: string;
+    defensesAllNote: string;
     jump: { daily: string; trends: string; looking: string; where: string; cases: string; method: string };
     title: string;
     intro: string;
@@ -219,6 +226,50 @@ export interface Translations {
       subjects: Record<'secrets' | 'cms' | 'admin' | 'traversal' | 'app-exploit' | 'other', string>;
     };
     statusLink: string;
+  };
+  canaries: {
+    kicker: string;
+    title: string;
+    intro: string;
+    stats: { planted: string; used: string; fastest: string };
+    channelsTitle: string;
+    channels: Record<'decoy-env' | 'html-comment' | 'robots' | 'docker' | 'github', { name: string; short: string; seenBy: string }>;
+    calls: Record<'identity' | 'list-buckets' | 'ec2' | 'iam' | 'other', string>;
+    status: { used: string; waiting: string; notPlanted: string; blocked: string };
+    /** Contains {d}. */
+    noUseAfter: string;
+    blockedAtPush: string;
+    timelineTitle: string;
+    timelineCaption: string;
+    dayUnit: string;
+    weekUnit: string;
+    howTitle: string;
+    how: string[];
+    updated: string;
+    back: string;
+  };
+  passwords: {
+    kicker: string;
+    title: string;
+    intro: string;
+    checkTitle: string;
+    privacyLine: string;
+    inputLabel: string;
+    check: string;
+    /** Contains {n}. */
+    triedTitle: string;
+    /** Contains {rank}. */
+    triedDetail: string;
+    notTriedTitle: string;
+    notTriedDetail: string;
+    /** Contains {n}. */
+    listSize: string;
+    noData: string;
+    kindsTitle: string;
+    kinds: { sameAsUser: string; vendorDefault: string; keyboardWalk: string; digitsOnly: string; other: string };
+    howTitle: string;
+    how: string[];
+    back: string;
   };
   status: {
     kicker: string;
