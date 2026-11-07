@@ -241,6 +241,8 @@ export interface Translations {
     /** Contains {d}. */
     noUseAfter: string;
     blockedAtPush: string;
+    /** Contains {d}. */
+    quarantined: string;
     timelineTitle: string;
     timelineCaption: string;
     dayUnit: string;
