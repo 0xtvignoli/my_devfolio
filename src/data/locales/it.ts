@@ -253,7 +253,7 @@ export const it: Translations = {
       "html-comment": { name: "Commento nell'HTML di questo sito", short: "commento HTML", seenBy: "tvignoli.com, dietro Cloudflare" },
       robots: { name: "Percorso elencato in robots.txt", short: "robots.txt", seenBy: "tvignoli.com, dietro Cloudflare" },
       docker: { name: "Layer di un'immagine Docker pubblica", short: "immagine Docker", seenBy: "Docker Hub" },
-      github: { name: "File in un repo GitHub pubblico", short: "repo GitHub", seenBy: "GitHub" },
+      github: { name: "File in un repo GitHub pubblico", short: "repo GitHub", seenBy: "GitHub: segnalata al commit, un clic l'ha fatta passare" },
     },
     calls: { identity: "chi sono", secrets: "segreti", ai: "modelli AI", email: "invio email", data: "database e storage", compute: "server e funzioni", network: "rete", iam: "utenti e ruoli", other: "altro" },
     callsCount: "almeno {n} chiamate",
