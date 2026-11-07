@@ -140,6 +140,11 @@ export default async function LabPage({ params }: LabPageProps) {
             ))}
           </ul>
           <p className="mt-6">
+            <Link className="text-link underline-offset-4 hover:underline" href={localizedPath(locale, '/lab/passwords')}>
+              {t.lab.passwordsLink}
+            </Link>
+          </p>
+          <p className="mt-6">
             <Link className="text-link underline-offset-4 hover:underline" href={localizedPath(locale, '/lab/decoys/canaries')}>
               {t.lab.canariesLink}
             </Link>

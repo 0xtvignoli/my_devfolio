@@ -183,6 +183,7 @@ export interface Translations {
     kicker: string;
     showAll: string;
     canariesLink: string;
+    passwordsLink: string;
     filterLabel: string;
     filterAll: string;
     /** Contains {part} and {total}. */
@@ -245,6 +246,29 @@ export interface Translations {
     howTitle: string;
     how: string[];
     updated: string;
+    back: string;
+  };
+  passwords: {
+    kicker: string;
+    title: string;
+    intro: string;
+    checkTitle: string;
+    privacyLine: string;
+    inputLabel: string;
+    check: string;
+    /** Contains {n}. */
+    triedTitle: string;
+    /** Contains {rank}. */
+    triedDetail: string;
+    notTriedTitle: string;
+    notTriedDetail: string;
+    /** Contains {n}. */
+    listSize: string;
+    noData: string;
+    kindsTitle: string;
+    kinds: { sameAsUser: string; vendorDefault: string; keyboardWalk: string; digitsOnly: string; other: string };
+    howTitle: string;
+    how: string[];
     back: string;
   };
   status: {
