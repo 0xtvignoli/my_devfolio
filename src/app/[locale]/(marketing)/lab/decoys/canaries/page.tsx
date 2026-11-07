@@ -72,6 +72,7 @@ export default async function CanariesPage({ params }: Props) {
           </div>
         ))}
       </dl>
+      {CANARIES.some((x) => x.calls.includes('ai')) && <p className="mt-6 max-w-[680px] text-[17px]">{c.lesson}</p>}
 
       <section aria-labelledby="channels-heading" className="mt-14">
         <h2 id="channels-heading" className="sr-only">{c.channelsTitle}</h2>
