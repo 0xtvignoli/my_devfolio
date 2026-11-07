@@ -34,6 +34,8 @@ export type Canary = {
   calls: CanaryCall[];
   /** Calls recorded on the key so far. */
   hits?: number;
+  /** ISO UTC when AWS itself attached its quarantine policy (key reported by GitHub secret scanning). */
+  quarantinedAt?: string;
   /** The channel refused the key (e.g. GitHub push protection): that is the result. */
   blocked?: boolean;
 };
@@ -43,5 +45,5 @@ export const CANARIES: Canary[] = [
   { id: 'html-comment', plantedAt: '2026-11-07T17:40:00Z', firstUseAt: null, calls: [] },
   { id: 'robots', plantedAt: '2026-11-07T17:40:00Z', firstUseAt: null, calls: [] },
   { id: 'docker', plantedAt: '2026-11-07T17:46:00Z', firstUseAt: '2026-11-07T17:48:00Z', calls: ['identity', 'secrets', 'data', 'compute', 'network', 'other'], hits: 55 },
-  { id: 'github', plantedAt: '2026-11-07T18:24:00Z', firstUseAt: null, calls: [] },
+  { id: 'github', plantedAt: '2026-11-07T18:24:00Z', firstUseAt: null, calls: [], quarantinedAt: '2026-11-07T18:26:43Z' },
 ];

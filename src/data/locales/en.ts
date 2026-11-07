@@ -260,6 +260,7 @@ export const en: Translations = {
     status: { used: "used", waiting: "waiting", notPlanted: "not yet", blocked: "blocked" },
     noUseAfter: "none after {d}",
     blockedAtPush: "blocked at push",
+    quarantined: "AWS quarantined it after {d}",
     timelineTitle: "Time to first use",
     timelineCaption: "Log scale. Blue: first use. Dashed: still waiting, measured at the last build.",
     dayUnit: "day",

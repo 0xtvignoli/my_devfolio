@@ -259,6 +259,7 @@ export const it: Translations = {
     callsCount: "almeno {n} chiamate",
     status: { used: "usata", waiting: "in attesa", notPlanted: "non ancora", blocked: "bloccata" },
     noUseAfter: "nessun uso dopo {d}",
+    quarantined: "AWS l'ha messa in quarantena dopo {d}",
     blockedAtPush: "bloccata al push",
     timelineTitle: "Tempo al primo uso",
     timelineCaption: "Scala logaritmica. Blu: primo uso. Tratteggio: ancora in attesa, misurato all'ultima build.",

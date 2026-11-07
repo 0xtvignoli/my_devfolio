@@ -83,6 +83,11 @@ export default async function CanariesPage({ params }: Props) {
               <span className="font-serif text-[22px] leading-tight">{after(x)}</span>
               <span className="font-mono text-[13px] text-muted-foreground">{x.calls.length ? x.calls.map((k) => c.calls[k]).join(' · ') : '—'}
                 {x.hits ? <span className="block">{c.callsCount.replace('{n}', nf.format(x.hits))}</span> : null}
+                {x.quarantinedAt && x.plantedAt ? (
+                  <span className="block">
+                    {c.quarantined.replace('{d}', formatDuration(Date.parse(x.quarantinedAt) - Date.parse(x.plantedAt), locale))}
+                  </span>
+                ) : null}
               </span>
               <span className={cn('justify-self-start font-mono text-[11px] uppercase tracking-[0.06em] sm:justify-self-end', x.firstUseAt ? 'text-foreground' : 'text-muted-foreground')}>
                 {status(x)}
