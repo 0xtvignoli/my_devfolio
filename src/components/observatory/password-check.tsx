@@ -40,6 +40,7 @@ export function PasswordCheck({ hashes, locale, t }: { hashes: PasswordHash[]; l
           autoComplete="off"
           autoCapitalize="off"
           spellCheck={false}
+          placeholder={t.inputPlaceholder}
           value={value}
           onChange={(e) => {
             setValue(e.target.value);

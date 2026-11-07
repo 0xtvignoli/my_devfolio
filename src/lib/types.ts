@@ -53,25 +53,6 @@ export interface Translations {
     signalCta: string;
     caseStudy: string;
   };
-  mobileNav: {
-    home: string;
-    portfolio: string;
-    contact: string;
-    ariaLabel: string;
-  };
-  hero: {
-    title: string;
-    subtitle: string;
-    badge: string;
-    ctaPortfolio: string;
-    ctaLab: string;
-    ctaContact: string;
-    labPreviewTitle: string;
-    labPreviewSubtitle: string;
-    tryLabTitle?: string;
-    tryLabDescription?: string;
-    tryLabCta?: string;
-  };
   skills: {
     title: string;
     list: string[];
@@ -101,16 +82,12 @@ export interface Translations {
     related: string;
   };
   contact: {
-    title: string;
-    description: string;
     /** Accessible name for the mail link. Holds no address on purpose: it used to
         interpolate one, which both leaked it and made screen readers spell it out. */
     emailLabel: string;
-    buttonText: string;
     /** Prefilled mail subject, so inbound is triageable. */
     subject: string;
     responseTime: string;
-    cvLink: string;
   };
   contactForm: {
     title: string;
@@ -143,12 +120,6 @@ export interface Translations {
   a11y: {
     skipToContent: string;
   };
-  errorBoundary: {
-    title: string;
-    description: string;
-    reload: string;
-    goHome: string;
-  };
   article: {
     minRead: string;
     contents: string;
@@ -163,21 +134,6 @@ export interface Translations {
     github: string;
     demo: string;
     metricsLabel: string;
-  };
-  codesandbox: {
-    title: string;
-    description: string;
-    tryIt: string;
-    openInSandbox: string;
-    copyLink: string;
-    linkCopied: string;
-    templates: {
-      eks: string;
-      vpc: string;
-      rds: string;
-      s3: string;
-      cicd: string;
-    };
   };
   lab: {
     kicker: string;
@@ -232,6 +188,8 @@ export interface Translations {
     title: string;
     intro: string;
     stats: { planted: string; used: string; fastest: string };
+    /** Shown when a key was used against AI models. */
+    lesson: string;
     channelsTitle: string;
     channels: Record<'decoy-env' | 'html-comment' | 'robots' | 'docker' | 'github', { name: string; short: string; seenBy: string }>;
     calls: Record<'identity' | 'secrets' | 'ai' | 'email' | 'data' | 'compute' | 'network' | 'iam' | 'other', string>;
@@ -259,6 +217,7 @@ export interface Translations {
     checkTitle: string;
     privacyLine: string;
     inputLabel: string;
+    inputPlaceholder: string;
     check: string;
     /** Contains {n}. */
     triedTitle: string;

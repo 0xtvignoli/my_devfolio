@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: PortfolioPageProps): Promise<
   const t = getTranslations(locale);
   return createPageMetadata({
     title: t.nav.portfolio,
-    description: t.portfolio.pageSubtitle ?? t.hero.subtitle,
+    description: t.portfolio.pageSubtitle,
     path: '/portfolio',
     locale,
   });

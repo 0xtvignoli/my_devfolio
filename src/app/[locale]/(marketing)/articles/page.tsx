@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: ArticlesPageProps): Promise<M
   const t = getTranslations(locale);
   return createPageMetadata({
     title: t.nav.articles,
-    description: t.articles.pageSubtitle ?? t.hero.subtitle,
+    description: t.articles.pageSubtitle,
     path: '/articles',
     locale,
   });

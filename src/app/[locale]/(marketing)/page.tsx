@@ -20,7 +20,7 @@ type HomePageProps = {
 };
 
 /** Hand-picked, in this order: breadth first, then the current focus. */
-const FEATURED_PROJECT_IDS = ['project-10', 'project-6', 'project-5', 'project-7'];
+const FEATURED_PROJECT_IDS = ['homelab-security', 'homelab-automation', 'project-6', 'project-5'];
 
 export async function generateMetadata({ params }: HomePageProps): Promise<Metadata> {
   const { locale: localeParam } = await params;
