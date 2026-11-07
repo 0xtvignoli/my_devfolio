@@ -2,10 +2,7 @@ import type { Project } from "@/lib/types";
 
 /** Local cover art under /public/images/projects — no external placeholder hosts. */
 export const PROJECT_IMAGES = {
-  "project-1": "/images/projects/project-1-k8s.svg",
-  "project-2": "/images/projects/project-2-terratest.svg",
   "project-3": "/images/projects/project-3-serverless.svg",
-  "project-4": "/images/projects/project-4-observability.svg",
   "project-5": "/images/projects/project-5-gitops.svg",
   "project-6": "/images/projects/project-6-llm-gateway.svg",
   "project-7": "/images/projects/project-7-finops.svg",
@@ -100,46 +97,6 @@ export const projects: Project[] = [
     ],
   },
   {
-    id: "project-1",
-    title: {
-      en: "Multi-Cloud Kubernetes Platform",
-      it: "Piattaforma Kubernetes multi-cloud",
-    },
-    description: {
-      en: "A production-ready Kubernetes cluster on AWS and GCP: Terraform for the infrastructure, Helm for the apps. Logs in one place, metrics in Prometheus, TLS certificates that renew themselves.",
-      it: "Un cluster Kubernetes pronto per la produzione su AWS e GCP: Terraform per l'infrastruttura, Helm per le applicazioni. Log in un posto solo, metriche con Prometheus, certificati TLS che si rinnovano da soli.",
-    },
-    tags: ["Kubernetes", "Terraform", "Helm", "AWS", "GCP", "Prometheus"],
-    imageUrl: PROJECT_IMAGES["project-1"],
-    imageHint: "cloud infrastructure diagram",
-    githubUrl: "https://github.com/0xtvignoli",
-    metrics: [
-      { label: { en: "Deploy time", it: "Tempo deploy" }, value: "−40%" },
-      { label: { en: "Uptime", it: "Uptime" }, value: "99.95%" },
-      { label: { en: "Clusters", it: "Cluster" }, value: "2 clouds" },
-    ],
-  },
-  {
-    id: "project-2",
-    title: {
-      en: "Go-based Terratest Framework",
-      it: "Test dell'infrastruttura con Terratest",
-    },
-    description: {
-      en: "I wrote the tests for our Terraform modules with Terratest, in Go. Every infrastructure change gets tried in the pipeline before it reaches production, not after.",
-      it: "Ho scritto i test per i moduli Terraform con Terratest, in Go. Ogni modifica all'infrastruttura viene provata in pipeline prima di arrivare in produzione, non dopo.",
-    },
-    tags: ["Go", "Terratest", "Terraform", "CI/CD", "Testing"],
-    imageUrl: PROJECT_IMAGES["project-2"],
-    imageHint: "code terminal",
-    githubUrl: "https://github.com/0xtvignoli",
-    metrics: [
-      { label: { en: "Modules tested", it: "Moduli testati" }, value: "24+" },
-      { label: { en: "CI coverage", it: "Copertura CI" }, value: "100%" },
-      { label: { en: "Regressions", it: "Regressioni" }, value: "−60%" },
-    ],
-  },
-  {
     id: "project-3",
     title: {
       en: "Serverless CI/CD Pipeline",
@@ -156,26 +113,6 @@ export const projects: Project[] = [
       { label: { en: "Build cost", it: "Costo build" }, value: "−55%" },
       { label: { en: "Release freq.", it: "Freq. release" }, value: "3×/day" },
       { label: { en: "Lead time", it: "Lead time" }, value: "< 20 min" },
-    ],
-  },
-  {
-    id: "project-4",
-    title: {
-      en: "Observability Stack Deployment",
-      it: "Stack di osservabilità",
-    },
-    description: {
-      en: "A full observability stack (Prometheus, Grafana, Loki, Tempo) installed on Kubernetes with Helm and Terraform. Metrics, logs and traces in the same place, so when something slows down you can tell where.",
-      it: "Uno stack di osservabilità completo (Prometheus, Grafana, Loki, Tempo) installato su Kubernetes con Helm e Terraform. Metriche, log e tracce nello stesso posto, così quando qualcosa rallenta si capisce dove.",
-    },
-    tags: ["Observability", "Prometheus", "Grafana", "Kubernetes", "Helm"],
-    imageUrl: PROJECT_IMAGES["project-4"],
-    imageHint: "dashboard monitoring",
-    githubUrl: "https://github.com/0xtvignoli",
-    metrics: [
-      { label: { en: "MTTR", it: "MTTR" }, value: "−35%" },
-      { label: { en: "Dashboards", it: "Dashboard" }, value: "40+" },
-      { label: { en: "Alerts", it: "Alert" }, value: "SLO-based" },
     ],
   },
   {
