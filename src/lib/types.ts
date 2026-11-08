@@ -202,6 +202,8 @@ export interface Translations {
     /** Contains {from}, {to}. */
     window: string;
     whyTitle: string;
+    /** One is shown, picked by which side got more secrets hunting. */
+    whySecrets: { decoy: string; site: string };
     why: string[];
     howTitle: string;
     how: string[];

@@ -103,7 +103,8 @@ export default async function ComparePage({ params }: Props) {
 
       <section className="mt-16 grid gap-x-14 gap-y-10 sm:grid-cols-2">
         {[
-          { title: c.whyTitle, items: c.why },
+          // The first reason follows the numbers, so the page never argues against its own table.
+          { title: c.whyTitle, items: [...(secrets ? [secrets.decoy >= secrets.site ? c.whySecrets.decoy : c.whySecrets.site] : []), ...c.why] },
           { title: c.howTitle, items: c.how },
         ].map((block) => (
           <div key={block.title}>

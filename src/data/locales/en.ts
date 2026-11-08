@@ -214,8 +214,11 @@ export const en: Translations = {
     sshClosed: "port closed",
     window: "From {from} to {to}: the days both sides cover. Hostile traffic only; on the site that's failed or refused requests, on the decoy everything, since nobody lands there by accident.",
     whyTitle: "Why they differ so much",
+    whySecrets: {
+      decoy: "Hunting for .env files doesn't need a name: to a scanner an IP with port 80 open is as good as a domain, and the exposed server gets more of it.",
+      site: "The site has a name, a certificate in public logs and links: it draws targeted hunting for .env, .git and config files, more than the exposed server.",
+    },
     why: [
-      "The site has a name, a certificate in public logs and links: it draws targeted hunting for .env, .git and config files.",
       "The server is just an IP in a cloud range: it gets mass scanning, mostly SSH and anything on port 80.",
       "Cloudflare stops a lot before it reaches the site, and that shows up in neither column.",
     ],
