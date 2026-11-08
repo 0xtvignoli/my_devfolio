@@ -205,7 +205,7 @@ export const en: Translations = {
     title: "Who's hunting for free AI?",
     intro: "On the decoy server there's a fake Ollama, the most common server for running AI models at home, left open on the internet like thousands of real ones. It answers the model list and refuses real work as \"busy\". Here I count who knocks and what they want.",
     notOpen: "The port isn't open yet. When it is, the stopwatch starts here.",
-    noVisits: "Port open for {d}: nobody has knocked yet.",
+    noVisits: "Port opened on {t}: nobody has knocked yet. This page updates once a day.",
     stats: { requests: "requests, last 14 days", first: "first contact after opening", generate: "tried to generate text", keys: "sent an API key" },
     waiting: "waiting",
     callsTitle: "What they call",

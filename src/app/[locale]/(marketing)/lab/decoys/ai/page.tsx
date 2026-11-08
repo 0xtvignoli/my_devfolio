@@ -44,8 +44,6 @@ export default async function AiDecoyPage({ params }: Props) {
   const pct = new Intl.NumberFormat(locale === 'it' ? 'it-IT' : 'en-GB', { style: 'percent', maximumFractionDigits: 0 });
   const ai = readDecoys()?.ai;
   const opened = DECOY_OPENED.ai;
-  // eslint-disable-next-line react-hooks/purity -- build-time render
-  const now = Date.now();
   const firstAfter = opened && ai?.firstAt ? Date.parse(ai.firstAt) - Date.parse(opened) : null;
   const sum = (o: Partial<Record<string, number>>) => Object.values(o).reduce<number>((s, n) => s + (n ?? 0), 0);
   const list = <K extends string>(vocab: readonly K[], counts: Partial<Record<K, number>>, label: (k: K) => string, mono = false) =>
@@ -59,7 +57,10 @@ export default async function AiDecoyPage({ params }: Props) {
 
       {!opened || !ai?.requests ? (
         <p className="mt-12 max-w-[680px] bg-muted p-6 text-[17px]">
-          {!opened ? c.notOpen : c.noVisits.replace('{d}', formatDuration(now - Date.parse(opened), locale))}
+          {/* A date, not "open for N min": the page is rebuilt once a day and a duration would freeze. */}
+          {!opened
+            ? c.notOpen
+            : c.noVisits.replace('{t}', new Intl.DateTimeFormat(locale === 'it' ? 'it-IT' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Europe/Rome' }).format(new Date(opened)))}
         </p>
       ) : (
         <>

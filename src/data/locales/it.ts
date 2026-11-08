@@ -205,7 +205,7 @@ export const it: Translations = {
     title: "Chi va a caccia di AI gratis?",
     intro: "Sul server esca c'è un finto Ollama, il server più usato per far girare modelli AI in casa, lasciato aperto su internet come ne restano migliaia. Risponde all'elenco dei modelli, rifiuta il lavoro vero con «occupato». Qui conto chi bussa e cosa vuole.",
     notOpen: "La porta non è ancora aperta. Quando lo sarà, da qui parte il cronometro.",
-    noVisits: "Porta aperta da {d}: ancora nessuno ha bussato.",
+    noVisits: "Porta aperta il {t}: ancora nessuno ha bussato. La pagina si aggiorna una volta al giorno.",
     stats: { requests: "richieste, ultimi 14 giorni", first: "primo contatto dopo l'apertura", generate: "hanno provato a generare testo", keys: "hanno mandato una chiave API" },
     waiting: "in attesa",
     callsTitle: "Cosa chiamano",

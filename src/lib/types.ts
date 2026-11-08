@@ -190,7 +190,7 @@ export interface Translations {
     title: string;
     intro: string;
     notOpen: string;
-    /** Contains {d}. */
+    /** Contains {t}, the opening time. */
     noVisits: string;
     stats: { requests: string; first: string; generate: string; keys: string };
     waiting: string;
