@@ -195,6 +195,7 @@ export interface Translations {
     calls: Record<'identity' | 'secrets' | 'ai' | 'email' | 'data' | 'compute' | 'network' | 'iam' | 'other', string>;
     /** Contains {n}. */
     callsCount: string;
+    lastUse: string;
     status: { used: string; waiting: string; notPlanted: string; blocked: string };
     /** Contains {d}. */
     noUseAfter: string;
