@@ -47,3 +47,42 @@ export const CANARIES: Canary[] = [
   { id: 'docker', plantedAt: '2026-11-07T17:46:00Z', firstUseAt: '2026-11-07T17:48:00Z', calls: ['identity', 'secrets', 'data', 'compute', 'network', 'other'], hits: 55 },
   { id: 'github', plantedAt: '2026-11-07T18:24:00Z', firstUseAt: null, calls: [], quarantinedAt: '2026-11-07T18:26:43Z' },
 ];
+
+/** One hit in a canarytokens.org history export (the fields we read; it has more). */
+export type CanaryHit = {
+  time_of_hit: number;
+  useragent?: string;
+  additional_info?: { aws_key_log_data?: { eventName?: string[] } } | null;
+};
+
+const iso = (s: number) => new Date(s * 1000).toISOString().replace(/\.\d+Z$/, 'Z');
+
+/**
+ * Folds a history export into a recorded entry.
+ * [SEC] Reads only time_of_hit, the CloudTrail eventName and whether the user
+ * agent is "AWS Internal": the caller's IP, geo and user agent never leave here.
+ * AWS attaching its quarantine policy is not a use: it goes to quarantinedAt.
+ * An export holds the last 50 hits, so counts never go down and an earlier
+ * first use is kept.
+ */
+export function foldHits(base: Canary, hits: CanaryHit[]): Canary {
+  const events = (h: CanaryHit) => h.additional_info?.aws_key_log_data?.eventName ?? [];
+  const unique = [...new Map(hits.map((h) => [`${h.time_of_hit}|${events(h).join(',')}`, h])).values()];
+  const internal = (h: CanaryHit) => h.useragent === 'AWS Internal';
+  const uses = unique.filter((h) => !internal(h)).map((h) => h.time_of_hit);
+  const quarantine = unique.filter(internal).map((h) => h.time_of_hit);
+  const earliest = (a: string | null | undefined, b: number[]) => {
+    const x = b.length ? iso(Math.min(...b)) : null;
+    return a && (!x || a < x) ? a : x;
+  };
+  const found = new Set([...base.calls, ...unique.filter((h) => !internal(h)).flatMap((h) => events(h).map(callOf))]);
+  const count = Math.max(base.hits ?? 0, uses.length);
+  const quarantinedAt = earliest(base.quarantinedAt, quarantine);
+  return {
+    ...base,
+    firstUseAt: earliest(base.firstUseAt, uses),
+    calls: CANARY_CALLS.filter((c) => found.has(c)),
+    ...(count ? { hits: count } : {}),
+    ...(quarantinedAt ? { quarantinedAt } : {}),
+  };
+}
