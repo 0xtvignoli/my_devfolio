@@ -4,5 +4,5 @@
  * aggregator reports. Set by hand the day the NSG rule goes in.
  */
 export const DECOY_OPENED: Record<'ai', string | null> = {
-  ai: null,
+  ai: '2026-11-08T16:29:00Z',
 };
