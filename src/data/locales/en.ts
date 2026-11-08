@@ -214,6 +214,7 @@ export const en: Translations = {
     },
     calls: { identity: "who am I", secrets: "secrets", ai: "AI models", email: "sending email", data: "databases & storage", compute: "servers & functions", network: "network", iam: "users & roles", other: "other" },
     callsCount: "at least {n} calls",
+    lastUse: "the last one {d} ago",
     status: { used: "used", waiting: "waiting", notPlanted: "not yet", blocked: "blocked" },
     noUseAfter: "still nothing after {d}",
     blockedAtPush: "blocked at push",
@@ -229,7 +230,7 @@ export const en: Translations = {
       "I publish where a key was found, how long it took and what they tried to do with it. Not where they came from.",
       "A channel that never fires stays on the page anyway: knowing where nobody looks is data too.",
     ],
-    updated: "Measured at the build of",
+    updated: "Updated",
     back: "← Back to the Lab",
   },
   passwords: {

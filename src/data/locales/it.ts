@@ -214,6 +214,7 @@ export const it: Translations = {
     },
     calls: { identity: "chi sono", secrets: "segreti", ai: "modelli AI", email: "invio email", data: "database e storage", compute: "server e funzioni", network: "rete", iam: "utenti e ruoli", other: "altro" },
     callsCount: "almeno {n} chiamate",
+    lastUse: "l'ultima {d} fa",
     status: { used: "usata", waiting: "in attesa", notPlanted: "non ancora", blocked: "bloccata" },
     noUseAfter: "ancora niente dopo {d}",
     quarantined: "AWS l'ha disinnescata dopo {d}",
@@ -229,7 +230,7 @@ export const it: Translations = {
       "Pubblico dove è stata trovata, dopo quanto e cosa hanno provato a farci. Non pubblico da dove arrivavano.",
       "Se un canale non scatta mai resta comunque tracciato: sapere anche dove nessuno guarda è un dato.",
     ],
-    updated: "Misurato alla build del",
+    updated: "Aggiornato il",
     back: "← Torna al Lab",
   },
   passwords: {

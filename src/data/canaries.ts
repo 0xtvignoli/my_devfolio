@@ -1,6 +1,6 @@
 /**
  * Lab phase 3, board L1a: one decoy AWS key (canarytokens.org) per channel.
- * Edited by hand when a key is planted or an alert arrives. Only times and the
+ * The baseline: the page adds live history on top (lib/canaries-live). Only times and the
  * kind of call go here: never a key, an IP or anything from the alert body.
  */
 export const CANARY_CHANNELS = ['decoy-env', 'html-comment', 'robots', 'docker', 'github'] as const;
@@ -31,6 +31,8 @@ export type Canary = {
   plantedAt: string | null;
   /** ISO UTC of the first alert; null while nobody has used it. */
   firstUseAt: string | null;
+  /** ISO UTC of the latest alert seen. */
+  lastUseAt?: string;
   calls: CanaryCall[];
   /** Calls recorded on the key so far. */
   hits?: number;
@@ -41,10 +43,10 @@ export type Canary = {
 };
 
 export const CANARIES: Canary[] = [
-  { id: 'decoy-env', plantedAt: '2026-11-06T18:33:00Z', firstUseAt: '2026-11-07T05:20:02Z', calls: ['ai', 'email'], hits: 50 },
+  { id: 'decoy-env', plantedAt: '2026-11-06T18:33:00Z', firstUseAt: '2026-11-07T05:20:02Z', calls: ['ai', 'email'], hits: 50, lastUseAt: '2026-11-07T05:20:36Z' },
   { id: 'html-comment', plantedAt: '2026-11-07T17:40:00Z', firstUseAt: null, calls: [] },
   { id: 'robots', plantedAt: '2026-11-07T17:40:00Z', firstUseAt: null, calls: [] },
-  { id: 'docker', plantedAt: '2026-11-07T17:46:00Z', firstUseAt: '2026-11-07T17:48:00Z', calls: ['identity', 'secrets', 'data', 'compute', 'network', 'other'], hits: 55 },
+  { id: 'docker', plantedAt: '2026-11-07T17:46:00Z', firstUseAt: '2026-11-07T17:48:00Z', calls: ['identity', 'secrets', 'data', 'compute', 'network', 'other'], hits: 55, lastUseAt: '2026-11-07T17:56:50Z' },
   { id: 'github', plantedAt: '2026-11-07T18:24:00Z', firstUseAt: null, calls: [], quarantinedAt: '2026-11-07T18:26:43Z' },
 ];
 
@@ -78,11 +80,14 @@ export function foldHits(base: Canary, hits: CanaryHit[]): Canary {
   const found = new Set([...base.calls, ...unique.filter((h) => !internal(h)).flatMap((h) => events(h).map(callOf))]);
   const count = Math.max(base.hits ?? 0, uses.length);
   const quarantinedAt = earliest(base.quarantinedAt, quarantine);
+  const latest = uses.length ? iso(Math.max(...uses)) : null;
+  const lastUseAt = base.lastUseAt && (!latest || base.lastUseAt > latest) ? base.lastUseAt : latest;
   return {
     ...base,
     firstUseAt: earliest(base.firstUseAt, uses),
     calls: CANARY_CALLS.filter((c) => found.has(c)),
     ...(count ? { hits: count } : {}),
+    ...(lastUseAt ? { lastUseAt } : {}),
     ...(quarantinedAt ? { quarantinedAt } : {}),
   };
 }

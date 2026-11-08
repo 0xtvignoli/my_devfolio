@@ -24,7 +24,7 @@ const c = foldHits(base, hits);
 const q = (s: string | null) => (s ? `'${s}'` : 'null');
 const lit = (x: Canary) =>
   `{ id: '${x.id}', plantedAt: ${q(x.plantedAt)}, firstUseAt: ${q(x.firstUseAt)}, calls: [${x.calls.map((k) => `'${k}'`).join(', ')}]` +
-  `${x.hits ? `, hits: ${x.hits}` : ''}${x.quarantinedAt ? `, quarantinedAt: '${x.quarantinedAt}'` : ''}${x.blocked ? ', blocked: true' : ''} }`;
+  `${x.hits ? `, hits: ${x.hits}` : ''}${x.lastUseAt ? `, lastUseAt: '${x.lastUseAt}'` : ''}${x.quarantinedAt ? `, quarantinedAt: '${x.quarantinedAt}'` : ''}${x.blocked ? ', blocked: true' : ''} }`;
 const path = new URL('../src/data/canaries.ts', import.meta.url);
 writeFileSync(path, readFileSync(path, 'utf8').replace(new RegExp(`\\{ id: '${channel}',[^\\n]*\\}`), lit(c)));
 console.log(`${channel}: first use ${c.firstUseAt ?? '—'}, ${c.hits ?? 0} calls${c.quarantinedAt ? `, quarantined ${c.quarantinedAt}` : ''}`);

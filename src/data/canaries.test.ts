@@ -32,6 +32,7 @@ describe('foldHits', () => {
     expect(out.calls).toEqual(['identity', 'secrets']);
     expect(out.firstUseAt).toBe('2026-11-07T17:48:00Z');
     expect(out.hits).toBe(55);
+    expect(out.lastUseAt).toBe('2026-11-08T02:00:00Z');
   });
 
   test('AWS quarantine is not a use', () => {
