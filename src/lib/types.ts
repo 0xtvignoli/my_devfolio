@@ -138,6 +138,7 @@ export interface Translations {
   lab: {
     kicker: string;
     showAll: string;
+    aiDecoyLink: string;
     compareLink: string;
     canariesLink: string;
     passwordsLink: string;
@@ -184,6 +185,30 @@ export interface Translations {
     };
     statusLink: string;
   };
+  aiDecoy: {
+    kicker: string;
+    title: string;
+    intro: string;
+    notOpen: string;
+    /** Contains {d}. */
+    noVisits: string;
+    stats: { requests: string; first: string; generate: string; keys: string };
+    waiting: string;
+    callsTitle: string;
+    calls: Record<'list' | 'generate' | 'pull' | 'manage' | 'info' | 'other', string>;
+    modelsTitle: string;
+    modelsNote: string;
+    sizesTitle: string;
+    sizes: Record<'small' | 'medium' | 'large', string>;
+    keysTitle: string;
+    keys: Record<'openai' | 'anthropic' | 'other', string>;
+    keysNote: string;
+    answerTitle: string;
+    neverTitle: string;
+    never: string[];
+    note: string;
+    back: string;
+  };
   compare: {
     kicker: string;
     title: string;
@@ -202,6 +227,8 @@ export interface Translations {
     /** Contains {from}, {to}. */
     window: string;
     whyTitle: string;
+    /** One is shown, picked by which side got more secrets hunting. */
+    whySecrets: { decoy: string; site: string };
     why: string[];
     howTitle: string;
     how: string[];

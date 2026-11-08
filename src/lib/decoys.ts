@@ -12,6 +12,11 @@ export const COMMANDS = ['uname', 'cat', 'cd', 'ls', 'wget', 'curl', 'chmod', 'e
 // Lab L2c: the Observatory's categories (the VM runs a copy of classify.ts). A superset of the old list,
 // so files from before the change still parse.
 export const HTTP_CATEGORIES = CATEGORIES;
+// Lab L2b, the fake Ollama: route names, public model families, request size, key shape.
+export const AI_CALLS = ['list', 'generate', 'pull', 'manage', 'info', 'other'] as const;
+export const AI_MODELS = ['llama3', 'llama2', 'deepseek-r1', 'deepseek', 'qwen3', 'qwen2.5', 'qwen', 'mistral', 'mixtral', 'gemma3', 'gemma', 'phi4', 'phi3', 'gpt-oss', 'codellama', 'llava', 'nomic-embed-text', 'other'] as const;
+export const AI_SIZES = ['small', 'medium', 'large'] as const;
+export const AI_KEYS = ['openai', 'anthropic', 'other'] as const;
 export const PASSWORD_KINDS = ['sameAsUser', 'vendorDefault', 'keyboardWalk', 'digitsOnly', 'other'] as const;
 /** Attempted passwords that are also in a public 100k list: first 16 hex of SHA-256, with a count. */
 export type PasswordHash = { h: string; n: number };
@@ -41,7 +46,17 @@ export type Decoys = {
     /** Per-category counts aligned with `daily`. Optional: files from before Lab L2c lack it. */
     categoryDaily?: { category: Category; counts: number[] }[];
   };
-  daily: { date: string; ssh: number; http: number }[];
+  /** Optional: files from before Lab L2b lack it. */
+  ai?: {
+    requests: number;
+    /** First contact ever, kept past the 14-day window. */
+    firstAt?: string;
+    calls: Counts<(typeof AI_CALLS)[number]>;
+    models: Counts<(typeof AI_MODELS)[number]>;
+    sizes: Counts<(typeof AI_SIZES)[number]>;
+    keys: Counts<(typeof AI_KEYS)[number]>;
+  };
+  daily: { date: string; ssh: number; http: number; ai?: number }[];
 };
 
 const MAX = 1e9;
@@ -85,6 +100,17 @@ function categoryDaily(v: unknown, days: number): { category: Category; counts: 
   });
 }
 
+function ai(o: Record<string, unknown>): NonNullable<Decoys['ai']> {
+  return {
+    requests: count(o.requests),
+    ...(o.firstAt === undefined ? {} : { firstAt: str(o.firstAt, STAMP) }),
+    calls: counts(o.calls, AI_CALLS),
+    models: counts(o.models, AI_MODELS),
+    sizes: counts(o.sizes, AI_SIZES),
+    keys: counts(o.keys, AI_KEYS),
+  };
+}
+
 function hashes(v: unknown): PasswordHash[] {
   if (!Array.isArray(v) || v.length > MAX_HASHES) throw new Invalid();
   return v.map((item) => {
@@ -122,9 +148,10 @@ export function parseDecoys(raw: unknown): Decoys | null {
         categories: counts(http.categories, HTTP_CATEGORIES),
         ...(http.categoryDaily === undefined ? {} : { categoryDaily: categoryDaily(http.categoryDaily, d.daily.length) }),
       },
+      ...(d.ai === undefined ? {} : { ai: ai(obj(d.ai)) }),
       daily: d.daily.map((day) => {
         const o = obj(day);
-        return { date: str(o.date, DATE), ssh: count(o.ssh), http: count(o.http) };
+        return { date: str(o.date, DATE), ssh: count(o.ssh), http: count(o.http), ...(o.ai === undefined ? {} : { ai: count(o.ai) }) };
       }),
     };
   } catch (e) {
