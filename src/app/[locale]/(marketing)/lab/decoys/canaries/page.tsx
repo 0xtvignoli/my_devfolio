@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { CANARIES, type Canary } from '@/data/canaries';
+import type { Canary } from '@/data/canaries';
+import { liveCanaries } from '@/lib/canaries-live';
 import { formatDuration } from '@/lib/duration';
 import { formatDate } from '@/lib/format-date';
 import { getTranslations, resolveLocaleParam } from '@/lib/i18n/server';
@@ -9,12 +10,12 @@ import { cn } from '@/lib/utils';
 import type { Locale } from '@/lib/types';
 import type { Metadata } from 'next';
 
+// Re-rendered at most every 5 minutes with fresh canarytokens history.
 export const dynamic = 'force-static';
+export const revalidate = 300;
 
 type Props = { params: Promise<{ locale: string }> };
 
-// The page is rebuilt every night, so "still waiting after…" is measured from the build.
-const BUILT_AT = Date.now();
 const WEEK_MIN = 7 * 24 * 60;
 
 /** Log scale, 1 min → 1 week, as a share of the track. */
@@ -23,9 +24,9 @@ function position(ms: number): number {
   return Math.min(100, Math.max(2, (Math.log(min) / Math.log(WEEK_MIN)) * 100));
 }
 
-function wait(c: Canary): number | null {
+function wait(c: Canary, now: number): number | null {
   if (!c.plantedAt) return null;
-  return (c.firstUseAt ? Date.parse(c.firstUseAt) : BUILT_AT) - Date.parse(c.plantedAt);
+  return (c.firstUseAt ? Date.parse(c.firstUseAt) : now) - Date.parse(c.plantedAt);
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -38,22 +39,25 @@ export default async function CanariesPage({ params }: Props) {
   const locale: Locale = resolveLocaleParam((await params).locale);
   const t = getTranslations(locale);
   const c = t.canaries;
+  // eslint-disable-next-line react-hooks/purity -- server render, once per revalidation
+  const now = Date.now();
+  const canaries = await liveCanaries();
   const nf = new Intl.NumberFormat(locale === 'it' ? 'it-IT' : 'en-GB');
-  const planted = CANARIES.filter((x) => x.plantedAt);
+  const planted = canaries.filter((x) => x.plantedAt);
   const used = planted.filter((x) => x.firstUseAt);
-  const fastest = used.length ? Math.min(...used.map((x) => wait(x)!)) : null;
+  const fastest = used.length ? Math.min(...used.map((x) => wait(x, now)!)) : null;
 
   const status = (x: Canary) =>
     x.blocked ? c.status.blocked : !x.plantedAt ? c.status.notPlanted : x.firstUseAt ? c.status.used : c.status.waiting;
   const after = (x: Canary) => {
-    const ms = wait(x);
+    const ms = wait(x, now);
     if (x.blocked) return c.blockedAtPush;
     if (ms === null) return '—';
     return x.firstUseAt ? formatDuration(ms, locale) : c.noUseAfter.replace('{d}', formatDuration(ms, locale));
   };
 
   const stats = [
-    { label: c.stats.planted, value: `${planted.length} / ${CANARIES.length}` },
+    { label: c.stats.planted, value: `${planted.length} / ${canaries.length}` },
     { label: c.stats.used, value: String(used.length) },
     { label: c.stats.fastest, value: fastest === null ? '—' : formatDuration(fastest, locale) },
   ];
@@ -72,12 +76,12 @@ export default async function CanariesPage({ params }: Props) {
           </div>
         ))}
       </dl>
-      {CANARIES.some((x) => x.calls.includes('ai')) && <p className="mt-6 max-w-[680px] text-[17px]">{c.lesson}</p>}
+      {canaries.some((x) => x.calls.includes('ai')) && <p className="mt-6 max-w-[680px] text-[17px]">{c.lesson}</p>}
 
       <section aria-labelledby="channels-heading" className="mt-14">
         <h2 id="channels-heading" className="sr-only">{c.channelsTitle}</h2>
         <ol>
-          {CANARIES.map((x) => (
+          {canaries.map((x) => (
             <li key={x.id} className="grid gap-x-6 gap-y-1 border-b border-border py-4 sm:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,0.9fr)_minmax(0,1fr)_110px] sm:items-baseline">
               <span className="font-medium">{c.channels[x.id].name}</span>
               <span className="text-[15px] text-muted-foreground">{c.channels[x.id].seenBy}</span>
@@ -104,7 +108,7 @@ export default async function CanariesPage({ params }: Props) {
           <p className="mb-5 mt-2 text-sm text-muted-foreground">{c.timelineCaption}</p>
           <ul className="space-y-3">
             {planted.map((x) => {
-              const ms = wait(x)!;
+              const ms = wait(x, now)!;
               return (
                 <li key={x.id} className="grid grid-cols-[minmax(0,140px)_1fr] items-center gap-4 text-sm sm:grid-cols-[220px_1fr]">
                   <span className="truncate">{c.channels[x.id].short}</span>
@@ -145,7 +149,7 @@ export default async function CanariesPage({ params }: Props) {
           ))}
         </ul>
         <p className="mt-6 font-mono text-[13px] text-muted-foreground">
-          {c.updated} {formatDate(new Date(BUILT_AT).toISOString().slice(0, 10), locale)}
+          {c.updated} {formatDate(new Date(now).toISOString().slice(0, 10), locale)}
         </p>
       </section>
 
