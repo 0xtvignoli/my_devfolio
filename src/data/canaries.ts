@@ -47,7 +47,7 @@ export const CANARIES: Canary[] = [
   { id: 'html-comment', plantedAt: '2026-11-07T17:40:00Z', firstUseAt: null, calls: [] },
   { id: 'robots', plantedAt: '2026-11-07T17:40:00Z', firstUseAt: null, calls: [] },
   { id: 'docker', plantedAt: '2026-11-07T17:46:00Z', firstUseAt: '2026-11-07T17:48:00Z', calls: ['identity', 'secrets', 'data', 'compute', 'network', 'other'], hits: 55, lastUseAt: '2026-11-07T17:56:50Z' },
-  { id: 'github', plantedAt: '2026-11-08T09:30:56Z', firstUseAt: null, calls: [] },
+  { id: 'github', plantedAt: '2026-11-08T09:30:56Z', firstUseAt: '2026-11-08T09:33:00Z', calls: ['ai'], hits: 50 },
 ];
 
 /** One hit in a canarytokens.org history export (the fields we read; it has more). */
