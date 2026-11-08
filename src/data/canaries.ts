@@ -33,6 +33,8 @@ export type Canary = {
   firstUseAt: string | null;
   /** ISO UTC of the latest alert seen. */
   lastUseAt?: string;
+  /** Live only: the calls in the current history (last 50 hits), oldest first. Never in the baseline. */
+  timeline?: { at: number; name: string }[];
   calls: CanaryCall[];
   /** Calls recorded on the key so far. */
   hits?: number;
@@ -77,6 +79,11 @@ export function foldHits(base: Canary, hits: CanaryHit[]): Canary {
     const x = b.length ? iso(Math.min(...b)) : null;
     return a && (!x || a < x) ? a : x;
   };
+  // eventName comes from CloudTrail, not the caller; still, only API-shaped names get through.
+  const timeline = unique
+    .filter((h) => !internal(h))
+    .flatMap((h) => events(h).filter((e) => /^[A-Za-z0-9]{1,64}$/.test(e)).map((name) => ({ at: h.time_of_hit, name })))
+    .sort((a, b) => a.at - b.at);
   const found = new Set([...base.calls, ...unique.filter((h) => !internal(h)).flatMap((h) => events(h).map(callOf))]);
   const count = Math.max(base.hits ?? 0, uses.length);
   const quarantinedAt = earliest(base.quarantinedAt, quarantine);
@@ -88,6 +95,7 @@ export function foldHits(base: Canary, hits: CanaryHit[]): Canary {
     calls: CANARY_CALLS.filter((c) => found.has(c)),
     ...(count ? { hits: count } : {}),
     ...(lastUseAt ? { lastUseAt } : {}),
+    ...(timeline.length ? { timeline } : {}),
     ...(quarantinedAt ? { quarantinedAt } : {}),
   };
 }
