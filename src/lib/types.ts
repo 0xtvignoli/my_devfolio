@@ -138,6 +138,7 @@ export interface Translations {
   lab: {
     kicker: string;
     showAll: string;
+    compareLink: string;
     canariesLink: string;
     passwordsLink: string;
     filterLabel: string;
@@ -182,6 +183,30 @@ export interface Translations {
       subjects: Record<'secrets' | 'cms' | 'admin' | 'traversal' | 'app-exploit' | 'other', string>;
     };
     statusLink: string;
+  };
+  compare: {
+    kicker: string;
+    title: string;
+    intro: string;
+    /** Contains {d}, {decoy}, {ssh}, {site}. */
+    headline: string;
+    /** Contains {site}, {decoy}. */
+    secretsLine: string;
+    colCategory: string;
+    colSite: string;
+    colDecoy: string;
+    siteShort: string;
+    decoyShort: string;
+    ssh: string;
+    sshClosed: string;
+    /** Contains {from}, {to}. */
+    window: string;
+    whyTitle: string;
+    why: string[];
+    howTitle: string;
+    how: string[];
+    empty: string;
+    back: string;
   };
   canaries: {
     kicker: string;

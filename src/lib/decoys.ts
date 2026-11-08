@@ -1,3 +1,5 @@
+import { CATEGORIES, type Category } from '@/lib/observatory/classify';
+
 /**
  * decoys.json comes from the decoy VM (Lab phase 2). That machine is built to be
  * attacked, so the file is untrusted input: parseDecoys rebuilds it field by field
@@ -7,7 +9,9 @@
 // ponytail: same vocabularies as homelab decoys/aggregate.py; change both together.
 export const USERNAMES = ['root', 'admin', 'ubuntu', 'user', 'test', 'oracle', 'postgres', 'pi', 'git', 'guest', 'support', 'ftp', 'mysql', 'deploy', 'other'] as const;
 export const COMMANDS = ['uname', 'cat', 'cd', 'ls', 'wget', 'curl', 'chmod', 'echo', 'ps', 'nproc', 'free', 'whoami', 'id', 'w', 'crontab', 'history', 'passwd', 'rm', 'sh', 'bash', 'tftp', 'busybox', 'export', 'lscpu', 'top', 'ifconfig', 'other'] as const;
-export const HTTP_CATEGORIES = ['traversal', 'secrets', 'cms', 'admin', 'other'] as const;
+// Lab L2c: the Observatory's categories (the VM runs a copy of classify.ts). A superset of the old list,
+// so files from before the change still parse.
+export const HTTP_CATEGORIES = CATEGORIES;
 export const PASSWORD_KINDS = ['sameAsUser', 'vendorDefault', 'keyboardWalk', 'digitsOnly', 'other'] as const;
 /** Attempted passwords that are also in a public 100k list: first 16 hex of SHA-256, with a count. */
 export type PasswordHash = { h: string; n: number };
@@ -30,7 +34,13 @@ export type Decoys = {
     passwordKinds?: Counts<(typeof PASSWORD_KINDS)[number]>;
     passwordHashes?: PasswordHash[];
   };
-  http: { requests: number; envFetches: number; categories: Counts<(typeof HTTP_CATEGORIES)[number]> };
+  http: {
+    requests: number;
+    envFetches: number;
+    categories: Counts<(typeof HTTP_CATEGORIES)[number]>;
+    /** Per-category counts aligned with `daily`. Optional: files from before Lab L2c lack it. */
+    categoryDaily?: { category: Category; counts: number[] }[];
+  };
   daily: { date: string; ssh: number; http: number }[];
 };
 
@@ -64,6 +74,15 @@ function counts<K extends string>(v: unknown, vocab: readonly K[]): Counts<K> {
     out[k as K] = count(n);
   }
   return out;
+}
+
+function categoryDaily(v: unknown, days: number): { category: Category; counts: number[] }[] {
+  if (!Array.isArray(v) || v.length > HTTP_CATEGORIES.length) throw new Invalid();
+  return v.map((item) => {
+    const o = obj(item);
+    if (!(HTTP_CATEGORIES as readonly unknown[]).includes(o.category) || !Array.isArray(o.counts) || o.counts.length !== days) throw new Invalid();
+    return { category: o.category as Category, counts: o.counts.map(count) };
+  });
 }
 
 function hashes(v: unknown): PasswordHash[] {
@@ -101,6 +120,7 @@ export function parseDecoys(raw: unknown): Decoys | null {
         requests: count(http.requests),
         envFetches: count(http.envFetches),
         categories: counts(http.categories, HTTP_CATEGORIES),
+        ...(http.categoryDaily === undefined ? {} : { categoryDaily: categoryDaily(http.categoryDaily, d.daily.length) }),
       },
       daily: d.daily.map((day) => {
         const o = obj(day);

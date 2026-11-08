@@ -73,3 +73,16 @@ test('rejects a password entry that is not a short hex hash', () => {
 test('files without the password fields still parse', () => {
   expect(parseDecoys(valid)?.ssh.passwordHashes).toBeUndefined();
 });
+
+const withHttp = (patch: object) => ({ ...valid, http: { ...valid.http, ...patch } });
+
+test('keeps per-day categories when aligned with daily (Lab L2c)', () => {
+  const d = parseDecoys(withHttp({ categories: { 'app-exploit': 1 }, categoryDaily: [{ category: 'app-exploit', counts: [1] }] }));
+  expect(d?.http.categoryDaily).toEqual([{ category: 'app-exploit', counts: [1] }]);
+});
+
+test('rejects per-day categories out of vocabulary or out of step with daily', () => {
+  expect(parseDecoys(withHttp({ categoryDaily: [{ category: '<b>', counts: [1] }] }))).toBeNull();
+  expect(parseDecoys(withHttp({ categoryDaily: [{ category: 'secrets', counts: [1, 2] }] }))).toBeNull();
+  expect(parseDecoys(withHttp({ categoryDaily: [{ category: 'secrets', counts: [-1] }] }))).toBeNull();
+});
