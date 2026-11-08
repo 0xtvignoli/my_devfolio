@@ -214,8 +214,12 @@ export const it: Translations = {
     sshClosed: "porta chiusa",
     window: "Dal {from} al {to}: i giorni coperti da tutti e due. Conta solo il traffico ostile; sul sito sono le richieste fallite o rifiutate, sul server esca tutto, perché nessuno ci arriva per sbaglio.",
     whyTitle: "Perché sono così diversi",
+    /** Picked by the data: which side got more hunting for secrets. */
+    whySecrets: {
+      decoy: "La caccia ai .env non ha bisogno di un nome: per uno scanner un IP con la porta 80 aperta vale quanto un dominio, e il server scoperto ne riceve di più.",
+      site: "Il sito ha un nome, un certificato nei log pubblici e dei link: attira caccia mirata, cioè .env, .git e file di configurazione, più del server scoperto.",
+    },
     why: [
-      "Il sito ha un nome, un certificato nei log pubblici e dei link: attira caccia mirata, cioè .env, .git e file di configurazione.",
       "Il server è solo un IP in un blocco cloud: riceve scansioni a tappeto, soprattutto SSH e qualunque cosa sulla porta 80.",
       "Cloudflare ferma molto prima che arrivi al sito, e quello non compare in nessuna delle due colonne.",
     ],
