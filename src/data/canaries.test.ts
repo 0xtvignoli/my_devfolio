@@ -33,6 +33,7 @@ describe('foldHits', () => {
     expect(out.firstUseAt).toBe('2026-11-07T17:48:00Z');
     expect(out.hits).toBe(55);
     expect(out.lastUseAt).toBe('2026-11-08T02:00:00Z');
+    expect(out.timeline).toEqual([{ at: Date.parse('2026-11-08T02:00:00Z') / 1000, name: 'ListSecrets' }]);
   });
 
   test('AWS quarantine is not a use', () => {
@@ -44,7 +45,11 @@ describe('foldHits', () => {
   });
 
   test('keeps nothing but times and call kinds', () => {
-    const out = foldHits(base, [{ ...hit('2026-11-08T02:00:00Z', ['Converse']), src_ip: '203.0.113.9' } as never]);
+    const out = foldHits(base, [
+      { ...hit('2026-11-08T02:00:00Z', ['Converse']), src_ip: '203.0.113.9' } as never,
+      hit('2026-11-08T02:00:01Z', ['<script>alert(1)</script>']),
+    ]);
+    expect(out.timeline?.map((x) => x.name)).toEqual(['Converse']);
     expect(JSON.stringify(out)).not.toMatch(/203\.0\.113/);
     expect(JSON.stringify(out)).not.toMatch(/botocore/);
   });

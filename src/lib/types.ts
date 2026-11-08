@@ -195,6 +195,46 @@ export interface Translations {
     calls: Record<'identity' | 'secrets' | 'ai' | 'email' | 'data' | 'compute' | 'network' | 'iam' | 'other', string>;
     /** Contains {n}. */
     callsCount: string;
+    stories: Record<'decoy-env' | 'html-comment' | 'robots' | 'docker' | 'github', {
+      teaser: string;
+      /** Contains {d}. */
+      headline: string;
+      intro: string;
+      whereNote: string;
+      fixes: { title: string; body: string }[];
+      lesson: string;
+      wait: { title: string; body: string }[];
+    }>;
+    detail: {
+      breadcrumb: string;
+      live: string;
+      /** Contains {d}. */
+      ago: string;
+      waitingHeadline: string;
+      stats: { planted: string; firstUse: string; calls: string; lastUse: string; kinds: string; waiting: string; fastest: string };
+      timelineTitle: string;
+      steps: { planted: string; plantedBody: string; quarantined: string; quarantinedBody: string; firstUse: string; firstUseBody: string; lastUse: string; lastUseBody: string };
+      burstTitle: string;
+      burstIntro: string;
+      burstCaption: string;
+      callsTitle: string;
+      callsIntro: string;
+      table: { call: string; what: string; kind: string; count: string };
+      whereTitle: string;
+      fixesTitle: string;
+      lessonTitle: string;
+      raceTitle: string;
+      raceIntro: string;
+      waitTitle: string;
+      waitLast: { title: string; body: string };
+      waitBoxTitle: string;
+      waitBox: string;
+      othersTitle: string;
+      privacy: string;
+      updated: string;
+    };
+    /** CloudTrail eventName → what it asks AWS. Unknown names show as "—". */
+    api: Record<string, string>;
     lastUse: string;
     status: { used: string; waiting: string; notPlanted: string; blocked: string };
     /** Contains {d}. */
