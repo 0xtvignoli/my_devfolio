@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { Canary } from '@/data/canaries';
 import { liveCanaries } from '@/lib/canaries-live';
+import { position, wait } from '@/lib/canary-time';
 import { formatDuration } from '@/lib/duration';
 import { formatDate } from '@/lib/format-date';
 import { getTranslations, resolveLocaleParam } from '@/lib/i18n/server';
@@ -15,19 +16,6 @@ export const dynamic = 'force-static';
 export const revalidate = 300;
 
 type Props = { params: Promise<{ locale: string }> };
-
-const WEEK_MIN = 7 * 24 * 60;
-
-/** Log scale, 1 min → 1 week, as a share of the track. */
-function position(ms: number): number {
-  const min = Math.max(1, ms / 60_000);
-  return Math.min(100, Math.max(2, (Math.log(min) / Math.log(WEEK_MIN)) * 100));
-}
-
-function wait(c: Canary, now: number): number | null {
-  if (!c.plantedAt) return null;
-  return (c.firstUseAt ? Date.parse(c.firstUseAt) : now) - Date.parse(c.plantedAt);
-}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locale = resolveLocaleParam((await params).locale);
@@ -82,8 +70,14 @@ export default async function CanariesPage({ params }: Props) {
         <h2 id="channels-heading" className="sr-only">{c.channelsTitle}</h2>
         <ol>
           {canaries.map((x) => (
-            <li key={x.id} className="grid gap-x-6 gap-y-1 border-b border-border py-4 sm:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,0.9fr)_minmax(0,1fr)_110px] sm:items-baseline">
-              <span className="font-medium">{c.channels[x.id].name}</span>
+            <li key={x.id} className="relative grid gap-x-6 gap-y-1 border-b border-border py-4 sm:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,0.9fr)_minmax(0,1fr)_110px] sm:items-baseline">
+              <span className="flex flex-col">
+                {/* The whole row is the link's hit area (after:inset-0); the name is its text. */}
+                <Link className="font-medium after:absolute after:inset-0 hover:underline" href={localizedPath(locale, `/lab/decoys/canaries/${x.id}`)}>
+                  {c.channels[x.id].name} <span aria-hidden className="text-link">→</span>
+                </Link>
+                <span className="text-[14px] text-muted-foreground">{c.stories[x.id].teaser}</span>
+              </span>
               <span className="text-[15px] text-muted-foreground">{c.channels[x.id].seenBy}</span>
               <span className="font-serif text-[22px] leading-tight">{after(x)}</span>
               <span className="font-mono text-[13px] text-muted-foreground">{x.calls.length ? x.calls.map((k) => c.calls[k]).join(' · ') : '—'}

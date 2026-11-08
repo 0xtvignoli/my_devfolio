@@ -1,10 +1,14 @@
 import { MetadataRoute } from 'next';
 import { getArticleSlugs, getArticle } from '@/data/content/articles';
+import { CANARY_CHANNELS } from '@/data/canaries';
 import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '@/lib/i18n/config';
 import { localizedPath } from '@/lib/i18n/paths';
 import { SITE_URL } from '@/lib/seo/constants';
 
-const STATIC_PATHS = ['', '/portfolio', '/lab', '/lab/passwords', '/lab/decoys/canaries', '/lab/status', '/experience', '/articles', '/cv'] as const;
+const STATIC_PATHS = [
+  '', '/portfolio', '/lab', '/lab/passwords', '/lab/decoys/canaries', '/lab/status', '/experience', '/articles', '/cv',
+  ...CANARY_CHANNELS.map((c) => `/lab/decoys/canaries/${c}`),
+];
 
 /** hreflang alternates including x-default (→ default locale) for a locale-agnostic path. */
 function hreflangAlternates(pathWithoutLocale: string) {
