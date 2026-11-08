@@ -192,7 +192,7 @@ export interface Translations {
     lesson: string;
     channelsTitle: string;
     channels: Record<'decoy-env' | 'html-comment' | 'robots' | 'docker' | 'github', { name: string; short: string; seenBy: string }>;
-    calls: Record<'identity' | 'secrets' | 'ai' | 'email' | 'data' | 'compute' | 'network' | 'iam' | 'other', string>;
+    calls: Record<'identity' | 'secrets' | 'ai' | 'email' | 'data' | 'compute' | 'network' | 'iam' | 'account' | 'other', string>;
     /** Contains {n}. */
     callsCount: string;
     stories: Record<'decoy-env' | 'html-comment' | 'robots' | 'docker' | 'github', {

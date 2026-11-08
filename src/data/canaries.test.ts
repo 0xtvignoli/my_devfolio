@@ -16,6 +16,12 @@ describe('callOf', () => {
     expect(callOf('ListUsers')).toBe('iam');
     expect(callOf('GetSendQuota')).toBe('email');
     expect(callOf('ListTopics')).toBe('other');
+    expect(callOf('CreateUser')).toBe('iam');
+    expect(callOf('ListVerifiedEmailAddresses')).toBe('email');
+    expect(callOf('DescribeTrails')).toBe('account');
+    expect(callOf('GetAlternateContact')).toBe('account');
+    expect(callOf('ListHostedZones')).toBe('network');
+    expect(callOf('GetResources')).toBe('other');
   });
 });
 
