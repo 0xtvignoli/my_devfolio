@@ -6,18 +6,19 @@
 export const CANARY_CHANNELS = ['decoy-env', 'html-comment', 'robots', 'docker', 'github'] as const;
 export type CanaryChannelId = (typeof CANARY_CHANNELS)[number];
 /** AWS API calls from the alert, reduced to what the caller was after, in display order. */
-export const CANARY_CALLS = ['identity', 'secrets', 'ai', 'email', 'data', 'compute', 'network', 'iam', 'other'] as const;
+export const CANARY_CALLS = ['identity', 'secrets', 'ai', 'email', 'data', 'compute', 'network', 'iam', 'account', 'other'] as const;
 export type CanaryCall = (typeof CANARY_CALLS)[number];
 
 const CALL_PATTERNS: [RegExp, CanaryCall][] = [
   [/^GetCallerIdentity$/, 'identity'],
   [/Secret|Parameter/, 'secrets'],
   [/^(Converse|InvokeModel|ListFoundationModels|GetFoundationModel)/, 'ai'],
-  [/SendQuota|SendEmail|SendRawEmail|EmailIdentities|ListIdentities/, 'email'],
+  [/SendQuota|SendEmail|SendRawEmail|EmailIdentities|ListIdentities|VerifiedEmail/, 'email'],
   [/DBInstance|DBCluster|Tables?$|Bucket/, 'data'],
   [/Instances$|Functions|Clusters$|Applications$|Stacks$/, 'compute'],
-  [/Vpcs|SecurityGroups|LoadBalancers|Subnets/, 'network'],
-  [/Users|Roles|Policies|AccessKeys/, 'iam'],
+  [/Vpcs|SecurityGroups|LoadBalancers|Subnets|HostedZones/, 'network'],
+  [/Users?$|Roles?$|Polic(y|ies)$|AccessKeys?$/, 'iam'],
+  [/Budgets|Cost|Contact|Organization|Trails|AccountSummary/, 'account'],
 ];
 
 /** CloudTrail eventName → label (DescribeDBInstances → data, Converse → ai, …). */
