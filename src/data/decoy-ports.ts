@@ -10,7 +10,9 @@ export const DECOY_OPENED: Record<'ai' | 'redis', DecoyOpening> = {
   // 8/11 16:29 the service started but the NSG rule was missing: the port was really
   // reachable only from 9/11 08:22:41, followed by our own curl from Cloud Shell.
   ai: { at: '2026-11-09T08:22:41Z', checkedUntil: '2026-11-09T08:25:00Z' },
-  redis: null,
+  // NSG rule from 9/11 12:14:09, but the service only answered after setup.sh finished.
+  // No checkedUntil: our TCP check (ECHO lab-check) is dropped by the aggregator itself.
+  redis: { at: '2026-11-09T12:28:56Z' },
 };
 
 /**
