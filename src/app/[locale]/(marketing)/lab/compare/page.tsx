@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import observatoryData from '@/data/observatory.json';
-import { readDecoys } from '@/lib/decoys-data';
+import { liveDecoys } from '@/lib/decoys-data';
 import { formatDate } from '@/lib/format-date';
 import { getTranslations, resolveLocaleParam } from '@/lib/i18n/server';
 import { localizedPath } from '@/lib/i18n/paths';
@@ -10,8 +10,9 @@ import { createPageMetadata } from '@/lib/seo/metadata';
 import type { Locale } from '@/lib/types';
 import type { Metadata } from 'next';
 
-// Both files are written at build (daily rebuild), so the page is too.
+// The Observatory comes with the nightly build, the decoy side is re-read every hour.
 export const dynamic = 'force-static';
+export const revalidate = 3600; // DECOYS_REVALIDATE: the VM aggregates every hour
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -40,7 +41,7 @@ export default async function ComparePage({ params }: Props) {
   const t = getTranslations(locale);
   const c = t.compare;
   const nf = new Intl.NumberFormat(locale === 'it' ? 'it-IT' : 'en-GB');
-  const data = compare(observatoryData as Observatory, readDecoys());
+  const data = compare(observatoryData as Observatory, await liveDecoys());
   const total = (side: 'site' | 'decoy') => (data ? data.rows.reduce((s, r) => s + r[side], 0) : 0);
   const secrets = data?.rows.find((r) => r.category === 'secrets');
 

@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { BarList } from '@/components/observatory/bar-list';
-import { DECOY_OPENED } from '@/data/decoy-ports';
+import { DECOY_OPENED, firstContact } from '@/data/decoy-ports';
 import { AI_CALLS, AI_KEYS, AI_MODELS, AI_SIZES } from '@/lib/decoys';
-import { readDecoys } from '@/lib/decoys-data';
+import { liveDecoys } from '@/lib/decoys-data';
 import { formatDuration } from '@/lib/duration';
 import { getTranslations, resolveLocaleParam } from '@/lib/i18n/server';
 import { localizedPath } from '@/lib/i18n/paths';
@@ -11,8 +11,9 @@ import { createPageMetadata } from '@/lib/seo/metadata';
 import type { Locale } from '@/lib/types';
 import type { Metadata } from 'next';
 
-// decoys.json is written at build (daily rebuild), so the page is too.
+// decoys.json is re-read from the VM's bucket at most every hour (lib/decoys-data).
 export const dynamic = 'force-static';
+export const revalidate = 3600; // DECOYS_REVALIDATE: the VM aggregates every hour
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -42,9 +43,10 @@ export default async function AiDecoyPage({ params }: Props) {
   const c = t.aiDecoy;
   const nf = new Intl.NumberFormat(locale === 'it' ? 'it-IT' : 'en-GB');
   const pct = new Intl.NumberFormat(locale === 'it' ? 'it-IT' : 'en-GB', { style: 'percent', maximumFractionDigits: 0 });
-  const ai = readDecoys()?.ai;
+  const ai = (await liveDecoys())?.ai;
   const opened = DECOY_OPENED.ai;
-  const firstAfter = opened && ai?.firstAt ? Date.parse(ai.firstAt) - Date.parse(opened) : null;
+  const first = firstContact(opened, ai?.firstTimes);
+  const firstAfter = opened && first ? Date.parse(first) - Date.parse(opened.at) : null;
   const sum = (o: Partial<Record<string, number>>) => Object.values(o).reduce<number>((s, n) => s + (n ?? 0), 0);
   const list = <K extends string>(vocab: readonly K[], counts: Partial<Record<K, number>>, label: (k: K) => string, mono = false) =>
     vocab.filter((k) => counts[k]).map((k) => ({ label: label(k), count: counts[k]!, mono })).sort((a, b) => b.count - a.count);
@@ -55,12 +57,13 @@ export default async function AiDecoyPage({ params }: Props) {
       <h1 className="max-w-[860px] font-serif text-[clamp(36px,5.5vw,64px)] font-normal leading-[1.05] tracking-[-0.025em]">{c.title}</h1>
       <p className="mt-6 max-w-[680px] text-[19px] text-muted-foreground">{c.intro}</p>
 
-      {!opened || !ai?.requests ? (
+      {/* Keyed on a real first contact, not on requests: our own check before the header existed is one. */}
+      {!opened || !ai?.requests || !first ? (
         <p className="mt-12 max-w-[680px] bg-muted p-6 text-[17px]">
           {/* A date, not "open for N min": the page is rebuilt once a day and a duration would freeze. */}
           {!opened
             ? c.notOpen
-            : c.noVisits.replace('{t}', new Intl.DateTimeFormat(locale === 'it' ? 'it-IT' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Europe/Rome' }).format(new Date(opened)))}
+            : c.noVisits.replace('{t}', new Intl.DateTimeFormat(locale === 'it' ? 'it-IT' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Europe/Rome' }).format(new Date(opened.at)))}
         </p>
       ) : (
         <>

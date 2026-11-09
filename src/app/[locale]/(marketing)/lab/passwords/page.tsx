@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { PasswordCheck } from '@/components/observatory/password-check';
 import { BarList } from '@/components/observatory/bar-list';
-import { readDecoys } from '@/lib/decoys-data';
+import { liveDecoys } from '@/lib/decoys-data';
 import { PASSWORD_KINDS } from '@/lib/decoys';
 import { formatDate } from '@/lib/format-date';
 import { getTranslations, resolveLocaleParam } from '@/lib/i18n/server';
@@ -11,6 +11,7 @@ import type { Locale } from '@/lib/types';
 import type { Metadata } from 'next';
 
 export const dynamic = 'force-static';
+export const revalidate = 3600; // DECOYS_REVALIDATE: the VM aggregates every hour
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -23,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function PasswordsPage({ params }: Props) {
   const locale: Locale = resolveLocaleParam((await params).locale);
   const t = getTranslations(locale);
-  const decoys = readDecoys();
+  const decoys = await liveDecoys();
   const hashes = decoys?.ssh.passwordHashes ?? [];
   const kinds = decoys?.ssh.passwordKinds ?? {};
   const kindItems = PASSWORD_KINDS.map((k) => ({ label: t.passwords.kinds[k], count: kinds[k] ?? 0 }))

@@ -49,8 +49,8 @@ export type Decoys = {
   /** Optional: files from before Lab L2b lack it. */
   ai?: {
     requests: number;
-    /** First contact ever, kept past the 14-day window. */
-    firstAt?: string;
+    /** The first contacts ever (up to 5), kept past the 14-day window: the stopwatch. */
+    firstTimes?: string[];
     calls: Counts<(typeof AI_CALLS)[number]>;
     models: Counts<(typeof AI_MODELS)[number]>;
     sizes: Counts<(typeof AI_SIZES)[number]>;
@@ -100,10 +100,15 @@ function categoryDaily(v: unknown, days: number): { category: Category; counts: 
   });
 }
 
+function stamps(v: unknown): string[] {
+  if (!Array.isArray(v) || v.length > 5) throw new Invalid();
+  return v.map((x) => str(x, STAMP));
+}
+
 function ai(o: Record<string, unknown>): NonNullable<Decoys['ai']> {
   return {
     requests: count(o.requests),
-    ...(o.firstAt === undefined ? {} : { firstAt: str(o.firstAt, STAMP) }),
+    ...(o.firstTimes === undefined ? {} : { firstTimes: stamps(o.firstTimes) }),
     calls: counts(o.calls, AI_CALLS),
     models: counts(o.models, AI_MODELS),
     sizes: counts(o.sizes, AI_SIZES),
