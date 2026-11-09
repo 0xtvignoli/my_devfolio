@@ -19,7 +19,9 @@ export async function liveDecoys(): Promise<Decoys | null> {
       // regeneration, so the page would lag one window behind. The page's
       // revalidate (force-static keeps it ISR) still limits this to once an hour.
       const res = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(10_000) });
-      const text = res.ok ? await res.text() : '';
+      // Content-Length first, so an oversized file is refused before it is downloaded.
+      const small = Number(res.headers.get('content-length')) <= MAX_BYTES;
+      const text = res.ok && small ? await res.text() : '';
       const data = text && text.length <= MAX_BYTES ? parseDecoys(JSON.parse(text)) : null;
       if (data) return data;
     } catch {

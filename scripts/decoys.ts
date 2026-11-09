@@ -21,6 +21,8 @@ if (!url) {
 try {
   const res = await fetch(url, { signal: AbortSignal.timeout(10_000) });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  // Refuse before downloading: the bucket is written by a machine built to be attacked.
+  if (Number(res.headers.get('content-length')) > 200_000) throw new Error('file too large');
   const text = await res.text();
   if (text.length > 200_000) throw new Error('file too large');
   const data = parseDecoys(JSON.parse(text));
