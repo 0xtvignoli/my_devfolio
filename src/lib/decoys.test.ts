@@ -87,7 +87,7 @@ test('rejects per-day categories out of vocabulary or out of step with daily', (
   expect(parseDecoys(withHttp({ categoryDaily: [{ category: 'secrets', counts: [-1] }] }))).toBeNull();
 });
 
-const ai = { requests: 5, firstAt: '2026-11-08T16:00:48Z', calls: { list: 2, generate: 3 }, models: { 'deepseek-r1': 2 }, sizes: { small: 3 }, keys: { openai: 1 } };
+const ai = { requests: 5, firstTimes: ['2026-11-08T16:00:48Z'], calls: { list: 2, generate: 3 }, models: { 'deepseek-r1': 2 }, sizes: { small: 3 }, keys: { openai: 1 } };
 
 test('keeps the AI decoy section (Lab L2b)', () => {
   const d = parseDecoys({ ...valid, ai, daily: [{ date: '2026-11-06', ssh: 2, http: 4, ai: 5 }] });
@@ -99,5 +99,6 @@ test('keeps the AI decoy section (Lab L2b)', () => {
 test('rejects an AI section with labels outside the vocabulary', () => {
   expect(parseDecoys({ ...valid, ai: { ...ai, models: { 'my-finetune': 1 } } })).toBeNull();
   expect(parseDecoys({ ...valid, ai: { ...ai, keys: { 'sk-proj-abc': 1 } } })).toBeNull();
-  expect(parseDecoys({ ...valid, ai: { ...ai, firstAt: '<b>' } })).toBeNull();
+  expect(parseDecoys({ ...valid, ai: { ...ai, firstTimes: ['<b>'] } })).toBeNull();
+  expect(parseDecoys({ ...valid, ai: { ...ai, firstTimes: Array(6).fill('2026-11-08T16:00:48Z') } })).toBeNull();
 });
