@@ -102,3 +102,18 @@ test('rejects an AI section with labels outside the vocabulary', () => {
   expect(parseDecoys({ ...valid, ai: { ...ai, firstTimes: ['<b>'] } })).toBeNull();
   expect(parseDecoys({ ...valid, ai: { ...ai, firstTimes: Array(6).fill('2026-11-08T16:00:48Z') } })).toBeNull();
 });
+
+const redis = { connections: 3, calls: { info: 2, config: 1 }, firstMoves: { info: 2 }, firstTimes: ['2026-11-16T09:00:00Z'] };
+
+test('keeps the port decoys section (Lab L2a)', () => {
+  expect(parseDecoys({ ...valid, ports: { redis } })?.ports).toEqual({ redis });
+  expect(parseDecoys({ ...valid, ports: {} })?.ports).toEqual({});
+  expect(parseDecoys(valid)?.ports).toBeUndefined();
+});
+
+test('rejects ports or commands outside the vocabulary', () => {
+  expect(parseDecoys({ ...valid, ports: { mongodb: redis } })).toBeNull();
+  expect(parseDecoys({ ...valid, ports: { redis: { ...redis, calls: { 'CONFIG SET dir /tmp': 1 } } } })).toBeNull();
+  expect(parseDecoys({ ...valid, ports: { redis: { ...redis, firstTimes: ['<b>'] } } })).toBeNull();
+  expect(parseDecoys({ ...valid, ports: { redis: { ...redis, connections: -1 } } })).toBeNull();
+});

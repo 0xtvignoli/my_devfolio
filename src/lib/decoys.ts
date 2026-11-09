@@ -17,6 +17,9 @@ export const AI_CALLS = ['list', 'generate', 'pull', 'manage', 'info', 'other'] 
 export const AI_MODELS = ['llama3', 'llama2', 'deepseek-r1', 'deepseek', 'qwen3', 'qwen2.5', 'qwen', 'mistral', 'mixtral', 'gemma3', 'gemma', 'phi4', 'phi3', 'gpt-oss', 'codellama', 'llava', 'nomic-embed-text', 'other'] as const;
 export const AI_SIZES = ['small', 'medium', 'large'] as const;
 export const AI_KEYS = ['openai', 'anthropic', 'other'] as const;
+// Lab L2a, one service opened per week: command names from each service's yaml.
+export const PORTS = ['redis'] as const;
+export const PORT_CALLS = ['ping', 'auth', 'info', 'recon', 'config', 'write', 'replicate', 'module', 'lua', 'other'] as const;
 export const PASSWORD_KINDS = ['sameAsUser', 'vendorDefault', 'keyboardWalk', 'digitsOnly', 'other'] as const;
 /** Attempted passwords that are also in a public 100k list: first 16 hex of SHA-256, with a count. */
 export type PasswordHash = { h: string; n: number };
@@ -56,7 +59,19 @@ export type Decoys = {
     sizes: Counts<(typeof AI_SIZES)[number]>;
     keys: Counts<(typeof AI_KEYS)[number]>;
   };
+  /** Optional: files from before Lab L2a lack it; a port appears once someone (not us) connected. */
+  ports?: Partial<Record<(typeof PORTS)[number], PortStats>>;
   daily: { date: string; ssh: number; http: number; ai?: number }[];
+};
+
+export type PortStats = {
+  /** Connections in the 14-day window. */
+  connections: number;
+  calls: Counts<(typeof PORT_CALLS)[number]>;
+  /** The first command of each connection. */
+  firstMoves: Counts<(typeof PORT_CALLS)[number]>;
+  /** The first contacts ever (up to 5), kept past the window: the stopwatch. */
+  firstTimes: string[];
 };
 
 const MAX = 1e9;
@@ -116,6 +131,21 @@ function ai(o: Record<string, unknown>): NonNullable<Decoys['ai']> {
   };
 }
 
+function ports(v: unknown): NonNullable<Decoys['ports']> {
+  const out: NonNullable<Decoys['ports']> = {};
+  for (const [k, item] of Object.entries(obj(v))) {
+    if (!(PORTS as readonly string[]).includes(k)) throw new Invalid();
+    const o = obj(item);
+    out[k as (typeof PORTS)[number]] = {
+      connections: count(o.connections),
+      calls: counts(o.calls, PORT_CALLS),
+      firstMoves: counts(o.firstMoves, PORT_CALLS),
+      firstTimes: stamps(o.firstTimes),
+    };
+  }
+  return out;
+}
+
 function hashes(v: unknown): PasswordHash[] {
   if (!Array.isArray(v) || v.length > MAX_HASHES) throw new Invalid();
   return v.map((item) => {
@@ -154,6 +184,7 @@ export function parseDecoys(raw: unknown): Decoys | null {
         ...(http.categoryDaily === undefined ? {} : { categoryDaily: categoryDaily(http.categoryDaily, d.daily.length) }),
       },
       ...(d.ai === undefined ? {} : { ai: ai(obj(d.ai)) }),
+      ...(d.ports === undefined ? {} : { ports: ports(d.ports) }),
       daily: d.daily.map((day) => {
         const o = obj(day);
         return { date: str(o.date, DATE), ssh: count(o.ssh), http: count(o.http), ...(o.ai === undefined ? {} : { ai: count(o.ai) }) };

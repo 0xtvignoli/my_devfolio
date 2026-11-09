@@ -139,6 +139,7 @@ export interface Translations {
     kicker: string;
     showAll: string;
     aiDecoyLink: string;
+    portsLink: string;
     compareLink: string;
     canariesLink: string;
     passwordsLink: string;
@@ -206,6 +207,24 @@ export interface Translations {
     answerTitle: string;
     neverTitle: string;
     never: string[];
+    note: string;
+    back: string;
+  };
+  portsDecoy: {
+    kicker: string;
+    title: string;
+    intro: string;
+    stats: { first: string; move: string; connections: string };
+    waiting: string;
+    soon: string;
+    /** Contains {t}, the opening time. */
+    openedAt: string;
+    /** Contains {name}. */
+    callsTitle: string;
+    calls: Record<'ping' | 'auth' | 'info' | 'recon' | 'config' | 'write' | 'replicate' | 'module' | 'lua' | 'other', string>;
+    callsNote: string;
+    behindTitle: string;
+    behind: string[];
     note: string;
     back: string;
   };
