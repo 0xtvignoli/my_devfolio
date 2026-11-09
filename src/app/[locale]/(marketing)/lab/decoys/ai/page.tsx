@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { BarList } from '@/components/observatory/bar-list';
 import { DECOY_OPENED, firstContact } from '@/data/decoy-ports';
 import { AI_CALLS, AI_KEYS, AI_MODELS, AI_SIZES } from '@/lib/decoys';
-import { readDecoys } from '@/lib/decoys-data';
+import { liveDecoys } from '@/lib/decoys-data';
 import { formatDuration } from '@/lib/duration';
 import { getTranslations, resolveLocaleParam } from '@/lib/i18n/server';
 import { localizedPath } from '@/lib/i18n/paths';
@@ -11,8 +11,9 @@ import { createPageMetadata } from '@/lib/seo/metadata';
 import type { Locale } from '@/lib/types';
 import type { Metadata } from 'next';
 
-// decoys.json is written at build (daily rebuild), so the page is too.
+// decoys.json is re-read from the VM's bucket at most every hour (lib/decoys-data).
 export const dynamic = 'force-static';
+export const revalidate = 3600; // DECOYS_REVALIDATE: the VM aggregates every hour
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -42,7 +43,7 @@ export default async function AiDecoyPage({ params }: Props) {
   const c = t.aiDecoy;
   const nf = new Intl.NumberFormat(locale === 'it' ? 'it-IT' : 'en-GB');
   const pct = new Intl.NumberFormat(locale === 'it' ? 'it-IT' : 'en-GB', { style: 'percent', maximumFractionDigits: 0 });
-  const ai = readDecoys()?.ai;
+  const ai = (await liveDecoys())?.ai;
   const opened = DECOY_OPENED.ai;
   const first = firstContact(opened, ai?.firstTimes);
   const firstAfter = opened && first ? Date.parse(first) - Date.parse(opened.at) : null;
