@@ -11,7 +11,7 @@ import type { Locale } from '@/lib/types';
 import type { Metadata } from 'next';
 
 export const dynamic = 'force-static';
-export const revalidate = 3600; // DECOYS_REVALIDATE: the VM aggregates every hour
+export const revalidate = 3600; // the VM aggregates every hour (:05 UTC)
 
 type Props = { params: Promise<{ locale: string }> };
 

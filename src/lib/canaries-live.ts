@@ -9,8 +9,11 @@ const API = 'https://canarytokens.org/d3aece8093b71007b5ccfedad91ebb11/download'
  * CANARY_EXPORTS="docker=<token>:<auth>,decoy-env=<token>:<auth>,…" lives in
  * Vercel env only: token + auth open the manage page, never commit them.
  * Without it, or when canarytokens fails, the recorded entry stands.
- * [SEC] The raw export (it holds IPs) stays in the server's fetch cache;
- * only foldHits' output reaches the page.
+ * [SEC] The raw export (it holds IPs) is never cached: only foldHits' output
+ * reaches the page.
+ * no-store, not next.revalidate: a fetch cached as long as the page is always
+ * stale when the page regenerates, so the page would show the previous fetch.
+ * The page's own revalidate still caps calls to one per window (force-static).
  */
 export async function liveCanaries(): Promise<Canary[]> {
   const creds = new Map(
@@ -25,7 +28,7 @@ export async function liveCanaries(): Promise<Canary[]> {
       if (!token || !auth) return c;
       try {
         const url = `${API}?fmt=incidentlist_json&token=${encodeURIComponent(token)}&auth=${encodeURIComponent(auth)}`;
-        const res = await fetch(url, { next: { revalidate: 300 }, signal: AbortSignal.timeout(5000) });
+        const res = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(5000) });
         if (!res.ok) return c;
         const { hits } = (await res.json()) as { hits?: CanaryHit[] };
         return Array.isArray(hits) && hits.length ? foldHits(c, hits) : c;

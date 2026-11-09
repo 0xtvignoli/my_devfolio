@@ -2,8 +2,6 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseDecoys, type Decoys } from '@/lib/decoys';
 
-/** The VM aggregates every hour (:05 UTC); pages that read it regenerate at most this often. */
-export const DECOYS_REVALIDATE = 3600;
 const MAX_BYTES = 200_000;
 
 /**
@@ -17,7 +15,10 @@ export async function liveDecoys(): Promise<Decoys | null> {
   const url = process.env.DECOYS_URL;
   if (url) {
     try {
-      const res = await fetch(url, { next: { revalidate: DECOYS_REVALIDATE }, signal: AbortSignal.timeout(10_000) });
+      // no-store: a fetch cached for the same hour as the page is stale at every
+      // regeneration, so the page would lag one window behind. The page's
+      // revalidate (force-static keeps it ISR) still limits this to once an hour.
+      const res = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(10_000) });
       const text = res.ok ? await res.text() : '';
       const data = text && text.length <= MAX_BYTES ? parseDecoys(JSON.parse(text)) : null;
       if (data) return data;
