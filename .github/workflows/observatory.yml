@@ -4,7 +4,9 @@ name: observatory
 
 on:
   schedule:
-    - cron: '1 0 * * *'   # 00:01 UTC: the UTC day just closed, and the window ends at that midnight
+    # 00:30 UTC: the UTC day just closed (the Observatory window ends at that midnight), and the
+    # decoy VM's 00:05 aggregate is in its bucket. GitHub may start scheduled runs late; that's fine.
+    - cron: '30 0 * * *'
   workflow_dispatch:
 
 permissions: {}

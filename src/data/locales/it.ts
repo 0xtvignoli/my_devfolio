@@ -169,7 +169,7 @@ export const it: Translations = {
     caseStudiesTitle: "Casi studio",
     methodTitle: "Come è fatto",
     method: [
-      "Ogni notte alle 00:01 il sito si ricostruisce: chiede a Cloudflare le statistiche con un token che può solo leggere, e salva i totali. La pagina che vedi è un file statico.",
+      "Ogni notte alle 00:30 il sito si ricostruisce: chiede a Cloudflare le statistiche con un token che può solo leggere, e salva i totali. La pagina che vedi è un file statico.",
       "Niente indirizzi IP, né raccolti né pubblicati. Solo paesi, tipi di client e numeri.",
       "Percorso e user agent li decide chi attacca, quindi non li pubblico mai così come sono: diventano etichette scelte da me. Altrimenti qualcuno manderebbe una richiesta a /ciao-mamma solo per finire qui.",
       "Il paese è dove sta il server, non chi c'è dietro: quasi tutti gli scanner girano su macchine cloud in affitto. \"Attacco dalla Germania\" di solito vuol dire \"qualcuno ha noleggiato una VM a Francoforte\".",
@@ -205,7 +205,7 @@ export const it: Translations = {
     title: "Chi va a caccia di AI gratis?",
     intro: "Sul server esca c'è un finto Ollama, il server più usato per far girare modelli AI in casa, lasciato aperto su internet come ne restano migliaia. Risponde all'elenco dei modelli, rifiuta il lavoro vero con «occupato». Qui conto chi bussa e cosa vuole.",
     notOpen: "La porta non è ancora aperta. Quando lo sarà, da qui parte il cronometro.",
-    noVisits: "Porta aperta: {t}. Ancora nessuno ha bussato. La pagina si aggiorna una volta al giorno.",
+    noVisits: "Porta aperta: {t}. Ancora nessuno ha bussato. La pagina si aggiorna ogni ora.",
     stats: { requests: "richieste, ultimi 14 giorni", first: "primo contatto dopo l'apertura", generate: "hanno provato a generare testo", keys: "hanno mandato una chiave API" },
     waiting: "in attesa",
     callsTitle: "Cosa chiamano",
