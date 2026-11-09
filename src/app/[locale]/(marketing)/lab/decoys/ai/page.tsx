@@ -13,7 +13,7 @@ import type { Metadata } from 'next';
 
 // decoys.json is re-read from the VM's bucket at most every hour (lib/decoys-data).
 export const dynamic = 'force-static';
-export const revalidate = 3600; // DECOYS_REVALIDATE: the VM aggregates every hour
+export const revalidate = 3600; // the VM aggregates every hour (:05 UTC)
 
 type Props = { params: Promise<{ locale: string }> };
 
