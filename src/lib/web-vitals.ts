@@ -58,36 +58,3 @@ export function initializeWebVitals() {
     console.error('Failed to initialize Web Vitals:', error);
   }
 }
-
-/**
- * Get performance metrics from the browser API
- * Useful for real-time monitoring
- */
-export function getPerformanceMetrics() {
-  if (typeof window === 'undefined') return null;
-
-  const perfData = window.performance.timing;
-  const pageLoadTime = perfData.loadEventEnd - perfData.navigationStart;
-
-  return {
-    pageLoadTime,
-    domContentLoaded: perfData.domContentLoadedEventEnd - perfData.navigationStart,
-    timeToFirstByte: perfData.responseStart - perfData.navigationStart,
-    domInteractive: perfData.domInteractive - perfData.navigationStart,
-  };
-}
-
-/**
- * Monitor and log memory usage (for debugging)
- */
-export function monitorMemoryUsage() {
-  if ('memory' in performance && (performance as any).memory) {
-    const { usedJSHeapSize, totalJSHeapSize, jsHeapSizeLimit } = (performance as any).memory;
-    return {
-      usedJSHeapSize: (usedJSHeapSize / 1048576).toFixed(2) + ' MB',
-      totalJSHeapSize: (totalJSHeapSize / 1048576).toFixed(2) + ' MB',
-      jsHeapSizeLimit: (jsHeapSizeLimit / 1048576).toFixed(2) + ' MB',
-    };
-  }
-  return null;
-}

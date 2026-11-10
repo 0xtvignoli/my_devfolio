@@ -452,7 +452,6 @@ export interface Project {
   imageHint?: string;
   githubUrl?: string;
   demoUrl?: string;
-  codesandboxId?: string;
   metrics?: { label: Record<Locale, string>; value: string }[];
 }
 

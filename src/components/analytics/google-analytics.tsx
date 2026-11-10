@@ -61,38 +61,3 @@ export function GoogleAnalytics({ GA_MEASUREMENT_ID }: { GA_MEASUREMENT_ID: stri
     </>
   );
 }
-
-// Helper functions for custom events
-export const trackEvent = (eventName: string, parameters?: GtagEventParams) => {
-  if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('event', eventName, parameters);
-  }
-};
-
-export const trackLabInteraction = (action: string, details?: GtagEventParams) => {
-  trackEvent('lab_interaction', {
-    action,
-    ...details,
-  });
-};
-
-export const trackDeployment = (strategy: string, result: 'success' | 'failure') => {
-  trackEvent('deployment', {
-    strategy,
-    result,
-  });
-};
-
-export const trackChaosExperiment = (type: string, duration: number) => {
-  trackEvent('chaos_experiment', {
-    experiment_type: type,
-    duration,
-  });
-};
-
-export const trackAchievement = (achievementId: string, title: string) => {
-  trackEvent('achievement_unlocked', {
-    achievement_id: achievementId,
-    achievement_title: title,
-  });
-};

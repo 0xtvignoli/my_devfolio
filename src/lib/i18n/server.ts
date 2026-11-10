@@ -16,7 +16,4 @@ export const resolveLocaleFromHeaders = async (): Promise<Locale> => {
   return headerLocale ?? DEFAULT_LOCALE;
 };
 
-/** @deprecated Prefer params.locale in pages or resolveLocaleFromHeaders in root layout. */
-export const resolveLocale = resolveLocaleFromHeaders;
-
 export const getTranslations = (locale: Locale): Translations => translations[locale];
