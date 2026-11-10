@@ -122,3 +122,13 @@ test('rejects ports or commands outside the vocabulary', () => {
   expect(parseDecoys({ ...valid, ports: { docker: { ...docker, calls: { replicate: 1 } } } })).toBeNull();
   expect(parseDecoys({ ...valid, ports: { redis: { ...redis, calls: { exec: 1 } } } })).toBeNull();
 });
+
+test('keeps per-port daily visits and move sequences, in shape', () => {
+  // valid has one day, so daily has one count.
+  const full = { ...redis, daily: [3], sequences: [{ moves: ['info', 'config'], n: 2 }] };
+  expect(parseDecoys({ ...valid, ports: { redis: full } })?.ports).toEqual({ redis: full });
+  expect(parseDecoys({ ...valid, ports: { redis: { ...redis, daily: [3, 1] } } })).toBeNull();
+  expect(parseDecoys({ ...valid, ports: { redis: { ...redis, sequences: [{ moves: ['CONFIG SET dir /tmp'], n: 2 }] } } })).toBeNull();
+  expect(parseDecoys({ ...valid, ports: { redis: { ...redis, sequences: [{ moves: [], n: 2 }] } } })).toBeNull();
+  expect(parseDecoys({ ...valid, ports: { redis: { ...redis, sequences: Array(4).fill({ moves: ['ping'], n: 2 }) } } })).toBeNull();
+});
