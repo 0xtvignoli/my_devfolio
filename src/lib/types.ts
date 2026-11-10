@@ -228,8 +228,9 @@ export interface Translations {
     calls: {
       redis: Record<'ping' | 'auth' | 'info' | 'recon' | 'config' | 'write' | 'replicate' | 'module' | 'lua' | 'other', string>;
       docker: Record<'ping' | 'version' | 'info' | 'list' | 'create' | 'pull' | 'start' | 'exec' | 'other', string>;
+      elasticsearch: Record<'info' | 'health' | 'list' | 'search' | 'script' | 'write' | 'delete' | 'other', string>;
     };
-    callsNote: { redis: string; docker: string };
+    callsNote: { redis: string; docker: string; elasticsearch: string };
     behindTitle: string;
     behind: string[];
     note: string;

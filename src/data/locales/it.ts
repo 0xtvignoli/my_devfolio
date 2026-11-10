@@ -248,10 +248,12 @@ export const it: Translations = {
     calls: {
       redis: { ping: "PING, c'è qualcuno?", auth: "provare una password", info: "INFO, che versione è", recon: "elencare chiavi e configurazione", config: "CONFIG SET, cambiare dove salva", write: "scrivere o cancellare dati", replicate: "farsi replicare da un server loro", module: "caricare un modulo", lua: "eseguire uno script Lua", other: "altro" },
       docker: { ping: "_ping, c'è un demone?", version: "che versione è", info: "com'è fatta la macchina", list: "elencare container e immagini", create: "creare un container", pull: "scaricare un'immagine", start: "avviare un container", exec: "eseguire un comando dentro", other: "altro" },
+      elasticsearch: { info: "che versione è", health: "lo stato del cluster", list: "elencare gli indici", search: "leggere i dati", script: "eseguire codice con una vecchia falla", write: "scrivere un documento", delete: "cancellare indici", other: "altro" },
     },
     callsNote: {
       redis: "Redis salva il suo database nella cartella che gli indichi. Se gli indichi quella dei cron job, il «database» diventa un comando che il server esegue da solo ogni minuto. Qui le scritture rispondono OK e non salvano niente.",
       docker: "Con l'API di Docker aperta si crea un container che vede tutto il disco del server, e da lì si arriva alla macchina vera. Più spesso ci mettono un programma che mina criptovalute col tuo processore. Qui la creazione risponde con un ID e l'avvio dice «fatto», ma non parte niente.",
+      elasticsearch: "Su un Elasticsearch senza password gira da anni lo stesso script: elenca gli indici, li cancella tutti e lascia un indice read_me con la richiesta di riscatto in bitcoin. I dati, intanto, li ha già copiati o non li ha mai letti. Qui gli indici sono tre nomi finti, la cancellazione risponde «fatto» e non c'è niente da cancellare.",
     },
     behindTitle: "Cosa c'è dietro ogni porta",
     behind: [
