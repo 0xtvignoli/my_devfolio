@@ -55,6 +55,7 @@ export default async function CanariesPage({ params }: Props) {
       <p className="mb-6 text-sm font-medium uppercase tracking-[0.08em] text-link">{c.kicker}</p>
       <h1 className="max-w-[860px] font-serif text-[clamp(36px,5.5vw,64px)] font-normal leading-[1.05] tracking-[-0.025em]">{c.title}</h1>
       <p className="mt-6 max-w-[680px] text-[19px] text-muted-foreground">{c.intro}</p>
+      <p className="mt-4 max-w-[680px] text-[15px] text-muted-foreground">{c.nameNote}</p>
 
       <dl className="mt-12 grid grid-cols-3 gap-x-5 border-y border-y-border border-t-foreground py-6 sm:gap-x-10">
         {stats.map((s) => (
