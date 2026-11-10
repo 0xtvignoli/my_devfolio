@@ -25,3 +25,10 @@ test('a failing store is null, so the page falls back to the export alone', asyn
   expect(await syncCanary('docker', { uses: [], calls: [], first: null, quarantined: null })).toBeNull();
   expect(await takeSyncTurn()).toBe(false);
 });
+
+test('readSummary keeps only known canaries, calls and stamps', async () => {
+  const summary = { github: { uses: 412, calls: ['ai', 'evil'], first: '2026-11-08T09:33:00Z', quarantined: 'x' }, mongodb: { uses: 1 } };
+  globalThis.fetch = (async () => Response.json({ result: JSON.stringify(summary) })) as unknown as typeof fetch;
+  const { readSummary } = await import('./canary-store');
+  expect(await readSummary()).toEqual({ github: { uses: 412, calls: ['ai'], first: '2026-11-08T09:33:00Z', quarantined: null } });
+});
