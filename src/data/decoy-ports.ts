@@ -20,6 +20,8 @@ export const DECOY_OPENED: Record<'ai' | Port, DecoyOpening> = {
   docker: { at: '2026-11-10T09:01:23Z' },
   // NSG rule from 10/11 11:28:10 (the service was already up). Our check carries X-Lab-Check.
   elasticsearch: { at: '2026-11-10T11:28:10Z' },
+  // Service ready, NSG rule not yet: set `at` when the port really answers from outside.
+  kubelet: null,
 };
 
 /**
