@@ -6,8 +6,6 @@ Next.js 16 (App Router) on Vercel, behind Cloudflare. TypeScript, Tailwind v4, B
 
 ![Components and triggers](docs/architecture.svg)
 
-The diagram is drawn from [`docs/architecture.excalidraw`](docs/architecture.excalidraw): open it on [excalidraw.com](https://excalidraw.com) to edit it.
-
 ## Pages
 
 All routes live under `/en` and `/it`.
