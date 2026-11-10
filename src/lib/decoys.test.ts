@@ -116,4 +116,9 @@ test('rejects ports or commands outside the vocabulary', () => {
   expect(parseDecoys({ ...valid, ports: { redis: { ...redis, calls: { 'CONFIG SET dir /tmp': 1 } } } })).toBeNull();
   expect(parseDecoys({ ...valid, ports: { redis: { ...redis, firstTimes: ['<b>'] } } })).toBeNull();
   expect(parseDecoys({ ...valid, ports: { redis: { ...redis, connections: -1 } } })).toBeNull();
+  // Each port has its own vocabulary: a Redis move on Docker is out of shape.
+  const docker = { connections: 2, calls: { version: 1, create: 1 }, firstMoves: { version: 1 }, firstTimes: [] };
+  expect(parseDecoys({ ...valid, ports: { docker } })?.ports).toEqual({ docker });
+  expect(parseDecoys({ ...valid, ports: { docker: { ...docker, calls: { replicate: 1 } } } })).toBeNull();
+  expect(parseDecoys({ ...valid, ports: { redis: { ...redis, calls: { exec: 1 } } } })).toBeNull();
 });
