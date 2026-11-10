@@ -15,8 +15,9 @@ export const DECOY_OPENED: Record<'ai' | Port, DecoyOpening> = {
   // NSG rule from 9/11 12:14:09, but the service only answered after setup.sh finished.
   // No checkedUntil: our TCP check (ECHO lab-check) is dropped by the aggregator itself.
   redis: { at: '2026-11-09T12:28:56Z' },
-  // Service deployed, NSG rule not yet: set `at` when the port really answers from outside.
-  docker: null,
+  // NSG rule from 10/11 09:01:23 (the service was already up). No checkedUntil: our check
+  // carries X-Lab-Check, and the aggregator drops that whole visit.
+  docker: { at: '2026-11-10T09:01:23Z' },
 };
 
 /**
