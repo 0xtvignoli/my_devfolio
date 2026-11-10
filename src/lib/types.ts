@@ -221,8 +221,11 @@ export interface Translations {
     openedAt: string;
     /** Contains {name}. */
     callsTitle: string;
-    calls: Record<'ping' | 'auth' | 'info' | 'recon' | 'config' | 'write' | 'replicate' | 'module' | 'lua' | 'other', string>;
-    callsNote: string;
+    calls: {
+      redis: Record<'ping' | 'auth' | 'info' | 'recon' | 'config' | 'write' | 'replicate' | 'module' | 'lua' | 'other', string>;
+      docker: Record<'ping' | 'version' | 'info' | 'list' | 'create' | 'pull' | 'start' | 'exec' | 'other', string>;
+    };
+    callsNote: { redis: string; docker: string };
     behindTitle: string;
     behind: string[];
     note: string;

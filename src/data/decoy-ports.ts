@@ -1,3 +1,5 @@
+import type { Port } from '@/lib/decoys';
+
 /**
  * When each Lab phase 3 decoy port was opened to the internet (ISO UTC, the time
  * the NSG rule was created), null while closed. The stopwatch on its page runs
@@ -6,13 +8,15 @@
  */
 export type DecoyOpening = { at: string; checkedUntil?: string } | null;
 
-export const DECOY_OPENED: Record<'ai' | 'redis', DecoyOpening> = {
+export const DECOY_OPENED: Record<'ai' | Port, DecoyOpening> = {
   // 8/11 16:29 the service started but the NSG rule was missing: the port was really
   // reachable only from 9/11 08:22:41, followed by our own curl from Cloud Shell.
   ai: { at: '2026-11-09T08:22:41Z', checkedUntil: '2026-11-09T08:25:00Z' },
   // NSG rule from 9/11 12:14:09, but the service only answered after setup.sh finished.
   // No checkedUntil: our TCP check (ECHO lab-check) is dropped by the aggregator itself.
   redis: { at: '2026-11-09T12:28:56Z' },
+  // Service deployed, NSG rule not yet: set `at` when the port really answers from outside.
+  docker: null,
 };
 
 /**

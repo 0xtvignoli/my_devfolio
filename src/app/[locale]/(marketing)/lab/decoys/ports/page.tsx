@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { BarList } from '@/components/observatory/bar-list';
 import { DECOY_OPENED, PORT_DECOYS, firstContact } from '@/data/decoy-ports';
 import { position } from '@/lib/canary-time';
-import { PORTS, PORT_CALLS, type PortStats } from '@/lib/decoys';
+import { PORTS, PORT_CALLS, type Port, type PortStats } from '@/lib/decoys';
 import { liveDecoys } from '@/lib/decoys-data';
 import { formatDuration } from '@/lib/duration';
 import { getTranslations, resolveLocaleParam } from '@/lib/i18n/server';
@@ -16,7 +16,6 @@ export const dynamic = 'force-static';
 export const revalidate = 3600; // the VM aggregates every hour (:05 UTC)
 
 type Props = { params: Promise<{ locale: string }> };
-type Port = (typeof PORTS)[number];
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locale = resolveLocaleParam((await params).locale);
@@ -39,8 +38,11 @@ export default async function PortsDecoyPage({ params }: Props) {
     const stats: PortStats | undefined = isPort(p.id) ? ports[p.id] : undefined;
     const first = firstContact(opened, stats?.firstTimes);
     const after = opened && first ? Math.max(0, Date.parse(first) - Date.parse(opened.at)) : null;
-    const move = Object.entries(stats?.firstMoves ?? {}).sort((a, b) => b[1] - a[1])[0]?.[0] as (typeof PORT_CALLS)[number] | undefined;
-    return { ...p, opened, stats, after, move };
+    const move = Object.entries(stats?.firstMoves ?? {}).sort((a, b) => b[1] - a[1])[0]?.[0];
+    // Labels per port: Redis's INFO and Docker's /info are different moves.
+    const label = (k: string) => (isPort(p.id) ? (c.calls[p.id] as Record<string, string>)[k] : undefined) ?? k;
+    const vocab: readonly string[] = isPort(p.id) ? PORT_CALLS[p.id] : [];
+    return { ...p, opened, stats, after, move, label, vocab };
   });
 
   return (
@@ -72,7 +74,7 @@ export default async function PortsDecoyPage({ params }: Props) {
                 {r.move && (
                   <>
                     <p className="mt-4 text-[13px] text-muted-foreground">{c.stats.move}</p>
-                    <p className="text-[15px]">{c.calls[r.move]}</p>
+                    <p className="text-[15px]">{r.label(r.move)}</p>
                   </>
                 )}
                 {r.stats && (
@@ -94,13 +96,14 @@ export default async function PortsDecoyPage({ params }: Props) {
               <h2 className="border-t border-foreground pt-5 font-serif text-[26px] font-medium">{c.callsTitle.replace('{name}', r.name)}</h2>
               <div className="mt-5">
                 <BarList
-                  items={PORT_CALLS.filter((k) => r.stats!.calls[k])
-                    .map((k) => ({ label: c.calls[k], count: r.stats!.calls[k]! }))
+                  items={r.vocab
+                    .map((k) => ({ label: r.label(k), count: (r.stats!.calls as Record<string, number | undefined>)[k] ?? 0 }))
+                    .filter((x) => x.count)
                     .sort((a, b) => b.count - a.count)}
                   locale={locale}
                 />
               </div>
-              {r.id === 'redis' && <p className="mt-5 text-sm text-muted-foreground">{c.callsNote}</p>}
+              {isPort(r.id) && <p className="mt-5 text-sm text-muted-foreground">{c.callsNote[r.id]}</p>}
             </div>
           ))}
         <div>
