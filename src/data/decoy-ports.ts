@@ -18,8 +18,8 @@ export const DECOY_OPENED: Record<'ai' | Port, DecoyOpening> = {
   // NSG rule from 10/11 09:01:23 (the service was already up). No checkedUntil: our check
   // carries X-Lab-Check, and the aggregator drops that whole visit.
   docker: { at: '2026-11-10T09:01:23Z' },
-  // Service ready, NSG rule not yet: set `at` when the port really answers from outside.
-  elasticsearch: null,
+  // NSG rule from 10/11 11:28:10 (the service was already up). Our check carries X-Lab-Check.
+  elasticsearch: { at: '2026-11-10T11:28:10Z' },
 };
 
 /**
