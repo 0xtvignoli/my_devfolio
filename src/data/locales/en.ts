@@ -249,11 +249,13 @@ export const en: Translations = {
       redis: { ping: "PING, anyone there?", auth: "try a password", info: "INFO, which version", recon: "list keys and config", config: "CONFIG SET, change where it saves", write: "write or delete data", replicate: "replicate from their own server", module: "load a module", lua: "run a Lua script", other: "other" },
       docker: { ping: "_ping, is a daemon there?", version: "which version", info: "what the machine is like", list: "list containers and images", create: "create a container", pull: "pull an image", start: "start a container", exec: "run a command inside", other: "other" },
       elasticsearch: { info: "which version", health: "cluster status", list: "list the indices", search: "read the data", script: "run code through an old bug", write: "write a document", delete: "delete indices", other: "other" },
+      kubelet: { healthz: "is it alive", pods: "list the pods", run: "run a command in a container", exec: "open a shell in a container", logs: "read the logs", metrics: "read metrics and node data", config: "read the configuration", other: "other" },
     },
     callsNote: {
       redis: "Redis saves its database in whatever folder you point it to. Point it at the cron folder and the \"database\" becomes a command the server runs by itself every minute. Here writes answer OK and save nothing.",
       docker: "With the Docker API open, you can create a container that sees the server's whole disk, and from there reach the real machine. More often they install a program that mines cryptocurrency on your processor. Here create answers with an ID and start says done, but nothing runs.",
       elasticsearch: "On an Elasticsearch without a password the same script has been running for years: it lists the indices, deletes them all and leaves a read_me index asking for a bitcoin ransom. Whether it copied the data first is anyone's guess. Here the indices are three fake names, delete answers done and there is nothing to delete.",
+      kubelet: "kubelet is the program that starts the containers on every Kubernetes node. If it takes anonymous requests, listing the pods and asking it to run a command inside one is all it takes. Usually that command downloads a miner, sometimes it looks for the cluster's credentials to reach the other nodes. Here the pods are fake and the command answers without running anything.",
     },
     behindTitle: "What is behind each port",
     behind: [
@@ -261,7 +263,7 @@ export const en: Translations = {
       "Every command is mapped to a fixed list of known moves, anything else is \"other\". I never publish the text they send.",
       "One port at a time, each with its own stopwatch.",
       "No container starts, replication never connects to any server, no file is ever downloaded or run.",
-      "For Redis a visit is one connection. For Docker it's one address in one day, because every command arrives as a separate request. The address only groups requests and I never publish it.",
+      "For Redis a visit is one connection. For Docker, Elasticsearch and kubelet it's one address in one day, because every command arrives as a separate request. The address only groups requests and I never publish it.",
     ],
     note: "Opening a port takes one firewall rule, one config file and one line of compose. The stopwatch starts when I create the rule, and my own tests don't count. This page updates every hour.",
     back: "← Back to the Lab",
