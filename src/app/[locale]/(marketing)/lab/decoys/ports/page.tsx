@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { BarList } from '@/components/observatory/bar-list';
 import { DECOY_OPENED, PORT_DECOYS, firstContact } from '@/data/decoy-ports';
 import { position } from '@/lib/canary-time';
 import { PORTS, PORT_CALLS, type Port, type PortStats } from '@/lib/decoys';
@@ -53,59 +52,47 @@ export default async function PortsDecoyPage({ params }: Props) {
 
       <ol className="mt-12 grid gap-x-7 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
         {rows.map((r) => (
-          <li key={r.id} className="border-t border-foreground pt-4">
-            <p className="flex items-baseline justify-between gap-3">
-              <span className="font-serif text-[24px]">{r.name}</span>
-              <span className="font-mono text-[13px] text-muted-foreground">:{r.port}</span>
-            </p>
-            {!r.opened ? (
-              <p className="mt-4 text-[15px] text-muted-foreground">{c.soon}</p>
-            ) : (
-              <>
-                <p className="mt-1 text-[13px] text-muted-foreground">{c.openedAt.replace('{t}', df.format(new Date(r.opened.at)))}</p>
-                <p className="mt-4 text-[13px] text-muted-foreground">{c.stats.first}</p>
-                <p className="font-serif text-[34px] leading-tight">{r.after === null ? c.waiting : formatDuration(r.after, locale)}</p>
-                {/* Same log scale as the canaries, 1 min → 1 week. */}
-                {r.after !== null && (
-                  <span aria-hidden className="mt-2 block h-1.5 bg-muted">
-                    <span className="block h-full bg-link" style={{ width: `${position(r.after)}%` }} />
-                  </span>
-                )}
-                {r.move && (
-                  <>
-                    <p className="mt-4 text-[13px] text-muted-foreground">{c.stats.move}</p>
-                    <p className="text-[15px]">{r.label(r.move)}</p>
-                  </>
-                )}
-                {r.stats && (
-                  <p className="mt-4 text-[13px] text-muted-foreground">
-                    {c.stats.connections} · <span className="text-foreground">{nf.format(r.stats.connections)}</span>
-                  </p>
-                )}
-              </>
-            )}
+          <li key={r.id} className="border-t border-foreground">
+            <Link href={localizedPath(locale, `/lab/decoys/ports/${r.id}`)} className="group block pt-4">
+              <p className="flex items-baseline justify-between gap-3">
+                <span className="font-serif text-[24px] group-hover:underline">
+                  {r.name} <span aria-hidden className="text-link">→</span>
+                </span>
+                <span className="font-mono text-[13px] text-muted-foreground">:{r.port}</span>
+              </p>
+              {isPort(r.id) && <p className="mt-1 text-[14px] text-muted-foreground">{c.teasers[r.id]}</p>}
+              {!r.opened ? (
+                <p className="mt-4 text-[15px] text-muted-foreground">{c.soon}</p>
+              ) : (
+                <>
+                  <p className="mt-1 text-[13px] text-muted-foreground">{c.openedAt.replace('{t}', df.format(new Date(r.opened.at)))}</p>
+                  <p className="mt-4 text-[13px] text-muted-foreground">{c.stats.first}</p>
+                  <p className="font-serif text-[34px] leading-tight">{r.after === null ? c.waiting : formatDuration(r.after, locale)}</p>
+                  {/* Same log scale as the canaries, 1 min → 1 week. */}
+                  {r.after !== null && (
+                    <span aria-hidden className="mt-2 block h-1.5 bg-muted">
+                      <span className="block h-full bg-link" style={{ width: `${position(r.after)}%` }} />
+                    </span>
+                  )}
+                  {r.move && (
+                    <>
+                      <p className="mt-4 text-[13px] text-muted-foreground">{c.stats.move}</p>
+                      <p className="text-[15px]">{r.label(r.move)}</p>
+                    </>
+                  )}
+                  {r.stats && (
+                    <p className="mt-4 text-[13px] text-muted-foreground">
+                      {c.stats.connections} · <span className="text-foreground">{nf.format(r.stats.connections)}</span>
+                    </p>
+                  )}
+                </>
+              )}
+            </Link>
           </li>
         ))}
       </ol>
 
       <section className="mt-16 grid gap-x-14 gap-y-12 sm:grid-cols-2">
-        {rows
-          .filter((r) => r.opened && r.stats && r.stats.connections > 0)
-          .map((r) => (
-            <div key={r.id}>
-              <h2 className="border-t border-foreground pt-5 font-serif text-[26px] font-medium">{c.callsTitle.replace('{name}', r.name)}</h2>
-              <div className="mt-5">
-                <BarList
-                  items={r.vocab
-                    .map((k) => ({ label: r.label(k), count: (r.stats!.calls as Record<string, number | undefined>)[k] ?? 0 }))
-                    .filter((x) => x.count)
-                    .sort((a, b) => b.count - a.count)}
-                  locale={locale}
-                />
-              </div>
-              {isPort(r.id) && <p className="mt-5 text-sm text-muted-foreground">{c.callsNote[r.id]}</p>}
-            </div>
-          ))}
         <div>
           <h2 className="border-t border-foreground pt-5 font-serif text-[26px] font-medium">{c.behindTitle}</h2>
           <ul className="mt-5 list-disc space-y-3 pl-5 text-muted-foreground">

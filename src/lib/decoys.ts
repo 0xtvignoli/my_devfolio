@@ -79,6 +79,10 @@ export type PortStats<P extends Port = Port> = {
   firstMoves: Counts<PortCall<P>>;
   /** The first contacts ever (up to 5), kept past the window: the stopwatch. */
   firstTimes: string[];
+  /** Visits per day, aligned with the top-level `daily`. Optional: files from before the port pages lack it. */
+  daily?: number[];
+  /** Up to 3 move sequences (repeats folded, first 6 moves), each seen at least twice. Optional, as daily. */
+  sequences?: { moves: PortCall<P>[]; n: number }[];
 };
 
 const MAX = 1e9;
@@ -138,17 +142,35 @@ function ai(o: Record<string, unknown>): NonNullable<Decoys['ai']> {
   };
 }
 
-function ports(v: unknown): NonNullable<Decoys['ports']> {
+function dailyCounts(v: unknown, days: number): number[] {
+  if (!Array.isArray(v) || v.length !== days) throw new Invalid();
+  return v.map(count);
+}
+
+function sequences(v: unknown, vocab: readonly string[]): { moves: string[]; n: number }[] {
+  if (!Array.isArray(v) || v.length > 3) throw new Invalid();
+  return v.map((item) => {
+    const o = obj(item);
+    if (!Array.isArray(o.moves) || o.moves.length < 1 || o.moves.length > 6) throw new Invalid();
+    if (!o.moves.every((m) => vocab.includes(m as string))) throw new Invalid();
+    return { moves: o.moves as string[], n: count(o.n) };
+  });
+}
+
+function ports(v: unknown, days: number): NonNullable<Decoys['ports']> {
   const out: NonNullable<Decoys['ports']> = {};
   for (const [k, item] of Object.entries(obj(v))) {
     if (!(PORTS as readonly string[]).includes(k)) throw new Invalid();
     const o = obj(item);
     const vocab: readonly string[] = PORT_CALLS[k as Port];
-    out[k as Port] = {
+    // Each port's moves were checked against its own vocabulary above.
+    (out as Record<string, unknown>)[k] = {
       connections: count(o.connections),
       calls: counts(o.calls, vocab),
       firstMoves: counts(o.firstMoves, vocab),
       firstTimes: stamps(o.firstTimes),
+      ...(o.daily === undefined ? {} : { daily: dailyCounts(o.daily, days) }),
+      ...(o.sequences === undefined ? {} : { sequences: sequences(o.sequences, vocab) }),
     };
   }
   return out;
@@ -192,7 +214,7 @@ export function parseDecoys(raw: unknown): Decoys | null {
         ...(http.categoryDaily === undefined ? {} : { categoryDaily: categoryDaily(http.categoryDaily, d.daily.length) }),
       },
       ...(d.ai === undefined ? {} : { ai: ai(obj(d.ai)) }),
-      ...(d.ports === undefined ? {} : { ports: ports(d.ports) }),
+      ...(d.ports === undefined ? {} : { ports: ports(d.ports, Array.isArray(d.daily) ? d.daily.length : 0) }),
       daily: d.daily.map((day) => {
         const o = obj(day);
         return { date: str(o.date, DATE), ssh: count(o.ssh), http: count(o.http), ...(o.ai === undefined ? {} : { ai: count(o.ai) }) };

@@ -223,19 +223,83 @@ export interface Translations {
     soon: string;
     /** Contains {t}, the opening time. */
     openedAt: string;
-    /** Contains {name}. */
-    callsTitle: string;
     calls: {
       redis: Record<'ping' | 'auth' | 'info' | 'recon' | 'config' | 'write' | 'replicate' | 'module' | 'lua' | 'other', string>;
       docker: Record<'ping' | 'version' | 'info' | 'list' | 'create' | 'pull' | 'start' | 'exec' | 'other', string>;
       elasticsearch: Record<'info' | 'health' | 'list' | 'search' | 'script' | 'write' | 'delete' | 'other', string>;
       kubelet: Record<'healthz' | 'pods' | 'run' | 'exec' | 'logs' | 'metrics' | 'config' | 'other', string>;
     };
-    callsNote: { redis: string; docker: string; elasticsearch: string; kubelet: string };
     behindTitle: string;
     behind: string[];
     note: string;
     back: string;
+    /** One line under each port's name in the list: what visitors are after. */
+    teasers: Record<'redis' | 'docker' | 'elasticsearch' | 'kubelet', string>;
+    detail: {
+      breadcrumb: string;
+      live: string;
+      status: { seen: string; waiting: string; closed: string };
+      /** Contain {d}. */
+      seenHeadline: string;
+      waitingHeadline: string;
+      stats: { opened: string; first: string; visits: string; moves: string; firstMove: string; waiting: string; fastest: string };
+      timelineTitle: string;
+      steps: {
+        opened: string;
+        openedBody: string;
+        first: string;
+        /** Contains {d}. */
+        firstBody: string;
+        /** Contains {move} and {n}. */
+        key: string;
+        since: string;
+        today: string;
+        /** Contains {v} and {m}. */
+        todayTitle: string;
+        todayBody: string;
+      };
+      dailyTitle: string;
+      dailyIntro: string;
+      dailyCaption: string;
+      /** Contains {d} and {n}. */
+      dailyTip: string;
+      dailyClosed: string;
+      scriptTitle: string;
+      scriptIntro: string;
+      /** Contains {n}. */
+      scriptCount: string;
+      movesTitle: string;
+      movesIntro: string;
+      table: { command: string; what: string; count: string };
+      /** Contains {list}. */
+      neverSeen: string;
+      answerTitle: string;
+      fixesTitle: string;
+      lessonTitle: string;
+      waitTitle: string;
+      waitLast: { title: string; body: string };
+      waitBoxTitle: string;
+      raceTitle: string;
+      raceIntro: string;
+      raceAi: string;
+      othersTitle: string;
+      /** Contains {t}. */
+      updated: string;
+      privacy: string;
+    };
+    stories: Record<
+      'redis' | 'docker' | 'elasticsearch' | 'kubelet',
+      {
+        intro: string;
+        answerNote: string;
+        keyBody: string;
+        moves: Record<string, string>;
+        fixes: { title: string; body: string }[];
+        lesson: string;
+        wait: { title: string; body: string }[];
+        waitBox: string;
+      }
+    >;
   };
   compare: {
     kicker: string;
