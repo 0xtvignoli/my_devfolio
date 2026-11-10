@@ -18,11 +18,12 @@ export const AI_MODELS = ['llama3', 'llama2', 'deepseek-r1', 'deepseek', 'qwen3'
 export const AI_SIZES = ['small', 'medium', 'large'] as const;
 export const AI_KEYS = ['openai', 'anthropic', 'other'] as const;
 // Lab L2a, one service opened per week: command names from each service's yaml.
-export const PORTS = ['redis', 'docker'] as const;
+export const PORTS = ['redis', 'docker', 'elasticsearch'] as const;
 export type Port = (typeof PORTS)[number];
 export const PORT_CALLS = {
   redis: ['ping', 'auth', 'info', 'recon', 'config', 'write', 'replicate', 'module', 'lua', 'other'],
   docker: ['ping', 'version', 'info', 'list', 'create', 'pull', 'start', 'exec', 'other'],
+  elasticsearch: ['info', 'health', 'list', 'search', 'script', 'write', 'delete', 'other'],
 } as const satisfies Record<Port, readonly string[]>;
 export type PortCall<P extends Port> = (typeof PORT_CALLS)[P][number];
 export const PASSWORD_KINDS = ['sameAsUser', 'vendorDefault', 'keyboardWalk', 'digitsOnly', 'other'] as const;

@@ -248,10 +248,12 @@ export const en: Translations = {
     calls: {
       redis: { ping: "PING, anyone there?", auth: "try a password", info: "INFO, which version", recon: "list keys and config", config: "CONFIG SET, change where it saves", write: "write or delete data", replicate: "replicate from their own server", module: "load a module", lua: "run a Lua script", other: "other" },
       docker: { ping: "_ping, is a daemon there?", version: "which version", info: "what the machine is like", list: "list containers and images", create: "create a container", pull: "pull an image", start: "start a container", exec: "run a command inside", other: "other" },
+      elasticsearch: { info: "which version", health: "cluster status", list: "list the indices", search: "read the data", script: "run code through an old bug", write: "write a document", delete: "delete indices", other: "other" },
     },
     callsNote: {
       redis: "Redis saves its database in whatever folder you point it to. Point it at the cron folder and the \"database\" becomes a command the server runs by itself every minute. Here writes answer OK and save nothing.",
       docker: "With the Docker API open, you can create a container that sees the server's whole disk, and from there reach the real machine. More often they install a program that mines cryptocurrency on your processor. Here create answers with an ID and start says done, but nothing runs.",
+      elasticsearch: "On an Elasticsearch without a password the same script has been running for years: it lists the indices, deletes them all and leaves a read_me index asking for a bitcoin ransom. Whether it copied the data first is anyone's guess. Here the indices are three fake names, delete answers done and there is nothing to delete.",
     },
     behindTitle: "What is behind each port",
     behind: [
