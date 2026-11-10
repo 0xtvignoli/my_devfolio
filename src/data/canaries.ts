@@ -62,37 +62,60 @@ export type CanaryHit = {
 
 const iso = (s: number) => new Date(s * 1000).toISOString().replace(/\.\d+Z$/, 'Z');
 
+/** What lib/canary-store keeps across syncs: canarytokens.org forgets everything past a key's last 50 hits. */
+export type CanaryStore = { uses: number; calls: CanaryCall[]; first: string | null; quarantined: string | null };
+
+const events = (h: CanaryHit) => h.additional_info?.aws_key_log_data?.eventName ?? [];
+const internal = (h: CanaryHit) => h.useragent === 'AWS Internal';
+const unique = (hits: CanaryHit[]) => [...new Map(hits.map((h) => [`${h.time_of_hit}|${events(h).join(',')}`, h])).values()];
+
+/**
+ * The facts of an export worth keeping, for lib/canary-store. A use is "time|call,call":
+ * the same hit seen in two syncs is the same string, so a set counts it once.
+ * [SEC] Same as foldHits: times and CloudTrail call names only.
+ */
+export function hitFacts(hits: CanaryHit[]): { uses: string[]; calls: CanaryCall[]; first: string | null; quarantined: string | null } {
+  const all = unique(hits);
+  const uses = all.filter((h) => !internal(h));
+  const q = all.filter(internal).map((h) => h.time_of_hit);
+  return {
+    uses: uses.map((h) => `${h.time_of_hit}|${events(h).filter((e) => /^[A-Za-z0-9]{1,64}$/.test(e)).join(',')}`),
+    calls: [...new Set(uses.flatMap((h) => events(h).map(callOf)))],
+    first: uses.length ? iso(Math.min(...uses.map((h) => h.time_of_hit))) : null,
+    quarantined: q.length ? iso(Math.min(...q)) : null,
+  };
+}
+
 /**
  * Folds a history export into a recorded entry.
  * [SEC] Reads only time_of_hit, the CloudTrail eventName and whether the user
  * agent is "AWS Internal": the caller's IP, geo and user agent never leave here.
  * AWS attaching its quarantine policy is not a use: it goes to quarantinedAt.
  * An export holds the last 50 hits, so counts never go down and an earlier
- * first use is kept.
+ * first use is kept; `store` adds what earlier syncs saw (lib/canary-store).
  */
-export function foldHits(base: Canary, hits: CanaryHit[]): Canary {
-  const events = (h: CanaryHit) => h.additional_info?.aws_key_log_data?.eventName ?? [];
-  const unique = [...new Map(hits.map((h) => [`${h.time_of_hit}|${events(h).join(',')}`, h])).values()];
-  const internal = (h: CanaryHit) => h.useragent === 'AWS Internal';
-  const uses = unique.filter((h) => !internal(h)).map((h) => h.time_of_hit);
-  const quarantine = unique.filter(internal).map((h) => h.time_of_hit);
+export function foldHits(base: Canary, hits: CanaryHit[], store?: CanaryStore | null): Canary {
+  const all = unique(hits);
+  const uses = all.filter((h) => !internal(h)).map((h) => h.time_of_hit);
+  const quarantine = all.filter(internal).map((h) => h.time_of_hit);
   const earliest = (a: string | null | undefined, b: number[]) => {
     const x = b.length ? iso(Math.min(...b)) : null;
     return a && (!x || a < x) ? a : x;
   };
   // eventName comes from CloudTrail, not the caller; still, only API-shaped names get through.
-  const timeline = unique
+  const timeline = all
     .filter((h) => !internal(h))
     .flatMap((h) => events(h).filter((e) => /^[A-Za-z0-9]{1,64}$/.test(e)).map((name) => ({ at: h.time_of_hit, name })))
     .sort((a, b) => a.at - b.at);
-  const found = new Set([...base.calls, ...unique.filter((h) => !internal(h)).flatMap((h) => events(h).map(callOf))]);
-  const count = Math.max(base.hits ?? 0, uses.length);
-  const quarantinedAt = earliest(base.quarantinedAt, quarantine);
+  const found = new Set([...base.calls, ...(store?.calls ?? []), ...all.filter((h) => !internal(h)).flatMap((h) => events(h).map(callOf))]);
+  const count = Math.max(base.hits ?? 0, uses.length, store?.uses ?? 0);
+  const min = (a: string | null | undefined, b: string | null | undefined) => (a && b ? (a < b ? a : b) : (a ?? b ?? null));
+  const quarantinedAt = min(earliest(base.quarantinedAt, quarantine), store?.quarantined);
   const latest = uses.length ? iso(Math.max(...uses)) : null;
   const lastUseAt = base.lastUseAt && (!latest || base.lastUseAt > latest) ? base.lastUseAt : latest;
   return {
     ...base,
-    firstUseAt: earliest(base.firstUseAt, uses),
+    firstUseAt: min(earliest(base.firstUseAt, uses), store?.first),
     calls: CANARY_CALLS.filter((c) => found.has(c)),
     ...(count ? { hits: count } : {}),
     ...(lastUseAt ? { lastUseAt } : {}),

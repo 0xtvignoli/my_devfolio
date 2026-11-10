@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { callOf, foldHits, type Canary } from './canaries';
+import { callOf, foldHits, hitFacts, type Canary } from './canaries';
 
 describe('callOf', () => {
   test('maps real CloudTrail event names', () => {
@@ -58,5 +58,30 @@ describe('foldHits', () => {
     expect(out.timeline?.map((x) => x.name)).toEqual(['Converse']);
     expect(JSON.stringify(out)).not.toMatch(/203\.0\.113/);
     expect(JSON.stringify(out)).not.toMatch(/botocore/);
+  });
+
+  test('the store counts past the 50 hits canarytokens keeps, and remembers calls that rolled off', () => {
+    const store = { uses: 312, calls: ['email' as const], first: '2026-11-07T17:47:30Z', quarantined: null };
+    const out = foldHits(base, [hit('2026-11-10T10:00:00Z', ['Converse'])], store);
+    expect(out.hits).toBe(312);
+    expect(out.calls).toEqual(['identity', 'ai', 'email']);
+    expect(out.firstUseAt).toBe('2026-11-07T17:47:30Z');
+    expect(foldHits(base, [], null).hits).toBe(55);
+  });
+
+  test('hitFacts: one string per use, the same in every export, and nothing about the caller', () => {
+    const hits = [
+      hit('2026-11-10T10:00:00Z', ['GetCallerIdentity']),
+      hit('2026-11-10T10:00:00Z', ['GetCallerIdentity']),
+      hit('2026-11-10T10:00:05Z', ['ListSecrets', '<script>']),
+      hit('2026-11-10T09:00:00Z', ['AttachUserPolicy'], 'AWS Internal'),
+    ];
+    const facts = hitFacts(hits);
+    expect(facts.uses).toEqual([`${Date.parse('2026-11-10T10:00:00Z') / 1000}|GetCallerIdentity`, `${Date.parse('2026-11-10T10:00:05Z') / 1000}|ListSecrets`]);
+    expect(hitFacts([...hits].reverse()).uses.sort()).toEqual([...facts.uses].sort());
+    expect(facts.calls).toEqual(['identity', 'secrets', 'other']);
+    expect(facts.first).toBe('2026-11-10T10:00:00Z');
+    expect(facts.quarantined).toBe('2026-11-10T09:00:00Z');
+    expect(JSON.stringify(facts)).not.toMatch(/botocore|script/);
   });
 });

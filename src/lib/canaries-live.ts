@@ -1,4 +1,5 @@
-import { CANARIES, foldHits, type Canary, type CanaryHit } from '@/data/canaries';
+import { CANARIES, foldHits, hitFacts, type Canary, type CanaryHit } from '@/data/canaries';
+import { syncCanary } from '@/lib/canary-store';
 
 // canarytokens.org's API mount (frontend/app.py ROOT_API_ENDPOINT), same URL as
 // "Download incident list JSON" on a token's manage page.
@@ -26,15 +27,18 @@ export async function liveCanaries(): Promise<Canary[]> {
     CANARIES.map(async (c) => {
       const [token, auth] = creds.get(c.id)?.split(':') ?? [];
       if (!token || !auth) return c;
+      let hits: CanaryHit[] = [];
       try {
         const url = `${API}?fmt=incidentlist_json&token=${encodeURIComponent(token)}&auth=${encodeURIComponent(auth)}`;
         const res = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(5000) });
-        if (!res.ok) return c;
-        const { hits } = (await res.json()) as { hits?: CanaryHit[] };
-        return Array.isArray(hits) && hits.length ? foldHits(c, hits) : c;
+        const body = res.ok ? ((await res.json()) as { hits?: unknown }) : {};
+        if (Array.isArray(body.hits)) hits = body.hits as CanaryHit[];
       } catch {
-        return c;
+        // canarytokens down: what the store kept still counts
       }
+      // The export only holds the last 50 hits: the store keeps the ones that rolled off.
+      const store = await syncCanary(c.id, hitFacts(hits));
+      return hits.length || store ? foldHits(c, hits, store) : c;
     }),
   );
 }
