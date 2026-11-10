@@ -1,5 +1,18 @@
 # tvignoli.com
 
+<p align="center">
+  <a href="https://github.com/0xtvignoli/my_devfolio/blob/main/package.json"><img alt="Next.js" src="https://img.shields.io/github/package-json/dependency-version/0xtvignoli/my_devfolio/next?logo=nextdotjs&label=Next.js&color=000000"></a>
+  <a href="https://github.com/0xtvignoli/my_devfolio/blob/main/package.json"><img alt="TypeScript" src="https://img.shields.io/github/package-json/dependency-version/0xtvignoli/my_devfolio/dev/typescript?logo=typescript&logoColor=white&label=TypeScript&color=3178c6"></a>
+  <a href="https://bun.sh"><img alt="Bun" src="https://img.shields.io/badge/runtime-Bun-f9f1e1?logo=bun&logoColor=black"></a>
+  <a href="https://github.com/0xtvignoli/my_devfolio/actions/workflows/observatory.yml"><img alt="Observatory refresh" src="https://img.shields.io/github/actions/workflow/status/0xtvignoli/my_devfolio/observatory.yml?branch=main&logo=githubactions&logoColor=white&label=observatory"></a>
+</p>
+
+<p align="center">
+  <a href="https://tvignoli.com"><img alt="Site" src="https://img.shields.io/badge/site-tvignoli.com-1d4ed8?logo=vercel&logoColor=white"></a>
+  <a href="https://tvignoli.com/en/lab"><img alt="Lab" src="https://img.shields.io/badge/Lab-live-c2255c?logo=cloudflare&logoColor=white"></a>
+  <a href="https://tvignoli.com/en/feed.xml"><img alt="RSS" src="https://img.shields.io/badge/RSS-feed-f26522?logo=rss&logoColor=white"></a>
+</p>
+
 My personal site: articles, work, CV, and a **Lab** where I publish what the internet throws at this site and at a few decoy servers I run on purpose.
 
 Next.js 16 (App Router) on Vercel, behind Cloudflare. TypeScript, Tailwind v4, Bun. Every page exists in English and Italian.
