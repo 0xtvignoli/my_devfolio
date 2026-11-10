@@ -18,8 +18,13 @@ export const AI_MODELS = ['llama3', 'llama2', 'deepseek-r1', 'deepseek', 'qwen3'
 export const AI_SIZES = ['small', 'medium', 'large'] as const;
 export const AI_KEYS = ['openai', 'anthropic', 'other'] as const;
 // Lab L2a, one service opened per week: command names from each service's yaml.
-export const PORTS = ['redis'] as const;
-export const PORT_CALLS = ['ping', 'auth', 'info', 'recon', 'config', 'write', 'replicate', 'module', 'lua', 'other'] as const;
+export const PORTS = ['redis', 'docker'] as const;
+export type Port = (typeof PORTS)[number];
+export const PORT_CALLS = {
+  redis: ['ping', 'auth', 'info', 'recon', 'config', 'write', 'replicate', 'module', 'lua', 'other'],
+  docker: ['ping', 'version', 'info', 'list', 'create', 'pull', 'start', 'exec', 'other'],
+} as const satisfies Record<Port, readonly string[]>;
+export type PortCall<P extends Port> = (typeof PORT_CALLS)[P][number];
 export const PASSWORD_KINDS = ['sameAsUser', 'vendorDefault', 'keyboardWalk', 'digitsOnly', 'other'] as const;
 /** Attempted passwords that are also in a public 100k list: first 16 hex of SHA-256, with a count. */
 export type PasswordHash = { h: string; n: number };
@@ -60,16 +65,16 @@ export type Decoys = {
     keys: Counts<(typeof AI_KEYS)[number]>;
   };
   /** Optional: files from before Lab L2a lack it; a port appears once someone (not us) connected. */
-  ports?: Partial<Record<(typeof PORTS)[number], PortStats>>;
+  ports?: { [P in Port]?: PortStats<P> };
   daily: { date: string; ssh: number; http: number; ai?: number }[];
 };
 
-export type PortStats = {
-  /** Connections in the 14-day window. */
+export type PortStats<P extends Port = Port> = {
+  /** Visits in the 14-day window: a TCP connection, or one source address in one UTC day for HTTP. */
   connections: number;
-  calls: Counts<(typeof PORT_CALLS)[number]>;
+  calls: Counts<PortCall<P>>;
   /** The first command of each connection. */
-  firstMoves: Counts<(typeof PORT_CALLS)[number]>;
+  firstMoves: Counts<PortCall<P>>;
   /** The first contacts ever (up to 5), kept past the window: the stopwatch. */
   firstTimes: string[];
 };
@@ -136,10 +141,11 @@ function ports(v: unknown): NonNullable<Decoys['ports']> {
   for (const [k, item] of Object.entries(obj(v))) {
     if (!(PORTS as readonly string[]).includes(k)) throw new Invalid();
     const o = obj(item);
-    out[k as (typeof PORTS)[number]] = {
+    const vocab: readonly string[] = PORT_CALLS[k as Port];
+    out[k as Port] = {
       connections: count(o.connections),
-      calls: counts(o.calls, PORT_CALLS),
-      firstMoves: counts(o.firstMoves, PORT_CALLS),
+      calls: counts(o.calls, vocab),
+      firstMoves: counts(o.firstMoves, vocab),
       firstTimes: stamps(o.firstTimes),
     };
   }
