@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: LabPageProps): Promise<Metada
   const { locale: localeParam } = await params;
   const locale = resolveLocaleParam(localeParam);
   const t = getTranslations(locale);
-  return createPageMetadata({ title: t.lab.title, description: t.lab.intro, path: '/lab', locale });
+  return createPageMetadata({ title: t.lab.title, description: t.lab.metaDescription, path: '/lab', locale });
 }
 
 function H2({ id, children }: { id: string; children: React.ReactNode }) {
@@ -60,7 +60,7 @@ export default async function LabPage({ params }: LabPageProps) {
     <>
       <JsonLd
         data={[
-          buildObservatorySchema({ name: t.lab.title, description: t.lab.intro, path: localizedPath(locale, '/lab'), from: data.from, to: data.to }),
+          buildObservatorySchema({ name: t.lab.title, description: t.lab.metaDescription, path: localizedPath(locale, '/lab'), from: data.from, to: data.to }),
           buildBreadcrumbSchema([
             { name: 'Home', path: localizedPath(locale) },
             { name: t.lab.title, path: localizedPath(locale, '/lab') },
@@ -76,6 +76,15 @@ export default async function LabPage({ params }: LabPageProps) {
           {formatDate(data.from, locale)} — {formatDate(data.to, locale)} · {t.lab.updated}{' '}
           <time dateTime={data.generatedAt}>{formatDate(data.generatedAt.slice(0, 10), locale)}</time>
         </p>
+
+        <aside className="mt-10 max-w-[680px] border-l-2 border-link pl-5">
+          <h2 className="text-sm font-medium uppercase tracking-[0.08em] text-muted-foreground">{t.lab.origin.title}</h2>
+          {t.lab.origin.body.map((line) => (
+            <p key={line} className="mt-3 text-[16px] leading-relaxed text-muted-foreground">
+              {line}
+            </p>
+          ))}
+        </aside>
 
         <dl className="mt-10 grid grid-cols-2 gap-x-5 gap-y-8 border-t border-foreground pt-6 sm:mt-14 sm:gap-x-10 sm:gap-y-10 sm:pt-8 lg:grid-cols-4">
           {stats.map((s) => (

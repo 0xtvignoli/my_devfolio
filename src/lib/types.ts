@@ -151,6 +151,10 @@ export interface Translations {
     jump: { daily: string; trends: string; looking: string; where: string; cases: string; method: string };
     title: string;
     intro: string;
+    /** Search engines: what the Lab is for, in one line. */
+    metaDescription: string;
+    /** Why the Lab exists: the attacks seen on the site, and the teaching goal. */
+    origin: { title: string; body: string[] };
     updated: string;
     stats: { requests: string; hostile: string; stopped: string; maze: string };
     stoppedNote: string;
@@ -261,6 +265,8 @@ export interface Translations {
     kicker: string;
     title: string;
     intro: string;
+    /** Where the name comes from. */
+    nameNote: string;
     stats: { planted: string; used: string; fastest: string };
     /** Shown when a key was used against AI models. */
     lesson: string;
