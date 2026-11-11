@@ -197,7 +197,7 @@ export default async function PortPage({ params }: Props) {
     .filter((k) => calls[k])
     .map((k) => ({ k, n: calls[k]! }))
     .sort((a, b) => b.n - a.n);
-  const never = vocab.filter((k) => k !== 'other' && !calls[k]).map(cmd);
+  const never = vocab.filter((k) => k !== 'other' && k !== 'scan' && !calls[k]).map(cmd);
 
   const others = PORT_DECOYS.filter((p) => p.id !== port);
 

@@ -246,9 +246,9 @@ export const en: Translations = {
     openedAt: "opened: {t}",
     calls: {
       redis: { ping: "PING, anyone there?", auth: "try a password", info: "INFO, which version", recon: "list keys and config", config: "CONFIG SET, change where it saves", write: "write or delete data", replicate: "replicate from their own server", module: "load a module", lua: "run a Lua script", other: "other" },
-      docker: { ping: "_ping, is a daemon there?", version: "which version", info: "what the machine is like", list: "list containers and images", create: "create a container", pull: "pull an image", start: "start a container", exec: "run a command inside", other: "other" },
+      docker: { ping: "_ping, is a daemon there?", version: "which version", info: "what the machine is like", list: "list containers and images", create: "create a container", pull: "pull an image", start: "start a container", exec: "run a command inside", inspect: "look inside a container", remove: "delete a container", scan: "web scanner, doesn't know it's Docker", other: "other" },
       elasticsearch: { info: "which version", health: "cluster status", list: "list the indices", search: "read the data", script: "run code through an old bug", write: "write a document", delete: "delete indices", other: "other" },
-      kubelet: { healthz: "is it alive", pods: "list the pods", run: "run a command in a container", exec: "open a shell in a container", logs: "read the logs", metrics: "read metrics and node data", config: "read the configuration", other: "other" },
+      kubelet: { healthz: "is it alive", pods: "list the pods", run: "run a command in a container", exec: "open a shell in a container", logs: "read the logs", metrics: "read metrics and node data", config: "read the configuration", scan: "web scanner, doesn't know it's a kubelet", other: "other" },
     },
     behindTitle: "What is behind each port",
     behind: [
@@ -354,7 +354,10 @@ export const en: Translations = {
           pull: "pulls an image, sometimes one with a miner already in it",
           start: "starts the container it just created",
           exec: "runs a command in a container that's already running",
-          other: "requests off the list, often wrong paths",
+          inspect: "looks inside a container: their own, just created, or someone else's, hunting for a miner already at work",
+          remove: "stops and deletes a container. Often a rival's miner, sometimes their own tracks",
+          scan: "asks for the home page as if this were any website. It knocks on every port and doesn't know Docker is here",
+          other: "requests off the list",
         },
         fixes: [
           { title: "Never tcp://0.0.0.0:2375", body: "Docker listens on the local socket. If you need it remotely, use 2376 with TLS and client certificates, not 2375." },
@@ -410,6 +413,7 @@ export const en: Translations = {
           logs: "reads container logs, where passwords sometimes end up",
           metrics: "reads metrics and node data",
           config: "reads the kubelet's configuration",
+          scan: "asks for the home page, robots.txt or the icon, as if this were any website. It doesn't know a kubelet is here",
           other: "requests off the list",
         },
         fixes: [

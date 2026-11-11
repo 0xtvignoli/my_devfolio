@@ -225,9 +225,9 @@ export interface Translations {
     openedAt: string;
     calls: {
       redis: Record<'ping' | 'auth' | 'info' | 'recon' | 'config' | 'write' | 'replicate' | 'module' | 'lua' | 'other', string>;
-      docker: Record<'ping' | 'version' | 'info' | 'list' | 'create' | 'pull' | 'start' | 'exec' | 'other', string>;
+      docker: Record<'ping' | 'version' | 'info' | 'list' | 'create' | 'pull' | 'start' | 'exec' | 'inspect' | 'remove' | 'scan' | 'other', string>;
       elasticsearch: Record<'info' | 'health' | 'list' | 'search' | 'script' | 'write' | 'delete' | 'other', string>;
-      kubelet: Record<'healthz' | 'pods' | 'run' | 'exec' | 'logs' | 'metrics' | 'config' | 'other', string>;
+      kubelet: Record<'healthz' | 'pods' | 'run' | 'exec' | 'logs' | 'metrics' | 'config' | 'scan' | 'other', string>;
     };
     behindTitle: string;
     behind: string[];

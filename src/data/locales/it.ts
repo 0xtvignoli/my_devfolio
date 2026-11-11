@@ -246,9 +246,9 @@ export const it: Translations = {
     openedAt: "aperta: {t}",
     calls: {
       redis: { ping: "PING, c'è qualcuno?", auth: "provare una password", info: "INFO, che versione è", recon: "elencare chiavi e configurazione", config: "CONFIG SET, cambiare dove salva", write: "scrivere o cancellare dati", replicate: "farsi replicare da un server loro", module: "caricare un modulo", lua: "eseguire uno script Lua", other: "altro" },
-      docker: { ping: "_ping, c'è un demone?", version: "che versione è", info: "com'è fatta la macchina", list: "elencare container e immagini", create: "creare un container", pull: "scaricare un'immagine", start: "avviare un container", exec: "eseguire un comando dentro", other: "altro" },
+      docker: { ping: "_ping, c'è un demone?", version: "che versione è", info: "com'è fatta la macchina", list: "elencare container e immagini", create: "creare un container", pull: "scaricare un'immagine", start: "avviare un container", exec: "eseguire un comando dentro", inspect: "guardare dentro un container", remove: "cancellare un container", scan: "scanner web, non sa che è Docker", other: "altro" },
       elasticsearch: { info: "che versione è", health: "lo stato del cluster", list: "elencare gli indici", search: "leggere i dati", script: "eseguire codice con una vecchia falla", write: "scrivere un documento", delete: "cancellare indici", other: "altro" },
-      kubelet: { healthz: "se è vivo", pods: "elencare i pod", run: "eseguire un comando in un container", exec: "aprire una shell in un container", logs: "leggere i log", metrics: "leggere metriche e dati del nodo", config: "leggere la configurazione", other: "altro" },
+      kubelet: { healthz: "se è vivo", pods: "elencare i pod", run: "eseguire un comando in un container", exec: "aprire una shell in un container", logs: "leggere i log", metrics: "leggere metriche e dati del nodo", config: "leggere la configurazione", scan: "scanner web, non sa che è un kubelet", other: "altro" },
     },
     behindTitle: "Cosa c'è dietro ogni porta",
     behind: [
@@ -354,7 +354,10 @@ export const it: Translations = {
           pull: "scarica un'immagine, a volte già pronta con un miner",
           start: "avvia il container appena creato",
           exec: "esegue un comando in un container che gira già",
-          other: "richieste fuori lista, spesso percorsi sbagliati",
+          inspect: "guarda dentro un container: il suo, appena creato, o quello di un altro che cerca un miner già al lavoro",
+          remove: "ferma e cancella un container. Spesso è il miner di un concorrente, a volte le proprie tracce",
+          scan: "chiede la pagina principale come a un sito qualsiasi. Bussa a tutte le porte, non sa che qui c'è Docker",
+          other: "richieste fuori lista",
         },
         fixes: [
           { title: "Mai tcp://0.0.0.0:2375", body: "Docker ascolta sul socket locale. Se serve da fuori, si usa la 2376 con TLS e certificati client, non la 2375." },
@@ -410,6 +413,7 @@ export const it: Translations = {
           logs: "legge i log dei container, dove a volte finiscono password",
           metrics: "legge metriche e dati del nodo",
           config: "legge la configurazione del kubelet",
+          scan: "chiede la pagina principale, robots.txt o l'icona, come a un sito qualsiasi. Non sa che qui c'è un kubelet",
           other: "richieste fuori lista",
         },
         fixes: [
