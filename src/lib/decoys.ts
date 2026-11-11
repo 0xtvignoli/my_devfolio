@@ -22,9 +22,9 @@ export const PORTS = ['redis', 'docker', 'elasticsearch', 'kubelet'] as const;
 export type Port = (typeof PORTS)[number];
 export const PORT_CALLS = {
   redis: ['ping', 'auth', 'info', 'recon', 'config', 'write', 'replicate', 'module', 'lua', 'other'],
-  docker: ['ping', 'version', 'info', 'list', 'create', 'pull', 'start', 'exec', 'other'],
+  docker: ['ping', 'version', 'info', 'list', 'create', 'pull', 'start', 'exec', 'inspect', 'remove', 'scan', 'other'],
   elasticsearch: ['info', 'health', 'list', 'search', 'script', 'write', 'delete', 'other'],
-  kubelet: ['healthz', 'pods', 'run', 'exec', 'logs', 'metrics', 'config', 'other'],
+  kubelet: ['healthz', 'pods', 'run', 'exec', 'logs', 'metrics', 'config', 'scan', 'other'],
 } as const satisfies Record<Port, readonly string[]>;
 export type PortCall<P extends Port> = (typeof PORT_CALLS)[P][number];
 export const PASSWORD_KINDS = ['sameAsUser', 'vendorDefault', 'keyboardWalk', 'digitsOnly', 'other'] as const;
