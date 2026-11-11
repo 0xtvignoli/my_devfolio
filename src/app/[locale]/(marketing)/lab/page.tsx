@@ -169,6 +169,11 @@ export default async function LabPage({ params }: LabPageProps) {
               {t.lab.statusLink}
             </Link>
           </p>
+          <p className="mt-6">
+            <Link className="text-link underline-offset-4 hover:underline" href={localizedPath(locale, '/lab/homelab')}>
+              {t.lab.homelabLink}
+            </Link>
+          </p>
         </div>
       </section>
     </>
