@@ -189,6 +189,7 @@ export interface Translations {
       subjects: Record<'secrets' | 'cms' | 'admin' | 'traversal' | 'app-exploit' | 'other', string>;
     };
     statusLink: string;
+    homelabLink: string;
   };
   aiDecoy: {
     kicker: string;
@@ -439,6 +440,16 @@ export interface Translations {
     data: string;
     dataFresh: string;
     dataStale: string;
+  };
+  homelab: {
+    kicker: string;
+    title: string;
+    intro: string;
+    diagram: { internet: string; router: string; routerNote: string; edge: string; edgeNote: string; data: string; dataNote: string; footer: string };
+    practices: { title: string; body: string }[];
+    note: string;
+    readTitle: string;
+    projectLink: string;
   };
 }
 
