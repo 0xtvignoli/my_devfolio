@@ -12,6 +12,12 @@ updates:
       # typescript-eslint supporta TypeScript < 6.1: niente major finché non lo supporta.
       - dependency-name: typescript
         update-types: [version-update:semver-major, version-update:semver-minor]
+      # eslint-plugin-react/import/jsx-a11y (via eslint-config-next) dichiarano peer eslint <=9.
+      - dependency-name: eslint
+        update-types: [version-update:semver-major]
+      # I tipi seguono il runtime Node di Vercel, non l'ultima major.
+      - dependency-name: "@types/node"
+        update-types: [version-update:semver-major]
   - package-ecosystem: github-actions
     directory: /
     target-branch: develop   # main riceve solo merge da develop
