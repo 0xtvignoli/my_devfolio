@@ -609,7 +609,7 @@ export const it: Translations = {
       burstTitle: "L'ultimo giro: {n} chiamate in {d}",
       burstIntro: "Il giro più recente da vicino: chiamate a meno di un minuto l'una dall'altra, una riga per tipo. Se gli stessi gruppi si ripetono identici, dall'altra parte c'è un programma con una lista, non una persona.",
       replay: { play: "Riproduci il giro", stop: "Ferma", speed: "Velocità", counter: "{n} di {total} chiamate" },
-      burstCaption: "Il {t}. Passa sopra un punto per il nome della chiamata; le chiamate recenti sono anche nella tabella qui sotto.",
+      burstCaption: "Il {t}. Un punto più grande sono più chiamate nello stesso secondo. Passa sopra un punto per il nome della chiamata; le chiamate recenti sono anche nella tabella qui sotto.",
       callsTitle: "Le chiamate, tradotte",
       callsIntro: "Il nome è quello che registra AWS. Le ultime chiamate, quelle che canarytokens conserva.",
       table: { call: "Chiamata", what: "Cosa chiede ad AWS", kind: "Tipo", count: "Volte" },
