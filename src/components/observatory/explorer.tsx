@@ -94,7 +94,7 @@ export function ObservatoryExplorer({
           {chips.map((c) => chip(c, label(c)))}
         </div>
         <p aria-live="polite" className="mb-4 font-mono text-[13px] text-muted-foreground">
-          {cat ? t.filterSummary.replace('{part}', nf.format(share)).replace('{total}', nf.format(data.totals.hostile)) : ' '}
+          {cat ? t.filterSummary.replace('{part}', nf.format(share)).replace('{total}', nf.format(data.totals.hostile)).replace('{d}', String(data.daily.length)) : ' '}
         </p>
         <DailyChart
           daily={data.daily}
