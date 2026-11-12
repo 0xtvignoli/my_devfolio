@@ -141,7 +141,7 @@ export default async function CanaryPage({ params }: Props) {
   const t0 = timeline[0]?.at ?? 0;
   const dur = Math.max(1, (timeline.at(-1)?.at ?? 0) - t0);
   const hms = (sec: number) => new Intl.DateTimeFormat(tag, { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Europe/Rome' }).format(new Date(sec * 1000));
-  // Calls of one kind in the same second share a dot, with the count beside it.
+  // Calls of one kind in the same second share a dot, bigger the more there are.
   const lanes = CANARY_CALLS.map((k) => {
     const bySecond = new Map<number, { at: number; names: string[] }>();
     for (const e of timeline.filter((e) => callOf(e.name) === k)) {
@@ -230,13 +230,11 @@ export default async function CanaryPage({ params }: Props) {
                         key={e.at}
                         data-at={e.at - t0}
                         data-n={e.names.length}
-                        title={`${[...new Set(e.names)].join(', ')} · ${hms(e.at)}`}
-                        className="absolute top-[9px] -ml-[5px] flex items-center gap-1"
-                        style={{ left: `${((e.at - t0) / dur) * 100}%` }}
-                      >
-                        <span className="size-2.5 rounded-full bg-link ring-2 ring-background" />
-                        {e.names.length > 1 && <span className="font-mono text-[11px] leading-none text-muted-foreground">×{e.names.length}</span>}
-                      </span>
+                        title={`${e.names.length > 1 ? `${e.names.length}× ` : ''}${[...new Set(e.names)].join(', ')} · ${hms(e.at)}`}
+                        className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-link ring-2 ring-background"
+                        // Several calls in one second: a bigger dot, not a label that collides with its neighbours.
+                        style={{ left: `${((e.at - t0) / dur) * 100}%`, width: Math.min(18, 8 + 3 * e.names.length), height: Math.min(18, 8 + 3 * e.names.length) }}
+                      />
                     ))}
                   </div>
                 </div>

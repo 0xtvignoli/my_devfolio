@@ -608,7 +608,7 @@ export const en: Translations = {
       burstTitle: "The latest run: {n} calls in {d}",
       burstIntro: "The most recent run up close: calls less than a minute apart, one row per kind. When the same groups repeat identically, there's a program with a list on the other side, not a person.",
       replay: { play: "Replay the run", stop: "Stop", speed: "Speed", counter: "{n} of {total} calls" },
-      burstCaption: "On {t}. Hover a dot for the call name; recent calls are also in the table below.",
+      burstCaption: "On {t}. A bigger dot is several calls in the same second. Hover a dot for the call name; recent calls are also in the table below.",
       callsTitle: "The calls, translated",
       callsIntro: "The name is the one AWS records. These are the latest calls, the ones canarytokens keeps.",
       table: { call: "Call", what: "What it asks AWS", kind: "Kind", count: "Times" },
