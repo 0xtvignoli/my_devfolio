@@ -39,6 +39,9 @@ export type Canary = {
   calls: CanaryCall[];
   /** Calls recorded on the key so far. */
   hits?: number;
+  /** Live only: hits per UTC day and the syncs that missed some (CanaryStore). */
+  daily?: Record<string, number>;
+  gaps?: number;
   /** ISO UTC when AWS itself attached its quarantine policy (key reported by GitHub secret scanning). */
   quarantinedAt?: string;
   /** The channel refused the key (e.g. GitHub push protection): that is the result. */
@@ -63,7 +66,16 @@ export type CanaryHit = {
 const iso = (s: number) => new Date(s * 1000).toISOString().replace(/\.\d+Z$/, 'Z');
 
 /** What lib/canary-store keeps across syncs: canarytokens.org forgets everything past a key's last 50 hits. */
-export type CanaryStore = { uses: number; calls: CanaryCall[]; first: string | null; quarantined: string | null };
+export type CanaryStore = {
+  uses: number;
+  calls: CanaryCall[];
+  first: string | null;
+  quarantined: string | null;
+  /** Hits per UTC day ('2026-11-12' → 41), from every sync since the store started. */
+  daily: Record<string, number>;
+  /** Times more than 50 hits came between two syncs: the ones in between were never seen. */
+  gaps: number;
+};
 
 const events = (h: CanaryHit) => h.additional_info?.aws_key_log_data?.eventName ?? [];
 const internal = (h: CanaryHit) => h.useragent === 'AWS Internal';
@@ -120,6 +132,8 @@ export function foldHits(base: Canary, hits: CanaryHit[], store?: CanaryStore | 
     ...(count ? { hits: count } : {}),
     ...(lastUseAt ? { lastUseAt } : {}),
     ...(timeline.length ? { timeline } : {}),
+    ...(store && Object.keys(store.daily).length ? { daily: store.daily } : {}),
+    ...(store?.gaps ? { gaps: store.gaps } : {}),
     ...(quarantinedAt ? { quarantinedAt } : {}),
   };
 }
