@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ArticleRow } from '@/components/shared/article-row';
 import { getArticle, HOMELAB_SERIES } from '@/data/content/articles';
 import { getTranslations, resolveLocaleParam } from '@/lib/i18n/server';
+import { LabNav } from '@/components/shared/lab-nav';
 import { localizedPath } from '@/lib/i18n/paths';
 import { createPageMetadata } from '@/lib/seo/metadata';
 import type { Locale } from '@/lib/types';
@@ -84,6 +85,7 @@ export default async function HomelabPage({ params }: Props) {
           {t.projectLink}
         </Link>
       </p>
+      <LabNav current="homelab" locale={locale} />
     </section>
   );
 }

@@ -16,8 +16,16 @@ test('locale switcher links to the same page in the other language', async ({ pa
   await expect(page.getByRole('heading', { level: 1, name: 'Lavori' })).toBeVisible();
 });
 
-test('observatory renders real aggregates and the case studies', async ({ page }) => {
+test('the lab index lists every experiment and each one links on', async ({ page }) => {
   await page.goto('/en/lab');
+  await expect(page.getByRole('heading', { level: 1, name: 'The Lab' })).toBeVisible();
+  await expect(page.locator('ol > li a[href^="/en/lab/"]')).toHaveCount(9);
+  await page.goto('/en/lab/decoys/ports');
+  await expect(page.getByRole('navigation', { name: 'Lab experiments' }).getByRole('link', { name: /next.*An AI server left open/ })).toBeVisible();
+});
+
+test('observatory renders real aggregates and the case studies', async ({ page }) => {
+  await page.goto('/en/lab/observatory');
   await expect(page.getByRole('heading', { level: 1, name: 'Observatory' })).toBeVisible();
   // The four headline figures are numbers, not placeholders.
   await expect(page.locator('dl dd').first()).toHaveText(/^\d[\d,.]*/);
@@ -30,7 +38,7 @@ test('observatory renders real aggregates and the case studies', async ({ page }
 });
 
 test('removed experiments redirect to the lab', async ({ request }) => {
-  for (const path of ['/en/dashboard', '/en/live', '/it/shell']) {
+  for (const path of ['/en/dashboard', '/en/live', '/it/shell', '/it/lab/decoys']) {
     const response = await request.get(path, { maxRedirects: 0 });
     expect(response.status(), path).toBe(308);
     expect(response.headers()['location']).toMatch(/\/(en|it)\/lab$/);

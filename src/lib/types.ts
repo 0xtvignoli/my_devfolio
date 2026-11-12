@@ -215,7 +215,6 @@ export interface Translations {
     neverTitle: string;
     never: string[];
     note: string;
-    back: string;
   };
   portsDecoy: {
     kicker: string;
@@ -235,7 +234,6 @@ export interface Translations {
     behindTitle: string;
     behind: string[];
     note: string;
-    back: string;
     /** One line under each port's name in the list: what visitors are after. */
     teasers: Record<'redis' | 'docker' | 'elasticsearch' | 'kubelet', string>;
     detail: {
@@ -328,7 +326,6 @@ export interface Translations {
     howTitle: string;
     how: string[];
     empty: string;
-    back: string;
   };
   canaries: {
     kicker: string;
@@ -341,6 +338,7 @@ export interface Translations {
     lesson: string;
     channelsTitle: string;
     channels: Record<'decoy-env' | 'html-comment' | 'robots' | 'docker' | 'github', { name: string; short: string; seenBy: string }>;
+    guess: import('@/components/shared/guess-gate').GuessStrings;
     calls: Record<'identity' | 'secrets' | 'ai' | 'email' | 'data' | 'compute' | 'network' | 'iam' | 'account' | 'other', string>;
     /** Contains {n}. */
     callsCount: string;
@@ -372,6 +370,7 @@ export interface Translations {
       burstTitle: string;
       burstIntro: string;
       burstCaption: string;
+      replay: { play: string; stop: string; speed: string; counter: string };
       callsTitle: string;
       callsIntro: string;
       table: { call: string; what: string; kind: string; count: string };
@@ -404,7 +403,6 @@ export interface Translations {
     howTitle: string;
     how: string[];
     updated: string;
-    back: string;
   };
   passwords: {
     kicker: string;
@@ -428,7 +426,6 @@ export interface Translations {
     kinds: { sameAsUser: string; vendorDefault: string; keyboardWalk: string; digitsOnly: string; other: string };
     howTitle: string;
     how: string[];
-    back: string;
   };
   status: {
     kicker: string;
@@ -448,6 +445,36 @@ export interface Translations {
     data: string;
     dataFresh: string;
     dataStale: string;
+  };
+  labIndex: {
+    kicker: string;
+    title: string;
+    intro: string;
+    navLabel: string;
+    prev: string;
+    next: string;
+    index: string;
+    all: string;
+    groups: { watch: string; decoys: string; you: string; behind: string };
+    cadence: { nightly: string; fiveMin: string; hourly: string; quarterHour: string; static: string };
+    waiting: string;
+    items: Record<'observatory' | 'canaries' | 'ports' | 'ai' | 'compare' | 'exposed' | 'passwords' | 'homelab' | 'status', { title: string; question: string; unit?: string }>;
+  };
+  exposed: {
+    kicker: string;
+    title: string;
+    intro: string;
+    sim: import('@/components/shared/exposed-sim').ExposedStrings;
+    firstMove: string;
+    topCall: string;
+    items: Record<
+      'decoy-env' | 'html-comment' | 'robots' | 'docker' | 'github' | 'port-redis' | 'port-docker' | 'port-elasticsearch' | 'port-kubelet' | 'ollama',
+      { label: string; fix: string }
+    >;
+    sourceTitle: string;
+    source: string[];
+    rulesTitle: string;
+    rules: string[];
   };
   homelab: {
     kicker: string;

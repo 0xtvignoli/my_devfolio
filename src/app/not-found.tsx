@@ -40,7 +40,7 @@ export default async function NotFound() {
         <p className="mt-9 flex flex-wrap gap-x-7 font-medium">
           <Link href={localizedPath(locale)} className="border-b border-foreground py-2">cd ~ →</Link>
           <Link href={localizedPath(locale, '/articles')} className="py-2 text-muted-foreground hover:text-foreground">{n.writing}</Link>
-          <Link href={localizedPath(locale, '/lab')} className="py-2 text-muted-foreground hover:text-foreground">{n.observatory}</Link>
+          <Link href={localizedPath(locale, '/lab/observatory')} className="py-2 text-muted-foreground hover:text-foreground">{n.observatory}</Link>
         </p>
       </main>
       <Footer locale={locale} />

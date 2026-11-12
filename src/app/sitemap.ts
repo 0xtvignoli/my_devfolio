@@ -6,7 +6,7 @@ import { localizedPath } from '@/lib/i18n/paths';
 import { SITE_URL } from '@/lib/seo/constants';
 
 const STATIC_PATHS = [
-  '', '/portfolio', '/lab', '/lab/passwords', '/lab/decoys/canaries', '/lab/decoys/ai', '/lab/decoys/ports', '/lab/status', '/lab/homelab', '/lab/compare', '/experience', '/articles', '/cv',
+  '', '/portfolio', '/lab', '/lab/observatory', '/lab/passwords', '/lab/decoys/canaries', '/lab/decoys/ai', '/lab/decoys/ports', '/lab/status', '/lab/homelab', '/lab/compare', '/lab/exposed', '/experience', '/articles', '/cv',
   ...CANARY_CHANNELS.map((c) => `/lab/decoys/canaries/${c}`),
 ];
 
@@ -26,7 +26,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const staticEntries: MetadataRoute.Sitemap = SUPPORTED_LOCALES.flatMap((locale) =>
     STATIC_PATHS.map((path) => ({
       url: `${SITE_URL}${localizedPath(locale, path || '/')}`,
-      changeFrequency: path === '/lab' ? ('daily' as const) : ('weekly' as const),
+      changeFrequency: path === '/lab' || path === '/lab/observatory' ? ('daily' as const) : ('weekly' as const),
       priority: path === '' ? 1 : path === '/portfolio' || path === '/lab' ? 0.9 : 0.8,
       alternates: {
         languages: hreflangAlternates(path || '/'),
