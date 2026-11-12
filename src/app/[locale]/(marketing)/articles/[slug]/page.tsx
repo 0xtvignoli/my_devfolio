@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Article as ArticleType, Locale } from '@/lib/types';
-import { getArticle, getArticleSlugs, getRelatedArticles } from '@/data/content/articles';
+import { getArticle, getArticleSlugs, getRelatedArticles, HOMELAB_SERIES } from '@/data/content/articles';
 import { CodeBlock } from '@/components/shared/code-block';
 import { CaseStudySummary } from '@/components/shared/case-study-summary';
 import { InlineText } from '@/components/shared/inline-text';
@@ -128,6 +128,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const articlePath = localizedPath(locale, `/articles/${slug}`);
   const related = getRelatedArticles(slug, locale);
   const { idByIndex, toc } = outline(article);
+  const part = HOMELAB_SERIES.indexOf(slug);
+  const series = part < 0 ? [] : HOMELAB_SERIES.map((s) => getArticle(s, locale)).filter((a) => a !== undefined);
   // A short article needs no map.
   const showToc = toc.length >= 3;
 
@@ -170,6 +172,30 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           <time dateTime={article.date} className="font-mono text-[13px]">{formatDate(article.date, locale)}</time>
           <span>{readingMinutes(article)} {t.article.minRead}</span>
         </p>
+        {series.length > 0 && (
+          <nav aria-labelledby="series-heading" className="mt-8 bg-muted px-5 py-4 text-[15px]">
+            <h2 id="series-heading" className="text-sm text-muted-foreground">
+              <Link href={localizedPath(locale, '/lab/homelab')} className="font-medium text-link underline-offset-4 hover:underline">
+                {t.article.series}
+              </Link>
+              {' · '}
+              {t.article.seriesPart.replace('{n}', String(part + 1)).replace('{total}', String(series.length))}
+            </h2>
+            <ol className="mt-2 list-decimal space-y-1 pl-5">
+              {series.map((item) => (
+                <li key={item.slug}>
+                  {item.slug === slug ? (
+                    <span aria-current="page" className="font-medium">{item.title}</span>
+                  ) : (
+                    <Link href={localizedPath(locale, `/articles/${item.slug}`)} className="underline-offset-4 hover:underline">
+                      {item.title}
+                    </Link>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </nav>
+        )}
         {article.caseStudy && <CaseStudySummary caseStudy={article.caseStudy} timelineLabel={t.article.timeline} />}
         {showToc && (
           <div className="lg:hidden">
