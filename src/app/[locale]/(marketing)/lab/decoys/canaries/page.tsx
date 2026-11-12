@@ -6,6 +6,7 @@ import { formatDuration } from '@/lib/duration';
 import { formatDate } from '@/lib/format-date';
 import { getTranslations, resolveLocaleParam } from '@/lib/i18n/server';
 import { LabNav } from '@/components/shared/lab-nav';
+import { GuessGate } from '@/components/shared/guess-gate';
 import { localizedPath } from '@/lib/i18n/paths';
 import { createPageMetadata } from '@/lib/seo/metadata';
 import { cn } from '@/lib/utils';
@@ -58,6 +59,11 @@ export default async function CanariesPage({ params }: Props) {
       <p className="mt-6 max-w-[680px] text-[19px] text-muted-foreground">{c.intro}</p>
       <p className="mt-4 max-w-[680px] text-[15px] text-muted-foreground">{c.nameNote}</p>
 
+      <GuessGate
+        locale={locale}
+        t={c.guess}
+        rows={planted.filter((x) => !x.blocked).map((x) => ({ id: x.id, label: c.channels[x.id].short, realMs: x.firstUseAt ? wait(x, now) : null, waitedMs: wait(x, now)! }))}
+      >
       <dl className="mt-12 grid grid-cols-3 gap-x-5 border-y border-y-border border-t-foreground py-6 sm:gap-x-10">
         {stats.map((s) => (
           <div key={s.label} className="flex flex-col">
@@ -137,6 +143,7 @@ export default async function CanariesPage({ params }: Props) {
           </div>
         </section>
       )}
+      </GuessGate>
 
       <section aria-labelledby="how-heading" className="mt-16 bg-muted p-6 sm:p-10">
         <h2 id="how-heading" className="font-serif text-[26px] font-medium">{c.howTitle}</h2>

@@ -338,6 +338,7 @@ export interface Translations {
     lesson: string;
     channelsTitle: string;
     channels: Record<'decoy-env' | 'html-comment' | 'robots' | 'docker' | 'github', { name: string; short: string; seenBy: string }>;
+    guess: import('@/components/shared/guess-gate').GuessStrings;
     calls: Record<'identity' | 'secrets' | 'ai' | 'email' | 'data' | 'compute' | 'network' | 'iam' | 'account' | 'other', string>;
     /** Contains {n}. */
     callsCount: string;
@@ -369,6 +370,7 @@ export interface Translations {
       burstTitle: string;
       burstIntro: string;
       burstCaption: string;
+      replay: { play: string; stop: string; speed: string; counter: string };
       callsTitle: string;
       callsIntro: string;
       table: { call: string; what: string; kind: string; count: string };
