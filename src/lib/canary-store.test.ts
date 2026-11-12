@@ -22,8 +22,8 @@ const T2 = Date.parse('2026-11-12T08:00:00Z') / 1000 + 0.5;
 
 test('new hits go in scored by time; only the days they touch are recounted', async () => {
   const sent = fakeStore([
-    // ZRANGE, ZADD, SADD, SET, ZCARD, SMEMBERS, GET, GET, HGETALL, GET gaps, EXISTS uses
-    [[`${T1 - 60}|X`, String(T1 - 60)], 2, 1, 'OK', 412, ['ai', 'evil'], '2026-11-07T05:20:02Z', '<b>', ['2026-11-10', '7', 'evil', '1'], null, 0],
+    // ZRANGE, ZADD, SADD, SET, ZCARD, SMEMBERS, GET, GET, HGETALL
+    [[`${T1 - 60}|X`, String(T1 - 60)], 2, 1, 'OK', 412, ['ai', 'evil'], '2026-11-07T05:20:02Z', '<b>', ['2026-11-10', '7', 'evil', '1']],
     [40, 3, 413], // ZCOUNT 11 nov, ZCOUNT 12 nov, ZCARD
     [2], // HSET
   ]);
@@ -43,7 +43,7 @@ test('new hits go in scored by time; only the days they touch are recounted', as
 });
 
 test('nothing new: one pipeline, no recount', async () => {
-  const sent = fakeStore([[[`${T2}|X`, String(T2)], 0, 1, [], null, null, ['2026-11-12', '3'], null, 0]]);
+  const sent = fakeStore([[[`${T2}|X`, String(T2)], 0, 1, [], null, null, ['2026-11-12', '3']]]);
   const { syncCanary } = await import('./canary-store');
   const out = await syncCanary('docker', { uses: [`${T2}|X`], calls: [], first: null, quarantined: null });
   expect(sent).toHaveLength(1);
@@ -52,16 +52,16 @@ test('nothing new: one pipeline, no recount', async () => {
 
 test('a full export newer than everything kept is counted as a gap', async () => {
   const uses = Array.from({ length: 50 }, (_, i) => `${T2 + i}|ListUsers`);
-  const sent = fakeStore([[[`x`, String(T1)], 50, 100, [], null, null, ['2026-11-12', '50'], '2', 0], [100, 150], ['OK', 3]]);
+  const sent = fakeStore([[[`x`, String(T1)], 50, 100, [], null, null, ['2026-11-12', '50', 'gaps', '2']], [100, 150], [0, 3]]);
   const { syncCanary } = await import('./canary-store');
   const out = await syncCanary('html-comment', { uses, calls: [], first: null, quarantined: null });
-  expect(sent[2]).toEqual([['HSET', 'canary:html-comment:daily', '2026-11-12', 100], ['INCR', 'canary:html-comment:gaps']]);
+  expect(sent[2]).toEqual([['HSET', 'canary:html-comment:daily', '2026-11-12', 100], ['HINCRBY', 'canary:html-comment:daily', 'gaps', 1]]);
   expect(out?.gaps).toBe(3);
 });
 
 test('the old plain set moves into the sorted set once, then goes', async () => {
   const sent = fakeStore([
-    [[], 0, [], null, null, [], null, 1],
+    [[], 0, [], null, null, []],
     [[`${T1}|A`, `${T2}|B`, 'junk']],
     [2, 1, 1, 2],
     [2, 1],

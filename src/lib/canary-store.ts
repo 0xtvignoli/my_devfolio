@@ -5,7 +5,7 @@ import { CANARY_CALLS, CANARY_CHANNELS, type CanaryCall, type CanaryChannelId, t
  * the page alone can't count past 50. Every sync adds what it sees to Upstash Redis, as
  * set members: a hit seen by two syncs counts once, and two syncs at the same time can't double
  * count. Upstash's REST API, so no client dependency.
- * Budget (Upstash Free, ~500k commands a month): the sync runs every 5 minutes (~45 commands, a few
+ * Budget (Upstash Free, ~500k commands a month): the sync runs every 5 minutes (~50 commands, a few
  * more when there are new hits) and leaves one summary key; pages read only that key, one GET per
  * regeneration (~50k a month at most).
  * [SEC] Only hit times and CloudTrail call names go in (hitFacts): never IP, geo or user agent.
@@ -38,6 +38,12 @@ const MAX_HISTORY = 50;
 const scoreOf = (use: string) => Number(use.split('|')[0]);
 const dayOf = (sec: number) => new Date(sec * 1000).toISOString().slice(0, 10);
 const nat = (v: unknown) => (typeof v === 'number' && Number.isInteger(v) && v >= 0 ? v : 0);
+
+function readGaps(v: unknown): number {
+  if (!Array.isArray(v)) return 0;
+  const i = v.indexOf('gaps');
+  return i % 2 === 0 ? nat(Number(v[i + 1])) : 0;
+}
 
 /** Upstash returns HGETALL as [field, value, …]; only day → count pairs get through. */
 function readDaily(v: unknown): Record<string, number> {
@@ -73,17 +79,16 @@ export async function syncCanary(id: CanaryChannelId, facts: ReturnType<typeof h
     ['SMEMBERS', key('calls')],
     ['GET', key('first')],
     ['GET', key('quarantined')],
+    // Day → count, plus a "gaps" field: one key, one read.
     ['HGETALL', key('daily')],
-    ['GET', key('gaps')],
-    ['EXISTS', key('uses')],
   ]);
   if (!out) return null;
   const [newest, ...rest] = out;
   const added = uses.length ? nat(rest[0]) : 0;
-  const [total, calls, first, quarantined, dailyRaw, gapsRaw, legacy] = rest.slice(writes.length);
+  const [total, calls, first, quarantined, dailyRaw] = rest.slice(writes.length);
   let count = nat(total);
   const daily = readDaily(dailyRaw);
-  let gaps = Number(gapsRaw) || 0;
+  let gaps = readGaps(dailyRaw);
   const touched = new Set(added ? uses.map((u) => dayOf(scoreOf(u))) : []);
 
   // A full export that starts after the newest hit already kept: more than 50 calls came
@@ -92,10 +97,13 @@ export async function syncCanary(id: CanaryChannelId, facts: ReturnType<typeof h
   const gap = uses.length >= MAX_HISTORY && Number.isFinite(last) && Math.min(...uses.map(scoreOf)) > last;
 
   // One-off: hits kept as a plain set before the daily counts existed move into the sorted set.
+  // Only while the daily hash is empty, so a key nobody has used yet pays one SMEMBERS a sync.
   // ponytail: dead once every canary:*:uses key is gone; drop this branch after 2026-12-31.
   const moves: (string | number)[][] = [];
-  if (legacy === 1) {
+  let legacy = false;
+  if (!Object.keys(daily).length) {
     const old = await pipeline([['SMEMBERS', key('uses')]]);
+    legacy = Array.isArray(old?.[0]) && old[0].length > 0;
     const members = Array.isArray(old?.[0]) ? (old[0] as unknown[]).filter((m): m is string => typeof m === 'string' && Number.isFinite(scoreOf(m))) : [];
     if (members.length) moves.push(['ZADD', key('times'), 'NX', ...members.flatMap((m) => [scoreOf(m), m])]);
     for (const m of members) touched.add(dayOf(scoreOf(m)));
@@ -111,9 +119,9 @@ export async function syncCanary(id: CanaryChannelId, facts: ReturnType<typeof h
     count = nat(n.at(-1));
     const save: (string | number)[][] = [];
     if (days.length) save.push(['HSET', key('daily'), ...days.flatMap((d) => [d, daily[d]])]);
-    if (gap) save.push(['INCR', key('gaps')]);
+    if (gap) save.push(['HINCRBY', key('daily'), 'gaps', 1]);
     // The old set goes only once its hits are counted in the daily hash.
-    if (moves.length || legacy === 1) save.push(['DEL', key('uses')]);
+    if (legacy) save.push(['DEL', key('uses')]);
     if (save.length && !(await pipeline(save))) return null;
     if (gap) gaps += 1;
   }
