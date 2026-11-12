@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { CANARY_CALLS, CANARY_CHANNELS, callOf, type Canary, type CanaryChannelId } from '@/data/canaries';
 import { CANARY_SNIPPETS } from '@/data/canary-snippets';
 import { CanaryHistory, type HistoryView } from '@/components/shared/canary-history';
+import { BurstReplay } from '@/components/shared/burst-replay';
 import { periods, type PeriodUnit } from '@/lib/canary-periods';
 import { liveCanaries } from '@/lib/canaries-live';
 import { position, wait } from '@/lib/canary-time';
@@ -215,6 +216,7 @@ export default async function CanaryPage({ params }: Props) {
         <section aria-labelledby="burst-heading" className="mt-12">
           <H2 id="burst-heading">{d.burstTitle.replace('{n}', nf.format(timeline.length)).replace('{d}', span(dur, locale))}</H2>
           <p className="mt-3 max-w-[680px] text-muted-foreground">{d.burstIntro}</p>
+          <BurstReplay seconds={dur} total={timeline.length} t={d.replay}>
           <figure className="mt-8" aria-hidden>
             <div className="flex flex-col gap-1.5">
               {lanes.map((l) => (
@@ -226,6 +228,8 @@ export default async function CanaryPage({ params }: Props) {
                     {l.dots.map((e) => (
                       <span
                         key={e.at}
+                        data-at={e.at - t0}
+                        data-n={e.names.length}
                         title={`${[...new Set(e.names)].join(', ')} · ${hms(e.at)}`}
                         className="absolute top-[9px] -ml-[5px] flex items-center gap-1"
                         style={{ left: `${((e.at - t0) / dur) * 100}%` }}
@@ -245,6 +249,7 @@ export default async function CanaryPage({ params }: Props) {
             </div>
             <figcaption className="mt-3 text-sm text-muted-foreground">{d.burstCaption.replace('{t}', clock(t0))}</figcaption>
           </figure>
+          </BurstReplay>
         </section>
       )}
 

@@ -4,7 +4,6 @@ import { CANARIES, foldHits } from '@/data/canaries';
 import { DECOY_OPENED, PORT_DECOYS, firstContact } from '@/data/decoy-ports';
 import { LAB_EXPERIMENTS, type LabKey } from '@/data/lab';
 import { JsonLd } from '@/components/seo/json-ld';
-import { wait } from '@/lib/canary-time';
 import { readSummary } from '@/lib/canary-store';
 import { liveDecoys } from '@/lib/decoys-data';
 import { PORTS } from '@/lib/decoys';
@@ -48,16 +47,13 @@ export default async function LabIndexPage({ params }: Props) {
   const all = getTranslations(locale);
   const t = all.labIndex;
   const nf = new Intl.NumberFormat(locale === 'it' ? 'it-IT' : 'en-GB');
-  // eslint-disable-next-line react-hooks/purity -- server render, once per revalidation
-  const now = Date.now();
   const observatory = observatoryData as Observatory;
   const [summary, decoys] = await Promise.all([readSummary(), liveDecoys()]);
   const dur = (ms: number) => formatDuration(ms, locale);
 
-  // The fastest first use among the keys, as on the canaries page.
-  const keys = CANARIES.map((c) => foldHits(c, [], summary[c.id]));
-  const usedKeys = keys.filter((k) => k.firstUseAt).map((k) => ({ id: k.id, ms: wait(k, now)! }));
-  const fastestKey = usedKeys.sort((a, b) => a.ms - b.ms)[0];
+  // How many keys were used, not how fast: the canaries page asks visitors to guess the times first.
+  const keys = CANARIES.map((c) => foldHits(c, [], summary[c.id])).filter((k) => k.plantedAt && !k.blocked);
+  const usedKeys = keys.filter((k) => k.firstUseAt).length;
 
   // The fastest first contact among the open ports, as on the ports page.
   const portTimes = PORTS.flatMap((p) => {
@@ -71,9 +67,7 @@ export default async function LabIndexPage({ params }: Props) {
 
   const value: Partial<Record<LabKey, { value: string; unit: string }>> = {
     observatory: { value: nf.format(observatory.totals.hostile), unit: t.items.observatory.unit!.replace('{d}', String(days)) },
-    ...(fastestKey && {
-      canaries: { value: dur(fastestKey.ms), unit: t.items.canaries.unit!.replace('{where}', all.canaries.channels[fastestKey.id].short) },
-    }),
+    canaries: { value: `${usedKeys} / ${keys.length}`, unit: t.items.canaries.unit! },
     ...(portTimes[0] && {
       ports: { value: dur(portTimes[0].ms), unit: t.items.ports.unit!.replace('{where}', PORT_DECOYS.find((d) => d.id === portTimes[0].p)?.name ?? portTimes[0].p) },
     }),
