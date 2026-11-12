@@ -78,15 +78,6 @@ export default async function LabPage({ params }: LabPageProps) {
           <time dateTime={data.generatedAt}>{formatDate(data.generatedAt.slice(0, 10), locale)}</time>
         </p>
 
-        <aside className="mt-10 max-w-[680px] border-l-2 border-link pl-5">
-          <h2 className="text-sm font-medium uppercase tracking-[0.08em] text-muted-foreground">{t.lab.origin.title}</h2>
-          {t.lab.origin.body.map((line) => (
-            <p key={line} className="mt-3 text-[16px] leading-relaxed text-muted-foreground">
-              {line}
-            </p>
-          ))}
-        </aside>
-
         <dl className="mt-10 grid grid-cols-2 gap-x-5 gap-y-8 border-t border-foreground pt-6 sm:mt-14 sm:gap-x-10 sm:gap-y-10 sm:pt-8 lg:grid-cols-4">
           {stats.map((s) => (
             <div key={s.label} className="flex flex-col">
@@ -99,6 +90,15 @@ export default async function LabPage({ params }: LabPageProps) {
             </div>
           ))}
         </dl>
+
+        <aside className="mt-12 max-w-[680px] border-l-2 border-link pl-5">
+          <h2 className="text-sm font-medium uppercase tracking-[0.08em] text-muted-foreground">{t.lab.origin.title}</h2>
+          {t.lab.origin.body.map((line) => (
+            <p key={line} className="mt-3 text-[16px] leading-relaxed text-muted-foreground">
+              {line}
+            </p>
+          ))}
+        </aside>
       </section>
 
       <JumpChips
