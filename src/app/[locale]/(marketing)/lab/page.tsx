@@ -37,6 +37,7 @@ const CADENCE: Record<LabKey, 'nightly' | 'fiveMin' | 'hourly' | 'quarterHour' |
   ports: 'hourly',
   ai: 'hourly',
   compare: 'hourly',
+  exposed: 'hourly',
   passwords: 'hourly',
   homelab: 'static',
   status: 'quarterHour',
