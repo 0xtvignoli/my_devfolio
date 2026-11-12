@@ -26,7 +26,7 @@ describe('callOf', () => {
 });
 
 describe('foldHits', () => {
-  const base: Canary = { id: 'docker', plantedAt: '2026-11-07T17:46:00Z', firstUseAt: '2026-11-07T17:48:00Z', calls: ['identity'], hits: 55 };
+  const base: Canary = { id: 'docker', plantedAt: '2026-11-07T17:46:00Z', firstUseAt: '2026-11-07T17:48:00Z', calls: ['identity'], hits: 55, daily: { '2026-11-07': 55 } };
   const hit = (t: string, e: string[], useragent = 'botocore') => ({
     time_of_hit: Date.parse(t) / 1000,
     useragent,
@@ -43,7 +43,7 @@ describe('foldHits', () => {
   });
 
   test('AWS quarantine is not a use', () => {
-    const out = foldHits({ ...base, firstUseAt: null, calls: [], hits: undefined }, [hit('2026-11-07T18:26:43Z', ['AttachUserPolicy'], 'AWS Internal')]);
+    const out = foldHits({ ...base, firstUseAt: null, calls: [], hits: undefined, daily: undefined }, [hit('2026-11-07T18:26:43Z', ['AttachUserPolicy'], 'AWS Internal')]);
     expect(out.firstUseAt).toBeNull();
     expect(out.calls).toEqual([]);
     expect(out.quarantinedAt).toBe('2026-11-07T18:26:43Z');
@@ -60,13 +60,20 @@ describe('foldHits', () => {
     expect(JSON.stringify(out)).not.toMatch(/botocore/);
   });
 
+  test('baseline days fill what the store never saw; a day seen by both counts once', () => {
+    const store = { uses: 118, calls: [], first: null, quarantined: null, daily: { '2026-11-07': 50, '2026-11-11': 68 }, gaps: 0 };
+    const out = foldHits(base, [], store);
+    expect(out.daily).toEqual({ '2026-11-07': 55, '2026-11-11': 68 });
+    expect(out.hits).toBe(123);
+  });
+
   test('the store counts past the 50 hits canarytokens keeps, and remembers calls that rolled off', () => {
     const store = { uses: 312, calls: ['email' as const], first: '2026-11-07T17:47:30Z', quarantined: null, daily: { '2026-11-10': 12 }, gaps: 1 };
     const out = foldHits(base, [hit('2026-11-10T10:00:00Z', ['Converse'])], store);
     expect(out.hits).toBe(312);
     expect(out.calls).toEqual(['identity', 'ai', 'email']);
     expect(out.firstUseAt).toBe('2026-11-07T17:47:30Z');
-    expect(out.daily).toEqual({ '2026-11-10': 12 });
+    expect(out.daily).toEqual({ '2026-11-07': 55, '2026-11-10': 12 });
     expect(out.gaps).toBe(1);
     expect(foldHits(base, [], null).hits).toBe(55);
   });
