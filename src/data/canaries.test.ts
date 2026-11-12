@@ -61,11 +61,13 @@ describe('foldHits', () => {
   });
 
   test('the store counts past the 50 hits canarytokens keeps, and remembers calls that rolled off', () => {
-    const store = { uses: 312, calls: ['email' as const], first: '2026-11-07T17:47:30Z', quarantined: null };
+    const store = { uses: 312, calls: ['email' as const], first: '2026-11-07T17:47:30Z', quarantined: null, daily: { '2026-11-10': 12 }, gaps: 1 };
     const out = foldHits(base, [hit('2026-11-10T10:00:00Z', ['Converse'])], store);
     expect(out.hits).toBe(312);
     expect(out.calls).toEqual(['identity', 'ai', 'email']);
     expect(out.firstUseAt).toBe('2026-11-07T17:47:30Z');
+    expect(out.daily).toEqual({ '2026-11-10': 12 });
+    expect(out.gaps).toBe(1);
     expect(foldHits(base, [], null).hits).toBe(55);
   });
 

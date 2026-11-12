@@ -363,6 +363,12 @@ export interface Translations {
       stats: { planted: string; firstUse: string; calls: string; lastUse: string; kinds: string; waiting: string; fastest: string };
       timelineTitle: string;
       steps: { planted: string; plantedBody: string; quarantined: string; quarantinedBody: string; firstUse: string; firstUseBody: string; lastUse: string; lastUseBody: string };
+      historyTitle: string;
+      historyIntro: string;
+      periods: { week: string; month: string; year: string };
+      historyChart: { week: string; month: string; year: string };
+      historyNote: string;
+      historyGaps: string;
       burstTitle: string;
       burstIntro: string;
       burstCaption: string;
