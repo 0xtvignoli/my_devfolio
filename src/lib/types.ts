@@ -458,7 +458,23 @@ export interface Translations {
     groups: { watch: string; decoys: string; you: string; behind: string };
     cadence: { nightly: string; fiveMin: string; hourly: string; quarterHour: string; static: string };
     waiting: string;
-    items: Record<'observatory' | 'canaries' | 'ports' | 'ai' | 'compare' | 'passwords' | 'homelab' | 'status', { title: string; question: string; unit?: string }>;
+    items: Record<'observatory' | 'canaries' | 'ports' | 'ai' | 'compare' | 'exposed' | 'passwords' | 'homelab' | 'status', { title: string; question: string; unit?: string }>;
+  };
+  exposed: {
+    kicker: string;
+    title: string;
+    intro: string;
+    sim: import('@/components/shared/exposed-sim').ExposedStrings;
+    firstMove: string;
+    topCall: string;
+    items: Record<
+      'decoy-env' | 'html-comment' | 'robots' | 'docker' | 'github' | 'port-redis' | 'port-docker' | 'port-elasticsearch' | 'port-kubelet' | 'ollama',
+      { label: string; fix: string }
+    >;
+    sourceTitle: string;
+    source: string[];
+    rulesTitle: string;
+    rules: string[];
   };
   homelab: {
     kicker: string;

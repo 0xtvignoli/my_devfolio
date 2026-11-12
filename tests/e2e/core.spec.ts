@@ -19,7 +19,7 @@ test('locale switcher links to the same page in the other language', async ({ pa
 test('the lab index lists every experiment and each one links on', async ({ page }) => {
   await page.goto('/en/lab');
   await expect(page.getByRole('heading', { level: 1, name: 'The Lab' })).toBeVisible();
-  await expect(page.locator('ol > li a[href^="/en/lab/"]')).toHaveCount(8);
+  await expect(page.locator('ol > li a[href^="/en/lab/"]')).toHaveCount(9);
   await page.goto('/en/lab/decoys/ports');
   await expect(page.getByRole('navigation', { name: 'Lab experiments' }).getByRole('link', { name: /next.*An AI server left open/ })).toBeVisible();
 });

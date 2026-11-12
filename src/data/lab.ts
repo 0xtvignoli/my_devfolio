@@ -8,6 +8,7 @@ export const LAB_EXPERIMENTS = [
   { key: 'ports', path: '/lab/decoys/ports', group: 'decoys' },
   { key: 'ai', path: '/lab/decoys/ai', group: 'decoys' },
   { key: 'compare', path: '/lab/compare', group: 'watch' },
+  { key: 'exposed', path: '/lab/exposed', group: 'you' },
   { key: 'passwords', path: '/lab/passwords', group: 'you' },
   { key: 'homelab', path: '/lab/homelab', group: 'behind' },
   { key: 'status', path: '/lab/status', group: 'behind' },
