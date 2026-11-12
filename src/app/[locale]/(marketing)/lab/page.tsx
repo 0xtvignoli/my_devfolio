@@ -1,181 +1,133 @@
 import Link from 'next/link';
 import observatoryData from '@/data/observatory.json';
-import { ArticleRow } from '@/components/shared/article-row';
-import { ObservatoryExplorer } from '@/components/observatory/explorer';
-import { JumpChips } from '@/components/shared/jump-chips';
-import { computeTrends } from '@/lib/observatory/trends';
+import { CANARIES, foldHits } from '@/data/canaries';
+import { DECOY_OPENED, PORT_DECOYS, firstContact } from '@/data/decoy-ports';
+import { LAB_EXPERIMENTS, type LabKey } from '@/data/lab';
 import { JsonLd } from '@/components/seo/json-ld';
-import { CASE_STUDY_TAG, getArticles } from '@/data/content/articles';
+import { wait } from '@/lib/canary-time';
+import { readSummary } from '@/lib/canary-store';
+import { liveDecoys } from '@/lib/decoys-data';
+import { PORTS } from '@/lib/decoys';
+import { formatDuration } from '@/lib/duration';
 import { getTranslations, resolveLocaleParam } from '@/lib/i18n/server';
 import { localizedPath } from '@/lib/i18n/paths';
-import { createPageMetadata } from '@/lib/seo/metadata';
-import { buildBreadcrumbSchema, buildObservatorySchema } from '@/lib/seo/structured-data';
-import { formatDate } from '@/lib/format-date';
+import { compare } from '@/lib/observatory/compare';
 import type { Observatory } from '@/lib/observatory/types';
+import { createPageMetadata } from '@/lib/seo/metadata';
+import { buildBreadcrumbSchema } from '@/lib/seo/structured-data';
 import type { Locale } from '@/lib/types';
 import type { Metadata } from 'next';
 
+// As fresh as its fastest row (the canary keys, every 5 minutes). It reads only the canary
+// summary key and decoys.json, never the canarytokens exports.
 export const dynamic = 'force-static';
+export const revalidate = 300;
 
-const data = observatoryData as Observatory;
+type Props = { params: Promise<{ locale: string }> };
 
-type LabPageProps = {
-  params: Promise<{ locale: string }>;
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const locale = resolveLocaleParam((await params).locale);
+  const t = getTranslations(locale).labIndex;
+  return createPageMetadata({ title: t.title, description: t.intro, path: '/lab', locale });
+}
+
+/** How often each row's number can change: the cadence of the page it links to. */
+const CADENCE: Record<LabKey, 'nightly' | 'fiveMin' | 'hourly' | 'quarterHour' | 'static'> = {
+  observatory: 'nightly',
+  canaries: 'fiveMin',
+  ports: 'hourly',
+  ai: 'hourly',
+  compare: 'hourly',
+  passwords: 'hourly',
+  homelab: 'static',
+  status: 'quarterHour',
 };
 
-export async function generateMetadata({ params }: LabPageProps): Promise<Metadata> {
-  const { locale: localeParam } = await params;
-  const locale = resolveLocaleParam(localeParam);
-  const t = getTranslations(locale);
-  return createPageMetadata({ title: t.lab.title, description: t.lab.metaDescription, path: '/lab', locale });
-}
-
-function H2({ id, children }: { id: string; children: React.ReactNode }) {
-  return (
-    <h2 id={id} className="border-t border-foreground pt-5 font-serif text-[30px] font-medium tracking-[-0.01em]">
-      {children}
-    </h2>
-  );
-}
-
-export default async function LabPage({ params }: LabPageProps) {
-  const { locale: localeParam } = await params;
-  const locale: Locale = resolveLocaleParam(localeParam);
-  const t = getTranslations(locale);
+export default async function LabIndexPage({ params }: Props) {
+  const locale: Locale = resolveLocaleParam((await params).locale);
+  const all = getTranslations(locale);
+  const t = all.labIndex;
   const nf = new Intl.NumberFormat(locale === 'it' ? 'it-IT' : 'en-GB');
-  const caseStudies = getArticles(locale).filter((a) => a.tags.includes(CASE_STUDY_TAG));
-  const { totals } = data;
-  const trends = computeTrends(data);
-  const pct = (n: number) => `${Math.round((n / totals.requests) * 100)}%`;
-  const section = 'mx-auto max-w-[1120px] px-4 pb-24 sm:px-8';
+  // eslint-disable-next-line react-hooks/purity -- server render, once per revalidation
+  const now = Date.now();
+  const observatory = observatoryData as Observatory;
+  const [summary, decoys] = await Promise.all([readSummary(), liveDecoys()]);
+  const dur = (ms: number) => formatDuration(ms, locale);
 
-  const stats = [
-    { value: totals.requests, label: t.lab.stats.requests },
-    { value: totals.hostile, label: t.lab.stats.hostile, share: pct(totals.hostile) },
-    { value: totals.stopped, label: t.lab.stats.stopped, note: t.lab.stoppedNote },
-    { value: totals.maze, label: t.lab.stats.maze, note: t.lab.mazeNote },
-  ];
+  // The fastest first use among the keys, as on the canaries page.
+  const keys = CANARIES.map((c) => foldHits(c, [], summary[c.id]));
+  const usedKeys = keys.filter((k) => k.firstUseAt).map((k) => ({ id: k.id, ms: wait(k, now)! }));
+  const fastestKey = usedKeys.sort((a, b) => a.ms - b.ms)[0];
+
+  // The fastest first contact among the open ports, as on the ports page.
+  const portTimes = PORTS.flatMap((p) => {
+    const opened = DECOY_OPENED[p];
+    const first = firstContact(opened, decoys?.ports?.[p]?.firstTimes);
+    return opened && first ? [{ p, ms: Math.max(0, Date.parse(first) - Date.parse(opened.at)) }] : [];
+  }).sort((a, b) => a.ms - b.ms);
+  const aiFirst = firstContact(DECOY_OPENED.ai, decoys?.ai?.firstTimes);
+  const sideBySide = decoys ? compare(observatory, decoys) : null;
+  const days = Math.round((Date.parse(observatory.to) - Date.parse(observatory.from)) / 86_400_000) + 1;
+
+  const value: Partial<Record<LabKey, { value: string; unit: string }>> = {
+    observatory: { value: nf.format(observatory.totals.hostile), unit: t.items.observatory.unit!.replace('{d}', String(days)) },
+    ...(fastestKey && {
+      canaries: { value: dur(fastestKey.ms), unit: t.items.canaries.unit!.replace('{where}', all.canaries.channels[fastestKey.id].short) },
+    }),
+    ...(portTimes[0] && {
+      ports: { value: dur(portTimes[0].ms), unit: t.items.ports.unit!.replace('{where}', PORT_DECOYS.find((d) => d.id === portTimes[0].p)?.name ?? portTimes[0].p) },
+    }),
+    // Without decoys.json there is nothing to say: "waiting" would be a claim.
+    ...(decoys && {
+      ai: {
+        value: aiFirst && DECOY_OPENED.ai ? dur(Math.max(0, Date.parse(aiFirst) - Date.parse(DECOY_OPENED.ai.at))) : t.waiting,
+        unit: t.items.ai.unit!,
+      },
+    }),
+    ...(sideBySide && {
+      compare: { value: nf.format(sideBySide.ssh), unit: t.items.compare.unit!.replace('{d}', String(sideBySide.days)) },
+    }),
+    ...(decoys?.ssh.passwordHashes?.length && { passwords: { value: nf.format(decoys.ssh.passwordHashes.length), unit: t.items.passwords.unit! } }),
+  };
 
   return (
-    <>
-      <JsonLd
-        data={[
-          buildObservatorySchema({ name: t.lab.title, description: t.lab.metaDescription, path: localizedPath(locale, '/lab'), from: data.from, to: data.to }),
-          buildBreadcrumbSchema([
-            { name: 'Home', path: localizedPath(locale) },
-            { name: t.lab.title, path: localizedPath(locale, '/lab') },
-          ]),
-        ]}
-      />
+    <div className="mx-auto max-w-[1120px] px-4 pb-24 pt-12 sm:px-8 sm:pt-20">
+      <JsonLd data={[buildBreadcrumbSchema([{ name: 'Home', path: localizedPath(locale) }, { name: t.title, path: localizedPath(locale, '/lab') }])]} />
+      <p className="mb-6 text-sm font-medium uppercase tracking-[0.08em] text-link">{t.kicker}</p>
+      <h1 className="font-serif text-[clamp(40px,6vw,72px)] font-normal leading-[1.05] tracking-[-0.025em]">{t.title}</h1>
+      <p className="mt-7 max-w-[680px] text-[19px] text-muted-foreground">{t.intro}</p>
 
-      <section className="mx-auto max-w-[1120px] px-4 pb-20 pt-12 sm:px-8 sm:pt-20">
-        <p className="mb-6 text-sm font-medium uppercase tracking-[0.08em] text-link">{t.lab.kicker}</p>
-        <h1 className="font-serif text-[clamp(40px,6vw,72px)] font-normal leading-[1.05] tracking-[-0.025em]">{t.lab.title}</h1>
-        <p className="mt-7 max-w-[640px] text-[19px] text-muted-foreground">{t.lab.intro}</p>
-        <p className="mt-5 font-mono text-[13px] text-muted-foreground">
-          {formatDate(data.from, locale)} — {formatDate(data.to, locale)} · {t.lab.updated}{' '}
-          <time dateTime={data.generatedAt}>{formatDate(data.generatedAt.slice(0, 10), locale)}</time>
-        </p>
-
-        <aside className="mt-10 max-w-[680px] border-l-2 border-link pl-5">
-          <h2 className="text-sm font-medium uppercase tracking-[0.08em] text-muted-foreground">{t.lab.origin.title}</h2>
-          {t.lab.origin.body.map((line) => (
-            <p key={line} className="mt-3 text-[16px] leading-relaxed text-muted-foreground">
-              {line}
-            </p>
-          ))}
-        </aside>
-
-        <dl className="mt-10 grid grid-cols-2 gap-x-5 gap-y-8 border-t border-foreground pt-6 sm:mt-14 sm:gap-x-10 sm:gap-y-10 sm:pt-8 lg:grid-cols-4">
-          {stats.map((s) => (
-            <div key={s.label} className="flex flex-col">
-              <dt className="order-2 mt-2 text-[15px] font-medium leading-snug sm:mt-3 sm:text-base">{s.label}</dt>
-              <dd className="order-1 font-serif text-[34px] leading-none tracking-[-0.02em] sm:text-[52px]">
-                {nf.format(s.value)}
-                {s.share && <span className="ml-1.5 align-middle font-mono text-xs text-link sm:ml-2 sm:text-sm">{s.share}</span>}
-              </dd>
-              {s.note && <dd className="order-3 mt-1.5 text-sm text-muted-foreground">{s.note}</dd>}
-            </div>
-          ))}
-        </dl>
-      </section>
-
-      <JumpChips
-        label={t.onThisPage}
-        items={[
-          { id: 'daily-heading', text: t.lab.jump.daily },
-          ...(trends.length > 0 ? [{ id: 'trends-heading', text: t.lab.jump.trends }] : []),
-          { id: 'looking-heading', text: t.lab.jump.looking },
-          { id: 'where', text: t.lab.jump.where },
-          ...(caseStudies.length > 0 ? [{ id: 'cases-heading', text: t.lab.jump.cases }] : []),
-          { id: 'method-heading', text: t.lab.jump.method },
-        ]}
-      />
-
-      <ObservatoryExplorer
-        data={data}
-        locale={locale}
-        t={t.lab}
-        section={section}
-        trends={trends}
-      />
-
-      {caseStudies.length > 0 && (
-        <section aria-labelledby="cases-heading" className={section}>
-          <H2 id="cases-heading">{t.lab.caseStudiesTitle}</H2>
-          <ol className="mt-2">
-            {caseStudies.map((article) => (
-              <ArticleRow key={article.slug} article={article} locale={locale} />
-            ))}
-          </ol>
-        </section>
-      )}
-
-      <section aria-labelledby="method-heading" className={section}>
-        <div className="bg-muted p-6 sm:p-10">
-          <h2 id="method-heading" className="font-serif text-[26px] font-medium">{t.lab.methodTitle}</h2>
-          <ul className="mt-5 max-w-[760px] list-disc space-y-3 pl-5 text-muted-foreground">
-            {t.lab.method.map((line) => (
-              <li key={line}>{line}</li>
-            ))}
-          </ul>
-          <p className="mt-6">
-            <Link className="text-link underline-offset-4 hover:underline" href={localizedPath(locale, '/lab/passwords')}>
-              {t.lab.passwordsLink}
-            </Link>
-          </p>
-          <p className="mt-6">
-            <Link className="text-link underline-offset-4 hover:underline" href={localizedPath(locale, '/lab/decoys/ai')}>
-              {t.lab.aiDecoyLink}
-            </Link>
-          </p>
-          <p className="mt-6">
-            <Link className="text-link underline-offset-4 hover:underline" href={localizedPath(locale, '/lab/decoys/ports')}>
-              {t.lab.portsLink}
-            </Link>
-          </p>
-          <p className="mt-6">
-            <Link className="text-link underline-offset-4 hover:underline" href={localizedPath(locale, '/lab/compare')}>
-              {t.lab.compareLink}
-            </Link>
-          </p>
-          <p className="mt-6">
-            <Link className="text-link underline-offset-4 hover:underline" href={localizedPath(locale, '/lab/decoys/canaries')}>
-              {t.lab.canariesLink}
-            </Link>
-          </p>
-          <p className="mt-6">
-            <Link className="text-link underline-offset-4 hover:underline" href={localizedPath(locale, '/lab/status')}>
-              {t.lab.statusLink}
-            </Link>
-          </p>
-          <p className="mt-6">
-            <Link className="text-link underline-offset-4 hover:underline" href={localizedPath(locale, '/lab/homelab')}>
-              {t.lab.homelabLink}
-            </Link>
-          </p>
-        </div>
-      </section>
-    </>
+      <ol className="mt-12 border-t border-foreground">
+        {LAB_EXPERIMENTS.map((e) => {
+          const v = value[e.key];
+          const item = t.items[e.key];
+          const cadence = t.cadence[CADENCE[e.key]];
+          return (
+            <li key={e.key} className="border-b border-border">
+              <Link
+                href={localizedPath(locale, e.path)}
+                className="group grid grid-cols-[minmax(0,1fr)_20px] gap-x-4 gap-y-2 py-5 sm:grid-cols-[120px_minmax(0,1.3fr)_minmax(0,1fr)_110px_20px] sm:items-baseline sm:gap-x-6"
+              >
+                <span className="col-span-2 font-mono text-[12px] uppercase tracking-[0.06em] text-muted-foreground sm:col-span-1">{t.groups[e.group]}</span>
+                <span className="min-w-0">
+                  <span className="block font-serif text-[22px] leading-tight group-hover:underline group-hover:underline-offset-4 sm:text-[24px]">{item.title}</span>
+                  <span className="mt-1 block text-[15px] text-muted-foreground">{item.question}</span>
+                </span>
+                <span aria-hidden className="row-span-2 self-center text-link sm:order-last sm:row-span-1">→</span>
+                <span className="min-w-0">
+                  {v && (
+                    <>
+                      <span className="block font-serif text-[26px] leading-tight">{v.value}</span>
+                      <span className="mt-0.5 block text-[13px] text-muted-foreground">{v.unit}</span>
+                    </>
+                  )}
+                </span>
+                <span className="font-mono text-[12px] text-link">{cadence && `● ${cadence}`}</span>
+              </Link>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
   );
 }

@@ -5,6 +5,7 @@ import { position, wait } from '@/lib/canary-time';
 import { formatDuration } from '@/lib/duration';
 import { formatDate } from '@/lib/format-date';
 import { getTranslations, resolveLocaleParam } from '@/lib/i18n/server';
+import { LabNav } from '@/components/shared/lab-nav';
 import { localizedPath } from '@/lib/i18n/paths';
 import { createPageMetadata } from '@/lib/seo/metadata';
 import { cn } from '@/lib/utils';
@@ -149,11 +150,7 @@ export default async function CanariesPage({ params }: Props) {
         </p>
       </section>
 
-      <p className="mt-12">
-        <Link className="text-link underline-offset-4 hover:underline" href={localizedPath(locale, '/lab')}>
-          {c.back}
-        </Link>
-      </p>
+      <LabNav current="canaries" locale={locale} />
     </div>
   );
 }

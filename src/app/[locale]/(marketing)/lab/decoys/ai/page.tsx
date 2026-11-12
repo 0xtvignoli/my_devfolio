@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { BarList } from '@/components/observatory/bar-list';
 import { DECOY_OPENED, firstContact } from '@/data/decoy-ports';
@@ -6,7 +5,7 @@ import { AI_CALLS, AI_KEYS, AI_MODELS, AI_SIZES } from '@/lib/decoys';
 import { liveDecoys } from '@/lib/decoys-data';
 import { formatDuration } from '@/lib/duration';
 import { getTranslations, resolveLocaleParam } from '@/lib/i18n/server';
-import { localizedPath } from '@/lib/i18n/paths';
+import { LabNav } from '@/components/shared/lab-nav';
 import { createPageMetadata } from '@/lib/seo/metadata';
 import type { Locale } from '@/lib/types';
 import type { Metadata } from 'next';
@@ -133,11 +132,7 @@ export default async function AiDecoyPage({ params }: Props) {
 
       <p className="mt-12 max-w-[760px] bg-muted p-5 text-sm text-muted-foreground">{c.note}</p>
 
-      <p className="mt-12">
-        <Link className="text-link underline-offset-4 hover:underline" href={localizedPath(locale, '/lab')}>
-          {c.back}
-        </Link>
-      </p>
+      <LabNav current="ai" locale={locale} />
     </div>
   );
 }

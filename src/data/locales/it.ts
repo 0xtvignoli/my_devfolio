@@ -237,7 +237,6 @@ export const it: Translations = {
       "I nomi dei modelli fuori dalla lista pubblica, che potrebbero essere qualunque cosa.",
     ],
     note: "Gira sulla porta 11434, quella che Ollama usa di serie. Dietro non c'è nessun modello: le risposte sono scritte a mano, nessuno ottiene calcolo gratis e il server resta piccolo, con 1 GB di memoria.",
-    back: "← Torna al Lab",
   },
   portsDecoy: {
     kicker: "Lab · Trappole · Porte",
@@ -262,7 +261,6 @@ export const it: Translations = {
       "Per Redis una visita è una connessione. Per Docker, Elasticsearch e kubelet è un indirizzo in un giorno, perché ogni comando arriva come richiesta separata. L'indirizzo serve solo a raggruppare e non lo pubblico.",
     ],
     note: "Per aprire una porta bastano una regola del firewall, un file di configurazione e una riga di compose. Il cronometro parte quando creo la regola, e le mie prove non contano. La pagina si aggiorna ogni ora.",
-    back: "← Torna al Lab",
     teasers: {
       redis: "Spostare il salvataggio nella cartella dei cron job.",
       docker: "Un container che vede tutto il disco del server.",
@@ -466,7 +464,6 @@ export const it: Translations = {
       "Numeri veri, non percentuali. «Altro» lo lascio fuori: sul sito sono quasi tutti link rotti, sul server quasi tutte visite alla pagina iniziale.",
     ],
     empty: "Il server trappola pubblica le categorie giorno per giorno dal prossimo aggiornamento notturno. Fino ad allora non c'è niente di onesto da confrontare.",
-    back: "← Torna al Lab",
   },
   canaries: {
     kicker: "Lab · Trappole",
@@ -666,7 +663,6 @@ export const it: Translations = {
       "Se un canale non scatta mai resta comunque tracciato: sapere anche dove nessuno guarda è un dato.",
     ],
     updated: "Aggiornato il",
-    back: "← Torna al Lab",
   },
   passwords: {
     kicker: "Lab · Trappole",
@@ -697,7 +693,6 @@ export const it: Translations = {
       "Pubblico solo le password che stanno già in una lista pubblica delle 100.000 più usate. Le altre le conto e basta: se un bot prova una password rubata a qualcuno, non sarò io a renderla pubblica.",
       "Anche quelle non sono in chiaro: c'è solo l'inizio del loro hash SHA-256. Il browser fa lo stesso calcolo su quello che scrivi e confronta i risultati.",
     ],
-    back: "← Torna al Lab",
   },
   status: {
     kicker: "Lab · Stato",
@@ -717,6 +712,29 @@ export const it: Translations = {
     data: "Dati dell'Osservatorio",
     dataFresh: "aggiornati dalla build giornaliera",
     dataStale: "più vecchi di 36 ore: l'aggiornamento notturno non è partito. This is fine.",
+  },
+  labIndex: {
+    kicker: "Lab",
+    title: "Il Lab",
+    intro: "Questo sito non ha niente da rubare, e i bot ci provano lo stesso. Qui guardo cosa fanno: sul sito vero, su un server lasciato apposta senza difese e con chiavi finte sparse in giro.",
+    navLabel: "Esperimenti del Lab",
+    prev: "precedente",
+    next: "successivo",
+    index: "indice",
+    all: "Tutti gli esperimenti",
+    groups: { watch: "guardare", decoys: "esche", you: "provare tu", behind: "dietro le quinte" },
+    cadence: { nightly: "ogni notte", fiveMin: "ogni 5 min", hourly: "ogni ora", quarterHour: "ogni 15 min", static: "" },
+    waiting: "in attesa",
+    items: {
+      observatory: { title: "Osservatorio", question: "Cosa cercano i bot su un sito che non ha niente?", unit: "richieste ostili in {d} giorni" },
+      canaries: { title: "Cinque chiavi AWS in giro", question: "Quanto ci mettono a usare una chiave trapelata?", unit: "la più veloce: {where}" },
+      ports: { title: "Quattro porte aperte", question: "Quanto ci mette un servizio esposto a essere trovato?", unit: "la più veloce: {where}" },
+      ai: { title: "Un server AI lasciato aperto", question: "Chi cerca modelli AI da usare gratis?", unit: "al primo contatto con Ollama" },
+      compare: { title: "Sito protetto o server scoperto", question: "Cosa toglie Cloudflare davanti a un sito?", unit: "connessioni SSH al server in {d} giorni, nessuna al sito" },
+      passwords: { title: "I bot hanno provato la tua password?", question: "Il controllo si fa nel browser, non parte niente.", unit: "password nella lista" },
+      homelab: { title: "L'homelab", question: "Dove nasce quello che scrivo: due server in cantina, gestiti come in produzione." },
+      status: { title: "Stato del sito", question: "L'ultimo deploy, se è allineato a main e se i dati sono freschi." },
+    },
   },
   homelab: {
     kicker: "Lab · Homelab",

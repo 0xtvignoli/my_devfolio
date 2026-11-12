@@ -21,7 +21,7 @@ export function HomeSignal({ locale, t }: { locale: Locale; t: Translations['hom
   return (
     <section aria-label={t.signalLabel} className="mx-auto max-w-[1120px] px-4 pb-20 sm:px-8">
       <Link
-        href={localizedPath(locale, '/lab')}
+        href={localizedPath(locale, '/lab/observatory')}
         className="group flex flex-wrap items-baseline justify-between gap-x-10 gap-y-3 border-y border-y-border border-t-foreground py-5"
       >
         <span className="flex items-center gap-2.5 font-mono text-[13px] text-muted-foreground">

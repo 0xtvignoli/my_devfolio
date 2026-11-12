@@ -1,9 +1,8 @@
-import Link from 'next/link';
 import observatoryData from '@/data/observatory.json';
 import { liveDecoys } from '@/lib/decoys-data';
 import { formatDate } from '@/lib/format-date';
 import { getTranslations, resolveLocaleParam } from '@/lib/i18n/server';
-import { localizedPath } from '@/lib/i18n/paths';
+import { LabNav } from '@/components/shared/lab-nav';
 import { compare } from '@/lib/observatory/compare';
 import type { Observatory } from '@/lib/observatory/types';
 import { createPageMetadata } from '@/lib/seo/metadata';
@@ -119,11 +118,7 @@ export default async function ComparePage({ params }: Props) {
         ))}
       </section>
 
-      <p className="mt-12">
-        <Link className="text-link underline-offset-4 hover:underline" href={localizedPath(locale, '/lab')}>
-          {c.back}
-        </Link>
-      </p>
+      <LabNav current="compare" locale={locale} />
     </div>
   );
 }
