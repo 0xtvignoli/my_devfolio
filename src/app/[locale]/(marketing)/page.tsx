@@ -143,7 +143,7 @@ export default async function Home({ params }: HomePageProps) {
             <p className="mt-2.5 max-w-[560px] text-muted-foreground">{t.home.labBody}</p>
           </div>
           <Link
-            href={localizedPath(locale, '/lab')}
+            href={localizedPath(locale, '/lab/observatory')}
             className="bg-foreground px-[22px] py-3.5 text-[15px] font-medium text-background hover:opacity-90"
           >
             {t.home.labCta}

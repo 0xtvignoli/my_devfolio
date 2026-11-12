@@ -1,11 +1,10 @@
-import Link from 'next/link';
 import { PasswordCheck } from '@/components/observatory/password-check';
 import { BarList } from '@/components/observatory/bar-list';
 import { liveDecoys } from '@/lib/decoys-data';
 import { PASSWORD_KINDS } from '@/lib/decoys';
 import { formatDate } from '@/lib/format-date';
 import { getTranslations, resolveLocaleParam } from '@/lib/i18n/server';
-import { localizedPath } from '@/lib/i18n/paths';
+import { LabNav } from '@/components/shared/lab-nav';
 import { createPageMetadata } from '@/lib/seo/metadata';
 import type { Locale } from '@/lib/types';
 import type { Metadata } from 'next';
@@ -82,11 +81,7 @@ export default async function PasswordsPage({ params }: Props) {
         </div>
       </div>
 
-      <p className="mt-16">
-        <Link className="text-link underline-offset-4 hover:underline" href={localizedPath(locale, '/lab')}>
-          {t.passwords.back}
-        </Link>
-      </p>
+      <LabNav current="passwords" locale={locale} />
     </div>
   );
 }

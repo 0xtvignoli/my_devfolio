@@ -5,6 +5,7 @@ import { PORTS, PORT_CALLS, type Port, type PortStats } from '@/lib/decoys';
 import { liveDecoys } from '@/lib/decoys-data';
 import { formatDuration } from '@/lib/duration';
 import { getTranslations, resolveLocaleParam } from '@/lib/i18n/server';
+import { LabNav } from '@/components/shared/lab-nav';
 import { localizedPath } from '@/lib/i18n/paths';
 import { createPageMetadata } from '@/lib/seo/metadata';
 import type { Locale } from '@/lib/types';
@@ -105,11 +106,7 @@ export default async function PortsDecoyPage({ params }: Props) {
 
       <p className="mt-12 max-w-[760px] bg-muted p-5 text-sm text-muted-foreground">{c.note}</p>
 
-      <p className="mt-12">
-        <Link className="text-link underline-offset-4 hover:underline" href={localizedPath(locale, '/lab')}>
-          {c.back}
-        </Link>
-      </p>
+      <LabNav current="ports" locale={locale} />
     </div>
   );
 }

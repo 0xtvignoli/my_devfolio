@@ -1,6 +1,7 @@
 import observatoryData from '@/data/observatory.json';
 import { getTranslations, resolveLocaleParam } from '@/lib/i18n/server';
 import { createPageMetadata } from '@/lib/seo/metadata';
+import { LabNav } from '@/components/shared/lab-nav';
 import type { Observatory } from '@/lib/observatory/types';
 import type { Locale } from '@/lib/types';
 import type { Metadata } from 'next';
@@ -107,6 +108,7 @@ export default async function StatusPage({ params }: Props) {
         ))}
       </dl>
       <p className="mt-6 text-sm text-muted-foreground">{t.legend}</p>
+      <LabNav current="status" locale={locale} />
     </section>
   );
 }

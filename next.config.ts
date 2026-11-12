@@ -15,7 +15,8 @@ const nextConfig: NextConfig = {
   },
   // Removed in the 11/2026 redesign; old links and indexed URLs land on the lab.
   async redirects() {
-    return ['dashboard', 'live', 'shell'].map((p) => ({
+    // /lab/decoys: the pages' breadcrumb says "Lab · Decoys", so someone will trim the URL.
+    return ['dashboard', 'live', 'shell', 'lab/decoys'].map((p) => ({
       source: `/:locale(en|it)/${p}`,
       destination: '/:locale/lab',
       permanent: true,

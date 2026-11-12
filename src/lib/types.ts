@@ -215,7 +215,6 @@ export interface Translations {
     neverTitle: string;
     never: string[];
     note: string;
-    back: string;
   };
   portsDecoy: {
     kicker: string;
@@ -235,7 +234,6 @@ export interface Translations {
     behindTitle: string;
     behind: string[];
     note: string;
-    back: string;
     /** One line under each port's name in the list: what visitors are after. */
     teasers: Record<'redis' | 'docker' | 'elasticsearch' | 'kubelet', string>;
     detail: {
@@ -328,7 +326,6 @@ export interface Translations {
     howTitle: string;
     how: string[];
     empty: string;
-    back: string;
   };
   canaries: {
     kicker: string;
@@ -404,7 +401,6 @@ export interface Translations {
     howTitle: string;
     how: string[];
     updated: string;
-    back: string;
   };
   passwords: {
     kicker: string;
@@ -428,7 +424,6 @@ export interface Translations {
     kinds: { sameAsUser: string; vendorDefault: string; keyboardWalk: string; digitsOnly: string; other: string };
     howTitle: string;
     how: string[];
-    back: string;
   };
   status: {
     kicker: string;
@@ -448,6 +443,20 @@ export interface Translations {
     data: string;
     dataFresh: string;
     dataStale: string;
+  };
+  labIndex: {
+    kicker: string;
+    title: string;
+    intro: string;
+    navLabel: string;
+    prev: string;
+    next: string;
+    index: string;
+    all: string;
+    groups: { watch: string; decoys: string; you: string; behind: string };
+    cadence: { nightly: string; fiveMin: string; hourly: string; quarterHour: string; static: string };
+    waiting: string;
+    items: Record<'observatory' | 'canaries' | 'ports' | 'ai' | 'compare' | 'passwords' | 'homelab' | 'status', { title: string; question: string; unit?: string }>;
   };
   homelab: {
     kicker: string;

@@ -237,7 +237,6 @@ export const en: Translations = {
       "Model names outside the public list, which could be anything.",
     ],
     note: "It runs on port 11434, Ollama's default. There's no model behind it: the replies are written by hand, nobody gets free compute and the server stays small, with 1 GB of memory.",
-    back: "← Back to the Lab",
   },
   portsDecoy: {
     kicker: "Lab · Decoys · Ports",
@@ -262,7 +261,6 @@ export const en: Translations = {
       "For Redis a visit is one connection. For Docker, Elasticsearch and kubelet it's one address in one day, because every command arrives as a separate request. The address only groups requests and I never publish it.",
     ],
     note: "Opening a port takes one firewall rule, one config file and one line of compose. The stopwatch starts when I create the rule, and my own tests don't count. This page updates every hour.",
-    back: "← Back to the Lab",
     teasers: {
       redis: "Move where it saves into the cron folder.",
       docker: "A container that sees the server's whole disk.",
@@ -465,7 +463,6 @@ export const en: Translations = {
       "Real numbers, not percentages. \"Other\" is left out: on the site it's mostly broken links, on the decoy mostly visits to the home page.",
     ],
     empty: "The decoy starts publishing categories by day with its next nightly update. Until then there's nothing honest to compare.",
-    back: "← Back to the Lab",
   },
   canaries: {
     kicker: "Lab · Decoys",
@@ -665,7 +662,6 @@ export const en: Translations = {
       "A channel that never fires stays on the page anyway: knowing where nobody looks is data too.",
     ],
     updated: "Updated",
-    back: "← Back to the Lab",
   },
   passwords: {
     kicker: "Lab · Decoys",
@@ -696,7 +692,6 @@ export const en: Translations = {
       "I only publish passwords already in a public list of the 100,000 most used. The rest are just counted: if a bot tries a password stolen from someone, I won't be the one making it public.",
       "Even those aren't in plain text: only the start of their SHA-256 hash. Your browser does the same maths on what you type and compares.",
     ],
-    back: "← Back to the Lab",
   },
   status: {
     kicker: "Lab · Status",
@@ -716,6 +711,29 @@ export const en: Translations = {
     data: "Observatory data",
     dataFresh: "refreshed by the daily build",
     dataStale: "older than 36 hours: the nightly refresh didn't run. This is fine.",
+  },
+  labIndex: {
+    kicker: "Lab",
+    title: "The Lab",
+    intro: "This site has nothing to steal, and bots try anyway. Here I watch what they do: on the real site, on a server left with no defences on purpose, and with fake keys scattered around.",
+    navLabel: "Lab experiments",
+    prev: "previous",
+    next: "next",
+    index: "index",
+    all: "All experiments",
+    groups: { watch: "watch", decoys: "decoys", you: "try it", behind: "behind the scenes" },
+    cadence: { nightly: "nightly", fiveMin: "every 5 min", hourly: "hourly", quarterHour: "every 15 min", static: "" },
+    waiting: "waiting",
+    items: {
+      observatory: { title: "Observatory", question: "What do bots look for on a site that has nothing?", unit: "hostile requests in {d} days" },
+      canaries: { title: "Five AWS keys left around", question: "How long until a leaked key gets used?", unit: "fastest: {where}" },
+      ports: { title: "Four open ports", question: "How long until an exposed service is found?", unit: "fastest: {where}" },
+      ai: { title: "An AI server left open", question: "Who hunts for free AI models?", unit: "to the first contact with Ollama" },
+      compare: { title: "Protected site or naked server", question: "What does Cloudflare take away in front of a site?", unit: "SSH connections to the server in {d} days, none to the site" },
+      passwords: { title: "Have bots tried your password?", question: "Checked in your browser, nothing is sent.", unit: "passwords on the list" },
+      homelab: { title: "The homelab", question: "Where what I write about runs: two servers in a basement, run like production." },
+      status: { title: "Site status", question: "The last deploy, whether it matches main, and whether the data is fresh." },
+    },
   },
   homelab: {
     kicker: "Lab · Homelab",
