@@ -2549,13 +2549,22 @@ export function getArticleSlugs(): string[] {
  * Returns fewer than `limit` (or none) rather than padding with unrelated posts —
  * a "related" link that isn't related is worse than no link.
  */
+/** The homelab series, in reading order. */
+export const HOMELAB_SERIES = [
+  'silent-failures-alerting-that-notices',
+  'defense-in-depth-behind-a-consumer-router',
+  'ipv6-firewall-locked-out-lan-case-study',
+];
+
 export function getRelatedArticles(slug: string, locale: Locale, limit = 3): Article[] {
   const current = getArticle(slug, locale);
   if (!current) return [];
   const currentTags = new Set(current.tags);
+  // A series article already lists its siblings in the series box.
+  const skip = new Set(HOMELAB_SERIES.includes(slug) ? HOMELAB_SERIES : [slug]);
 
   return getArticles(locale)
-    .filter((candidate) => candidate.slug !== slug)
+    .filter((candidate) => !skip.has(candidate.slug))
     .map((candidate) => ({
       article: candidate,
       shared: candidate.tags.filter((tag) => currentTags.has(tag)).length,

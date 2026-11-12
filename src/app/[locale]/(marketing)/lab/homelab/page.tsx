@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { ArticleRow } from '@/components/shared/article-row';
-import { getArticle } from '@/data/content/articles';
+import { getArticle, HOMELAB_SERIES } from '@/data/content/articles';
 import { getTranslations, resolveLocaleParam } from '@/lib/i18n/server';
 import { localizedPath } from '@/lib/i18n/paths';
 import { createPageMetadata } from '@/lib/seo/metadata';
@@ -10,9 +10,6 @@ import type { Metadata } from 'next';
 export const dynamic = 'force-static';
 
 type Props = { params: Promise<{ locale: string }> };
-
-// The homelab series, in reading order.
-const READING = ['silent-failures-alerting-that-notices', 'defense-in-depth-behind-a-consumer-router', 'ipv6-firewall-locked-out-lan-case-study'];
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locale = resolveLocaleParam((await params).locale);
@@ -24,7 +21,7 @@ export default async function HomelabPage({ params }: Props) {
   const locale: Locale = resolveLocaleParam((await params).locale);
   const t = getTranslations(locale).homelab;
   const d = t.diagram;
-  const articles = READING.map((slug) => getArticle(slug, locale)).filter((a) => a !== undefined);
+  const articles = HOMELAB_SERIES.map((slug) => getArticle(slug, locale)).filter((a) => a !== undefined);
   const box = 'border border-foreground p-3.5';
 
   return (
