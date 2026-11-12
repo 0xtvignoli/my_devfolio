@@ -3,10 +3,11 @@ import { CANARY_CALLS, CANARY_CHANNELS, type CanaryCall, type CanaryChannelId, t
 /**
  * canarytokens.org keeps only a key's last 50 hits (MAX_HISTORY in its settings.py), so
  * the page alone can't count past 50. Every sync adds what it sees to Upstash Redis, as
- * sets: a hit seen by two syncs counts once, and two syncs at the same time can't double
+ * set members: a hit seen by two syncs counts once, and two syncs at the same time can't double
  * count. Upstash's REST API, so no client dependency.
- * Budget (Upstash Free, ~500k commands a month): the sync writes every 5 minutes (~35 commands)
- * and leaves one summary key; pages read only that key, one GET per regeneration (~50k a month at most).
+ * Budget (Upstash Free, ~500k commands a month): the sync runs every 5 minutes (~45 commands, a few
+ * more when there are new hits) and leaves one summary key; pages read only that key, one GET per
+ * regeneration (~50k a month at most).
  * [SEC] Only hit times and CloudTrail call names go in (hitFacts): never IP, geo or user agent.
  * KV_* are the names the Vercel Marketplace integration sets; UPSTASH_* the ones of a plain Upstash database.
  */
@@ -32,24 +33,99 @@ async function pipeline(cmds: (string | number)[][]): Promise<unknown[] | null> 
   }
 }
 
-/** Adds this export's facts and returns everything kept so far; null without a store or when it fails. */
+const DAY = /^\d{4}-\d{2}-\d{2}$/;
+const MAX_HISTORY = 50;
+const scoreOf = (use: string) => Number(use.split('|')[0]);
+const dayOf = (sec: number) => new Date(sec * 1000).toISOString().slice(0, 10);
+const nat = (v: unknown) => (typeof v === 'number' && Number.isInteger(v) && v >= 0 ? v : 0);
+
+/** Upstash returns HGETALL as [field, value, …]; only day → count pairs get through. */
+function readDaily(v: unknown): Record<string, number> {
+  const out: Record<string, number> = {};
+  if (!Array.isArray(v)) return out;
+  for (let i = 0; i + 1 < v.length; i += 2) {
+    const n = Number(v[i + 1]);
+    if (typeof v[i] === 'string' && DAY.test(v[i]) && Number.isInteger(n) && n >= 0) out[v[i]] = n;
+  }
+  return out;
+}
+
+/**
+ * Adds this export's facts and returns everything kept so far; null without a store or when it fails.
+ * Uses live in a sorted set scored by hit time: same members as the old plain set, so the same
+ * dedupe, and ZCOUNT gives the exact count of any UTC day. Only the days this export touched are
+ * recounted into the daily hash, so the history costs a couple of commands a sync, not one per day.
+ */
 export async function syncCanary(id: CanaryChannelId, facts: ReturnType<typeof hitFacts>): Promise<CanaryStore | null> {
   const key = (k: string) => `canary:${id}:${k}`;
+  const uses = facts.uses.filter((u) => Number.isFinite(scoreOf(u)));
   const writes: (string | number)[][] = [];
-  if (facts.uses.length) writes.push(['SADD', key('uses'), ...facts.uses]);
+  if (uses.length) writes.push(['ZADD', key('times'), 'NX', ...uses.flatMap((u) => [scoreOf(u), u])]);
   if (facts.calls.length) writes.push(['SADD', key('calls'), ...facts.calls]);
   // NX: the earliest one seen wins; later exports only hold later hits.
   if (facts.first) writes.push(['SET', key('first'), facts.first, 'NX']);
   if (facts.quarantined) writes.push(['SET', key('quarantined'), facts.quarantined, 'NX']);
-  const out = await pipeline([...writes, ['SCARD', key('uses')], ['SMEMBERS', key('calls')], ['GET', key('first')], ['GET', key('quarantined')]]);
+  // The newest hit kept before this export, read ahead of the writes.
+  const out = await pipeline([
+    ['ZRANGE', key('times'), -1, -1, 'WITHSCORES'],
+    ...writes,
+    ['ZCARD', key('times')],
+    ['SMEMBERS', key('calls')],
+    ['GET', key('first')],
+    ['GET', key('quarantined')],
+    ['HGETALL', key('daily')],
+    ['GET', key('gaps')],
+    ['EXISTS', key('uses')],
+  ]);
   if (!out) return null;
-  const [uses, calls, first, quarantined] = out.slice(writes.length);
+  const [newest, ...rest] = out;
+  const added = uses.length ? nat(rest[0]) : 0;
+  const [total, calls, first, quarantined, dailyRaw, gapsRaw, legacy] = rest.slice(writes.length);
+  let count = nat(total);
+  const daily = readDaily(dailyRaw);
+  let gaps = Number(gapsRaw) || 0;
+  const touched = new Set(added ? uses.map((u) => dayOf(scoreOf(u))) : []);
+
+  // A full export that starts after the newest hit already kept: more than 50 calls came
+  // between two syncs, and the ones in between were never seen. Counted, so the page can say so.
+  const last = Array.isArray(newest) ? Number(newest[1]) : NaN;
+  const gap = uses.length >= MAX_HISTORY && Number.isFinite(last) && Math.min(...uses.map(scoreOf)) > last;
+
+  // One-off: hits kept as a plain set before the daily counts existed move into the sorted set.
+  // ponytail: dead once every canary:*:uses key is gone; drop this branch after 2026-12-31.
+  const moves: (string | number)[][] = [];
+  if (legacy === 1) {
+    const old = await pipeline([['SMEMBERS', key('uses')]]);
+    const members = Array.isArray(old?.[0]) ? (old[0] as unknown[]).filter((m): m is string => typeof m === 'string' && Number.isFinite(scoreOf(m))) : [];
+    if (members.length) moves.push(['ZADD', key('times'), 'NX', ...members.flatMap((m) => [scoreOf(m), m])]);
+    for (const m of members) touched.add(dayOf(scoreOf(m)));
+  }
+
+  if (touched.size || gap || moves.length) {
+    const days = [...touched].sort();
+    const start = (d: string) => Date.parse(`${d}T00:00:00Z`) / 1000;
+    const counted = await pipeline([...moves, ...days.map((d) => ['ZCOUNT', key('times'), start(d), `(${start(d) + 86400}`]), ['ZCARD', key('times')]]);
+    if (!counted) return null;
+    const n = counted.slice(moves.length);
+    days.forEach((d, i) => (daily[d] = nat(n[i])));
+    count = nat(n.at(-1));
+    const save: (string | number)[][] = [];
+    if (days.length) save.push(['HSET', key('daily'), ...days.flatMap((d) => [d, daily[d]])]);
+    if (gap) save.push(['INCR', key('gaps')]);
+    // The old set goes only once its hits are counted in the daily hash.
+    if (moves.length || legacy === 1) save.push(['DEL', key('uses')]);
+    if (save.length && !(await pipeline(save))) return null;
+    if (gap) gaps += 1;
+  }
+
   const stamp = (v: unknown) => (typeof v === 'string' && STAMP.test(v) ? v : null);
   return {
-    uses: typeof uses === 'number' && Number.isInteger(uses) && uses >= 0 ? uses : 0,
+    uses: count,
     calls: Array.isArray(calls) ? CANARY_CALLS.filter((c: CanaryCall) => calls.includes(c)) : [],
     first: stamp(first),
     quarantined: stamp(quarantined),
+    daily,
+    gaps,
   };
 }
 
@@ -87,6 +163,8 @@ export async function readSummary(): Promise<Partial<Record<CanaryChannelId, Can
         calls: Array.isArray(v.calls) ? CANARY_CALLS.filter((c) => v.calls!.includes(c)) : [],
         first: typeof v.first === 'string' && STAMP.test(v.first) ? v.first : null,
         quarantined: typeof v.quarantined === 'string' && STAMP.test(v.quarantined) ? v.quarantined : null,
+        daily: v.daily && typeof v.daily === 'object' ? readDaily(Object.entries(v.daily).flat()) : {},
+        gaps: nat(v.gaps),
       };
     }
     return out;

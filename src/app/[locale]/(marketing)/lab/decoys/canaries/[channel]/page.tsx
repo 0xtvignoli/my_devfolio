@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { CANARY_CALLS, CANARY_CHANNELS, callOf, type Canary, type CanaryChannelId } from '@/data/canaries';
 import { CANARY_SNIPPETS } from '@/data/canary-snippets';
+import { CanaryHistory, type HistoryView } from '@/components/shared/canary-history';
+import { periods, type PeriodUnit } from '@/lib/canary-periods';
 import { liveCanaries } from '@/lib/canaries-live';
 import { position, wait } from '@/lib/canary-time';
 import { formatDuration } from '@/lib/duration';
@@ -112,11 +114,42 @@ export default async function CanaryPage({ params }: Props) {
     .filter((s): s is { at: string; title: string; body: string; on: boolean } => Boolean(s))
     .sort((a, b) => a.at.localeCompare(b.at));
 
-  const timeline = x.timeline ?? [];
+  // Every call the store has counted, per week, month and year (UTC days, from planting to today).
+  const today = new Date(now).toISOString().slice(0, 10);
+  const daily = x.daily ?? {};
+  const periodLabel: Record<PeriodUnit, Intl.DateTimeFormatOptions> = { week: { day: 'numeric', month: 'short' }, month: { month: 'short', year: 'numeric' }, year: { year: 'numeric' } };
+  const history: HistoryView[] = Object.keys(daily).length
+    ? (['week', 'month', 'year'] as const).map((unit) => {
+        const ps = periods(daily, unit, (x.plantedAt ?? today).slice(0, 10), today);
+        const fmt = new Intl.DateTimeFormat(tag, { ...periodLabel[unit], timeZone: 'UTC' });
+        return {
+          unit,
+          label: d.periods[unit],
+          current: nf.format(ps.at(-1)?.n ?? 0),
+          bars: ps.map((p) => ({ label: fmt.format(new Date(`${p.start}T00:00:00Z`)), n: p.n, text: nf.format(p.n) })),
+        };
+      })
+    : [];
+
+  // canarytokens' last 50 hits: the table shows them all, the dot chart only the latest run
+  // (calls under a minute apart), so its axis is real time and never restarts from zero.
+  const recent = x.timeline ?? [];
+  let from = recent.length - 1;
+  while (from > 0 && recent[from].at - recent[from - 1].at < 60) from--;
+  const timeline = recent.slice(Math.max(0, from));
   const t0 = timeline[0]?.at ?? 0;
   const dur = Math.max(1, (timeline.at(-1)?.at ?? 0) - t0);
-  const lanes = CANARY_CALLS.map((k) => ({ k, dots: timeline.filter((e) => callOf(e.name) === k) })).filter((l) => l.dots.length);
-  const rows = [...timeline.reduce((m, e) => m.set(e.name, (m.get(e.name) ?? 0) + 1), new Map<string, number>())].sort((a, b) => b[1] - a[1]);
+  const hms = (sec: number) => new Intl.DateTimeFormat(tag, { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Europe/Rome' }).format(new Date(sec * 1000));
+  // Calls of one kind in the same second share a dot, with the count beside it.
+  const lanes = CANARY_CALLS.map((k) => {
+    const bySecond = new Map<number, { at: number; names: string[] }>();
+    for (const e of timeline.filter((e) => callOf(e.name) === k)) {
+      const s = Math.floor(e.at);
+      bySecond.set(s, { at: bySecond.get(s)?.at ?? e.at, names: [...(bySecond.get(s)?.names ?? []), e.name] });
+    }
+    return { k, n: timeline.filter((e) => callOf(e.name) === k).length, dots: [...bySecond.values()] };
+  }).filter((l) => l.n);
+  const rows = [...recent.reduce((m, e) => m.set(e.name, (m.get(e.name) ?? 0) + 1), new Map<string, number>())].sort((a, b) => b[1] - a[1]);
 
   const others = canaries.filter((k) => k.id !== channel);
 
@@ -167,6 +200,17 @@ export default async function CanaryPage({ params }: Props) {
         </section>
       )}
 
+      {history.length > 0 && (
+        <section aria-labelledby="history-heading" className="mt-12">
+          <H2 id="history-heading">{d.historyTitle}</H2>
+          <p className="mt-3 max-w-[680px] text-muted-foreground">{d.historyIntro}</p>
+          <CanaryHistory views={history} chartLabels={d.historyChart} />
+          <p className="mt-4 max-w-[680px] text-sm text-muted-foreground">
+            {x.gaps ? d.historyGaps.replace('{n}', nf.format(x.gaps)) : d.historyNote}
+          </p>
+        </section>
+      )}
+
       {timeline.length > 1 && (
         <section aria-labelledby="burst-heading" className="mt-12">
           <H2 id="burst-heading">{d.burstTitle.replace('{n}', nf.format(timeline.length)).replace('{d}', span(dur, locale))}</H2>
@@ -176,25 +220,28 @@ export default async function CanaryPage({ params }: Props) {
               {lanes.map((l) => (
                 <div key={l.k} className="grid grid-cols-[96px_minmax(0,1fr)] items-center gap-3 sm:grid-cols-[150px_minmax(0,1fr)] sm:gap-4">
                   <span className="text-right text-[13px] sm:text-sm">
-                    {c.calls[l.k]} <span className="font-mono text-[12px] text-muted-foreground">×{l.dots.length}</span>
+                    {c.calls[l.k]} <span className="font-mono text-[12px] text-muted-foreground">×{l.n}</span>
                   </span>
                   <div className="relative h-7 border-b border-border">
-                    {l.dots.map((e, i) => (
+                    {l.dots.map((e) => (
                       <span
-                        key={i}
-                        title={`${e.name} · +${span(e.at - t0, locale)}`}
-                        className="absolute top-[9px] -ml-[5px] size-2.5 rounded-full bg-link ring-2 ring-background"
+                        key={e.at}
+                        title={`${[...new Set(e.names)].join(', ')} · ${hms(e.at)}`}
+                        className="absolute top-[9px] -ml-[5px] flex items-center gap-1"
                         style={{ left: `${((e.at - t0) / dur) * 100}%` }}
-                      />
+                      >
+                        <span className="size-2.5 rounded-full bg-link ring-2 ring-background" />
+                        {e.names.length > 1 && <span className="font-mono text-[11px] leading-none text-muted-foreground">×{e.names.length}</span>}
+                      </span>
                     ))}
                   </div>
                 </div>
               ))}
             </div>
             <div className="relative ml-[108px] mt-2 h-5 font-mono text-[12px] text-muted-foreground sm:ml-[166px]">
-              <span className="absolute left-0">0</span>
-              <span className="absolute left-1/2 -translate-x-1/2">{span(dur / 2, locale)}</span>
-              <span className="absolute right-0">{span(dur, locale)}</span>
+              <span className="absolute left-0">{hms(t0)}</span>
+              <span className="absolute left-1/2 -translate-x-1/2">{hms(t0 + dur / 2)}</span>
+              <span className="absolute right-0">{hms(t0 + dur)}</span>
             </div>
             <figcaption className="mt-3 text-sm text-muted-foreground">{d.burstCaption.replace('{t}', clock(t0))}</figcaption>
           </figure>
