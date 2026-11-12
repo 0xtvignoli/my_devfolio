@@ -126,6 +126,8 @@ export const en: Translations = {
     back: "Back to articles",
     author: "By",
     published: "Published on",
+    series: "Homelab series",
+    seriesPart: "Part {n} of {total}",
   },
   project: {
     github: "Source Code",

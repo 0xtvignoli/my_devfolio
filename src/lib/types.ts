@@ -129,6 +129,8 @@ export interface Translations {
     back: string;
     author: string;
     published: string;
+    series: string;
+    seriesPart: string;
   }
   project: {
     github: string;
