@@ -39,8 +39,9 @@ export type Canary = {
   calls: CanaryCall[];
   /** Calls recorded on the key so far. */
   hits?: number;
-  /** Live only: hits per UTC day and the syncs that missed some (CanaryStore). */
+  /** Hits per UTC day: the baseline holds the days before the store existed (10 nov), the store the rest. */
   daily?: Record<string, number>;
+  /** Live only: syncs that missed some hits (CanaryStore). */
   gaps?: number;
   /** ISO UTC when AWS itself attached its quarantine policy (key reported by GitHub secret scanning). */
   quarantinedAt?: string;
@@ -49,11 +50,11 @@ export type Canary = {
 };
 
 export const CANARIES: Canary[] = [
-  { id: 'decoy-env', plantedAt: '2026-11-06T18:33:00Z', firstUseAt: '2026-11-07T05:20:02Z', calls: ['ai', 'email'], hits: 50, lastUseAt: '2026-11-07T05:20:36Z' },
+  { id: 'decoy-env', plantedAt: '2026-11-06T18:33:00Z', firstUseAt: '2026-11-07T05:20:02Z', calls: ['ai', 'email'], hits: 50, lastUseAt: '2026-11-07T05:20:36Z', daily: { '2026-11-07': 50 } },
   { id: 'html-comment', plantedAt: '2026-11-07T17:40:00Z', firstUseAt: null, calls: [] },
   { id: 'robots', plantedAt: '2026-11-07T17:40:00Z', firstUseAt: null, calls: [] },
-  { id: 'docker', plantedAt: '2026-11-07T17:46:00Z', firstUseAt: '2026-11-07T17:48:00Z', calls: ['identity', 'secrets', 'data', 'compute', 'network', 'other'], hits: 55, lastUseAt: '2026-11-07T17:56:50Z' },
-  { id: 'github', plantedAt: '2026-11-08T09:30:56Z', firstUseAt: '2026-11-08T09:33:00Z', calls: ['ai'], hits: 50 },
+  { id: 'docker', plantedAt: '2026-11-07T17:46:00Z', firstUseAt: '2026-11-07T17:48:00Z', calls: ['identity', 'secrets', 'data', 'compute', 'network', 'other'], hits: 55, lastUseAt: '2026-11-07T17:56:50Z', daily: { '2026-11-07': 55 } },
+  { id: 'github', plantedAt: '2026-11-08T09:30:56Z', firstUseAt: '2026-11-08T09:33:00Z', calls: ['ai'], hits: 50, daily: { '2026-11-08': 50 } },
 ];
 
 /** One hit in a canarytokens.org history export (the fields we read; it has more). */
@@ -120,7 +121,11 @@ export function foldHits(base: Canary, hits: CanaryHit[], store?: CanaryStore | 
     .flatMap((h) => events(h).filter((e) => /^[A-Za-z0-9]{1,64}$/.test(e)).map((name) => ({ at: h.time_of_hit, name })))
     .sort((a, b) => a.at - b.at);
   const found = new Set([...base.calls, ...(store?.calls ?? []), ...all.filter((h) => !internal(h)).flatMap((h) => events(h).map(callOf))]);
-  const count = Math.max(base.hits ?? 0, uses.length, store?.uses ?? 0);
+  // Per day, the larger of baseline and store: the store may have seen some of the baseline's hits
+  // (the export still held them on 10 nov), never more than the day had.
+  const daily = { ...base.daily };
+  for (const [day, n] of Object.entries(store?.daily ?? {})) daily[day] = Math.max(daily[day] ?? 0, n);
+  const count = Math.max(base.hits ?? 0, uses.length, store?.uses ?? 0, Object.values(daily).reduce((a, b) => a + b, 0));
   const min = (a: string | null | undefined, b: string | null | undefined) => (a && b ? (a < b ? a : b) : (a ?? b ?? null));
   const quarantinedAt = min(earliest(base.quarantinedAt, quarantine), store?.quarantined);
   const latest = uses.length ? iso(Math.max(...uses)) : null;
@@ -132,7 +137,7 @@ export function foldHits(base: Canary, hits: CanaryHit[], store?: CanaryStore | 
     ...(count ? { hits: count } : {}),
     ...(lastUseAt ? { lastUseAt } : {}),
     ...(timeline.length ? { timeline } : {}),
-    ...(store && Object.keys(store.daily).length ? { daily: store.daily } : {}),
+    ...(Object.keys(daily).length ? { daily } : {}),
     ...(store?.gaps ? { gaps: store.gaps } : {}),
     ...(quarantinedAt ? { quarantinedAt } : {}),
   };
