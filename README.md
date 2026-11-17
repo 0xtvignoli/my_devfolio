@@ -55,7 +55,7 @@ Three sources, each with its own schedule. None of them sends IP addresses, loca
 |---|---|
 | A visit | Cloudflare filters it, Vercel serves a static page or regenerates it if it's stale |
 | Push to `main` | Vercel production build: Observatory and decoy data are fetched first |
-| Every day, 00:30 UTC | GitHub Action → Vercel deploy hook → new build |
+| Every day, 00:30 UTC | GitHub Action → Vercel deploy hook → new build; the Action fails if production has no fresh data within 20 min |
 | Every hour, :05 UTC | The decoy VM uploads a fresh `decoys.json` |
 | Every 5 minutes | Cloudflare Worker → `/api/canaries/sync` → Upstash |
 | Page age (ISR) | Canaries 5 min · status 15 min · decoy and port pages 1 h |
