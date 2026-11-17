@@ -25,8 +25,8 @@ export const DECOY_OPENED: Record<'ai' | Port, DecoyOpening> = {
 };
 
 /**
- * Lab L2a, one port a week. Only ids in PORTS (lib/decoys) have a service behind
- * them yet; the others are shown as coming next, name and port only.
+ * Lab L2a, opened one at a time. An id here without a service in PORTS (lib/decoys)
+ * or with DECOY_OPENED null is shown as coming next, name and port only.
  */
 export const PORT_DECOYS = [
   { id: 'redis', name: 'Redis', port: 6379 },
