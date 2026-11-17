@@ -9,7 +9,8 @@ on:
     - cron: '30 0 * * *'
   workflow_dispatch:
 
-permissions: {}
+permissions:
+  deployments: read
 
 jobs:
   rebuild:
@@ -26,13 +27,24 @@ jobs:
 
       # The hook answers before the build runs, and scripts/observatory.ts keeps the old data
       # when Cloudflare fails: only production can say whether today's data made it.
+      # Not through tvignoli.com: Bot Fight Mode answers 403 to runners and can't be skipped
+      # on the Free plan. Vercel adds a status with the deployment URL for each build; that URL
+      # sits behind Vercel Authentication, opened by the automation bypass secret.
       # ponytail: reads the last <time dateTime> on /lab/status (the data row); breaks if that row moves.
       - name: Wait for fresh data in production
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: |
+          test -n "$BYPASS" || { echo "::error::VERCEL_AUTOMATION_BYPASS_SECRET secret missing"; exit 1; }
           for _ in $(seq 40); do
             sleep 30
-            got=$(curl -fsS https://tvignoli.com/en/lab/status | grep -oE 'dateTime="[^"]+"' | tail -1 | cut -d'"' -f2) || continue
-            if [[ "$got" > "$SINCE" ]]; then echo "Observatory data from $got"; exit 0; fi
+            id=$(gh api "repos/$GITHUB_REPOSITORY/deployments?environment=Production&per_page=1" --jq '.[0].id') || continue
+            url=$(gh api "repos/$GITHUB_REPOSITORY/deployments/$id/statuses" \
+              --jq '[.[] | select(.state == "success" and .created_at > env.SINCE)][0].environment_url // empty') || continue
+            [ -n "$url" ] || continue
+            got=$(curl -fsS -H "x-vercel-protection-bypass: $BYPASS" "$url/en/lab/status" | grep -oE 'dateTime="[^"]+"' | tail -1 | cut -d'"' -f2) || continue
+            if [[ "$got" > "$SINCE" ]]; then echo "Observatory data from $got on $url"; exit 0; fi
           done
-          echo "::error::Production still shows Observatory data from ${got:-?} (hook at $SINCE): check the Vercel build log and /lab/status"
+          echo "::error::No production build with fresh Observatory data since $SINCE (last seen: ${got:-none} on ${url:-no new deployment}): check the Vercel build log"
           exit 1
