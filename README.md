@@ -43,7 +43,7 @@ Also: `/[locale]/feed.xml` (RSS), `/llms.txt`, `/og-image.png`, `robots.txt`, `s
 
 Three sources, each with its own schedule. None of them sends IP addresses, locations or the text an attacker typed to the site: only counts, times and labels from fixed lists.
 
-**Observatory.** `scripts/observatory.ts` runs before every `next build`. It asks Cloudflare's GraphQL analytics for the last 14 days and reduces paths and user agents to labels (`src/lib/observatory/classify.ts`) before writing `src/data/observatory.json`. A GitHub Action (`.github/workflows/observatory.yml`) calls a Vercel deploy hook every day at 05:17 UTC, so the data is never more than a day old.
+**Observatory.** `scripts/observatory.ts` runs before every `next build`. It asks Cloudflare's GraphQL analytics for the last 14 days and reduces paths and user agents to labels (`src/lib/observatory/classify.ts`) before writing `src/data/observatory.json`. A GitHub Action (`.github/workflows/observatory.yml`) calls a Vercel deploy hook every day at 00:30 UTC, right after the UTC day closes, so the data is never more than a day old. It then waits for the build Vercel reports to GitHub and fails if it fails or never comes.
 
 **Decoys.** A small VM on Oracle Cloud runs [Beelzebub](https://github.com/mariocandela/beelzebub) with fake services on their usual ports, with outbound traffic blocked. Every hour at :05 UTC a script on the VM turns the logs into `decoys.json` and uploads it to a bucket. The site reads it through a read-only link (`DECOYS_URL`) at build time and again at most every hour. The VM's configuration lives in a separate private repository. The file comes from a machine built to be attacked, so `src/lib/decoys.ts` treats it as untrusted input: it rebuilds it field by field and rejects anything out of shape.
 
@@ -55,11 +55,12 @@ Three sources, each with its own schedule. None of them sends IP addresses, loca
 |---|---|
 | A visit | Cloudflare filters it, Vercel serves a static page or regenerates it if it's stale |
 | Push to `main` | Vercel production build: Observatory and decoy data are fetched first |
-| Every day, 05:17 UTC | GitHub Action → Vercel deploy hook → new build |
+| Every day, 00:30 UTC | GitHub Action → Vercel deploy hook → new build; the Action fails if that build fails or takes over 20 min |
 | Every hour, :05 UTC | The decoy VM uploads a fresh `decoys.json` |
 | Every 5 minutes | Cloudflare Worker → `/api/canaries/sync` → Upstash |
 | Page age (ISR) | Canaries 5 min · status 15 min · decoy and port pages 1 h |
 | Every week | Dependabot opens grouped update PRs on `develop` |
+| A pull request, a push to `develop` or `main` | GitHub Action `ci`: lint, typecheck, unit tests |
 
 ## Development
 

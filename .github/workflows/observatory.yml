@@ -9,16 +9,39 @@ on:
     - cron: '30 0 * * *'
   workflow_dispatch:
 
-permissions: {}
+permissions:
+  deployments: read
 
 jobs:
   rebuild:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 25
     steps:
       - name: Trigger Vercel production deploy
         env:
           HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
         run: |
           test -n "$HOOK" || { echo "VERCEL_DEPLOY_HOOK secret missing"; exit 1; }
+          echo "SINCE=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
           curl -fsS -X POST "$HOOK" >/dev/null
+
+      # The hook answers before the build runs: wait for the build Vercel reports to GitHub.
+      # ponytail: build outcome only. A Cloudflare failure inside scripts/observatory.ts keeps
+      # the old data and still builds; /lab/status shows that. Reading the page from here is
+      # blocked twice (Cloudflare Bot Fight Mode, Vercel Firewall "allow only Cloudflare").
+      - name: Wait for the production build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for _ in $(seq 40); do
+            sleep 30
+            id=$(gh api "repos/$GITHUB_REPOSITORY/deployments?environment=Production&per_page=1" --jq '.[0].id') || continue
+            state=$(gh api "repos/$GITHUB_REPOSITORY/deployments/$id/statuses" \
+              --jq '[.[] | select(.created_at > env.SINCE and (.state | IN("success", "failure", "error")))][0].state // empty') || continue
+            case "$state" in
+              success) echo "Production build done"; exit 0 ;;
+              failure|error) echo "::error::The production build after the hook ended in $state: check the Vercel build log"; exit 1 ;;
+            esac
+          done
+          echo "::error::No production build reported within 20 minutes of the hook ($SINCE)"
+          exit 1

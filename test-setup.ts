@@ -9,7 +9,7 @@ const document = window.document;
 (window as unknown as Record<string, unknown>).SyntaxError = globalThis.SyntaxError;
 
 // Make it available globally
-global.window = window as any;
-global.document = document as any;
-global.navigator = window.navigator as any;
+global.window = window as unknown as typeof globalThis.window;
+global.document = document as unknown as Document;
+global.navigator = window.navigator as unknown as Navigator;
 
