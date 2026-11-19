@@ -23,5 +23,8 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
 
   const locale: Locale = resolveLocaleParam(localeParam);
 
-  return <div data-locale={locale}>{children}</div>;
+  // ponytail: <html lang> comes from the root layout, which can't see params and
+  // reads empty headers on static pages, so it's always "en". lang here marks the
+  // content in the server HTML. Full fix: move <html> into this layout.
+  return <div data-locale={locale} lang={locale}>{children}</div>;
 }

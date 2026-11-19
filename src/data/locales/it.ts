@@ -730,6 +730,8 @@ export const it: Translations = {
   labIndex: {
     kicker: "Lab",
     title: "Il Lab",
+    metaTitle: "Lab: honeypot, canary token e traffico bot dal vivo",
+    metaDescription: "Cosa fanno davvero i bot: sul sito, su un server lasciato apposta senza difese e con chiavi finte sparse in giro. Dati dal vivo da un lab di sicurezza.",
     intro: "Questo sito non ha niente da rubare, e i bot ci provano lo stesso. Qui guardo cosa fanno: sul sito vero, su un server lasciato apposta senza difese e con chiavi finte sparse in giro.",
     navLabel: "Esperimenti del Lab",
     prev: "precedente",
