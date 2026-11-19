@@ -1,23 +1,15 @@
 import { MetadataRoute } from 'next';
 import { getArticleSlugs, getArticle } from '@/data/content/articles';
 import { CANARY_CHANNELS } from '@/data/canaries';
-import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '@/lib/i18n/config';
+import { SUPPORTED_LOCALES } from '@/lib/i18n/config';
 import { localizedPath } from '@/lib/i18n/paths';
 import { SITE_URL } from '@/lib/seo/constants';
+import { buildHreflangLanguages as hreflangAlternates } from '@/lib/seo/metadata';
 
 const STATIC_PATHS = [
   '', '/portfolio', '/lab', '/lab/observatory', '/lab/passwords', '/lab/decoys/canaries', '/lab/decoys/ai', '/lab/decoys/ports', '/lab/status', '/lab/homelab', '/lab/compare', '/lab/exposed', '/experience', '/articles', '/cv',
   ...CANARY_CHANNELS.map((c) => `/lab/decoys/canaries/${c}`),
 ];
-
-/** hreflang alternates including x-default (→ default locale) for a locale-agnostic path. */
-function hreflangAlternates(pathWithoutLocale: string) {
-  const languages = Object.fromEntries(
-    SUPPORTED_LOCALES.map((loc) => [loc, `${SITE_URL}${localizedPath(loc, pathWithoutLocale)}`])
-  ) as Record<string, string>;
-  languages['x-default'] = `${SITE_URL}${localizedPath(DEFAULT_LOCALE, pathWithoutLocale)}`;
-  return languages;
-}
 
 export default function sitemap(): MetadataRoute.Sitemap {
   // No lastModified on the static pages: `new Date()` moves on every build, which

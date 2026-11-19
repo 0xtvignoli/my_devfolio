@@ -729,6 +729,8 @@ export const en: Translations = {
   labIndex: {
     kicker: "Lab",
     title: "The Lab",
+    metaTitle: "Lab: honeypots, canary tokens and live bot traffic",
+    metaDescription: "What bots actually do: on this site, on a server left undefended on purpose, and with fake keys scattered around. Live data from a security lab.",
     intro: "This site has nothing to steal, and bots try anyway. Here I watch what they do: on the real site, on a server left with no defences on purpose, and with fake keys scattered around.",
     navLabel: "Lab experiments",
     prev: "previous",
