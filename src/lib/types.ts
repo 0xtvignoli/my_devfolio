@@ -450,6 +450,8 @@ export interface Translations {
     kicker: string;
     title: string;
     intro: string;
+    metaTitle: string;
+    metaDescription: string;
     navLabel: string;
     prev: string;
     next: string;

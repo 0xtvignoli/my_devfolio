@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import type { Locale } from '@/lib/types';
-import { SUPPORTED_LOCALES, DEFAULT_LOCALE } from '@/lib/i18n/config';
+import { SUPPORTED_LOCALES } from '@/lib/i18n/config';
 import { localizedPath, LOCALE_OPEN_GRAPH } from '@/lib/i18n/paths';
 import { SITE_URL, SITE_NAME, DEFAULT_DESCRIPTION } from './constants';
 
@@ -15,12 +15,13 @@ type PageMetadataOptions = {
   noIndex?: boolean;
 };
 
-function buildHreflangLanguages(pathWithoutLocale: string) {
+export function buildHreflangLanguages(pathWithoutLocale: string) {
   const languages = Object.fromEntries(
     SUPPORTED_LOCALES.map((loc) => [loc, `${SITE_URL}${localizedPath(loc, pathWithoutLocale)}`])
   ) as Record<string, string>;
-  // x-default points crawlers to the default-locale version as the fallback.
-  languages['x-default'] = `${SITE_URL}${localizedPath(DEFAULT_LOCALE, pathWithoutLocale)}`;
+  // x-default is the unprefixed URL: proxy.ts redirects it to the visitor's language
+  // (Accept-Language/cookie), Google's pattern for locale-adaptive pages.
+  languages['x-default'] = `${SITE_URL}${pathWithoutLocale}`;
   return languages;
 }
 

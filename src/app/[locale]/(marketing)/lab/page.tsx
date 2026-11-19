@@ -27,7 +27,7 @@ type Props = { params: Promise<{ locale: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locale = resolveLocaleParam((await params).locale);
   const t = getTranslations(locale).labIndex;
-  return createPageMetadata({ title: t.title, description: t.intro, path: '/lab', locale });
+  return createPageMetadata({ title: t.metaTitle, description: t.metaDescription, path: '/lab', locale });
 }
 
 /** How often each row's number can change: the cadence of the page it links to. */
