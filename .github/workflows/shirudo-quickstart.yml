@@ -55,13 +55,13 @@ jobs:
       - name: Run the quickstart and quick guides
         id: guides
         timeout-minutes: 60
-        # The runner's /etc/resolv.conf is the systemd stub (127.0.0.53), which
-        # prepare-runtime.sh drops, leaving the libguestfs appliance without DNS.
+        # The runner's /etc/resolv.conf is the systemd stub (127.0.0.53), which the
+        # libguestfs appliance (networked via passt) cannot reach, so its apt has no DNS.
         # shirudo's CI never hits this: it restores the VM image from its cache.
-        env:
-          TEST_VM_RESOLV_CONF: ${{ runner.temp }}/resolv.conf
+        # ponytail: the runner is discarded after the job, so repoint it host-wide.
         run: |
-          { cat /run/systemd/resolve/resolv.conf 2>/dev/null; printf 'nameserver 1.1.1.1\nnameserver 8.8.8.8\n'; } > "$TEST_VM_RESOLV_CONF"
+          sudo ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
+          grep nameserver /etc/resolv.conf
           set -o pipefail
           sh .github/scripts/guides-ci.sh run 2>&1 | tee evidence/quickstart-transcript.log
 
