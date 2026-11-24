@@ -1,0 +1,84 @@
+# Runs shirudo's own Linux quickstart on a GitHub-hosted runner (KVM + swtpm)
+# and keeps the full transcript as evidence for the article.
+# ponytail: reuses shirudo's CI scripts instead of re-scripting the quickstart;
+# they extract and run the documented command blocks, so docs and proof stay in sync.
+name: shirudo quickstart
+
+on:
+  workflow_dispatch:
+    inputs:
+      shirudo_ref:
+        description: shirudo commit to test (pin it so the article stays reproducible)
+        required: true
+        default: 6514073a6b62bb0ae1e2b55a8ab7dabe8c50e414
+
+permissions:
+  contents: read
+
+concurrency:
+  group: shirudo-quickstart
+  cancel-in-progress: true
+
+jobs:
+  quickstart:
+    runs-on: ubuntu-latest
+    # ponytail: no caches (shirudo's live in their repo), so the first run builds the toolchain cold
+    timeout-minutes: 120
+    steps:
+      - name: Check out shirudo
+        uses: actions/checkout@v4
+        with:
+          repository: shirudo-dev/shirudo
+          ref: ${{ inputs.shirudo_ref }}
+          persist-credentials: false
+
+      - name: Record the environment
+        run: |
+          mkdir -p evidence
+          {
+            echo "shirudo commit: $(git rev-parse HEAD)"
+            echo "runner: $RUNNER_NAME ($RUNNER_OS/$RUNNER_ARCH)"
+            uname -a
+            lscpu | grep -E 'Model name|Virtualization|^CPU\(s\)'
+            ls -l /dev/kvm
+          } | tee evidence/environment.txt
+
+      # Public prerelease, SHA-256 pinned inside kernel-artifact.sh; no token needed.
+      - name: Download the test kernel (bpf-next + shirudo patches)
+        run: testing/vm/kernel-artifact.sh download
+
+      - name: Prepare host (KVM access, clang 23, QEMU, swtpm, static deps)
+        env:
+          KERNEL_CI_ARTIFACT_DIR: ${{ github.workspace }}/build/kernel-ci-artifact
+        run: .github/scripts/tests.sh setup
+
+      - name: Run the quickstart and quick guides
+        id: guides
+        timeout-minutes: 60
+        run: |
+          set -o pipefail
+          sh .github/scripts/guides-ci.sh run 2>&1 | tee evidence/quickstart-transcript.log
+
+      - name: Summarize the evidence
+        if: always()
+        run: |
+          log=evidence/quickstart-transcript.log
+          {
+            echo "## shirudo quickstart — outcome: ${{ steps.guides.outcome }}"
+            echo '```'
+            cat evidence/environment.txt
+            echo '```'
+            echo "### Key lines (tamper refused, signed load, attestation)"
+            echo '```'
+            grep -E 'Permission denied|verdict:|attestation key|OK |FAIL' "$log" 2>/dev/null | head -40 || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          cp build/test-vm/vms/quickstart/console.log evidence/guest-console.log 2>/dev/null || true
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: shirudo-quickstart-evidence
+          path: evidence/
+          retention-days: 90
