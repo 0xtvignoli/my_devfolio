@@ -63,7 +63,8 @@ jobs:
           LIBGUESTFS_DEBUG: 1
         run: |
           echo '--- host'; cat /etc/resolv.conf; ip -br addr; command -v passt && passt --version | head -1
-          echo '--- appliance'
+          echo '--- appliance (host kernel made readable)'
+          sudo chmod 0644 /boot/vmlinuz-*
           guestfish --network -a /dev/null run : debug sh \
             'cat /etc/resolv.conf; ip addr; ip route; ping -c1 -W3 1.1.1.1; nslookup archive.ubuntu.com || getent hosts archive.ubuntu.com' \
             2>&1 | grep -vE '^libguestfs: (trace|command: run: \\ )' | tail -150
