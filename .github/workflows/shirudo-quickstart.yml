@@ -65,8 +65,12 @@ jobs:
           img=ubuntu-26.04-server-cloudimg-amd64.img
           curl -fsSL -o "$RUNNER_TEMP/$img" "https://cloud-images.ubuntu.com/releases/server/26.04/release/$img"
           qemu-img create -q -f qcow2 -F qcow2 -b "$RUNNER_TEMP/$img" "$RUNNER_TEMP/probe.qcow2"
+          # Same trick prepare-runtime.sh uses as root: a passt that fails --help makes
+          # libguestfs fall back to qemu user networking (slirp).
+          mkdir -p "$RUNNER_TEMP/no-passt" && printf '#!/bin/sh\nexit 127\n' > "$RUNNER_TEMP/no-passt/passt" && chmod +x "$RUNNER_TEMP/no-passt/passt"
+          export PATH="$RUNNER_TEMP/no-passt:$PATH"
           virt-customize -a "$RUNNER_TEMP/probe.qcow2" --network --no-selinux-relabel --run-command \
-            '{ cat /etc/resolv.conf; for ns in 169.254.2.2 168.63.129.16 1.1.1.1 8.8.8.8; do echo "nameserver $ns" > /etc/resolv.conf; echo "== $ns: $(timeout 10 getent hosts archive.ubuntu.com | head -1)"; done; } > /root/probe.txt 2>&1; true'
+            '{ cat /etc/resolv.conf; for ns in 10.0.2.3 168.63.129.16 1.1.1.1 8.8.8.8; do echo "nameserver $ns" > /etc/resolv.conf; echo "== $ns: $(timeout 10 getent hosts archive.ubuntu.com | head -1)"; done; } > /root/probe.txt 2>&1; true'
           virt-cat -a "$RUNNER_TEMP/probe.qcow2" /root/probe.txt
 
       - name: Run the quickstart and quick guides
