@@ -77,13 +77,19 @@ jobs:
         if: ${{ !inputs.diagnose }}
         id: guides
         timeout-minutes: 60
-        # Ubuntu keeps /boot/vmlinuz-* root-only. shirudo's build-bundle.sh then boots
-        # the libguestfs appliance on a downloaded generic kernel, which comes up without
-        # working network, so apt in the cold VM image build cannot resolve anything.
-        # On the host kernel the appliance networks fine (diagnose run 45564615714).
+        # The cold VM image build runs apt inside libguestfs. Networked through passt (the
+        # default as non-root), the appliance with the 26.04 image attached gets no working
+        # network on this runner; with qemu user networking it resolves fine (diagnose run
+        # 45582033906). prepare-runtime.sh already forces that fallback when run as root,
+        # with a passt that fails --help; do the same as the runner user.
         # shirudo's CI never hits this: it restores the VM image from its cache.
+        # The readable host kernel is the configuration that diagnose run validated.
         run: |
           sudo chmod 0644 /boot/vmlinuz-*
+          mkdir -p "$RUNNER_TEMP/no-passt"
+          printf '#!/bin/sh\nexit 127\n' > "$RUNNER_TEMP/no-passt/passt"
+          chmod +x "$RUNNER_TEMP/no-passt/passt"
+          export PATH="$RUNNER_TEMP/no-passt:$PATH"
           set -o pipefail
           sh .github/scripts/guides-ci.sh run 2>&1 | tee evidence/quickstart-transcript.log
 
