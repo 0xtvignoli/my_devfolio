@@ -66,7 +66,8 @@ jobs:
           curl -fsSL -o "$RUNNER_TEMP/$img" "https://cloud-images.ubuntu.com/releases/server/26.04/release/$img"
           qemu-img create -q -f qcow2 -F qcow2 -b "$RUNNER_TEMP/$img" "$RUNNER_TEMP/probe.qcow2"
           virt-customize -a "$RUNNER_TEMP/probe.qcow2" --network --no-selinux-relabel --run-command \
-            'set -x; ls -l /etc/resolv.conf; cat /etc/resolv.conf; ls -l /run/systemd/resolve 2>&1; getent hosts archive.ubuntu.com; echo "nameserver 169.254.2.2" > /tmp/r; getent -s dns hosts archive.ubuntu.com; true' 2>&1 | tail -60
+            '{ set -x; ls -l /etc/resolv.conf; cat /etc/resolv.conf; getent hosts archive.ubuntu.com; apt-get -q update; } > /root/probe.txt 2>&1; true'
+          virt-cat -a "$RUNNER_TEMP/probe.qcow2" /root/probe.txt
 
       - name: Run the quickstart and quick guides
         if: ${{ !inputs.diagnose }}
