@@ -11,10 +11,6 @@ on:
         description: shirudo commit to test (pin it so the article stays reproducible)
         required: true
         default: 6514073a6b62bb0ae1e2b55a8ab7dabe8c50e414
-      diagnose:
-        description: Only probe the libguestfs appliance network, skip the quickstart
-        type: boolean
-        default: false
 
 permissions:
   contents: read
@@ -56,34 +52,16 @@ jobs:
           KERNEL_CI_ARTIFACT_DIR: ${{ github.workspace }}/build/kernel-ci-artifact
         run: .github/scripts/tests.sh setup
 
-      # Same appliance + networking virt-customize uses in prepare-runtime.sh, run as the runner user.
-      - name: Probe the libguestfs appliance network
-        if: inputs.diagnose
-        # Same cloud image and virt-customize --network --run-command path as prepare-runtime.sh.
-        run: |
-          sudo chmod 0644 /boot/vmlinuz-*
-          img=ubuntu-26.04-server-cloudimg-amd64.img
-          curl -fsSL -o "$RUNNER_TEMP/$img" "https://cloud-images.ubuntu.com/releases/server/26.04/release/$img"
-          qemu-img create -q -f qcow2 -F qcow2 -b "$RUNNER_TEMP/$img" "$RUNNER_TEMP/probe.qcow2"
-          # Same trick prepare-runtime.sh uses as root: a passt that fails --help makes
-          # libguestfs fall back to qemu user networking (slirp).
-          mkdir -p "$RUNNER_TEMP/no-passt" && printf '#!/bin/sh\nexit 127\n' > "$RUNNER_TEMP/no-passt/passt" && chmod +x "$RUNNER_TEMP/no-passt/passt"
-          export PATH="$RUNNER_TEMP/no-passt:$PATH"
-          virt-customize -a "$RUNNER_TEMP/probe.qcow2" --network --no-selinux-relabel --run-command \
-            '{ cat /etc/resolv.conf; for ns in 10.0.2.3 168.63.129.16 1.1.1.1 8.8.8.8; do echo "nameserver $ns" > /etc/resolv.conf; echo "== $ns: $(timeout 10 getent hosts archive.ubuntu.com | head -1)"; done; } > /root/probe.txt 2>&1; true'
-          virt-cat -a "$RUNNER_TEMP/probe.qcow2" /root/probe.txt
-
       - name: Run the quickstart and quick guides
-        if: ${{ !inputs.diagnose }}
         id: guides
         timeout-minutes: 60
         # The cold VM image build runs apt inside libguestfs. Networked through passt (the
         # default as non-root), the appliance with the 26.04 image attached gets no working
-        # network on this runner; with qemu user networking it resolves fine (diagnose run
-        # 45582033906). prepare-runtime.sh already forces that fallback when run as root,
-        # with a passt that fails --help; do the same as the runner user.
+        # network on this runner; with qemu user networking it resolves fine (probe run
+        # 45582033906, full run 45597020318). prepare-runtime.sh already forces that
+        # fallback as root, with a passt that fails --help; do the same as the runner user.
         # shirudo's CI never hits this: it restores the VM image from its cache.
-        # The readable host kernel is the configuration that diagnose run validated.
+        # ponytail: the readable host kernel is the validated config; untested without it.
         run: |
           sudo chmod 0644 /boot/vmlinuz-*
           mkdir -p "$RUNNER_TEMP/no-passt"
