@@ -11,6 +11,10 @@ on:
         description: shirudo commit to test (pin it so the article stays reproducible)
         required: true
         default: 6514073a6b62bb0ae1e2b55a8ab7dabe8c50e414
+      diagnose:
+        description: Only probe the libguestfs appliance network, skip the quickstart
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -52,7 +56,20 @@ jobs:
           KERNEL_CI_ARTIFACT_DIR: ${{ github.workspace }}/build/kernel-ci-artifact
         run: .github/scripts/tests.sh setup
 
+      # Same appliance + networking virt-customize uses in prepare-runtime.sh, run as the runner user.
+      - name: Probe the libguestfs appliance network
+        if: inputs.diagnose
+        env:
+          LIBGUESTFS_DEBUG: 1
+        run: |
+          echo '--- host'; cat /etc/resolv.conf; ip -br addr; command -v passt && passt --version | head -1
+          echo '--- appliance'
+          guestfish --network -a /dev/null run : debug sh \
+            'cat /etc/resolv.conf; ip addr; ip route; ping -c1 -W3 1.1.1.1; nslookup archive.ubuntu.com || getent hosts archive.ubuntu.com' \
+            2>&1 | grep -vE '^libguestfs: (trace|command: run: \\ )' | tail -150
+
       - name: Run the quickstart and quick guides
+        if: ${{ !inputs.diagnose }}
         id: guides
         timeout-minutes: 60
         # The runner's /etc/resolv.conf is the systemd stub (127.0.0.53), which the
