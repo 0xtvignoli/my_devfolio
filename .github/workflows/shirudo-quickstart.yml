@@ -55,13 +55,19 @@ jobs:
       - name: Run the quickstart and quick guides
         id: guides
         timeout-minutes: 60
-        # The runner's /etc/resolv.conf is the systemd stub (127.0.0.53), which the
-        # libguestfs appliance (networked via passt) cannot reach, so its apt has no DNS.
+        # The cold VM image build runs apt inside libguestfs. Networked through passt (the
+        # default as non-root), the appliance with the 26.04 image attached gets no working
+        # network on this runner; with qemu user networking it resolves fine (probe run
+        # 45582033906, full run 45597020318). prepare-runtime.sh already forces that
+        # fallback as root, with a passt that fails --help; do the same as the runner user.
         # shirudo's CI never hits this: it restores the VM image from its cache.
-        # ponytail: the runner is discarded after the job, so repoint it host-wide.
+        # ponytail: the readable host kernel is the validated config; untested without it.
         run: |
-          sudo ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
-          grep nameserver /etc/resolv.conf
+          sudo chmod 0644 /boot/vmlinuz-*
+          mkdir -p "$RUNNER_TEMP/no-passt"
+          printf '#!/bin/sh\nexit 127\n' > "$RUNNER_TEMP/no-passt/passt"
+          chmod +x "$RUNNER_TEMP/no-passt/passt"
+          export PATH="$RUNNER_TEMP/no-passt:$PATH"
           set -o pipefail
           sh .github/scripts/guides-ci.sh run 2>&1 | tee evidence/quickstart-transcript.log
 
