@@ -116,172 +116,200 @@ const articlesContent: Omit<Article, 'title' | 'description' | 'content'>[] = [
 const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'description' | 'content' | 'caseStudy'>>> = {
   'shirudo-signed-ebpf-lab': {
     en: {
-      "title": "Lab: signed eBPF and TPM attestation with shirudo, reproduced on a GitHub runner",
-      "description": "What it looks like when root can no longer load unsigned BPF: a public, reproducible run of shirudo's quickstart on a KVM-enabled GitHub Actions runner, with the transcript as evidence.",
-      "caseStudy": {
-        "facts": [
-          {
-            "label": "Tool",
-            "value": "shirudo (pre-release, BSD-2)",
-            "mono": true
-          },
-          {
-            "label": "Runner",
-            "value": "ubuntu-latest · KVM · swtpm",
-            "mono": true
-          },
-          {
-            "label": "Kernel",
-            "value": "bpf-next + shirudo patches",
-            "mono": true
-          },
-          {
-            "label": "Run",
-            "value": "11 min, cold, verdict: ok"
-          }
-        ],
-        "timeline": [
-          {
-            "when": "run 1-3",
-            "kind": "event",
-            "title": "apt can't resolve anything",
-            "body": "The cold VM image build fails inside libguestfs: 'Temporary failure resolving archive.ubuntu.com'."
-          },
-          {
-            "when": "two guesses",
-            "kind": "decision",
-            "title": "Host DNS, then host kernel",
-            "body": "Both plausible, both wrong. Each cost a 10-minute run and proved nothing."
-          },
-          {
-            "when": "probes",
-            "kind": "event",
-            "title": "Measure inside the real image",
-            "body": "Through passt the appliance has no network at all; through qemu user networking every resolver answers."
-          },
-          {
-            "when": "fix",
-            "kind": "event",
-            "title": "Same fallback shirudo uses as root",
-            "body": "A passt that fails --help in PATH. The full quickstart passes in 11 minutes."
-          }
-        ]
-      },
+      "title": "Root can't load this: signed eBPF and TPM attestation, tested on a GitHub runner",
+      "description": "A hands-on lab with shirudo: why signing eBPF is harder than it looks, how a TPM keeps a record root can't rewrite, and one public run that shows every step.",
       "content": [
         {
           "type": "heading",
           "level": 2,
-          "content": "Root is not the last word"
+          "content": "An attacker with root"
         },
         {
           "type": "paragraph",
-          "content": "On a normal Linux host, root can load any eBPF program it likes: attach to syscalls, read kernel memory through helpers, detach whatever security tooling is running. Every eBPF-based defence has the same weak spot: whoever gets root can unload it."
+          "content": "Picture an attacker who got root on a Linux server. Many of the defences on that server are eBPF programs: small programs loaded into the running kernel by runtime security agents, network policy, auditing. Whoever can load eBPF can load their own programs too, or detach yours."
         },
         {
           "type": "paragraph",
-          "content": "[shirudo](https://shirudo.dev/) moves that boundary. After boot it lets the kernel accept BPF only from loaders signed with the operator's ML-DSA-87 key, measures every load into the TPM, and can prove to a remote verifier which programs are running. Functionality ships as signed upatches pulled from an OCI registry: live patches, sandboxes, observability probes."
+          "content": "Here is root on an ordinary Ubuntu kernel, a GitHub Actions runner, loading the smallest valid eBPF program with a raw `bpf()` system call. Two instructions, `r0 = 0; exit`, and no signature:"
+        },
+        {
+          "type": "code",
+          "language": "python",
+          "filename": "unsigned-load.py (excerpt)",
+          "code": "# r0 = 0; exit -- the smallest valid eBPF program, no signature\ninsns = struct.pack(\"<BBhiBBhi\", 0xb7, 0, 0, 0, 0x95, 0, 0, 0)\n# bpf_attr: prog_type=SOCKET_FILTER, insn_cnt=2, insns, license\nstruct.pack_into(\"<IIQQ\", attr, 0, 1, 2, addressof(insns), addressof(lic))\nfd = libc.syscall(NR_BPF, BPF_PROG_LOAD, attr, 128)"
+        },
+        {
+          "type": "code",
+          "language": "console",
+          "filename": "runner, stock kernel",
+          "code": "runner$ sudo python3 unsigned-load.py\nkernel 7.0.0-1016-aws, uid 0\nbpf(BPF_PROG_LOAD, unsigned): loaded, fd 4"
         },
         {
           "type": "paragraph",
-          "content": "This article is not a review. It is a lab: run the documented quickstart on infrastructure anyone can inspect, keep the transcript, and look at what the evidence actually says."
+          "content": "Accepted, no questions asked. The rest of this article is about a kernel where the same call fails, and about how someone outside the server can check that it does."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Where it can run"
+          "content": "The map: three questions"
         },
         {
           "type": "paragraph",
-          "content": "The quickstart boots a QEMU target with a software TPM (swtpm), so the host needs `/dev/kvm`. The target needs a kernel with the signed-loader ABI and a few new LSM hooks; upstream does not have them yet, and shirudo publishes a bpf-next CI kernel as a SHA-256-pinned prerelease."
+          "content": "[shirudo](https://shirudo.dev/) is a pre-release open-source project that answers three separate questions. Keeping them apart makes everything else easier to follow."
         },
         {
           "type": "list",
           "items": [
-            "GitHub Actions, `ubuntu-latest`: KVM is exposed on hosted Linux runners. Public, reproducible, free for public repos. This is what I used.",
-            "Oracle Cloud VMs: no nested virtualisation on standard shapes (Ampere A1 included), so no quickstart. You could make the VM itself the target with the test kernel and a vTPM, which is a different, harder lab.",
-            "A local machine or WSL2: works if your user can open `/dev/kvm`. Fastest for iterating, but the evidence stays on your disk."
+            "What may the kernel load? Only programs signed with the operator's key. This is signing.",
+            "What has been loaded? Every load is recorded in the TPM, a chip that can add to a record but never rewrite it. This is measurement.",
+            "How does someone outside know? The TPM signs that record on request, and a remote verifier checks it. This is attestation."
+          ],
+          "ordered": true
+        },
+        {
+          "type": "paragraph",
+          "content": "Two roles appear throughout. The operator is the machine that holds the signing key and builds programs. The target is the server being protected. In this lab both live on one GitHub runner: the operator is the runner itself, the target is a QEMU virtual machine with a software TPM."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "content": "Concept 1: why you can't just sign the .o file"
+        },
+        {
+          "type": "paragraph",
+          "content": "The obvious idea is to compile the eBPF program, sign the object file and have the kernel check the signature. It doesn't work, because the bytes the kernel finally receives are not the bytes you compiled."
+        },
+        {
+          "type": "paragraph",
+          "content": "The loader library, libbpf, rewrites the program on the target machine. It patches in the file descriptors of the program's maps, which are different on every run, and adjusts structure offsets to the running kernel's layout (CO-RE). The [kernel documentation](https://docs.kernel.org/bpf/signing.html) says it plainly: there is no fixed byte string that is both signable at build time and what the kernel actually loads."
+        },
+        {
+          "type": "paragraph",
+          "content": "The fix is to sign something that doesn't change: a small loader program with the real programs packed into its data. The kernel checks one signature over the loader and its data, and the trusted loader then does the machine-specific rewriting from inside the kernel. Alexei Starovoitov, one of the BPF maintainers, [compares it](https://lwn.net/Articles/1042625/) to a signed self-extracting archive: you don't sign each file as it lands on disk, you sign the archive and trust what it unpacks."
+        },
+        {
+          "type": "paragraph",
+          "content": "shirudo adds a BPF LSM program, a kernel hook that can say no, which refuses every load from userspace that isn't such a signed loader. shirudo calls a signed bundle like this an upatch."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "content": "Concept 2: a record root can't rewrite"
+        },
+        {
+          "type": "paragraph",
+          "content": "Refusing unsigned loads is half the story. An operator also wants to know what a server is running, and the server's own answer is worth little if root controls it: \"status: ok\" is exactly what an attacker would print."
+        },
+        {
+          "type": "paragraph",
+          "content": "A TPM register can't be set to a value, only extended: new value = SHA-256(old value + event). Think of a ledger where every page carries the fingerprint of the page before. The final value depends on every event and on their order, and no event can be taken out afterwards. shirudo keeps its own register in the TPM, starts it from zero at every boot and extends it after each load or unload. If the recording fails, the load is undone."
+        },
+        {
+          "type": "paragraph",
+          "content": "A hash doesn't say what was loaded, so beside the register shirudo keeps an event log in plain text. On its own the log proves nothing. It becomes trustworthy when replaying it from zero gives exactly the register's value."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "content": "Concept 3: a signed snapshot with a date on it"
+        },
+        {
+          "type": "paragraph",
+          "content": "To prove the register's value to someone else, the TPM produces a quote: the values signed with an attestation key that never leaves the chip. The verifier first sends a random nonce, and the TPM includes it in what it signs. A quote is a photo of the register with today's newspaper in the frame, so an old photo can't be passed off as a new one."
+        },
+        {
+          "type": "paragraph",
+          "content": "The verifier checks the signature and the nonce, replays the event log, and compares the result with what it expects from the upatches it signed itself."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "content": "The lab, step by step"
+        },
+        {
+          "type": "paragraph",
+          "content": "Every output below comes from [one public GitHub Actions run](https://github.com/0xtvignoli/my_devfolio/actions/runs/45851839881). `operator$` commands run on the runner; `target#` commands run as root inside the shirudo VM."
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Step 1: the same load, refused"
+        },
+        {
+          "type": "code",
+          "language": "console",
+          "filename": "shirudo target",
+          "code": "target# python3 unsigned-load.py\nkernel 7.4-shirudo-ci-20261123, uid 0\nbpf(BPF_PROG_LOAD, unsigned): refused, EACCES (Permission denied)"
+        },
+        {
+          "type": "paragraph",
+          "content": "What just happened: same user, same two instructions, same system call. Only the kernel changed. On the target, shirudo's LSM refused the load because it wasn't a signed loader, and EACCES is that refusal."
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Step 2: root can't touch shirudo either"
+        },
+        {
+          "type": "code",
+          "language": "console",
+          "filename": "shirudo target",
+          "code": "target# shirudo status\nStatus:                ok\n  LsmAttached        OK      lsm/bpf link present and pinned\n  KeyringSealed      OK      bpf serial 183078568, dm-verity serial 287240165, pins match\n  ChainIntact        OK      live register equals the eventlog replay\n\ntarget# /usr/local/bin/shirudo status\nshirudo: image state: Permission denied\n\ntarget# cat /run/shirudo/bpffs/tamper\ncat: /run/shirudo/bpffs/tamper: Permission denied"
+        },
+        {
+          "type": "paragraph",
+          "content": "What just happened: the first command is the trusted shirudo binary, and it reports enforcement active, the signing keyring sealed and the register consistent with its log. The second is a byte-for-byte copy of the same binary, and it is refused. The third is root trying to read shirudo's own BPF maps, also refused."
+        },
+        {
+          "type": "paragraph",
+          "content": "Access to shirudo's state depends on where the binary was executed from, a read-only runtime image whose integrity the kernel checks, not on who runs it or what the file contains. Copying the binary doesn't copy the authority."
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Step 3: a signed upatch loads and is recorded"
+        },
+        {
+          "type": "code",
+          "language": "console",
+          "filename": "operator and target",
+          "code": "operator$ shirudo build testing/fixtures/basic.bpf.c --keys-dir \"$KEYS\" \\\n            --vmlinux vendor/linux/vmlinux.h -o basic.upatch\n\ntarget# shirudo upatch load basic.upatch\nupatch load: signed loader accepted, keyring 183078568, 124 instructions\nupatch load: loader ran, 0 maps and 1 programs\nupatch load: program 0 (fentry) pinned at /run/shirudo/bpffs/upatches/basic/link\nupatch load: basic loaded, 1 programs, keyring 183078568\nupatch load: basic measured, register 4a7faba4e8b562b761465799104beae6d40029eac7253616cb8248e3139287fb"
+        },
+        {
+          "type": "paragraph",
+          "content": "What just happened: the operator compiled a small program that runs at the entry of a kernel function, and signed it with its key. On the target the kernel checked the signature against a sealed keyring, the loader unpacked the program, and before reporting success shirudo extended the register. The last line is the register's new value."
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Step 4: proving it from outside"
+        },
+        {
+          "type": "code",
+          "language": "console",
+          "filename": "operator and target (excerpt)",
+          "code": "target#   shirudo attest --nonce=<nonce> --output=/mnt/shirudo-out/ev.json\noperator$ shirudo attest verify --evidence=\"$EV\" --nonce=\"$NONCE\" \\\n            --ak-name=\"$(jq -r .ak.name \"$EV\")\" --expect-chain=<register-after-events>\n  OK    nonce matches the request\n  OK    attestation key: restricted, fixed to this TPM\n  OK    quote: ECDSA signature by the attestation key\n  OK    quote: carries the nonce\n  OK    register: certified contents match the listed value\n  OK    eventlog: 2 records replay to the certified value\n  OK    state: register equals the expected value\n  NOTE  event after boot: upatch_load basic\nverdict: ok"
+        },
+        {
+          "type": "paragraph",
+          "content": "What just happened: the operator sent a fresh nonce, and the target's TPM returned a quote, a signed copy of the register and the event log. The verifier confirmed the key belongs to this TPM, checked signatures and nonce, replayed two log records (the boot and the upatch load) to the certified value, and found the register equal to what it predicted. If root had loaded anything else or edited the log, one of these lines would fail."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "content": "Run it yourself"
+        },
+        {
+          "type": "paragraph",
+          "content": "The [workflow](https://github.com/0xtvignoli/my_devfolio/blob/main/.github/workflows/shirudo-quickstart.yml) pins a shirudo commit, downloads shirudo's test kernel from its public release and verifies its checksum, prepares the host with shirudo's own CI scripts, and runs the quickstart by executing the command blocks from its documentation, so the docs and the proof can't drift apart. Transcript, environment and VM console are kept as artifacts. A cold run takes about 11 minutes."
+        },
+        {
+          "type": "list",
+          "items": [
+            "GitHub Actions, `ubuntu-latest`: hosted Linux runners expose `/dev/kvm`. Public and free for public repositories. Used here.",
+            "Oracle Cloud VMs: standard shapes, Ampere A1 included, don't offer nested virtualisation, so there is no QEMU target. Making the VM itself the target, with the test kernel and a vTPM, is a different and harder lab.",
+            "Your own machine or WSL2: works if your user can open `/dev/kvm`. Fastest for experimenting, but the evidence stays local."
           ]
-        },
-        {
-          "type": "heading",
-          "level": 2,
-          "content": "The workflow"
-        },
-        {
-          "type": "paragraph",
-          "content": "Rather than re-scripting the quickstart, the [workflow](https://github.com/0xtvignoli/my_devfolio/blob/main/.github/workflows/shirudo-quickstart.yml) reuses shirudo's own CI scripts. Their guide checker extracts every documented command block and runs it in order, so the documentation and the proof can't drift apart. shirudo is pinned to a commit, the kernel comes from the public release with its checksum verified, and the transcript, environment and guest console are uploaded as artifacts."
-        },
-        {
-          "type": "heading",
-          "level": 2,
-          "content": "Evidence 1: root is refused"
-        },
-        {
-          "type": "paragraph",
-          "content": "Inside the target, as root: shirudo's state and maps are off limits to anything without runtime authority. Not by convention: the BPF LSM refuses the call."
-        },
-        {
-          "type": "code",
-          "language": "console",
-          "filename": "quickstart transcript",
-          "code": "target# shirudo status\nStatus:                ok\nConditions:\n TYPE               STATUS  DETAIL\n LsmAttached        OK      lsm/bpf link present and pinned\n KeyringSealed      OK      bpf serial 897959048, dm-verity serial 260509685, pins match\n ChainIntact        OK      live register equals the eventlog replay\n UpatchesMeasured   OK      every pinned or archived upatch is in this boot's records\n TpmMeasured        OK      NV index 0x01818E00 readable\n\ntarget# /usr/local/bin/shirudo status        # a copy without runtime authority\nshirudo: image state: Permission denied\n\ntarget# cat /run/shirudo/bpffs/tamper         # root, poking shirudo's own maps\ncat: /run/shirudo/bpffs/tamper: Permission denied"
-        },
-        {
-          "type": "heading",
-          "level": 2,
-          "content": "Evidence 2: a signed upatch loads and is measured"
-        },
-        {
-          "type": "paragraph",
-          "content": "The operator builds and signs a small fentry program. On the target the kernel checks the loader's signature against a sealed keyring before running it, and the load is extended into a TPM-backed register before shirudo reports success. If the measurement fails, the load is undone."
-        },
-        {
-          "type": "code",
-          "language": "console",
-          "filename": "quickstart transcript",
-          "code": "operator$ shirudo build testing/fixtures/basic.bpf.c --keys-dir \"$KEYS\" \\\n            --vmlinux vendor/linux/vmlinux.h -o basic.upatch\n\ntarget# shirudo upatch load basic.upatch\nupatch load: signed loader accepted, keyring 897959048, 124 instructions\nupatch load: loader ran, 0 maps and 1 programs\nupatch load: program 0 (fentry) pinned at /run/shirudo/bpffs/upatches/basic/link\nupatch load: basic loaded, 1 programs, keyring 897959048\nupatch load: basic measured, register a8c2258378dbd5e1aa12eadf2054da1a6a8e32eac285ab1cfb4c95e3c229de93"
-        },
-        {
-          "type": "heading",
-          "level": 2,
-          "content": "Evidence 3: the TPM vouches for it"
-        },
-        {
-          "type": "paragraph",
-          "content": "The operator sends a fresh nonce; the target returns a TPM quote plus its event log. Verification replays the log, checks the quote signature and the key it came from, and compares the result with what the operator predicted from the upatches it signed."
-        },
-        {
-          "type": "code",
-          "language": "console",
-          "filename": "quickstart transcript",
-          "code": "target#   shirudo attest --nonce=<nonce> --output=/mnt/shirudo-out/ev.json\noperator$ shirudo attest verify --evidence=\"$EV\" --nonce=\"$NONCE\" \\\n            --ak-name=\"$(jq -r .ak.name \"$EV\")\" --expect-chain=<register-after-events>\n  OK    nonce matches the request\n  OK    attestation key: restricted, fixed to this TPM\n  OK    quote: ECDSA signature by the attestation key\n  OK    eventlog: 2 records replay to the certified value\n  OK    anchor: PCR 9 equals the recorded value extended by the anchor\n  OK    state: register equals the expected value\n  NOTE  event after boot: upatch_load basic\nverdict: ok"
-        },
-        {
-          "type": "paragraph",
-          "content": "The full run, with the first-upatch, publish-package and attest-target guides as well, is [public](https://github.com/0xtvignoli/my_devfolio/actions/runs/45847634795): 11 minutes on a cold runner."
-        },
-        {
-          "type": "heading",
-          "level": 2,
-          "content": "What went wrong first"
-        },
-        {
-          "type": "paragraph",
-          "content": "The first three runs never reached the quickstart. Building the target image runs `apt` inside a libguestfs appliance, and it could not resolve `archive.ubuntu.com`. shirudo's own CI never hits this, because it restores that image from cache."
-        },
-        {
-          "type": "paragraph",
-          "content": "I guessed twice: first the runner's stub resolver, then the kernel libguestfs boots. Both were plausible, both were wrong, and each cost a ten-minute run. What worked was measuring in the right place: a probe that runs `virt-customize` on the real 26.04 image and tries each resolver from inside it. Through `passt`, the default network backend as non-root, [nothing answered](https://github.com/0xtvignoli/my_devfolio/actions/runs/45580976661). Through qemu's user networking, [everything did](https://github.com/0xtvignoli/my_devfolio/actions/runs/45582033906)."
-        },
-        {
-          "type": "code",
-          "language": "bash",
-          "filename": "shirudo-quickstart.yml",
-          "code": "# libguestfs uses passt as non-root; on this runner the appliance with the\n# 26.04 image attached gets no network. A passt that fails --help makes it\n# fall back to qemu user networking, as shirudo already does when run as root.\nmkdir -p \"$RUNNER_TEMP/no-passt\"\nprintf '#!/bin/sh\\nexit 127\\n' > \"$RUNNER_TEMP/no-passt/passt\"\nchmod +x \"$RUNNER_TEMP/no-passt/passt\"\nexport PATH=\"$RUNNER_TEMP/no-passt:$PATH\""
-        },
-        {
-          "type": "paragraph",
-          "content": "The lesson is not about passt. It is that a probe in the right place beats two careful guesses in the wrong one."
         },
         {
           "type": "heading",
@@ -291,180 +319,222 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         {
           "type": "list",
           "items": [
-            "shirudo is pre-release: no tagged version yet, and the quickstart runs on a patched bpf-next kernel, not something you would deploy.",
-            "The TPM here is swtpm. The attestation flow is real; the hardware root of trust is simulated.",
-            "The passt workaround is specific to this runner image. Pinning the shirudo commit keeps the run reproducible, not the runner."
+            "The kernel is patched. The lab runs a bpf-next 7.4 kernel with shirudo's patches. Signed BPF loaders reached mainline in Linux 6.18, but LSM maintainers still dispute the design, and shirudo needs hooks mainline doesn't have.",
+            "The TPM is simulated (swtpm), and QEMU boots the kernel directly instead of from a signed, measured kernel image. The attestation flow is real; the hardware root of trust is not.",
+            "shirudo is pre-release, with no tagged version yet.",
+            "The signing key becomes the boundary. Whoever holds it can load anything. The design moves trust from root on every server to one key that never needs to be on a server."
           ]
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "content": "A note from the lab"
+        },
+        {
+          "type": "paragraph",
+          "content": "The first three runs never reached the quickstart. Building the target image runs `apt` inside a helper VM (libguestfs), and it couldn't resolve a single hostname. shirudo's own CI never sees this, because it restores that image from cache."
+        },
+        {
+          "type": "paragraph",
+          "content": "I guessed twice, first the runner's DNS stub and then the kernel, and each wrong guess cost a ten-minute run. What worked was measuring where the failure happened: a probe inside the real image, trying one resolver at a time. Through passt, the network backend libguestfs uses without root, [nothing answered](https://github.com/0xtvignoli/my_devfolio/actions/runs/45580976661). Through QEMU's built-in user networking, [everything did](https://github.com/0xtvignoli/my_devfolio/actions/runs/45582033906). The fix is a fake `passt` that makes libguestfs fall back, the same trick shirudo applies when it runs as root. Measure before you guess."
         }
       ]
     },
     it: {
-      "title": "Lab: eBPF firmato e attestazione TPM con shirudo, riprodotto su un runner GitHub",
-      "description": "Cosa succede quando root non può più caricare BPF non firmato: un'esecuzione pubblica e riproducibile del quickstart di shirudo su un runner GitHub Actions con KVM, con la trascrizione come prova.",
-      "caseStudy": {
-        "facts": [
-          {
-            "label": "Strumento",
-            "value": "shirudo (pre-release, BSD-2)",
-            "mono": true
-          },
-          {
-            "label": "Runner",
-            "value": "ubuntu-latest · KVM · swtpm",
-            "mono": true
-          },
-          {
-            "label": "Kernel",
-            "value": "bpf-next + patch di shirudo",
-            "mono": true
-          },
-          {
-            "label": "Run",
-            "value": "11 min, senza cache, verdict: ok"
-          }
-        ],
-        "timeline": [
-          {
-            "when": "run 1-3",
-            "kind": "event",
-            "title": "apt non risolve niente",
-            "body": "La costruzione da zero dell'immagine della VM fallisce dentro libguestfs: 'Temporary failure resolving archive.ubuntu.com'."
-          },
-          {
-            "when": "due ipotesi",
-            "kind": "decision",
-            "title": "DNS dell'host, poi kernel dell'host",
-            "body": "Entrambe plausibili, entrambe sbagliate. Ognuna è costata un run da 10 minuti senza dimostrare nulla."
-          },
-          {
-            "when": "sonde",
-            "kind": "event",
-            "title": "Misurare dentro l'immagine vera",
-            "body": "Con passt la VM non ha rete; con la rete user-mode di qemu ogni resolver risponde."
-          },
-          {
-            "when": "fix",
-            "kind": "event",
-            "title": "Lo stesso ripiego che shirudo usa da root",
-            "body": "Un passt che fallisce --help nel PATH. Il quickstart completo passa in 11 minuti."
-          }
-        ]
-      },
+      "title": "Root non può caricarlo: eBPF firmato e attestazione TPM, provati su un runner GitHub",
+      "description": "Un laboratorio pratico con shirudo: perché firmare eBPF è più difficile di quanto sembri, come un TPM tiene un registro che root non può riscrivere, e un run pubblico che mostra ogni passo.",
       "content": [
         {
           "type": "heading",
           "level": 2,
-          "content": "Root non ha l'ultima parola"
+          "content": "Un attaccante con root"
         },
         {
           "type": "paragraph",
-          "content": "Su un normale host Linux, root può caricare qualunque programma eBPF: agganciarsi alle syscall, leggere memoria del kernel tramite gli helper, staccare qualunque strumento di sicurezza in esecuzione. Ogni difesa basata su eBPF ha lo stesso punto debole: chi ottiene root la può scaricare."
+          "content": "Immagina un attaccante che ha ottenuto root su un server Linux. Molte delle difese su quel server sono programmi eBPF: piccoli programmi caricati nel kernel in esecuzione da agenti di sicurezza, policy di rete, audit. Chi può caricare eBPF può caricare anche i propri programmi, o staccare i tuoi."
         },
         {
           "type": "paragraph",
-          "content": "[shirudo](https://shirudo.dev/) sposta quel confine. Dopo il boot il kernel accetta BPF solo da loader firmati con la chiave ML-DSA-87 dell'operatore, ogni caricamento viene misurato nel TPM e un verificatore remoto può avere la prova di quali programmi girano. Le funzionalità arrivano come upatch firmati scaricati da un registry OCI: live patch, sandbox, sonde di osservabilità."
+          "content": "Ecco root su un normale kernel Ubuntu, un runner GitHub Actions, che carica il più piccolo programma eBPF valido con una chiamata di sistema `bpf()` diretta. Due istruzioni, `r0 = 0; exit`, e nessuna firma:"
+        },
+        {
+          "type": "code",
+          "language": "python",
+          "filename": "unsigned-load.py (estratto)",
+          "code": "# r0 = 0; exit -- the smallest valid eBPF program, no signature\ninsns = struct.pack(\"<BBhiBBhi\", 0xb7, 0, 0, 0, 0x95, 0, 0, 0)\n# bpf_attr: prog_type=SOCKET_FILTER, insn_cnt=2, insns, license\nstruct.pack_into(\"<IIQQ\", attr, 0, 1, 2, addressof(insns), addressof(lic))\nfd = libc.syscall(NR_BPF, BPF_PROG_LOAD, attr, 128)"
+        },
+        {
+          "type": "code",
+          "language": "console",
+          "filename": "runner, kernel standard",
+          "code": "runner$ sudo python3 unsigned-load.py\nkernel 7.0.0-1016-aws, uid 0\nbpf(BPF_PROG_LOAD, unsigned): loaded, fd 4"
         },
         {
           "type": "paragraph",
-          "content": "Questo articolo non è una recensione. È un laboratorio: eseguire il quickstart documentato su un'infrastruttura che chiunque può ispezionare, conservare la trascrizione e guardare cosa dicono davvero le prove."
+          "content": "Accettato, senza domande. Il resto dell'articolo parla di un kernel in cui la stessa chiamata fallisce, e di come chi sta fuori dal server può verificarlo."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Dove può girare"
+          "content": "La mappa: tre domande"
         },
         {
           "type": "paragraph",
-          "content": "Il quickstart avvia un target QEMU con un TPM software (swtpm), quindi l'host deve avere `/dev/kvm`. Il target ha bisogno di un kernel con l'ABI dei loader firmati e alcuni hook LSM nuovi; il kernel upstream non li ha ancora, e shirudo pubblica un kernel CI basato su bpf-next come prerelease con SHA-256 bloccato."
+          "content": "[shirudo](https://shirudo.dev/) è un progetto open source, ancora pre-release, che risponde a tre domande distinte. Tenerle separate rende tutto il resto più facile da seguire."
         },
         {
           "type": "list",
           "items": [
-            "GitHub Actions, `ubuntu-latest`: i runner Linux ospitati espongono KVM. Pubblico, riproducibile, gratuito per i repo pubblici. È quello che ho usato.",
-            "VM Oracle Cloud: niente virtualizzazione annidata sulle shape standard (Ampere A1 compresa), quindi niente quickstart. Si può usare la VM stessa come target con il kernel di test e un vTPM, ma è un altro laboratorio, più difficile.",
-            "Macchina locale o WSL2: funziona se il tuo utente può aprire `/dev/kvm`. È il modo più rapido per provare, ma le prove restano sul tuo disco."
+            "Cosa può caricare il kernel? Solo programmi firmati con la chiave dell'operatore. È la firma.",
+            "Cosa è stato caricato? Ogni caricamento viene registrato nel TPM, un chip che può aggiungere a un registro ma mai riscriverlo. È la misura.",
+            "Come lo sa chi sta fuori? Il TPM firma quel registro su richiesta, e un verificatore remoto lo controlla. È l'attestazione."
+          ],
+          "ordered": true
+        },
+        {
+          "type": "paragraph",
+          "content": "Due ruoli tornano in tutto l'articolo. L'operatore è la macchina che tiene la chiave di firma e compila i programmi. Il target è il server da proteggere. In questo laboratorio stanno entrambi su un runner GitHub: l'operatore è il runner stesso, il target è una macchina virtuale QEMU con un TPM software."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "content": "Concetto 1: perché non basta firmare il file .o"
+        },
+        {
+          "type": "paragraph",
+          "content": "L'idea ovvia è compilare il programma eBPF, firmare il file oggetto e far controllare la firma al kernel. Non funziona, perché i byte che il kernel riceve alla fine non sono quelli che hai compilato."
+        },
+        {
+          "type": "paragraph",
+          "content": "La libreria che carica il programma, libbpf, lo riscrive sulla macchina target. Inserisce i descrittori delle mappe del programma, diversi a ogni esecuzione, e adatta gli offset delle strutture al layout del kernel in esecuzione (CO-RE). La [documentazione del kernel](https://docs.kernel.org/bpf/signing.html) lo dice chiaramente: non esiste una sequenza di byte che sia firmabile al momento della compilazione e sia anche ciò che il kernel carica davvero."
+        },
+        {
+          "type": "paragraph",
+          "content": "La soluzione è firmare qualcosa che non cambia: un piccolo programma loader con i programmi veri impacchettati nei suoi dati. Il kernel verifica una firma su loader e dati, e il loader fidato fa poi le riscritture specifiche della macchina dall'interno del kernel. Alexei Starovoitov, uno dei maintainer di BPF, lo [paragona](https://lwn.net/Articles/1042625/) a un archivio autoestraente firmato: non si firma ogni file mentre arriva sul disco, si firma l'archivio e ci si fida di ciò che estrae."
+        },
+        {
+          "type": "paragraph",
+          "content": "shirudo aggiunge un programma BPF LSM, un hook del kernel che può dire di no, che rifiuta ogni caricamento da userspace che non sia un loader firmato di questo tipo. shirudo chiama upatch un pacchetto firmato come questo."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "content": "Concetto 2: un registro che root non può riscrivere"
+        },
+        {
+          "type": "paragraph",
+          "content": "Rifiutare i caricamenti non firmati è metà della storia. Un operatore vuole anche sapere cosa sta eseguendo un server, e la risposta del server stesso vale poco se root lo controlla: \"status: ok\" è esattamente ciò che stamperebbe un attaccante."
+        },
+        {
+          "type": "paragraph",
+          "content": "Un registro del TPM non si può impostare a un valore, si può solo estendere: nuovo valore = SHA-256(vecchio valore + evento). Pensa a un libro mastro in cui ogni pagina porta l'impronta della pagina precedente. Il valore finale dipende da ogni evento e dal loro ordine, e nessun evento si può togliere dopo. shirudo tiene un suo registro nel TPM, lo riparte da zero a ogni avvio e lo estende dopo ogni caricamento o scaricamento. Se la registrazione fallisce, il caricamento viene annullato."
+        },
+        {
+          "type": "paragraph",
+          "content": "Un hash non dice cosa è stato caricato, quindi accanto al registro shirudo tiene un registro eventi in chiaro. Da solo non prova nulla. Diventa affidabile quando, ripercorrendolo da zero, si ottiene esattamente il valore del registro."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "content": "Concetto 3: una foto firmata con la data dentro"
+        },
+        {
+          "type": "paragraph",
+          "content": "Per dimostrare a qualcun altro il valore del registro, il TPM produce un quote: i valori firmati con una chiave di attestazione che non lascia mai il chip. Il verificatore manda prima un nonce casuale, e il TPM lo include in ciò che firma. Un quote è una foto del registro con il giornale di oggi nell'inquadratura: una foto vecchia non può passare per nuova."
+        },
+        {
+          "type": "paragraph",
+          "content": "Il verificatore controlla la firma e il nonce, ripercorre il registro eventi e confronta il risultato con quello che si aspetta dagli upatch che ha firmato lui stesso."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "content": "Il laboratorio, passo per passo"
+        },
+        {
+          "type": "paragraph",
+          "content": "Ogni output qui sotto viene da [un unico run pubblico di GitHub Actions](https://github.com/0xtvignoli/my_devfolio/actions/runs/45851839881). I comandi `operator$` girano sul runner; i comandi `target#` girano da root dentro la VM con shirudo."
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Passo 1: lo stesso caricamento, rifiutato"
+        },
+        {
+          "type": "code",
+          "language": "console",
+          "filename": "target shirudo",
+          "code": "target# python3 unsigned-load.py\nkernel 7.4-shirudo-ci-20261123, uid 0\nbpf(BPF_PROG_LOAD, unsigned): refused, EACCES (Permission denied)"
+        },
+        {
+          "type": "paragraph",
+          "content": "Cosa è appena successo: stesso utente, stesse due istruzioni, stessa chiamata di sistema. È cambiato solo il kernel. Sul target l'LSM di shirudo ha rifiutato il caricamento perché non era un loader firmato, ed EACCES è quel rifiuto."
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Passo 2: root non può toccare nemmeno shirudo"
+        },
+        {
+          "type": "code",
+          "language": "console",
+          "filename": "target shirudo",
+          "code": "target# shirudo status\nStatus:                ok\n  LsmAttached        OK      lsm/bpf link present and pinned\n  KeyringSealed      OK      bpf serial 183078568, dm-verity serial 287240165, pins match\n  ChainIntact        OK      live register equals the eventlog replay\n\ntarget# /usr/local/bin/shirudo status\nshirudo: image state: Permission denied\n\ntarget# cat /run/shirudo/bpffs/tamper\ncat: /run/shirudo/bpffs/tamper: Permission denied"
+        },
+        {
+          "type": "paragraph",
+          "content": "Cosa è appena successo: il primo comando è il binario fidato di shirudo, e riporta la protezione attiva, il keyring delle firme sigillato e il registro coerente con il suo log. Il secondo è una copia identica byte per byte dello stesso binario, e viene rifiutata. Il terzo è root che prova a leggere le mappe BPF di shirudo, rifiutato anche lui."
+        },
+        {
+          "type": "paragraph",
+          "content": "L'accesso allo stato di shirudo dipende da dove il binario è stato eseguito, un'immagine di runtime in sola lettura di cui il kernel verifica l'integrità, non da chi lo lancia né da cosa contiene il file. Copiare il binario non copia l'autorità."
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Passo 3: un upatch firmato si carica e viene registrato"
+        },
+        {
+          "type": "code",
+          "language": "console",
+          "filename": "operatore e target",
+          "code": "operator$ shirudo build testing/fixtures/basic.bpf.c --keys-dir \"$KEYS\" \\\n            --vmlinux vendor/linux/vmlinux.h -o basic.upatch\n\ntarget# shirudo upatch load basic.upatch\nupatch load: signed loader accepted, keyring 183078568, 124 instructions\nupatch load: loader ran, 0 maps and 1 programs\nupatch load: program 0 (fentry) pinned at /run/shirudo/bpffs/upatches/basic/link\nupatch load: basic loaded, 1 programs, keyring 183078568\nupatch load: basic measured, register 4a7faba4e8b562b761465799104beae6d40029eac7253616cb8248e3139287fb"
+        },
+        {
+          "type": "paragraph",
+          "content": "Cosa è appena successo: l'operatore ha compilato un piccolo programma che gira all'ingresso di una funzione del kernel e l'ha firmato con la sua chiave. Sul target il kernel ha verificato la firma contro un keyring sigillato, il loader ha estratto il programma e, prima di dichiarare il successo, shirudo ha esteso il registro. L'ultima riga è il nuovo valore del registro."
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Passo 4: dimostrarlo da fuori"
+        },
+        {
+          "type": "code",
+          "language": "console",
+          "filename": "operatore e target (estratto)",
+          "code": "target#   shirudo attest --nonce=<nonce> --output=/mnt/shirudo-out/ev.json\noperator$ shirudo attest verify --evidence=\"$EV\" --nonce=\"$NONCE\" \\\n            --ak-name=\"$(jq -r .ak.name \"$EV\")\" --expect-chain=<register-after-events>\n  OK    nonce matches the request\n  OK    attestation key: restricted, fixed to this TPM\n  OK    quote: ECDSA signature by the attestation key\n  OK    quote: carries the nonce\n  OK    register: certified contents match the listed value\n  OK    eventlog: 2 records replay to the certified value\n  OK    state: register equals the expected value\n  NOTE  event after boot: upatch_load basic\nverdict: ok"
+        },
+        {
+          "type": "paragraph",
+          "content": "Cosa è appena successo: l'operatore ha mandato un nonce nuovo, e il TPM del target ha restituito un quote, una copia firmata del registro e il registro eventi. Il verificatore ha confermato che la chiave appartiene a questo TPM, ha controllato firme e nonce, ha ripercorso due voci del log (l'avvio e il caricamento dell'upatch) fino al valore certificato, e ha trovato il registro uguale a quello previsto. Se root avesse caricato altro o modificato il log, una di queste righe fallirebbe."
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "content": "Riprodurlo"
+        },
+        {
+          "type": "paragraph",
+          "content": "Il [workflow](https://github.com/0xtvignoli/my_devfolio/blob/main/.github/workflows/shirudo-quickstart.yml) blocca un commit di shirudo, scarica il kernel di test dalla release pubblica di shirudo e ne verifica il checksum, prepara l'host con gli script CI di shirudo stesso ed esegue il quickstart lanciando i blocchi di comandi della sua documentazione, così documentazione e prova non possono divergere. Trascrizione, ambiente e console della VM restano come artifact. Un run partendo da zero dura circa 11 minuti."
+        },
+        {
+          "type": "list",
+          "items": [
+            "GitHub Actions, `ubuntu-latest`: i runner Linux ospitati espongono `/dev/kvm`. Pubblico e gratuito per i repository pubblici. Usato qui.",
+            "VM Oracle Cloud: le shape standard, Ampere A1 compresa, non offrono la virtualizzazione annidata, quindi niente target QEMU. Usare la VM stessa come target, con il kernel di test e un vTPM, è un altro laboratorio, più difficile.",
+            "La tua macchina o WSL2: funziona se il tuo utente può aprire `/dev/kvm`. È il modo più rapido per sperimentare, ma le prove restano in locale."
           ]
-        },
-        {
-          "type": "heading",
-          "level": 2,
-          "content": "Il workflow"
-        },
-        {
-          "type": "paragraph",
-          "content": "Invece di riscrivere il quickstart, il [workflow](https://github.com/0xtvignoli/my_devfolio/blob/main/.github/workflows/shirudo-quickstart.yml) riusa gli script CI di shirudo. Il loro controllore delle guide estrae ogni blocco di comandi della documentazione e lo esegue in ordine, così documentazione e prova non possono divergere. shirudo è bloccato su un commit, il kernel arriva dalla release pubblica con il checksum verificato, e trascrizione, ambiente e console della VM vengono caricati come artifact."
-        },
-        {
-          "type": "heading",
-          "level": 2,
-          "content": "Prova 1: root viene rifiutato"
-        },
-        {
-          "type": "paragraph",
-          "content": "Dentro il target, da root: lo stato e le mappe di shirudo sono inaccessibili a chi non ha l'autorità di runtime. Non per convenzione: è l'LSM BPF a rifiutare la chiamata."
-        },
-        {
-          "type": "code",
-          "language": "console",
-          "filename": "trascrizione del quickstart",
-          "code": "target# shirudo status\nStatus:                ok\nConditions:\n TYPE               STATUS  DETAIL\n LsmAttached        OK      lsm/bpf link present and pinned\n KeyringSealed      OK      bpf serial 897959048, dm-verity serial 260509685, pins match\n ChainIntact        OK      live register equals the eventlog replay\n UpatchesMeasured   OK      every pinned or archived upatch is in this boot's records\n TpmMeasured        OK      NV index 0x01818E00 readable\n\ntarget# /usr/local/bin/shirudo status        # a copy without runtime authority\nshirudo: image state: Permission denied\n\ntarget# cat /run/shirudo/bpffs/tamper         # root, poking shirudo's own maps\ncat: /run/shirudo/bpffs/tamper: Permission denied"
-        },
-        {
-          "type": "heading",
-          "level": 2,
-          "content": "Prova 2: un upatch firmato si carica e viene misurato"
-        },
-        {
-          "type": "paragraph",
-          "content": "L'operatore compila e firma un piccolo programma fentry. Sul target il kernel verifica la firma del loader contro un keyring sigillato prima di eseguirlo, e il caricamento viene esteso in un registro legato al TPM prima che shirudo dichiari il successo. Se la misura fallisce, il caricamento viene annullato."
-        },
-        {
-          "type": "code",
-          "language": "console",
-          "filename": "trascrizione del quickstart",
-          "code": "operator$ shirudo build testing/fixtures/basic.bpf.c --keys-dir \"$KEYS\" \\\n            --vmlinux vendor/linux/vmlinux.h -o basic.upatch\n\ntarget# shirudo upatch load basic.upatch\nupatch load: signed loader accepted, keyring 897959048, 124 instructions\nupatch load: loader ran, 0 maps and 1 programs\nupatch load: program 0 (fentry) pinned at /run/shirudo/bpffs/upatches/basic/link\nupatch load: basic loaded, 1 programs, keyring 897959048\nupatch load: basic measured, register a8c2258378dbd5e1aa12eadf2054da1a6a8e32eac285ab1cfb4c95e3c229de93"
-        },
-        {
-          "type": "heading",
-          "level": 2,
-          "content": "Prova 3: il TPM lo garantisce"
-        },
-        {
-          "type": "paragraph",
-          "content": "L'operatore invia un nonce nuovo; il target restituisce un quote del TPM e il suo registro eventi. La verifica ripercorre il registro, controlla la firma del quote e la chiave che l'ha prodotta, e confronta il risultato con quanto l'operatore aveva previsto dagli upatch che ha firmato."
-        },
-        {
-          "type": "code",
-          "language": "console",
-          "filename": "trascrizione del quickstart",
-          "code": "target#   shirudo attest --nonce=<nonce> --output=/mnt/shirudo-out/ev.json\noperator$ shirudo attest verify --evidence=\"$EV\" --nonce=\"$NONCE\" \\\n            --ak-name=\"$(jq -r .ak.name \"$EV\")\" --expect-chain=<register-after-events>\n  OK    nonce matches the request\n  OK    attestation key: restricted, fixed to this TPM\n  OK    quote: ECDSA signature by the attestation key\n  OK    eventlog: 2 records replay to the certified value\n  OK    anchor: PCR 9 equals the recorded value extended by the anchor\n  OK    state: register equals the expected value\n  NOTE  event after boot: upatch_load basic\nverdict: ok"
-        },
-        {
-          "type": "paragraph",
-          "content": "Il run completo, con anche le guide first-upatch, publish-package e attest-target, è [pubblico](https://github.com/0xtvignoli/my_devfolio/actions/runs/45847634795): 11 minuti su un runner senza cache."
-        },
-        {
-          "type": "heading",
-          "level": 2,
-          "content": "Cosa è andato storto prima"
-        },
-        {
-          "type": "paragraph",
-          "content": "I primi tre run non sono mai arrivati al quickstart. La costruzione dell'immagine del target esegue `apt` dentro una VM libguestfs, che non riusciva a risolvere `archive.ubuntu.com`. Il CI di shirudo non incontra il problema perché ripristina quell'immagine dalla cache."
-        },
-        {
-          "type": "paragraph",
-          "content": "Ho tirato a indovinare due volte: prima lo stub DNS del runner, poi il kernel che libguestfs avvia. Entrambe le ipotesi erano plausibili, entrambe sbagliate, e ognuna è costata un run da dieci minuti. Ha funzionato misurare nel posto giusto: una sonda che esegue `virt-customize` sulla vera immagine 26.04 e prova ogni resolver da dentro. Con `passt`, la rete predefinita da utente normale, [non rispondeva nessuno](https://github.com/0xtvignoli/my_devfolio/actions/runs/45580976661). Con la rete user-mode di qemu, [rispondevano tutti](https://github.com/0xtvignoli/my_devfolio/actions/runs/45582033906)."
-        },
-        {
-          "type": "code",
-          "language": "bash",
-          "filename": "shirudo-quickstart.yml",
-          "code": "# libguestfs uses passt as non-root; on this runner the appliance with the\n# 26.04 image attached gets no network. A passt that fails --help makes it\n# fall back to qemu user networking, as shirudo already does when run as root.\nmkdir -p \"$RUNNER_TEMP/no-passt\"\nprintf '#!/bin/sh\\nexit 127\\n' > \"$RUNNER_TEMP/no-passt/passt\"\nchmod +x \"$RUNNER_TEMP/no-passt/passt\"\nexport PATH=\"$RUNNER_TEMP/no-passt:$PATH\""
-        },
-        {
-          "type": "paragraph",
-          "content": "La lezione non riguarda passt. È che una sonda nel posto giusto vale più di due ipotesi accurate nel posto sbagliato."
         },
         {
           "type": "heading",
@@ -474,10 +544,24 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         {
           "type": "list",
           "items": [
-            "shirudo è pre-release: nessuna versione taggata, e il quickstart gira su un kernel bpf-next con patch, non qualcosa da mettere in produzione.",
-            "Il TPM qui è swtpm. Il flusso di attestazione è reale; la radice di fiducia hardware è simulata.",
-            "Il ripiego su passt è specifico di questa immagine del runner. Bloccare il commit di shirudo rende riproducibile il run, non il runner."
+            "Il kernel ha delle patch. Il laboratorio usa un kernel bpf-next 7.4 con le patch di shirudo. I loader BPF firmati sono arrivati nel kernel principale con Linux 6.18, ma i maintainer degli LSM ne contestano ancora il design, e shirudo ha bisogno di hook che il kernel principale non ha.",
+            "Il TPM è simulato (swtpm), e QEMU avvia il kernel direttamente invece che da un'immagine del kernel firmata e misurata. Il flusso di attestazione è reale; la radice di fiducia hardware no.",
+            "shirudo è pre-release, senza ancora una versione taggata.",
+            "Il confine diventa la chiave di firma. Chi la possiede può caricare qualunque cosa. Il design sposta la fiducia da root su ogni server a una sola chiave che non deve mai stare su un server."
           ]
+        },
+        {
+          "type": "heading",
+          "level": 2,
+          "content": "Una nota dal laboratorio"
+        },
+        {
+          "type": "paragraph",
+          "content": "I primi tre run non sono mai arrivati al quickstart. La costruzione dell'immagine del target esegue `apt` dentro una VM di servizio (libguestfs), che non riusciva a risolvere un solo nome. Il CI di shirudo non se ne accorge, perché ripristina quell'immagine dalla cache."
+        },
+        {
+          "type": "paragraph",
+          "content": "Ho tirato a indovinare due volte, prima lo stub DNS del runner e poi il kernel, e ogni ipotesi sbagliata è costata un run da dieci minuti. Ha funzionato misurare dove avveniva il guasto: una sonda dentro l'immagine vera, che prova un resolver alla volta. Con passt, il backend di rete che libguestfs usa senza root, [non rispondeva nessuno](https://github.com/0xtvignoli/my_devfolio/actions/runs/45580976661). Con la rete user-mode integrata in QEMU, [rispondevano tutti](https://github.com/0xtvignoli/my_devfolio/actions/runs/45582033906). La fix è un finto `passt` che fa ripiegare libguestfs, lo stesso trucco che shirudo applica quando gira da root. Prima misura, poi ipotizza."
         }
       ]
     },
