@@ -116,7 +116,7 @@ const articlesContent: Omit<Article, 'title' | 'description' | 'content'>[] = [
 const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'description' | 'content' | 'caseStudy'>>> = {
   'shirudo-signed-ebpf-lab': {
     en: {
-      "title": "Root can't load this: signed eBPF and TPM attestation, tested on a GitHub runner",
+      "title": "Signed eBPF: even root can't load it",
       "description": "A hands-on lab with shirudo: why signing eBPF is harder than it looks, how a TPM keeps a record root can't rewrite, and one public run that shows every step.",
       "content": [
         {
@@ -341,21 +341,21 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
       ]
     },
     it: {
-      "title": "Root non può caricarlo: eBPF firmato e attestazione TPM, provati su un runner GitHub",
-      "description": "Un laboratorio pratico con shirudo: perché firmare eBPF è più difficile di quanto sembri, come un TPM tiene un registro che root non può riscrivere, e un run pubblico che mostra ogni passo.",
+      "title": "eBPF firmato: root non passa",
+      "description": "Root su un server Linux, un programma eBPF di due istruzioni, nessuna firma: il kernel lo carica e ringrazia. Con shirudo la stessa chiamata prende EACCES, e un TPM tiene un registro che root non può riscrivere. Tutto provato su un run pubblico di GitHub Actions.",
       "content": [
         {
           "type": "heading",
           "level": 2,
-          "content": "Un attaccante con root"
+          "content": "Root ce l'ha l'attaccante"
         },
         {
           "type": "paragraph",
-          "content": "Immagina un attaccante che ha ottenuto root su un server Linux. Molte delle difese su quel server sono programmi eBPF: piccoli programmi che agenti di sicurezza, policy di rete e strumenti di audit caricano nel kernel in esecuzione. Chi può caricare eBPF può caricare anche i propri programmi, o staccare i tuoi. Le guardie prendono ordini da root, e root adesso è l'attaccante."
+          "content": "Un attaccante ha preso root su un server Linux. Bene, adesso guarda le difese. Molte sono programmi eBPF: piccoli programmi che agenti di sicurezza, policy di rete e strumenti di audit caricano nel kernel in esecuzione. Chi può caricare eBPF carica anche i suoi, o stacca i tuoi. Le guardie prendono ordini da root. E root, adesso, è lui."
         },
         {
           "type": "paragraph",
-          "content": "Ecco root su un normale kernel Ubuntu, un runner GitHub Actions, che carica il più piccolo programma eBPF valido con una chiamata di sistema `bpf()` diretta. Due istruzioni, `r0 = 0; exit`, e nessuna firma:"
+          "content": "Ecco root su un kernel Ubuntu qualunque, un runner GitHub Actions, che carica il più piccolo programma eBPF valido con una chiamata `bpf()` diretta. Due istruzioni, `r0 = 0; exit`. Zero firme:"
         },
         {
           "type": "code",
@@ -371,7 +371,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Accettato, senza fare domande: il kernel è un padrone di casa molto educato. Il resto dell'articolo parla di un kernel in cui la stessa chiamata fallisce, e di come chi sta fuori dal server può verificarlo."
+          "content": "Accettato. Nessuna domanda. Il kernel è un padrone di casa molto educato. Il resto dell'articolo parla di un kernel dove la stessa chiamata fallisce, e di come chi sta fuori dal server può verificarlo."
         },
         {
           "type": "heading",
@@ -380,71 +380,71 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "[shirudo](https://shirudo.dev/) è un progetto open source, ancora pre-release, che risponde a tre domande distinte. Tenerle separate rende tutto il resto più facile da seguire."
+          "content": "[shirudo](https://shirudo.dev/) è un progetto open source, ancora pre-release, che risponde a tre domande diverse. Tienile separate e il resto fila liscio."
         },
         {
           "type": "list",
           "items": [
             "Cosa può caricare il kernel? Solo programmi firmati con la chiave dell'operatore. È la firma.",
-            "Cosa è stato caricato? Ogni caricamento viene registrato nel TPM, un chip che può aggiungere a un registro ma mai riscriverlo. È la misura.",
+            "Cosa è stato caricato? Ogni caricamento finisce nel TPM, un chip che può aggiungere a un registro ma mai riscriverlo. È la misura.",
             "Come lo sa chi sta fuori? Il TPM firma quel registro su richiesta, e un verificatore remoto lo controlla. È l'attestazione."
           ],
           "ordered": true
         },
         {
           "type": "paragraph",
-          "content": "Due ruoli tornano in tutto l'articolo. L'operatore è la macchina che tiene la chiave di firma e compila i programmi. Il target è il server da proteggere. In questo laboratorio stanno entrambi su un runner GitHub: l'operatore è il runner stesso, il target è una macchina virtuale QEMU con un TPM software."
+          "content": "Due ruoli ti accompagnano per tutto l'articolo. L'operatore è la macchina che tiene la chiave di firma e compila i programmi. Il target è il server da proteggere. In questo laboratorio stanno tutti e due su un runner GitHub: l'operatore è il runner stesso, il target è una VM QEMU con un TPM software."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Concetto 1: perché non basta firmare il file .o"
+          "content": "Concetto 1: firmare il .o non basta"
         },
         {
           "type": "paragraph",
-          "content": "L'idea ovvia è compilare il programma eBPF, firmare il file oggetto e far controllare la firma al kernel. Se funzionasse, questo articolo sarebbe molto più corto. Non funziona, perché i byte che il kernel riceve alla fine non sono quelli che hai compilato."
+          "content": "L'idea ovvia: compili il programma eBPF, firmi il file oggetto, il kernel controlla la firma. Se funzionasse, questo articolo sarebbe lungo tre righe. Non funziona. I byte che arrivano al kernel non sono quelli che hai compilato."
         },
         {
           "type": "paragraph",
-          "content": "La libreria che carica il programma, libbpf, lo riscrive sulla macchina target. Inserisce i descrittori delle mappe del programma, diversi a ogni esecuzione, e adatta gli offset delle strutture al layout del kernel in esecuzione (CO-RE, \"compile once, run everywhere\"). La [documentazione del kernel](https://docs.kernel.org/bpf/signing.html) lo dice chiaramente: non esiste una sequenza di byte che sia firmabile al momento della compilazione e sia anche ciò che il kernel carica davvero."
+          "content": "libbpf, la libreria che carica il programma, lo riscrive sulla macchina target. Ci infila i descrittori delle mappe, diversi a ogni esecuzione, e adatta gli offset delle strutture al layout del kernel che gira (CO-RE, \"compile once, run everywhere\"). La [documentazione del kernel](https://docs.kernel.org/bpf/signing.html) è chiara: non esiste una sequenza di byte firmabile in compilazione che sia anche quella che il kernel carica davvero."
         },
         {
           "type": "paragraph",
-          "content": "La soluzione è firmare qualcosa che non cambia: un piccolo programma loader con i programmi veri impacchettati nei suoi dati. Il kernel verifica una firma su loader e dati, e il loader fidato fa poi le riscritture specifiche della macchina dall'interno del kernel. Alexei Starovoitov, uno dei maintainer di BPF, lo [paragona](https://lwn.net/Articles/1042625/) a un archivio autoestraente firmato: non si firma ogni file mentre arriva sul disco, si firma l'archivio e ci si fida di ciò che estrae."
+          "content": "La soluzione: firma qualcosa che non cambia. Un piccolo loader con i programmi veri impacchettati nei suoi dati. Il kernel verifica la firma su loader e dati, poi il loader fidato fa le riscritture specifiche della macchina da dentro il kernel. Alexei Starovoitov, uno dei maintainer di BPF, lo [paragona](https://lwn.net/Articles/1042625/) a un archivio autoestraente firmato: non firmi ogni file che arriva sul disco, firmi l'archivio e ti fidi di quello che estrae."
         },
         {
           "type": "paragraph",
-          "content": "shirudo aggiunge un programma BPF LSM. Un hook LSM (Linux Security Module) è un punto del kernel che può dire di no, e questo rifiuta ogni caricamento da userspace che non sia un loader firmato di questo tipo. shirudo chiama upatch un pacchetto firmato come questo."
+          "content": "shirudo ci aggiunge un programma BPF LSM. Un hook LSM (Linux Security Module) è un punto del kernel che può dire di no. Questo dice di no a ogni caricamento da userspace che non sia un loader firmato di questo tipo. shirudo chiama upatch un pacchetto firmato così."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Concetto 2: un registro che root non può riscrivere"
+          "content": "Concetto 2: un registro che root non riscrive"
         },
         {
           "type": "paragraph",
-          "content": "Rifiutare i caricamenti non firmati è metà della storia. Un operatore vuole anche sapere cosa sta eseguendo un server, e la risposta del server stesso vale poco se root lo controlla: \"status: ok\" è esattamente ciò che stamperebbe un attaccante, prima di tornare al lavoro."
+          "content": "Rifiutare i caricamenti non firmati è metà del lavoro. L'operatore vuole anche sapere cosa gira su un server, e la parola del server vale poco se root lo controlla. \"status: ok\" è esattamente quello che stamperebbe un attaccante. Prima di tornare al lavoro."
         },
         {
           "type": "paragraph",
-          "content": "Un registro del TPM non si può impostare a un valore, si può solo estendere: nuovo valore = SHA-256(vecchio valore + evento). Pensa a un libro mastro in cui ogni pagina porta l'impronta della pagina precedente: una pagina la puoi strappare, ma lo strappo non lo nascondi. Il valore finale dipende da ogni evento e dal loro ordine, e nessun evento si può togliere dopo. shirudo tiene un suo registro nel TPM, lo riparte da zero a ogni avvio e lo estende dopo ogni caricamento o scaricamento. Se la registrazione fallisce, il caricamento viene annullato."
+          "content": "Un registro del TPM non lo imposti a un valore. Lo puoi solo estendere: nuovo valore = SHA-256(vecchio valore + evento). Pensa a un libro mastro dove ogni pagina porta l'impronta della precedente: la pagina la strappi, lo strappo non lo nascondi. Il valore finale dipende da ogni evento e dal loro ordine, e nessun evento si toglie dopo. shirudo tiene un suo registro nel TPM, lo azzera a ogni avvio e lo estende dopo ogni caricamento o scaricamento. Se la registrazione fallisce, il caricamento salta."
         },
         {
           "type": "paragraph",
-          "content": "Un hash non dice cosa è stato caricato, quindi accanto al registro shirudo tiene un registro eventi in chiaro. Da solo non prova nulla. Diventa affidabile quando, ripercorrendolo da zero, si ottiene esattamente il valore del registro."
+          "content": "Un hash non ti dice cosa è stato caricato. Per questo accanto al registro shirudo tiene un registro eventi in chiaro. Da solo non prova niente. Diventa affidabile quando, ripercorrendolo da zero, ottieni esattamente il valore del registro."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Concetto 3: una foto firmata con la data dentro"
+          "content": "Concetto 3: la foto col giornale di oggi"
         },
         {
           "type": "paragraph",
-          "content": "Per dimostrare a qualcun altro il valore del registro, il TPM produce un quote: i valori firmati con una chiave di attestazione che non lascia mai il chip. Il verificatore manda prima un nonce casuale, e il TPM lo include in ciò che firma. Un quote è una foto del registro con il giornale di oggi nell'inquadratura, il trucco più vecchio di ogni film sui rapimenti: una foto vecchia non può passare per nuova."
+          "content": "Per dimostrare il valore del registro a qualcun altro, il TPM produce un quote: i valori firmati con una chiave di attestazione che non esce mai dal chip. Il verificatore manda prima un nonce casuale, e il TPM lo mette dentro quello che firma. Un quote è una foto del registro con il giornale di oggi nell'inquadratura. Il trucco più vecchio di ogni film sui rapimenti. Una foto vecchia non passa per nuova."
         },
         {
           "type": "paragraph",
-          "content": "Il verificatore controlla la firma e il nonce, ripercorre il registro eventi e confronta il risultato con quello che si aspetta dagli upatch che ha firmato lui stesso."
+          "content": "Il verificatore controlla firma e nonce, ripercorre il registro eventi e confronta il risultato con quello che si aspetta dagli upatch che ha firmato lui."
         },
         {
           "type": "heading",
@@ -453,12 +453,12 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Ogni output qui sotto viene da [un unico run pubblico di GitHub Actions](https://github.com/0xtvignoli/my_devfolio/actions/runs/45851839881). I comandi `operator$` girano sul runner; i comandi `target#` girano da root dentro la VM con shirudo."
+          "content": "Ogni output qui sotto viene da [un unico run pubblico di GitHub Actions](https://github.com/0xtvignoli/my_devfolio/actions/runs/45851839881). I comandi `operator$` girano sul runner, i comandi `target#` girano da root dentro la VM con shirudo."
         },
         {
           "type": "heading",
           "level": 3,
-          "content": "Passo 1: lo stesso caricamento, rifiutato"
+          "content": "Passo 1: stesso caricamento, rifiutato"
         },
         {
           "type": "code",
@@ -468,12 +468,12 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Cosa è appena successo: stesso utente, stesse due istruzioni, stessa chiamata di sistema. È cambiato solo il kernel. Sul target l'LSM di shirudo ha rifiutato il caricamento perché non era un loader firmato, ed EACCES è quel rifiuto."
+          "content": "Cosa è appena successo: stesso utente, stesse due istruzioni, stessa chiamata di sistema. È cambiato solo il kernel. Sul target l'LSM di shirudo ha rifiutato il caricamento perché non era un loader firmato. EACCES è quel no."
         },
         {
           "type": "heading",
           "level": 3,
-          "content": "Passo 2: root non può toccare nemmeno shirudo"
+          "content": "Passo 2: root non tocca nemmeno shirudo"
         },
         {
           "type": "code",
@@ -483,16 +483,16 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Cosa è appena successo: il primo comando è il binario fidato di shirudo, e riporta la protezione attiva, il keyring delle firme sigillato e il registro coerente con il suo log. Il secondo è una copia identica byte per byte dello stesso binario, e viene rifiutata. Il terzo è root che prova a leggere le mappe BPF di shirudo, rifiutato anche lui."
+          "content": "Cosa è appena successo: il primo comando è il binario fidato di shirudo, e riporta protezione attiva, keyring delle firme sigillato e registro coerente con il log. Il secondo è una copia identica byte per byte dello stesso binario. Rifiutata. Il terzo è root che prova a leggere le mappe BPF di shirudo. Rifiutato pure lui."
         },
         {
           "type": "paragraph",
-          "content": "L'accesso allo stato di shirudo dipende da dove il binario è stato eseguito (un'immagine di runtime in sola lettura di cui il kernel verifica l'integrità), non da chi lo lancia né da cosa contiene il file. Copiare il binario non copia l'autorità."
+          "content": "L'accesso allo stato di shirudo dipende da dove è stato eseguito il binario (un'immagine di runtime in sola lettura di cui il kernel verifica l'integrità), non da chi lo lancia né da cosa c'è nel file. Copi il binario, non copi l'autorità."
         },
         {
           "type": "heading",
           "level": 3,
-          "content": "Passo 3: un upatch firmato si carica e viene registrato"
+          "content": "Passo 3: l'upatch firmato entra e finisce nel registro"
         },
         {
           "type": "code",
@@ -502,7 +502,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Cosa è appena successo: l'operatore ha compilato un piccolo programma che gira all'ingresso di una funzione del kernel e l'ha firmato con la sua chiave. Sul target il kernel ha verificato la firma contro un keyring sigillato, il loader ha estratto il programma e, prima di dichiarare il successo, shirudo ha esteso il registro. L'ultima riga è il nuovo valore del registro."
+          "content": "Cosa è appena successo: l'operatore ha compilato un piccolo programma che gira all'ingresso di una funzione del kernel e l'ha firmato con la sua chiave. Sul target il kernel ha verificato la firma contro un keyring sigillato, il loader ha estratto il programma e, prima di dichiarare vittoria, shirudo ha esteso il registro. L'ultima riga è il nuovo valore."
         },
         {
           "type": "heading",
@@ -517,37 +517,37 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Cosa è appena successo: l'operatore ha mandato un nonce nuovo, e il TPM del target ha restituito un quote, una copia firmata del registro e il registro eventi. Il verificatore ha confermato che la chiave appartiene a questo TPM, ha controllato firme e nonce, ha ripercorso due voci del log (l'avvio e il caricamento dell'upatch) fino al valore certificato, e ha trovato il registro uguale a quello previsto. Se root avesse caricato altro o modificato il log, una di queste righe fallirebbe."
+          "content": "Cosa è appena successo: l'operatore ha mandato un nonce nuovo, e il TPM del target ha risposto con un quote, una copia firmata del registro e il registro eventi. Il verificatore ha confermato che la chiave è di questo TPM, ha controllato firme e nonce, ha ripercorso due voci del log (l'avvio e il caricamento dell'upatch) fino al valore certificato, e ha trovato il registro uguale a quello previsto. Se root avesse caricato altro o ritoccato il log, una di queste righe salterebbe."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Riprodurlo"
+          "content": "Rifallo tu"
         },
         {
           "type": "paragraph",
-          "content": "Il [workflow](https://github.com/0xtvignoli/my_devfolio/blob/main/.github/workflows/shirudo-quickstart.yml) blocca un commit di shirudo, scarica il kernel di test dalla release pubblica di shirudo e ne verifica il checksum, prepara l'host con gli script CI di shirudo stesso ed esegue il quickstart lanciando i blocchi di comandi della sua documentazione, così documentazione e prova non possono divergere. Trascrizione, ambiente e console della VM restano come artifact. Un run partendo da zero dura circa 11 minuti."
+          "content": "Il [workflow](https://github.com/0xtvignoli/my_devfolio/blob/main/.github/workflows/shirudo-quickstart.yml) blocca un commit di shirudo, scarica il kernel di test dalla release pubblica di shirudo e ne verifica il checksum, prepara l'host con gli script CI di shirudo e lancia il quickstart eseguendo i blocchi di comandi della sua documentazione. Così documentazione e prova non possono divergere. Trascrizione, ambiente e console della VM restano come artifact. Un run da zero dura circa 11 minuti."
         },
         {
           "type": "list",
           "items": [
-            "GitHub Actions, `ubuntu-latest`: i runner Linux ospitati espongono `/dev/kvm`. Pubblico e gratuito per i repository pubblici. Usato qui.",
-            "VM Oracle Cloud: le shape standard, Ampere A1 compresa, non offrono la virtualizzazione annidata, quindi niente target QEMU. Usare la VM stessa come target, con il kernel di test e un vTPM, è un altro laboratorio, più difficile.",
-            "La tua macchina o WSL2: funziona se il tuo utente può aprire `/dev/kvm`. È il modo più rapido per sperimentare, ma le prove restano in locale."
+            "GitHub Actions, `ubuntu-latest`: i runner Linux ospitati espongono `/dev/kvm`. Pubblico e gratis per i repository pubblici. È quello usato qui.",
+            "VM Oracle Cloud: le shape standard, Ampere A1 compresa, non danno la virtualizzazione annidata. Niente target QEMU. Usare la VM stessa come target, con il kernel di test e un vTPM, è un altro laboratorio. Più cattivo.",
+            "La tua macchina o WSL2: va se il tuo utente può aprire `/dev/kvm`. È il modo più rapido per smanettare, ma le prove restano in locale."
           ]
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Limiti"
+          "content": "I limiti"
         },
         {
           "type": "list",
           "items": [
-            "Il kernel ha delle patch. Il laboratorio usa un kernel bpf-next 7.4 con le patch di shirudo. I loader BPF firmati sono arrivati nel kernel principale con Linux 6.18, ma i maintainer degli LSM ne contestano ancora il design, e shirudo ha bisogno di hook che il kernel principale non ha.",
-            "Il TPM è simulato (swtpm), e QEMU avvia il kernel direttamente invece che da un'immagine del kernel firmata e misurata. Il flusso di attestazione è reale; la radice di fiducia hardware no.",
-            "shirudo è pre-release, senza ancora una versione taggata.",
-            "Il confine diventa la chiave di firma. Chi la possiede può caricare qualunque cosa. Il design sposta la fiducia da root su ogni server a una sola chiave che non deve mai stare su un server."
+            "Il kernel è patchato. Il laboratorio usa un kernel bpf-next 7.4 con le patch di shirudo. I loader BPF firmati sono entrati nel kernel principale con Linux 6.18, ma i maintainer degli LSM ne contestano ancora il design, e shirudo ha bisogno di hook che il kernel principale non ha.",
+            "Il TPM è simulato (swtpm), e QEMU avvia il kernel direttamente invece che da un'immagine firmata e misurata. Il flusso di attestazione è vero. La radice di fiducia hardware no.",
+            "shirudo è pre-release. Nessuna versione taggata, per ora.",
+            "Il confine diventa la chiave di firma. Chi ce l'ha carica quello che vuole. Il design sposta la fiducia da root su ogni server a una sola chiave che su un server non deve starci mai."
           ]
         },
         {
@@ -557,18 +557,18 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "I primi tre run non sono mai arrivati al quickstart. La costruzione dell'immagine del target esegue `apt` dentro una VM di servizio (libguestfs), che non riusciva a risolvere un solo nome. Il CI di shirudo non se ne accorge, perché ripristina quell'immagine dalla cache."
+          "content": "I primi tre run il quickstart non l'hanno mai visto. La costruzione dell'immagine del target lancia `apt` dentro una VM di servizio (libguestfs), che non risolveva un nome che fosse uno. Il CI di shirudo non se ne accorge: quell'immagine la ripesca dalla cache."
         },
         {
           "type": "paragraph",
-          "content": "Ho tirato a indovinare due volte, prima lo stub DNS del runner e poi il kernel, e ogni ipotesi sbagliata è costata un run da dieci minuti. Ha funzionato misurare dove avveniva il guasto: una sonda dentro l'immagine vera, che prova un resolver alla volta. Con passt, il backend di rete che libguestfs usa senza root, [non rispondeva nessuno](https://github.com/0xtvignoli/my_devfolio/actions/runs/45580976661). Con la rete user-mode integrata in QEMU, [rispondevano tutti](https://github.com/0xtvignoli/my_devfolio/actions/runs/45582033906). La fix è un finto `passt` che fa ripiegare libguestfs, lo stesso trucco che shirudo applica quando gira da root. Prima misura, poi ipotizza."
+          "content": "Ho tirato a indovinare due volte, prima lo stub DNS del runner e poi il kernel. Ogni ipotesi sbagliata mi è costata un run da dieci minuti. Quello che ha funzionato è misurare dove si rompeva: una sonda dentro l'immagine vera, un resolver alla volta. Con passt, il backend di rete che libguestfs usa senza root, [non rispondeva nessuno](https://github.com/0xtvignoli/my_devfolio/actions/runs/45580976661). Con la rete user-mode integrata in QEMU, [rispondevano tutti](https://github.com/0xtvignoli/my_devfolio/actions/runs/45582033906). La fix è un finto `passt` che fa ripiegare libguestfs, lo stesso trucco che shirudo usa quando gira da root. Prima misuri, poi ipotizzi."
         }
       ]
     },
   },
   'ipv6-firewall-locked-out-lan-case-study': {
     en: {
-      "title": "Case study: an IPv6 firewall that locked out its own LAN",
+      "title": "The IPv6 firewall that locked me out",
       "description": "A second line of defence for public IPv6 addresses, a parser that matched nothing, and why failing closed was the right way to be wrong.",
       "content": [
         {
@@ -745,69 +745,69 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
       }
     },
     it: {
-      "title": "Caso studio: un firewall IPv6 che ha chiuso fuori la sua LAN",
-      "description": "Una seconda linea di difesa per gli indirizzi IPv6 pubblici, un parser che non trovava nulla, e perché fallire chiuso era il modo giusto di sbagliare.",
+      "title": "Il firewall IPv6 che mi ha chiuso fuori",
+      "description": "Un secondo firewall IPv6 sui nodi dell'homelab, un filtro awk che non trovava niente, e la LAN chiusa fuori. Perché fallire chiuso era il modo giusto di sbagliare.",
       "content": [
         {
           "type": "paragraph",
-          "content": "Il 5 novembre 2026 ho messo in produzione un nuovo firewall sui nodi del mio homelab. Subito dopo, SSH in IPv6 dalla mia LAN verso quei nodi è andato in timeout. Il firewall faceva il suo lavoro alla perfezione: scartava tutto ciò che non riconosceva, e non riconosceva la mia LAN."
+          "content": "5 novembre 2026. Metto in produzione un nuovo firewall sui nodi del mio homelab. Un attimo dopo, SSH in IPv6 dalla LAN verso quei nodi va in timeout. Il firewall faceva il suo lavoro alla perfezione: scartava tutto quello che non riconosceva. E non riconosceva la mia LAN."
         },
         {
           "type": "paragraph",
-          "content": "Questa è la storia di quel blocco: perché i nodi avevano bisogno di un secondo firewall, perché ha scelto di chiudermi fuori invece di aprirsi, e il bug di una riga nel parser che c'era dietro. Spoiler: per una volta non era il DNS. Era awk, più un'ipotesi sbagliata."
+          "content": "Questa è la storia di quel blocco: perché i nodi avevano bisogno di un secondo firewall, perché ha preferito chiudermi fuori piuttosto che aprirsi, e il bug di una riga nel parser che c'era dietro. Spoiler: per una volta non era il DNS. Era awk. Più un'ipotesi sbagliata, la mia."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Con IPv6 ogni dispositivo ha una porta sulla strada"
+          "content": "Con IPv6 ogni dispositivo ha la porta sulla strada"
         },
         {
           "type": "paragraph",
-          "content": "In una tipica casa IPv4 il NAT nasconde tutto. Il router ha l'unico indirizzo pubblico, e i dispositivi dietro ricevono indirizzi privati che da internet non si raggiungono: un condominio con un solo portone e il portiere. IPv6 ha indirizzi a sufficienza per fare a meno del trucco, quindi ogni dispositivo dietro un router consumer moderno riceve indirizzi IPv6 pubblici tutti suoi. Ogni appartamento ha la sua porta sulla strada."
+          "content": "In una casa IPv4 qualunque il NAT nasconde tutto. Il router ha l'unico indirizzo pubblico, i dispositivi dietro ricevono indirizzi privati che da internet non raggiungi: un condominio con un solo portone e il portiere. IPv6 di indirizzi ne ha abbastanza da fare a meno del trucco, quindi ogni dispositivo dietro un router consumer moderno si prende indirizzi IPv6 pubblici tutti suoi. Ogni appartamento ha la sua porta sulla strada."
         },
         {
           "type": "paragraph",
-          "content": "A decidere cosa arriva a quelle porte c'è solo il firewall del router. Basta una condivisione di porte sbagliata e un intero nodo finisce su internet. Un unico controllo che cede con un clic è proprio il caso per cui esiste la difesa in profondità: impilare controlli indipendenti, così che un errore solo non basti."
+          "content": "A decidere cosa arriva a quelle porte c'è solo il firewall del router. Sbagli una condivisione di porte e un intero nodo finisce su internet. Un unico controllo che cede con un clic: è esattamente il caso per cui esiste la difesa in profondità. Impili controlli indipendenti, così un errore solo non basta."
         },
         {
           "type": "paragraph",
-          "content": "Così ogni nodo ha avuto il suo perimetro, costruito con nftables, il framework di filtraggio dei pacchetti del kernel Linux e successore di iptables. È una tabella che accetta:"
+          "content": "Così ogni nodo si è preso il suo perimetro, fatto con nftables, il framework di filtraggio dei pacchetti del kernel Linux, erede di iptables. È una tabella che accetta:"
         },
         {
           "type": "list",
           "items": [
             "il traffico già stabilito, cioè le risposte a connessioni già aperte;",
-            "ICMPv6, i messaggi di controllo senza cui IPv6 non funziona;",
-            "gli indirizzi link-local, validi solo sul segmento locale e che non attraversano mai un router;",
-            "i prefissi on-link della LAN (ci arriviamo subito);",
+            "ICMPv6, i messaggi di controllo senza cui IPv6 non sta in piedi;",
+            "gli indirizzi link-local, validi solo sul segmento locale, che un router non lo attraversano mai;",
+            "i prefissi on-link della LAN (ci arriviamo tra un attimo);",
             "le porte condivise apposta."
           ]
         },
         {
           "type": "paragraph",
-          "content": "Il resto viene scartato, con una riga di log a frequenza limitata, così un port scan non può allagare il journal."
+          "content": "Tutto il resto finisce nel cestino, con una riga di log a frequenza limitata. Così un port scan non ti allaga il journal."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Fidarsi del prefisso sul filo, non dell'intera delega"
+          "content": "Fidati del prefisso sul filo, non della delega intera"
         },
         {
           "type": "paragraph",
-          "content": "Da dove arrivano i prefissi della LAN? Il provider assegna al router un blocco di indirizzi IPv6, il prefisso delegato, e il router lo divide in reti più piccole: una per la LAN principale, una per il Wi-Fi ospiti. Questa è la prefix delegation. Poi il router comunica quelle reti agli host con i router advertisement (RA), piccoli messaggi periodici che dicono \"questa rete esiste, e si raggiunge così\"."
+          "content": "Da dove arrivano i prefissi della LAN? Il provider assegna al router un blocco di indirizzi IPv6, il prefisso delegato, e il router lo affetta in reti più piccole: una per la LAN principale, una per il Wi-Fi ospiti. Si chiama prefix delegation. Poi il router annuncia quelle reti agli host con i router advertisement (RA), piccoli messaggi periodici che dicono \"questa rete esiste, e ci arrivi così\"."
         },
         {
           "type": "paragraph",
-          "content": "Un prefisso è on-link quando appartiene al segmento a cui l'host è fisicamente collegato: l'host raggiunge quegli indirizzi direttamente, senza passare dal router. Il problema è che il router annuncia come raggiungibile anche l'intero prefisso delegato, e quel prefisso contiene la rete ospiti. Ammettere il prefisso delegato avrebbe fatto entrare gli ospiti. Ammettere solo i prefissi on-link li tiene fuori: per questo lo script li legge dalla tabella di routing invece di scriverli a mano."
+          "content": "Un prefisso è on-link quando appartiene al segmento a cui l'host è attaccato col cavo: quegli indirizzi l'host li raggiunge diretto, senza passare dal router. Il problema: il router annuncia come raggiungibile anche l'intero prefisso delegato, e dentro c'è la rete ospiti. Ammetti il prefisso delegato e fai entrare gli ospiti. Ammetti solo gli on-link e restano fuori. Per questo lo script li legge dalla tabella di routing invece di scriverli a mano."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Subito dopo il rollout, la LAN era chiusa fuori"
+          "content": "Rollout fatto, LAN chiusa fuori"
         },
         {
           "type": "paragraph",
-          "content": "SSH in IPv6 dalla LAN andava in timeout. La tabella c'era e aveva la forma giusta, ma la lista dei consentiti conteneva solo il link-local. Lo script non aveva trovato nessun prefisso LAN, e aveva applicato le regole lo stesso."
+          "content": "SSH in IPv6 dalla LAN va in timeout. La tabella c'è, ha la forma giusta, ma nella lista dei consentiti c'è solo il link-local. Lo script non aveva trovato nessun prefisso LAN. E aveva applicato le regole lo stesso."
         },
         {
           "type": "paragraph",
@@ -820,24 +820,24 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Un sistema fallisce chiuso quando, nel dubbio, nega, e fallisce aperto quando, nel dubbio, lascia passare. Il caveau di una banca con la batteria scarica deve restare chiuso; un'uscita di sicurezza con la batteria scarica deve aprirsi. Un firewall è un caveau."
+          "content": "Un sistema fallisce chiuso quando, nel dubbio, nega. Fallisce aperto quando, nel dubbio, lascia passare. Il caveau di una banca con la batteria scarica deve restare chiuso. L'uscita di sicurezza con la batteria scarica deve aprirsi. Un firewall è un caveau."
         },
         {
           "type": "paragraph",
-          "content": "Quindi, se al boot i prefissi mancano, lo script aspetta e poi applica comunque la tabella. Un firewall che si apre quando non riesce a leggere i suoi input non è un firewall. Fallire chiuso è costato un servizio irraggiungibile su un protocollo; fallire aperto sarebbe costato il perimetro."
+          "content": "Quindi, se al boot i prefissi mancano, lo script aspetta e poi applica la tabella comunque. Un firewall che si spalanca quando non riesce a leggere i suoi input non è un firewall. È un tappeto. Fallire chiuso mi è costato un servizio irraggiungibile su un protocollo. Fallire aperto mi sarebbe costato il perimetro."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "La causa: iproute2 non stampa ciò su cui filtri"
+          "content": "La causa: iproute2 non stampa quello su cui filtri"
         },
         {
           "type": "paragraph",
-          "content": "I prefissi arrivano da `ip -6 route show dev <lan> proto ra`, che elenca le rotte dell'interfaccia LAN imparate dai router advertisement. Il filtro teneva le righe con il campo `proto`. Ma iproute2, il pacchetto dietro il comando `ip`, omette dall'output i campi usati come selettori: chiedi `proto ra` e le righe non riportano più `proto ra`. Il filtro non trovava nulla, ogni volta."
+          "content": "I prefissi arrivano da `ip -6 route show dev <lan> proto ra`, che elenca le rotte dell'interfaccia LAN imparate dai router advertisement. Il filtro teneva le righe con il campo `proto`. Ma iproute2, il pacchetto dietro il comando `ip`, toglie dall'output i campi che hai usato come selettori: chiedi `proto ra` e nelle righe `proto ra` non c'è più. Il filtro non trovava niente. Ogni volta."
         },
         {
           "type": "paragraph",
-          "content": "Nel frammento qui sotto confronta i due filtri awk: il primo cerca un campo che non può mai comparire, il secondo si basa su qualcosa che viene sempre stampato."
+          "content": "Nel frammento qui sotto confronta i due filtri awk. Il primo cerca un campo che non può comparire mai. Il secondo si appoggia a qualcosa che viene stampato sempre."
         },
         {
           "type": "code",
@@ -847,28 +847,28 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Il fix riconosce le rotte on-link da ciò che manca loro: un gateway. Una rotta con `via` passa dal router; una rotta senza è lì, direttamente sul filo."
+          "content": "Il fix riconosce le rotte on-link da quello che manca loro: un gateway. Una rotta con `via` passa dal router. Una senza è lì, direttamente sul filo."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "La simulazione mi dava ragione, ed era quello il bug"
+          "content": "La simulazione mi dava ragione. Il bug era quello"
         },
         {
           "type": "paragraph",
-          "content": "Avevo provato il parser su una simulazione dell'output del comando, e la simulazione riproduceva la mia ipotesi invece dello strumento. Un test che condivide il tuo equivoco è solo una seconda copia dell'equivoco, e passa sempre. Il fix è stato verificato sull'output reale di entrambi i nodi prima di tornare in servizio."
+          "content": "Avevo provato il parser su una simulazione dell'output del comando, e la simulazione riproduceva la mia ipotesi invece dello strumento. Un test che condivide il tuo equivoco è solo una seconda copia dell'equivoco. E passa sempre. Il fix l'ho verificato sull'output reale di entrambi i nodi prima di rimetterlo in servizio."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Lezioni"
+          "content": "Cosa mi porto a casa"
         },
         {
           "type": "list",
           "items": [
-            "Prova i parser su output reali catturati, mai su come credi che sia l'output.",
-            "Fallisci chiuso, ma ad alta voce: la lista vuota era nel journal dalla prima esecuzione.",
-            "Tieni una via di ritorno. La tabella tocca solo IPv6, quindi l'accesso IPv4 ai nodi non è mai stato a rischio, e il fix è stato un pull e una nuova esecuzione."
+            "Prova i parser su output reali catturati, mai su come ti immagini l'output.",
+            "Fallisci chiuso, ma a voce alta: la lista vuota era nel journal dalla prima esecuzione.",
+            "Tieniti una via di ritorno. La tabella tocca solo IPv6, quindi l'accesso IPv4 ai nodi non è mai stato a rischio, e il fix è stato un pull e un nuovo giro."
           ]
         }
       ],
@@ -898,24 +898,24 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
             "when": "rollout",
             "kind": "event",
             "title": "Un secondo firewall IPv6",
-            "body": "Ogni nodo riceve la sua tabella nftables: accetta i prefissi LAN appresi dai router advertisement, scarta e registra tutto il resto."
+            "body": "Ogni nodo si prende la sua tabella nftables: accetta i prefissi LAN imparati dai router advertisement, scarta e logga tutto il resto."
           },
           {
             "when": "subito dopo",
             "kind": "event",
             "title": "La LAN resta fuori",
-            "body": "SSH in IPv6 dalla LAN va in timeout. La tabella ammette solo il link-local: nessun prefisso LAN è finito nella lista dei consentiti."
+            "body": "SSH in IPv6 dalla LAN va in timeout. La tabella ammette solo il link-local: nella lista dei consentiti non è finito nessun prefisso LAN."
           },
           {
             "when": "diagnosi",
             "kind": "decision",
-            "title": "Il parser non trovava nulla",
-            "body": "iproute2 omette i campi usati come selettori. Il filtro cercava un campo che l'output non contiene mai."
+            "title": "Il parser non trovava niente",
+            "body": "iproute2 toglie dall'output i campi usati come selettori. Il filtro cercava un campo che l'output non contiene mai."
           },
           {
             "when": "fix",
             "kind": "event",
-            "title": "Filtrare su ciò che viene stampato",
+            "title": "Filtra su quello che viene stampato",
             "body": "Le route on-link sono quelle senza gateway. Verificato sull'output reale di entrambi i nodi, poi ridistribuito."
           }
         ]
@@ -924,7 +924,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
   },
   'defense-in-depth-behind-a-consumer-router': {
     en: {
-      "title": "Defence in depth behind a consumer router",
+      "title": "Homelab defence behind a consumer router",
       "description": "No VLANs, no DMZ and public IPv6 on every device: how a two-node homelab stays private when the router can't do most of the work.",
       "content": [
         {
@@ -1033,22 +1033,22 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
       ]
     },
     it: {
-      "title": "Difesa in profondità dietro un router consumer",
-      "description": "Niente VLAN, niente DMZ e IPv6 pubblico su ogni dispositivo: come un homelab a due nodi resta privato quando il router non può fare quasi niente.",
+      "title": "Homelab blindato con un router da supermercato",
+      "description": "Niente VLAN, niente DMZ, IPv6 pubblico su ogni dispositivo. Come tengo privato un homelab a due nodi quando il router non sa fare quasi niente: bind sulla LAN, nftables, WireGuard e container aggiornati solo da git.",
       "content": [
         {
           "type": "paragraph",
-          "content": "Un router consumer è un buon router e un pessimo firewall. Il mio non ha VLAN (LAN virtuali che dividono una rete fisica in reti isolate), né DMZ (una zona separata per ciò che è esposto a internet), non inoltra porte verso la rete ospiti e dà a ogni dispositivo indirizzi IPv6 pubblici. Basta un clic sbagliato nella sua interfaccia web e un server in salotto finisce su internet."
+          "content": "Un router consumer è un buon router e un pessimo firewall. Il mio non ha VLAN (LAN virtuali che spezzano una rete fisica in reti isolate), non ha DMZ (una zona a parte per quello che è esposto a internet), non inoltra porte verso la rete ospiti e regala a ogni dispositivo indirizzi IPv6 pubblici. Un clic sbagliato nella sua interfaccia web e il server in salotto è su internet."
         },
         {
           "type": "paragraph",
-          "content": "Per questo il design parte dall'idea che ogni singolo controllo possa sbagliare, e gliene mette un secondo dietro. L'idea ha un nome, difesa in profondità, e si visualizza bene come fette di emmental: ogni strato ha i suoi buchi, ma i buchi raramente si allineano. L'articolo passa in rassegna le fette di un homelab a due nodi:"
+          "content": "Per questo il design parte da un'idea: ogni controllo può sbagliare, quindi gliene metti un secondo dietro. Si chiama difesa in profondità, e te la immagini come fette di emmental: ogni strato ha i suoi buchi, ma i buchi si allineano di rado. Qui passiamo in rassegna le fette di un homelab a due nodi:"
         },
         {
           "type": "list",
           "items": [
             "cosa è raggiungibile, e da dove;",
-            "come ogni servizio resta lontano dalle interfacce su cui non deve stare;",
+            "come ogni servizio sta lontano dalle interfacce dove non deve stare;",
             "un secondo firewall per IPv6, e una regola per aggiornare i container;",
             "i buchi ancora aperti."
           ]
@@ -1056,44 +1056,44 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         {
           "type": "heading",
           "level": 2,
-          "content": "Nessun servizio pubblico, un'eccezione dichiarata"
+          "content": "Zero servizi pubblici, un'eccezione dichiarata"
         },
         {
           "type": "paragraph",
-          "content": "Niente è pubblicato su internet. L'accesso da remoto passa da WireGuard, la VPN integrata nel router, che assegna a ogni peer collegato un indirizzo della LAN. Così al reverse proxy (l'unico punto d'ingresso che smista le richieste ai servizi) basta una regola: chi arriva da fuori della LAN riceve un 403. Chi è in VPN la soddisfa senza configurazioni in più, perché per il proxy è come se fosse a casa."
+          "content": "Su internet non è pubblicato niente. Da remoto entri con WireGuard, la VPN integrata nel router, che dà a ogni peer collegato un indirizzo della LAN. Così al reverse proxy (l'unico punto d'ingresso, quello che smista le richieste ai servizi) basta una regola: chi arriva da fuori della LAN si prende un 403. Chi è in VPN passa senza configurazioni in più. Per il proxy è come se fosse a casa."
         },
         {
           "type": "paragraph",
-          "content": "C'è esattamente una porta in ingresso, per un servizio peer-to-peer che ha bisogno di connessioni entranti. È scritta come eccezione, non scoperta come tale."
+          "content": "C'è esattamente una porta in ingresso, per un servizio peer-to-peer che vuole connessioni entranti. È scritta come eccezione. Non scoperta come tale."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Legarsi all'indirizzo LAN, non a 0.0.0.0"
+          "content": "Bind sull'indirizzo LAN, non su 0.0.0.0"
         },
         {
           "type": "paragraph",
-          "content": "Un servizio legato a 0.0.0.0 ascolta su tutte le interfacce di rete della macchina, comprese quelle che avevi dimenticato. Con IPv6, questo include indirizzi pubblici."
+          "content": "Un servizio in ascolto su 0.0.0.0 ascolta su tutte le interfacce della macchina. Anche quelle che ti eri dimenticato. Con IPv6, dentro ci sono indirizzi pubblici."
         },
         {
           "type": "paragraph",
-          "content": "Per questo ogni porta di ogni file Compose è legata all'indirizzo LAN del nodo. La regola ha trovato più del previsto: l'interfaccia admin del filtro DNS e un server audio di casa ascoltavano su tutte le interfacce, compresi i due indirizzi IPv6 pubblici, con il router come unico ostacolo. Ora entrambi sono legati all'indirizzo LAN, e un controllo giornaliero dell'host fallisce se uno dei due torna ad ascoltare in IPv6."
+          "content": "Per questo ogni porta di ogni file Compose è legata all'indirizzo LAN del nodo. La regola ha pescato più del previsto: l'interfaccia admin del filtro DNS e un server audio di casa ascoltavano su tutte le interfacce, compresi i due indirizzi IPv6 pubblici, con il router come unico ostacolo. Bello, eh? Adesso tutti e due sono legati all'indirizzo LAN, e un controllo giornaliero dell'host fallisce se uno dei due torna ad ascoltare in IPv6."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Senza autenticazione, niente porta pubblicata"
+          "content": "Niente login, niente porta pubblicata"
         },
         {
           "type": "paragraph",
-          "content": "Alcuni servizi non hanno alcun login. La regola per loro: se non sa autenticare chi lo chiama, non deve essere raggiungibile."
+          "content": "Alcuni servizi un login non ce l'hanno proprio. La regola per loro: se non sa chi lo sta chiamando, non deve essere raggiungibile. Punto."
         },
         {
           "type": "list",
           "items": [
-            "I backend di metriche e log non hanno autenticazione, quindi una regola nella catena firewall di Docker ammette solo il nodo che gestisce gli allarmi.",
+            "I backend di metriche e log non hanno autenticazione, quindi una regola nella catena firewall di Docker fa entrare solo il nodo che gestisce gli allarmi.",
             "Il router dell'LLM locale non ha autenticazione e inoltra alla GPU, quindi vive su una rete Docker interna e non pubblica porte. La sua API key è una seconda linea, non il perimetro.",
-            "I segreti non entrano in git: per ogni stack nel repo c'è un file di esempio, quello vero sta sul nodo."
+            "I segreti in git non ci entrano: per ogni stack nel repo c'è un file di esempio, quello vero sta sul nodo."
           ]
         },
         {
@@ -1103,24 +1103,24 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Il firewall IPv6 del router è l'unico filtro tra internet e gli indirizzi pubblici dei nodi. Ora ogni nodo ha la sua tabella nftables (nftables è il filtro di pacchetti del kernel Linux) che accetta i prefissi on-link della LAN, cioè gli intervalli di indirizzi della rete a cui il nodo è collegato, più le porte condivise apposta, e scarta il resto. Se non riesce a leggere i prefissi, fallisce chiuso: blocca invece di aprire. Il primo rollout ha chiuso fuori la LAN: quella storia ha un caso studio tutto suo."
+          "content": "Tra internet e gli indirizzi pubblici dei nodi c'era un solo filtro: il firewall IPv6 del router. Adesso ogni nodo ha la sua tabella nftables (il filtro di pacchetti del kernel Linux) che accetta i prefissi on-link della LAN, cioè gli intervalli di indirizzi della rete a cui il nodo è attaccato, più le porte condivise apposta, e scarta il resto. Se non riesce a leggere i prefissi fallisce chiuso: blocca invece di aprire. Il primo rollout ha chiuso fuori la LAN. Quella storia ha un caso studio tutto suo."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Aggiornare in automatico, ma solo ciò che git dice già"
+          "content": "Aggiornamenti automatici, ma solo quelli che git sa già"
         },
         {
           "type": "paragraph",
-          "content": "Il sistema operativo si aggiorna da solo ogni notte. Con i container è più delicato, perché un tag d'immagine può voler dire due cose diverse. Un tag fisso indica una versione precisa, mentre un tag mobile come latest punta all'ultima cosa pubblicata."
+          "content": "Il sistema operativo si aggiorna da solo ogni notte. Coi container è più delicato, perché un tag d'immagine può voler dire due cose. Un tag fisso indica una versione precisa. Un tag mobile come latest punta all'ultima cosa pubblicata, qualunque sia."
         },
         {
           "type": "paragraph",
-          "content": "I container seguono una regola: si applica in automatico solo ciò che il tag in git dichiara già. Un tag fisso che cambia a monte è quasi sempre una ricostruzione per una CVE, una vulnerabilità catalogata pubblicamente, cioè proprio l'aggiornamento da prendere. I tag mobili vengono segnalati per revisione. Renovate, un bot che apre pull request per le nuove versioni, alza i tag in git, e una scansione Trivy giornaliera delle immagini alimenta una dashboard delle vulnerabilità note."
+          "content": "Per i container la regola è una: in automatico si applica solo quello che il tag in git dichiara già. Un tag fisso che cambia a monte è quasi sempre una ricostruzione per una CVE, una vulnerabilità catalogata pubblicamente. Tradotto: proprio l'aggiornamento che vuoi. I tag mobili finiscono in revisione. Renovate, un bot che apre pull request per le nuove versioni, alza i tag in git, e una scansione Trivy giornaliera delle immagini alimenta una dashboard delle vulnerabilità note."
         },
         {
           "type": "paragraph",
-          "content": "Ricostruire tre immagini, due su basi irrobustite, le ha portate da 78, 84 e 39 CVE note a zero. A quanto pare la maggior parte di quelle CVE viaggiava a scrocco."
+          "content": "Ho ricostruito tre immagini, due su basi irrobustite. Da 78, 84 e 39 CVE note a zero. A quanto pare la maggior parte di quelle CVE viaggiava a scrocco."
         },
         {
           "type": "heading",
@@ -1134,9 +1134,9 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         {
           "type": "list",
           "items": [
-            "TLS termina al reverse proxy; il traffico verso il secondo nodo attraversa la LAN in chiaro. Accettabile finché ogni dispositivo in LAN è fidato.",
-            "Senza VLAN non esiste un segmento isolato: qualunque cosa esposta apposta, un honeypot per esempio, ha bisogno prima di un suo router in cascata.",
-            "I backup lasciano il disco che proteggono ma non la casa. L'offsite è il prossimo punto."
+            "TLS termina al reverse proxy. Il traffico verso il secondo nodo attraversa la LAN in chiaro. Va bene finché ogni dispositivo in LAN è fidato.",
+            "Senza VLAN un segmento isolato non esiste: qualunque cosa esposta apposta, un honeypot per dire, ha bisogno prima di un suo router in cascata.",
+            "I backup lasciano il disco che proteggono, ma non la casa. L'offsite è il prossimo punto della lista."
           ]
         }
       ]
@@ -1144,7 +1144,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
   },
   'silent-failures-alerting-that-notices': {
     en: {
-      "title": "Silent failures: alerting that notices when it breaks",
+      "title": "Silent failures: when alerting goes quiet",
       "description": "A backup that failed every night, a check that counted zero as success, alerting that lived on the node it watched. What a homelab taught me about the failures nobody hears.",
       "content": [
         {
@@ -1241,42 +1241,42 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
       ]
     },
     it: {
-      "title": "Guasti silenziosi: allarmi che si accorgono quando si rompono",
-      "description": "Un backup che falliva ogni notte, un controllo che contava zero come successo, gli allarmi sul nodo che dovevano sorvegliare. Cosa mi ha insegnato un homelab sui guasti che nessuno sente.",
+      "title": "Il backup mente, l'allarme tace",
+      "description": "Un backup che falliva ogni notte, una verifica che contava zero come successo, gli allarmi sullo stesso nodo che dovevano sorvegliare. Dead man's switch, pipefail, systemd e restore veri: come un homelab impara a sentire i guasti che non fanno rumore.",
       "content": [
         {
           "type": "paragraph",
-          "content": "I guasti peggiori del mio homelab sono stati silenziosi. Un pull del backup che falliva ogni notte, senza che nessuno lo sapesse. Una verifica dell'archivio che contava zero voci come successo. Uno script ucciso da `set -o pipefail` senza una parola."
+          "content": "I guasti peggiori del mio homelab sono stati quelli muti. Un pull del backup che falliva ogni notte, e nessuno lo sapeva. Una verifica dell'archivio che contava zero voci come successo. Uno script ucciso da `set -o pipefail` senza dire una parola."
         },
         {
           "type": "paragraph",
-          "content": "Il filo comune: il pezzo che doveva accorgersene era quello che si rompeva, oppure nessuno stava guardando. Anche il monitoraggio è software, e quando si rompe non fa rumore. Tace, e il silenzio sembra identico a un sistema in salute. Chi controlla i controllori? In un homelab nessuno, a meno di costruirlo."
+          "content": "Il filo comune: il pezzo che doveva accorgersene era proprio quello rotto, oppure non guardava nessuno. Anche il monitoraggio è software, e quando si rompe non fa rumore. Tace. E il silenzio è identico a un sistema in salute. Chi controlla i controllori? In un homelab nessuno, a meno che non lo costruisci tu."
         },
         {
           "type": "paragraph",
-          "content": "Questo articolo copre tre correzioni: far sì che il sistema di allarmi segnali la propria salute, sorvegliare i job che falliscono in silenzio, e dimostrare che i backup si ripristinano davvero."
+          "content": "Qui trovi tre correzioni: far dire al sistema di allarmi come sta lui, sorvegliare i job che falliscono in silenzio, e dimostrare che i backup si ripristinano davvero."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Il sorvegliante non deve abitare nella casa che sorveglia"
+          "content": "Il sorvegliante non abita nella casa che sorveglia"
         },
         {
           "type": "paragraph",
-          "content": "Grafana valutava le regole di allarme sullo stesso nodo che sorvegliava. Quando il nodo cadeva, cadeva anche chi doveva dirlo: tempo di rilevamento, illimitato. Il rilevatore di fumo era collegato al circuito che prendeva fuoco."
+          "content": "Grafana valutava le regole di allarme sullo stesso nodo che sorvegliava. Cadeva il nodo, cadeva anche chi doveva dirtelo. Tempo di rilevamento: infinito. Il rilevatore di fumo era attaccato al circuito che prendeva fuoco."
         },
         {
           "type": "paragraph",
-          "content": "Grafana e le notifiche si sono spostati sul nodo a basso consumo che non si riavvia mai. Prometheus, il database che va a raccogliere le metriche da ogni servizio, è rimasto accanto ai servizi che interroga, perché quelli apposta non sono pubblicati."
+          "content": "Grafana e le notifiche li ho spostati sul nodo a basso consumo che non si riavvia mai. Prometheus, il database che va a raccogliere le metriche da ogni servizio, è rimasto accanto ai servizi che interroga, perché quelli apposta non sono pubblicati."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Se una regola non si può valutare, è un allarme"
+          "content": "Regola che non si valuta? È un allarme"
         },
         {
           "type": "paragraph",
-          "content": "Ogni regola scatta quando non può essere valutata. Se il nodo delle metriche sparisce, scattano tutte insieme. È rumoroso apposta: una dashboard che tace perché la sua sorgente dati non c'è più sembra identica a una sana. Nessun dato non è una buona notizia; è nessuna notizia."
+          "content": "Ogni regola scatta quando non riesce a essere valutata. Sparisce il nodo delle metriche e scattano tutte insieme. È rumoroso apposta: una dashboard che tace perché la sorgente dati non c'è più è identica a una sana. Nessun dato non è una buona notizia. È nessuna notizia."
         },
         {
           "type": "heading",
@@ -1285,62 +1285,62 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Un dead man's switch è un comando che va tenuto attivo, così che quando l'operatore smette succede qualcosa. Il pedale del macchinista funziona così: se lo lascia, il treno frena."
+          "content": "Un dead man's switch è un comando che devi tenere premuto: quando l'operatore molla, succede qualcosa. Il pedale del macchinista funziona così. Lo lascia, il treno frena."
         },
         {
           "type": "paragraph",
-          "content": "Una regola di allarme è sempre attiva. Il suo contact point manda un battito a un servizio esterno ogni cinque minuti. Se i battiti si fermano, perché è caduto il nodo degli allarmi, Grafana si è bloccato o manca internet, la mail parte da fuori l'homelab, l'unico posto che può ancora mandarla."
+          "content": "Una regola di allarme è sempre accesa. Il suo contact point manda un battito a un servizio esterno ogni cinque minuti. Se i battiti si fermano, perché è caduto il nodo degli allarmi, Grafana si è piantato o è saltato internet, la mail parte da fuori l'homelab. L'unico posto che può ancora mandarla."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Guardare i job che falliscono, non solo quelli che girano"
+          "content": "Guarda i job che falliscono, non solo quelli che girano"
         },
         {
           "type": "paragraph",
-          "content": "I job in background sono il nascondiglio preferito dei guasti. Un job one-shot (una unit systemd che gira una volta e termina, come un backup) può fallire alle 3 di notte senza lasciare tracce che qualcuno guarderà. Ora quattro regole coprono il caso:"
+          "content": "I job in background sono il nascondiglio preferito dei guasti. Un job one-shot (una unit systemd che gira una volta e finisce, tipo un backup) può fallire alle 3 di notte senza lasciare tracce che qualcuno guarderà mai. Adesso quattro regole coprono il caso:"
         },
         {
           "type": "list",
           "items": [
-            "Una unit systemd fallita ora genera un allarme in circa due minuti, invece di essere scoperta la mattina dopo.",
-            "Ogni job one-shot ha un timeout di avvio, verificato in CI: un job appeso per sempre non fallisce mai, quindi non allarma mai.",
-            "Con `pipefail` una pipeline di shell fallisce se fallisce uno qualunque dei suoi comandi, non solo l'ultimo, e questo può chiudere uno script senza messaggi. Le pipeline sotto `pipefail` devono dichiarare se un errore deve fermare lo script; un controllo in CI rifiuta quelle che non lo fanno.",
-            "La verifica dell'archivio fallisce su un archivio vuoto. Zero voci non è un successo."
+            "Una unit systemd fallita genera un allarme in circa due minuti, invece di saltar fuori la mattina dopo.",
+            "Ogni job one-shot ha un timeout di avvio, verificato in CI: un job appeso per sempre non fallisce mai. Quindi non allarma mai.",
+            "Con `pipefail` una pipeline di shell fallisce se fallisce uno qualunque dei suoi comandi, non solo l'ultimo, e questo può chiudere uno script senza un messaggio. Le pipeline sotto `pipefail` devono dichiarare se un errore deve fermare lo script. Un controllo in CI rifiuta quelle che non lo fanno.",
+            "La verifica dell'archivio fallisce su un archivio vuoto. Zero voci non è un successo. Punto."
           ]
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Lasciare che l'allarme si spieghi"
+          "content": "L'allarme che si spiega da solo"
         },
         {
           "type": "paragraph",
-          "content": "Il payload dell'allarme va anche a un piccolo servizio che aggiunge le ultime 30 righe di log del container coinvolto, prese da Loki, l'archivio dei log, e chiede a un LLM locale la causa probabile e il primo controllo da fare. La risposta arriva come seconda notifica."
+          "content": "Il payload dell'allarme va anche a un piccolo servizio che ci attacca le ultime 30 righe di log del container coinvolto, prese da Loki, l'archivio dei log, e chiede a un LLM locale la causa probabile e il primo controllo da fare. La risposta arriva come seconda notifica."
         },
         {
           "type": "paragraph",
-          "content": "La prima notifica non dipende mai dal modello: se è giù, l'allarme arriva comunque. Una catena di allarmi che ha bisogno di un LLM acceso sarebbe solo un altro guasto silenzioso in attesa di succedere."
+          "content": "La prima notifica dal modello non dipende mai: se l'LLM è giù, l'allarme arriva lo stesso. Una catena di allarmi che ha bisogno di un LLM acceso sarebbe solo un altro guasto silenzioso in attesa del suo turno."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Un backup conta quando si ripristina"
+          "content": "Un backup conta quando lo ripristini"
         },
         {
           "type": "paragraph",
-          "content": "Gli archivi sono cifrati con age, un piccolo strumento di cifratura dei file, e sui nodi c'è solo la chiave pubblica: un nodo può scrivere i backup ma non leggerli. Finché il pull notturno non porta il backup di un nodo sull'altro, il backup condivide il failure domain dei dati che protegge: un disco morto si porta via entrambi. I dataset grandi vanno in restic, uno strumento di backup a snapshot, con la loro retention."
+          "content": "Gli archivi sono cifrati con age, un piccolo strumento di cifratura dei file, e sui nodi c'è solo la chiave pubblica: un nodo i backup li scrive ma non li legge. Finché il pull notturno non porta il backup di un nodo sull'altro, il backup condivide il failure domain dei dati che protegge. Tradotto: un disco morto si porta via tutti e due. I dataset grandi vanno in restic, uno strumento di backup a snapshot, con la loro retention."
         },
         {
           "type": "paragraph",
-          "content": "E il backup è stato considerato fatto solo dopo essere stato ripristinato. Fino ad allora era un file pieno di speranza."
+          "content": "E il backup l'ho considerato fatto solo dopo averlo ripristinato. Fino ad allora era un file pieno di speranza."
         }
       ]
     },
   },
   'react2shell-scan-case-study': {
     en: {
-      "title": "Case study: a React2Shell scan against this site",
+      "title": "React2Shell scan, dissected",
       "description": "Suspicious POST requests from cloud addresses and an unused Server Action. What the edge saw, what could not be verified, and the four changes that closed the door.",
       "content": [
         {
@@ -1495,33 +1495,33 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
       }
     },
     it: {
-      "title": "Caso studio: una scansione React2Shell contro questo sito",
-      "description": "Richieste POST sospette da indirizzi cloud e una Server Action inutilizzata. Cosa ha visto l'edge, cosa non si è potuto verificare e le quattro modifiche che hanno chiuso la porta.",
+      "title": "React2Shell bussa alla porta",
+      "description": "POST sospette da range Google Cloud su una home senza form, e una Server Action che nessuno chiamava. Cosa ha visto l'edge di Cloudflare, cosa i log non potevano dimostrare, e le quattro modifiche che hanno chiuso la porta.",
       "content": [
         {
           "type": "paragraph",
-          "content": "Tra il 23 e il 29 ottobre la home di questo sito ha cominciato a ricevere richieste `POST /en`. Arrivavano da indirizzi in range di Google Cloud, a brevi raffiche, insieme a scansioni di `.env` e altri file di configurazione. Nessuno compila un form su una home che non ha form. Qualcuno stava bussando a una porta precisa per vedere se era aperta."
+          "content": "Tra il 23 e il 29 ottobre la home di questo sito comincia a ricevere richieste `POST /en`. Arrivano da range di Google Cloud, a raffiche brevi, insieme a scansioni di `.env` e altri file di configurazione. Nessuno compila un form su una home che di form non ne ha. Qualcuno stava bussando a una porta precisa, per vedere se era aperta."
         },
         {
           "type": "paragraph",
-          "content": "Questo caso studio racconta qual era quella porta, perché un sito già aggiornato per il bug famoso aveva comunque motivi di preoccuparsi, cosa i log potevano dimostrare e cosa no, e le quattro modifiche che l'hanno chiusa."
+          "content": "Qui trovi qual era quella porta, perché un sito già patchato per il bug famoso aveva comunque di che preoccuparsi, cosa i log potevano dimostrare e cosa no, e le quattro modifiche che l'hanno chiusa."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Una POST su una pagina statica vuol dire che qualcuno cerca una Server Action"
+          "content": "Una POST su una pagina statica? Qualcuno cerca una Server Action"
         },
         {
           "type": "paragraph",
-          "content": "Una pagina statica non ha motivo di ricevere una POST: i browser la scaricano con una GET. Su un sito Next.js, una POST su una pagina significa una cosa: qualcuno prova a invocare una Server Action."
+          "content": "Una pagina statica non ha motivo di ricevere una POST: il browser la scarica con una GET. Su un sito Next.js una POST su una pagina vuol dire una cosa sola. Qualcuno prova a invocare una Server Action."
         },
         {
           "type": "paragraph",
-          "content": "Una Server Action è una funzione che gira sul server ma si può chiamare dal browser, mandando una POST alla pagina con l'identificativo dell'azione da eseguire. Fa parte dei React Server Components, la funzionalità di React che esegue il rendering dei componenti sul server e manda il risultato al browser in un suo formato serializzato. Comodo per chi sviluppa, e anche un punto d'ingresso che accetta input da chiunque."
+          "content": "Una Server Action è una funzione che gira sul server ma che chiami dal browser, mandando una POST alla pagina con l'identificativo dell'azione da eseguire. Fa parte dei React Server Components, la funzionalità di React che renderizza i componenti sul server e manda il risultato al browser in un suo formato serializzato. Comodo per chi sviluppa. E anche un punto d'ingresso che accetta input da chiunque."
         },
         {
           "type": "paragraph",
-          "content": "È lì che stava React2Shell (CVE-2025-55182): una falla critica nel modo in cui i React Server Components gestivano quelle richieste, che permetteva a una richiesta costruita ad arte di eseguire codice sul server, da cui il nome. Dopo sono arrivati altri advisory critici sui React Server Components."
+          "content": "È lì che stava React2Shell (CVE-2025-55182): una falla critica nel modo in cui i React Server Components gestivano quelle richieste. Una richiesta costruita ad arte eseguiva codice sul server. Da cui il nome. Dopo sono arrivati altri advisory critici sui React Server Components."
         },
         {
           "type": "heading",
@@ -1530,19 +1530,19 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Ognuna di quelle richieste ha ricevuto un 500 dall'origin, il server che esegue davvero l'app. Non è una difesa, solo un'eccezione: il payload non corrispondeva a un'azione che l'app sapesse eseguire. La porta ha retto perché la chiave era tagliata per un'altra serratura."
+          "content": "Ognuna di quelle richieste si è presa un 500 dall'origin, il server che fa girare davvero l'app. Non è una difesa. È un'eccezione: il payload non corrispondeva a nessuna azione che l'app sapesse eseguire. La porta ha retto perché la chiave era tagliata per un'altra serratura. Fortuna, non design."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Aggiornato per il bug da prima pagina, ma ancora esposto"
+          "content": "Patchato per il bug da prima pagina, esposto lo stesso"
         },
         {
           "type": "list",
           "items": [
             "Il sito era già aggiornato per React2Shell, ma cinque advisory più recenti (tre critici: React Server Components, la direttiva `use cache` e l'ottimizzazione immagini degli SVG) erano corretti solo in release successive.",
-            "L'app conteneva ancora una Server Action che nessuno chiamava: un vecchio selettore di lingua. Un'azione che esiste è un endpoint, che l'interfaccia la usi o no.",
-            "Ogni pagina accettava POST. Il firewall non aveva regole sui metodi di scrittura."
+            "L'app si portava ancora dietro una Server Action che nessuno chiamava: un vecchio selettore di lingua. Un'azione che esiste è un endpoint, che l'interfaccia la usi o no.",
+            "Ogni pagina accettava POST. Il firewall sui metodi di scrittura non aveva una regola che fosse una."
           ]
         },
         {
@@ -1552,30 +1552,30 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "L'unica traccia erano le analytics HTTP di Cloudflare: richieste aggregate, con path, metodo, status e paese, ma senza body. Abbastanza per vedere i tentativi, non per dimostrare che siano falliti. Il verdetto onesto: compromissione improbabile, non esclusa."
+          "content": "L'unica traccia erano le analytics HTTP di Cloudflare: richieste aggregate, con path, metodo, status e paese. Niente body. Abbastanza per vedere i tentativi, non per dimostrare che siano falliti. Il verdetto onesto: compromissione improbabile, non esclusa."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Quattro modifiche che hanno chiuso la porta"
+          "content": "Quattro modifiche, porta chiusa"
         },
         {
           "type": "paragraph",
-          "content": "Due modifiche avvengono all'edge, i server di Cloudflare che stanno davanti all'origin e vedono ogni richiesta per primi. Lì un WAF (web application firewall) filtra le richieste in base a ciò che dicono in HTTP, come metodo, path e header, invece che per indirizzo IP e porta come un firewall di rete. Le quattro modifiche:"
+          "content": "Due modifiche stanno all'edge, i server di Cloudflare che stanno davanti all'origin e vedono ogni richiesta per primi. Lì un WAF (web application firewall) filtra le richieste in base a quello che dicono in HTTP, come metodo, path e header, invece che per IP e porta come un firewall di rete. Le quattro modifiche:"
         },
         {
           "type": "list",
           "items": [
             "Aggiornamento completo delle dipendenze: Next.js 16.4.5, React 19.2.9, sharp 0.35.5. `bun audit`, che confronta le dipendenze con gli advisory pubblicati, è passato da 7 finding critici a zero.",
-            "La Server Action inutilizzata e la sua configurazione sono state eliminate. Il sito non ha più azioni da invocare.",
-            "Una custom rule di Cloudflare permette i metodi di scrittura solo sull'unica route che li usa, il form contatti. Tutto il resto riceve un 403 all'edge, prima che l'app giri.",
-            "`dangerouslyAllowSVG` è stato disattivato. I file SVG possono contenere script, ed è per questo che l'ottimizzatore di immagini vuole quel flag per elaborarli; ogni SVG del sito è servito come file, quindi l'ottimizzatore non ne aveva bisogno."
+            "Via la Server Action inutilizzata, e via la sua configurazione. Il sito non ha più azioni da invocare.",
+            "Una custom rule di Cloudflare lascia passare i metodi di scrittura solo sull'unica route che li usa, il form contatti. Tutto il resto si prende un 403 all'edge, prima che l'app giri.",
+            "`dangerouslyAllowSVG` spento. Un SVG può contenere script, ed è per questo che l'ottimizzatore di immagini vuole quel flag per elaborarli. Ma ogni SVG del sito è servito come file, quindi all'ottimizzatore non serviva."
           ],
           "ordered": true
         },
         {
           "type": "paragraph",
-          "content": "Ecco la regola della terza modifica. Si legge così: un metodo di scrittura, su qualunque path che non sia il form contatti né gli endpoint `/cdn-cgi/` di Cloudflare, viene bloccato."
+          "content": "Ecco la regola della terza modifica. Tradotta: un metodo di scrittura, su qualunque path che non sia il form contatti né gli endpoint `/cdn-cgi/` di Cloudflare, viene bloccato."
         },
         {
           "type": "code",
@@ -1584,19 +1584,19 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Dopo il deploy la stessa richiesta riceve 403 dall'edge; il form contatti funziona. La regola vive nel repository come script, così si può rivedere e riapplicare invece di essere un click in una dashboard."
+          "content": "Dopo il deploy la stessa richiesta si prende un 403 dall'edge, e il form contatti funziona. La regola vive nel repository come script: la rivedi e la riapplichi. Non è un clic dimenticato in una dashboard."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Lezioni"
+          "content": "Cosa mi porto a casa"
         },
         {
           "type": "list",
           "items": [
-            "Elimina ciò che non usi. La patch più economica per una vulnerabilità delle Server Action è non avere Server Action.",
+            "Elimina quello che non usi. La patch più economica per una vulnerabilità delle Server Action è non avere Server Action.",
             "Metti in allow-list i metodi di scrittura all'edge. Un sito di contenuti ha bisogno di POST in uno o due punti: scrivilo nel firewall.",
-            "Tieni una traccia tua. I dati aggregati dell'edge erano l'unica traccia di queste richieste; questo Osservatorio ora ne conserva una ogni giorno."
+            "Tieniti una traccia tua. I dati aggregati dell'edge erano l'unica traccia di queste richieste. Questo Osservatorio adesso ne conserva una ogni giorno."
           ]
         }
       ],
@@ -1625,14 +1625,14 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
           {
             "when": "23 ott",
             "kind": "event",
-            "title": "Prima POST a una pagina",
-            "body": "Richieste POST /en sospette da indirizzi Google Cloud, insieme a scansioni di .env. Ognuna ha ricevuto un 500."
+            "title": "La prima POST su una pagina",
+            "body": "Richieste POST /en sospette da indirizzi Google Cloud, insieme a scansioni di .env. Ognuna si è presa un 500."
           },
           {
             "when": "5 nov",
             "kind": "decision",
             "title": "L'edge è l'unica traccia",
-            "body": "Le analytics di Cloudflare mostrano i tentativi, non il contenuto delle richieste: il successo non si può escludere."
+            "body": "Le analytics di Cloudflare mostrano i tentativi, non il contenuto delle richieste: il successo non lo puoi escludere."
           },
           {
             "when": "5 nov",
@@ -1644,7 +1644,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
             "when": "5 nov",
             "kind": "event",
             "title": "Via la superficie",
-            "body": "La Server Action inutilizzata è eliminata; una regola WAF permette i metodi di scrittura su una sola route."
+            "body": "La Server Action inutilizzata non c'è più. Una regola WAF lascia passare i metodi di scrittura su una sola route."
           }
         ]
       }
@@ -1652,7 +1652,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
   },
   'x402-agent-native-api-monetization': {
     en: {
-      "title": "Getting paid by machines: monetising APIs with x402 and Pay Per Crawl",
+      "title": "x402: APIs that machines pay for",
       "description": "HTTP 402 finally has a job. How Cloudflare's Pay Per Crawl and Monetization Gateway let agents and crawlers pay per request, and the pricing pitfalls nobody mentions.",
       "content": [
         {
@@ -1764,46 +1764,46 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
       ]
     },
     it: {
-      "title": "Farsi pagare dalle macchine: monetizzare le API con x402 e Pay Per Crawl",
-      "description": "Lo status HTTP 402 ha finalmente un compito. Come Pay Per Crawl e il Monetization Gateway di Cloudflare fanno pagare agenti e crawler a richiesta, e le insidie di pricing che nessuno cita.",
+      "title": "x402: quando a pagare è il bot",
+      "description": "Dopo trent'anni di panchina, lo status HTTP 402 ha un lavoro. Pay Per Crawl e il Monetization Gateway di Cloudflare fanno pagare agenti e crawler a richiesta, con x402 e USDC. Più le trappole di pricing che nessuno ti dice.",
       "content": [
         {
           "type": "paragraph",
-          "content": "Immagina un crawler AI che si scarica ogni pagina che hai pubblicato, o un agente che chiama la tua API per conto di qualcun altro. Per trent'anni il web ha avuto esattamente due risposte per un client del genere: servirlo gratis, oppure bloccarlo. Non c'era modo di dire \"certo, fanno un centesimo\"."
+          "content": "Immagina un crawler AI che si scarica ogni pagina che hai pubblicato. O un agente che chiama la tua API per conto di qualcun altro. Per trent'anni il web ha avuto due sole risposte per un client così: servirlo gratis, o bloccarlo. Mancava la terza: \"certo, fanno un centesimo\"."
         },
         {
           "type": "paragraph",
-          "content": "Lo status HTTP 402 \"Payment Required\" è rimasto riservato ma inutilizzato nella specifica per tutto questo tempo, il cartello \"prossimamente\" più longevo del protocollo. Ora ha finalmente un compito: far pagare crawler AI e agenti per ciò che scaricano, a richiesta, senza account e senza contratto. Cloudflare ha rilasciato due prodotti che ci si appoggiano, Pay Per Crawl e il Monetization Gateway, e insieme ridefiniscono cosa può essere un cliente pagante."
+          "content": "Lo status HTTP 402 \"Payment Required\" è rimasto lì nella specifica per tutto questo tempo, riservato e inutilizzato. Il cartello \"prossimamente\" più longevo del protocollo. Adesso ha un lavoro: far pagare crawler AI e agenti per quello che scaricano, a richiesta, senza account e senza contratto. Cloudflare ci ha costruito sopra due prodotti, Pay Per Crawl e il Monetization Gateway. Insieme cambiano la definizione di cliente pagante."
         },
         {
           "type": "paragraph",
-          "content": "Di seguito: i due prodotti, l'handshake paga-e-riprova, i prezzi per le macchine e lo scontro tra pre-pagamento e billing a consumo degli LLM."
+          "content": "Il giro: i due prodotti, l'handshake paga-e-riprova, i prezzi pensati per le macchine, e lo scontro tra pre-pagamento e billing a consumo degli LLM."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Due gateway, due modelli economici"
+          "content": "Due gateway, due modelli di business"
         },
         {
           "type": "paragraph",
-          "content": "Pay Per Crawl si rivolge specificamente ai crawler AI. L'editore imposta un unico prezzo flat per richiesta su tutto il dominio e marca ogni crawler come allow, charge o block. Cloudflare fa da Merchant of Record, il soggetto che vende e incassa legalmente per conto tuo: verifica il crawler, aggrega gli addebiti e paga l'editore in valuta fiat, cioè moneta tradizionale. Zero crypto, quasi nessun setup, ma fattura solo i crawler."
+          "content": "Pay Per Crawl parla solo ai crawler AI. L'editore fissa un prezzo flat per richiesta su tutto il dominio e marca ogni crawler come allow, charge o block. Cloudflare fa da Merchant of Record. Tradotto: è il soggetto che vende e incassa legalmente per conto tuo. Verifica il crawler, aggrega gli addebiti e paga l'editore in valuta fiat, moneta tradizionale. Zero crypto, setup quasi nullo. Ma fattura solo i crawler."
         },
         {
           "type": "paragraph",
-          "content": "Il Monetization Gateway generalizza l'idea a qualunque chiamante e qualunque risorsa: pagine web, API REST, dataset, perfino tool MCP (funzioni che un agente AI può chiamare tramite il Model Context Protocol). Gira su x402, un protocollo aperto in cui il compratore paga in una stablecoin, una criptovaluta ancorata a una valuta tradizionale, qui USDC. Il settlement, il momento in cui il denaro si muove davvero, arriva peer-to-peer direttamente nel wallet del venditore: sotto il secondo, con commissioni fino a frazioni di centesimo. È questa la superficie che conta se vendi API, non solo articoli."
+          "content": "Il Monetization Gateway allarga l'idea a qualunque chiamante e qualunque risorsa: pagine web, API REST, dataset, perfino tool MCP (funzioni che un agente AI chiama tramite il Model Context Protocol). Gira su x402, un protocollo aperto dove il compratore paga in stablecoin, una crypto ancorata a una valuta tradizionale. Qui USDC. Il settlement, il momento in cui i soldi si muovono davvero, arriva peer-to-peer dritto nel wallet del venditore: sotto il secondo, con commissioni fino a frazioni di centesimo. Se vendi API, e non solo articoli, è questa la superficie che conta."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "L'handshake: chiedi, ricevi il prezzo, paga, riprova"
+          "content": "L'handshake: chiedi, leggi il prezzo, paghi, riprovi"
         },
         {
           "type": "paragraph",
-          "content": "Il flusso è stateless e non richiede alcuna relazione pregressa, come un distributore automatico: il prezzo sul vetro e la fessura per le monete. Il client chiede una risorsa protetta; l'edge risponde 402 con il prezzo, l'asset accettato e una destinazione di pagamento; il client paga e riprova allegando la prova; l'edge verifica e restituisce 200. Poiché l'enforcement avviene all'edge di Cloudflare, il tuo origin non vede mai né il traffico non pagato né la macchina dei pagamenti."
+          "content": "Il flusso è stateless e non ti serve nessuna relazione pregressa. Come un distributore automatico: prezzo sul vetro, fessura per le monete. Il client chiede una risorsa protetta. L'edge risponde 402 con il prezzo, l'asset accettato e dove pagare. Il client paga e riprova con la prova allegata. L'edge verifica e restituisce 200. L'enforcement sta all'edge di Cloudflare, quindi il tuo origin non vede mai né il traffico non pagato né la macchina dei pagamenti."
         },
         {
           "type": "paragraph",
-          "content": "Pay Per Crawl fa lo stesso balletto con header suoi; qui sotto segui il prezzo: proposto, accettato, addebitato."
+          "content": "Pay Per Crawl fa lo stesso balletto con header suoi. Qui sotto segui il prezzo: proposto, accettato, addebitato."
         },
         {
           "type": "code",
@@ -1813,72 +1813,72 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "La seconda richiesta porta l'accordo del crawler su quel prezzo esatto, e la risposta dice quanto è stato fatturato."
+          "content": "La seconda richiesta porta l'ok del crawler su quel prezzo esatto, e la risposta ti dice quanto è stato fatturato."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Dimostrare che il crawler è chi dice di essere"
+          "content": "Il crawler è chi dice di essere?"
         },
         {
           "type": "paragraph",
-          "content": "I crawler restano onesti grazie a Web Bot Auth: il crawler ha una coppia di chiavi Ed25519 (uno schema di firma moderno e veloce), pubblica le chiavi pubbliche in una directory JWK (un formato JSON standard per le chiavi) e firma ogni richiesta con HTTP Message Signatures (RFC 9421). Uno user agent contraffatto non può accumulare addebiti a tuo nome. Il Monetization Gateway riusa opzionalmente lo stesso layer di identità per fatturare l'uso su un account noto."
+          "content": "I crawler li tiene onesti Web Bot Auth. Il crawler ha una coppia di chiavi Ed25519 (uno schema di firma moderno e veloce), pubblica le chiavi pubbliche in una directory JWK (un formato JSON standard per le chiavi) e firma ogni richiesta con HTTP Message Signatures (RFC 9421). Uno user agent taroccato non può accumulare addebiti a tuo nome. Il Monetization Gateway può riusare lo stesso layer di identità per fatturare l'uso su un account noto."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Prezza come consumano le macchine"
+          "content": "Prezzi a misura di macchina"
         },
         {
           "type": "paragraph",
-          "content": "Il pricing umano è a postazioni e piani mensili; quello delle macchine è a chiamata. Il gateway ti lascia addebitare un importo fisso per verbo e path (\"$0.01 per ogni GET /premium/*\"), variarlo in base al lavoro svolto (\"fino a $2\" per una generazione di immagini), oppure intercettare un 401 e restituire 402, così un chiamante non autenticato paga invece di rimbalzare. Gli abbonamenti diventano un'opzione tra tante, non l'unica."
+          "content": "Gli umani pagano a postazione e a piano mensile. Le macchine, a chiamata. Il gateway ti fa addebitare un importo fisso per verbo e path (\"$0.01 per ogni GET /premium/*\"), farlo variare in base al lavoro svolto (\"fino a $2\" per una generazione di immagini), oppure intercettare un 401 e trasformarlo in 402: il chiamante non autenticato paga invece di rimbalzare. L'abbonamento diventa un'opzione tra tante. Non l'unica."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "La sottigliezza che nessuno cita: pre-pagamento vs billing a consumo"
+          "content": "Il dettaglio che nessuno cita: pre-pagamento contro billing a consumo"
         },
         {
           "type": "paragraph",
-          "content": "x402 è pre-pagamento: paghi, poi ottieni la risposta. Ma la risorsa-macchina più preziosa, l'inferenza LLM, si fattura a posteriori, per token generato, e non puoi conoscere il numero esatto di token prima di generarli. È un taxi che vuole la tariffa prima di sapere la destinazione. Ci sono tre modi puliti per conciliare le due cose:"
+          "content": "x402 è pre-pagamento: paghi, poi hai la risposta. Ma la risorsa-macchina più preziosa, l'inferenza LLM, si fattura dopo, a token generato. E il numero esatto di token non lo sai finché non li hai generati. È un taxi che vuole la tariffa prima di sapere la destinazione. Hai tre modi puliti per far quadrare le cose:"
         },
         {
           "type": "list",
           "items": [
-            "Tier fissi: prezzo per modello e un cap di max_tokens, il limite massimo di lunghezza della risposta, così l'addebito è deterministico.",
-            "Crediti prepagati contro un'identità agente verificata, regolando l'uso reale a posteriori.",
-            "Un prezzo cache-aware: quando una cache semantica (che riconosce le domande per significato, non per testo) serve la risposta, addebiti una frazione del prezzo a freddo. Margine alto e un sano incentivo a mettere in cache."
+            "Tier fissi: prezzo per modello più un cap di max_tokens, il tetto alla lunghezza della risposta. Così l'addebito è deterministico.",
+            "Crediti prepagati legati a un'identità agente verificata, e l'uso reale lo regoli dopo.",
+            "Un prezzo cache-aware: quando la risposta arriva da una cache semantica (che riconosce le domande per significato, non per testo), addebiti una frazione del prezzo a freddo. Margine alto, e un sano incentivo a cachare."
           ],
           "ordered": true
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Il ricavo per richiesta diventa un segnale di osservabilità"
+          "content": "Il ricavo per richiesta diventa osservabilità"
         },
         {
           "type": "paragraph",
-          "content": "Quando ogni chiamata porta con sé un prezzo, puoi finalmente calcolare il margine per endpoint: ricavo x402 meno il costo infrastrutturale di servire quella richiesta. Per chi fa FinOps, la disciplina che governa la spesa cloud, è la metà mancante del libro mastro: finora abbiamo sempre e solo misurato il costo. Manda i webhook di settlement nelle stesse dashboard che tracciano il costo per richiesta e ottieni il profitto per richiesta, in tempo reale."
+          "content": "Quando ogni chiamata si porta dietro un prezzo, il margine per endpoint lo calcoli finalmente: ricavo x402 meno il costo infrastrutturale per servire quella richiesta. Per chi fa FinOps, la disciplina che governa la spesa cloud, è la metà mancante del libro mastro. Finora abbiamo misurato solo il costo. Manda i webhook di settlement nelle stesse dashboard che tracciano il costo per richiesta, e hai il profitto per richiesta. In tempo reale."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Presto, ed è proprio questo il punto"
+          "content": "È presto. Ed è proprio questo il punto"
         },
         {
           "type": "paragraph",
-          "content": "Entrambi i prodotti sono ancora acerbi: Pay Per Crawl è in private beta, il Monetization Gateway in waitlist, e il settlement x402 significa detenere un wallet stablecoin con le implicazioni fiscali e di compliance del caso. Il lato compratore, agenti che portano il proprio wallet, è nascente nel 2026."
+          "content": "Tutti e due i prodotti sono ancora acerbi. Pay Per Crawl è in private beta, il Monetization Gateway in waitlist, e il settlement x402 vuol dire tenere un wallet stablecoin, con tutto il contorno fiscale e di compliance. Il lato compratore, agenti col proprio wallet, nel 2026 è appena nato."
         },
         {
           "type": "paragraph",
-          "content": "Ed è esattamente questo il punto: il momento più economico per cablare un percorso keyless e pay-per-request nella tua API è prima che gli agenti arrivino, non dopo."
+          "content": "Ed è proprio questo il punto. Il momento più economico per cablare nella tua API un percorso keyless e pay-per-request è prima che arrivino gli agenti. Non dopo."
         }
       ]
     },
   },
   'aws-rag-etl-pipeline': {
     en: {
-      "title": "Keeping a RAG fresh without burning the budget: an ETL flow on AWS",
+      "title": "RAG ETL on AWS: fresh data, flat bill",
       "description": "A RAG assistant is only as good as its vector store is fresh. An ETL flow on AWS that keeps it clean, survives failures and keeps the bill predictable.",
       "content": [
         {
@@ -2088,39 +2088,39 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
       ]
     },
     it: {
-      "title": "Un RAG sempre aggiornato senza bruciare il budget: un flusso ETL su AWS",
-      "description": "Un assistente RAG vale quanto è fresco il suo vector store. Un flusso ETL su AWS che lo tiene pulito, regge i guasti e mantiene la bolletta prevedibile.",
+      "title": "RAG su AWS: dati freschi, bolletta ferma",
+      "description": "Un assistente RAG è fresco quanto il suo vector store. Una pipeline ETL su AWS con EventBridge, Step Functions, Bedrock e OpenSearch che lo tiene pulito, regge i guasti e non ti fa sorprese in bolletta.",
       "content": [
         {
           "type": "paragraph",
-          "content": "Un cliente chiede i prezzi al tuo assistente di supporto. Risponde subito, con sicurezza, e con i numeri del trimestre scorso. Non è crollato niente: il modello ha solo pescato da uno scaffale vecchio."
+          "content": "Un cliente chiede i prezzi al tuo assistente di supporto. Risponde al volo, sicurissimo. Con i numeri del trimestre scorso. Non è crollato niente: il modello ha solo pescato dallo scaffale sbagliato."
         },
         {
           "type": "paragraph",
-          "content": "È così che fallisce un sistema RAG (retrieval-augmented generation). Il modello risponde partendo da documenti che cerca in un vector store, un indice di embedding: liste di numeri che catturano il significato di un passaggio. Tenerlo aggiornato è un lavoro di ETL (extract, transform, load), e il 'tanto lancio lo script' non sopravvive alla produzione. Ho costruito pipeline RAG per banche, sanità ed e-commerce che macinano milioni di documenti al mese. Ecco i pattern che restano deterministici sotto carichi caotici senza incenerire il budget:"
+          "content": "Un sistema RAG (retrieval-augmented generation) fallisce così. Il modello risponde partendo da documenti che cerca in un vector store, un indice di embedding: liste di numeri che catturano il significato di un passaggio. Tenerlo aggiornato è un lavoro di ETL (extract, transform, load), e il 'tanto lancio lo script' in produzione non sopravvive. Ho costruito pipeline RAG per banche, sanità ed e-commerce che macinano milioni di documenti al mese. Questi sono i pattern che restano deterministici sotto carichi caotici, senza incenerire il budget:"
         },
         {
           "type": "list",
           "items": [
-            "La forma: un contratto all'ingresso e una macchina a stati nel mezzo.",
-            "Dal documento ai vettori: estrazione, chunking ed embedding.",
+            "La forma: un contratto all'ingresso, una macchina a stati nel mezzo.",
+            "Dal documento ai vettori: estrazione, chunking, embedding.",
             "Due casi reali: residenza dei dati e tempeste di webhook.",
-            "La gestione: costi, osservabilità, sicurezza tra tenant e obiettivi di performance."
+            "La gestione: costi, osservabilità, sicurezza tra tenant, obiettivi di performance."
           ],
           "ordered": true
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Un contratto all'ingresso tiene fuori i documenti rotti"
+          "content": "Un contratto all'ingresso, e i documenti rotti restano fuori"
         },
         {
           "type": "paragraph",
-          "content": "I documenti arrivano come nuovi oggetti in S3 o come eventi webhook dai sistemi di ticketing. Le regole di Amazon EventBridge intercettano entrambi, e ogni evento avvia una Lambda che valida il payload contro uno schema JSON salvato nel Glue Data Catalog di AWS. Quello schema è un contratto sui dati: la pipeline processa tutto ciò che lo rispetta, e nient'altro."
+          "content": "I documenti arrivano come nuovi oggetti in S3 o come eventi webhook dai sistemi di ticketing. Le regole di Amazon EventBridge li intercettano tutti e due, e ogni evento avvia una Lambda che valida il payload contro uno schema JSON salvato nel Glue Data Catalog di AWS. Quello schema è un contratto sui dati: la pipeline processa tutto quello che lo rispetta. Il resto, no."
         },
         {
           "type": "paragraph",
-          "content": "Perché tanto rigore, e così presto? Ho visto un solo PDF malformato corrompere un batch intero. La validazione controlla struttura, dimensione (massimo 50MB per documento), tipo MIME e metadati obbligatori. Guarda le due regole di business dopo il controllo dello schema:"
+          "content": "Perché tanto rigore, e così presto? Perché ho visto un singolo PDF malformato corrompere un batch intero. La validazione controlla struttura, dimensione (massimo 50MB per documento), tipo MIME e metadati obbligatori. Occhio alle due regole di business dopo il controllo dello schema:"
         },
         {
           "type": "code",
@@ -2129,12 +2129,12 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Tutto ciò che non passa torna come `valid: False`, con l'errore allegato, e finisce in una dead-letter queue (DLQ), una coda di parcheggio per i messaggi non processabili. Chi è di turno fa triage lì, non nei log di CloudWatch."
+          "content": "Quello che non passa torna come `valid: False`, con l'errore attaccato, e finisce in una dead-letter queue (DLQ). Tradotto: una coda di parcheggio per i messaggi che non si possono processare. Chi è di turno fa triage lì, non a scavare nei log di CloudWatch."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Step Functions guida le fasi e raccoglie ciò che cade"
+          "content": "Step Functions tiene il volante e raccoglie i cocci"
         },
         {
           "type": "paragraph",
@@ -2147,20 +2147,20 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "La validazione ritenta tre volte gli errori di Lambda, con backoff, e ciò che fallisce ancora finisce in `SendToDLQ`. L'arricchimento dei metadati (un job Glue) e la generazione degli embedding girano in parallelo, e il ramo degli embedding ha una sua policy di retry per il throttling."
+          "content": "La validazione ritenta tre volte gli errori di Lambda, con backoff. Se fallisce ancora, dritto in `SendToDLQ`. L'arricchimento dei metadati (un job Glue) e la generazione degli embedding girano in parallelo, e il ramo degli embedding ha la sua policy di retry per il throttling."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Dal documento ai vettori: estrarre, spezzare, incorporare"
+          "content": "Dal documento ai vettori: estrai, spezza, incorpora"
         },
         {
           "type": "paragraph",
-          "content": "Textract estrae le tabelle, i modelli multimodali Bedrock Titan scrivono riassunti rapidi e Comprehend normalizza la lingua. Gli embedding arrivano da un SageMaker Serverless Endpoint con warm pool in auto-scaling, che evita i picchi di cold start in orario d'ufficio."
+          "content": "Textract tira fuori le tabelle, i modelli multimodali Bedrock Titan scrivono riassunti rapidi e Comprehend normalizza la lingua. Gli embedding arrivano da un SageMaker Serverless Endpoint con warm pool in auto-scaling, così in orario d'ufficio niente picchi di cold start."
         },
         {
           "type": "paragraph",
-          "content": "Il chunking è il passo che pesa di più su costi e qualità. Un modello di embedding legge una finestra di testo limitata, quindi i documenti vanno spezzati in chunk, e una frase tagliata a metà perde senso in entrambe le metà. La soluzione è la sovrapposizione, il trucco delle foto panoramiche: ogni scatto ripete una striscia del precedente. Di solito usiamo chunk da 200 token con 50 token di sovrapposizione, e le tabelle diventano chunk a sé, collegati alla fonte tramite i metadati. Guarda il passo del ciclo, `chunk_size - overlap`, e cosa succede quando una chiamata di embedding fallisce:"
+          "content": "Il chunking è il passo che pesa di più su costi e qualità. Un modello di embedding legge una finestra di testo limitata, quindi i documenti li devi spezzare in chunk. E una frase tagliata a metà perde senso in tutte e due le metà. La soluzione è la sovrapposizione, il trucco delle foto panoramiche: ogni scatto ripete una striscia del precedente. Di solito usiamo chunk da 200 token con 50 token di sovrapposizione, e le tabelle diventano chunk a parte, collegati alla fonte via metadati. Guarda il passo del ciclo, `chunk_size - overlap`, e cosa succede quando una chiamata di embedding fallisce:"
         },
         {
           "type": "code",
@@ -2169,20 +2169,20 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Ogni chunk porta l'ID del documento, l'intervallo di token e il modello, per risalire poi all'origine delle risposte. Un chunk fallito viene loggato e saltato invece di far fallire tutto il documento, e finisce nella DLQ."
+          "content": "Ogni chunk si porta dietro l'ID del documento, l'intervallo di token e il modello, così poi risali all'origine delle risposte. Un chunk fallito viene loggato e saltato, invece di affondare tutto il documento, e finisce nella DLQ."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Caso reale: 200k PDF al giorno che non possono lasciare l'UE"
+          "content": "Caso reale: 200k PDF al giorno che non possono uscire dall'UE"
         },
         {
           "type": "paragraph",
-          "content": "Una fintech europea aggrega ogni giorno 200k PDF di disclosure da più giurisdizioni regolatorie. I documenti dei clienti UE non potevano lasciare l'UE, ma agli utenti serviva un'unica ricerca. Abbiamo diviso il carico su tre regioni (eu-west-1, eu-central-1, eu-north-1) con bucket S3 regionali, e centralizzato la collezione OpenSearch Serverless in eu-west-1 con la replica cross-region. Uno stato `Map` di Step Functions, che esegue lo stesso sotto-flusso per ogni elemento, ha processato le regioni in parallelo, tutte scrivendo nella stessa collezione tramite VPC endpoint."
+          "content": "Una fintech europea aggrega ogni giorno 200k PDF di disclosure da più giurisdizioni regolatorie. I documenti dei clienti UE non potevano lasciare l'UE, ma agli utenti serviva una ricerca unica. Abbiamo diviso il carico su tre regioni (eu-west-1, eu-central-1, eu-north-1) con bucket S3 regionali, e centralizzato la collezione OpenSearch Serverless in eu-west-1 con la replica cross-region. Uno stato `Map` di Step Functions, che esegue lo stesso sotto-flusso per ogni elemento, ha macinato le regioni in parallelo, tutte a scrivere nella stessa collezione via VPC endpoint."
         },
         {
           "type": "paragraph",
-          "content": "L'altra leva era lo storage. I job Glue scrivono su S3 artifact Parquet + Snappy, gli ultimi 30 giorni restano nello storage caldo e gli embedding più vecchi passano a Glacier Instant Retrieval. Guarda la `StorageClass` nel job di archiviazione:"
+          "content": "L'altra leva era lo storage. I job Glue scrivono su S3 artifact Parquet + Snappy, gli ultimi 30 giorni restano nello storage caldo e gli embedding più vecchi scendono in Glacier Instant Retrieval. Guarda la `StorageClass` nel job di archiviazione:"
         },
         {
           "type": "code",
@@ -2191,7 +2191,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Copia ogni oggetto più vecchio della soglia sotto `archive/` in `GLACIER_IR`, ne annota la data originale e cancella la copia calda. Risultato: 41% di risparmio sullo storage ($2,300/mese in meno) e ricerca sotto i 200ms al p95, dentro lo SLA."
+          "content": "Copia ogni oggetto più vecchio della soglia sotto `archive/` in `GLACIER_IR`, si segna la data originale e cancella la copia calda. Risultato: 41% di risparmio sullo storage ($2,300/mese in meno) e ricerca sotto i 200ms al p95. Dentro lo SLA."
         },
         {
           "type": "heading",
@@ -2200,11 +2200,11 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Un provider ITSM voleva i ticket di incidente da Jira, ServiceNow e PagerDuty ricercabili entro 5 minuti. Il problema: gli incidenti sono proprio il momento in cui i ticket esplodono, e una tempesta di webhook poteva stendere la pipeline nel momento peggiore. Così EventBridge avvia la pipeline ogni cinque minuti, a batch. Step Functions isola il ramo degli embedding, così un guasto lì non blocca l'arricchimento dei metadati. Gli embedding falliti finiscono in una DLQ SQS e vengono rigiocati con backoff esponenziale, senza rifare il deploy. La reserved concurrency di Lambda (50 esecuzioni concorrenti) previene i guasti a cascata."
+          "content": "Un provider ITSM voleva i ticket di incidente da Jira, ServiceNow e PagerDuty ricercabili entro 5 minuti. Il problema: durante un incidente i ticket esplodono, e una tempesta di webhook poteva stendere la pipeline proprio nel momento peggiore. Quindi EventBridge avvia la pipeline ogni cinque minuti, a batch. Step Functions isola il ramo degli embedding, così se si rompe lì l'arricchimento dei metadati va avanti. Gli embedding falliti finiscono in una DLQ SQS e vengono rigiocati con backoff esponenziale, senza rifare il deploy. La reserved concurrency di Lambda (50 esecuzioni concorrenti) ferma i guasti a cascata."
         },
         {
           "type": "paragraph",
-          "content": "Il pattern chiave è un circuit breaker, che funziona come il salvavita di casa: scatta prima che bruci l'impianto. Quando i fallimenti degli embedding arrivano al 10% in 5 minuti, il breaker si apre e la pipeline degrada con calma: i metadati vengono comunque arricchiti e indicizzati, mentre gli embedding si mettono in coda per una rielaborazione a batch fuori dalle ore di punta. La ricerca sopravvive anche alla giornata storta di Bedrock o SageMaker. Guarda i tre stati in `_check_state` e il controllo su `max_retries` in `replay_from_dlq`:"
+          "content": "Il pattern chiave è un circuit breaker. Funziona come il salvavita di casa: scatta prima che bruci l'impianto. Quando i fallimenti degli embedding arrivano al 10% in 5 minuti, il breaker si apre e la pipeline degrada con calma: i metadati vengono comunque arricchiti e indicizzati, gli embedding si mettono in coda per un giro a batch fuori dalle ore di punta. La ricerca sopravvive anche alla giornata storta di Bedrock o SageMaker. Guarda i tre stati in `_check_state` e il controllo su `max_retries` in `replay_from_dlq`:"
         },
         {
           "type": "code",
@@ -2213,20 +2213,20 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Il breaker si apre alla soglia, si semi-apre sotto la sua metà e si richiude quando 8 delle ultime 10 chiamate riescono. Il replay rimanda i messaggi della DLQ con un ritardo che raddoppia a ogni tentativo, fino a 15 minuti, e parcheggia i recidivi in una coda di revisione manuale."
+          "content": "Il breaker si apre alla soglia, si semi-apre sotto la metà e si richiude quando 8 delle ultime 10 chiamate vanno a buon fine. Il replay rimanda i messaggi della DLQ con un ritardo che raddoppia a ogni tentativo, fino a 15 minuti. I recidivi finiscono in una coda di revisione a mano."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Due regole rendono la bolletta prevedibile"
+          "content": "Due regole, e la bolletta smette di sorprenderti"
         },
         {
           "type": "paragraph",
-          "content": "Micro-batching: ogni run processa al massimo 5 minuti di payload, così il costo cresce a gradini e non a picchi scoperti in fattura. Tagging aggressivo: ogni risorsa porta i tag `env`, `rag-etl`, `customer` e `cost-center`, così AWS Cost Explorer può ripartire la spesa per funzionalità."
+          "content": "Micro-batching: ogni run processa al massimo 5 minuti di payload, così il costo cresce a gradini e non a picchi che scopri in fattura. Tagging aggressivo: ogni risorsa ha i tag `env`, `rag-etl`, `customer` e `cost-center`, così AWS Cost Explorer ti spacca la spesa per funzionalità."
         },
         {
           "type": "paragraph",
-          "content": "Per il vector store, parti da OpenSearch Serverless (2 OCU di base; un'OCU è la sua unità di calcolo) e passa ad Aurora PostgreSQL + pgvector quando servono join relazionali o isolamento tra tenant. Cost Anomaly Detection avvisa quando la spesa giornaliera supera la baseline del 20%, e gli allarmi CloudWatch su durata e memoria di ogni Lambda guidano il dimensionamento. La provisioned concurrency (a $0.015 per GB-secondo) elimina i cold start, ma aggiungila solo quando il profiling dimostra che pesano davvero sullo SLA. I tag ripagano in script come questo; guarda il `GroupBy`:"
+          "content": "Per il vector store parti da OpenSearch Serverless (2 OCU di base; un'OCU è la sua unità di calcolo) e passa ad Aurora PostgreSQL + pgvector quando ti servono join relazionali o isolamento tra tenant. Cost Anomaly Detection ti avvisa quando la spesa giornaliera sfora la baseline del 20%, e gli allarmi CloudWatch su durata e memoria di ogni Lambda guidano il dimensionamento. La provisioned concurrency (a $0.015 per GB-secondo) ammazza i cold start, ma aggiungila solo quando il profiling dimostra che pesano davvero sullo SLA. I tag si ripagano in script come questo. Guarda il `GroupBy`:"
         },
         {
           "type": "code",
@@ -2235,16 +2235,16 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Somma il costo per servizio, stampa le quote e segnala i servizi da guardare meglio."
+          "content": "Somma il costo per servizio, stampa le quote e ti segnala i servizi da guardare meglio."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Misura ogni documento e registra da dove viene ogni risposta"
+          "content": "Misura ogni documento, traccia da dove viene ogni risposta"
         },
         {
           "type": "paragraph",
-          "content": "Strumenta tutto con il CloudWatch Embedded Metric Format (EMF): stampi una riga di log JSON con un'intestazione `_aws` e CloudWatch la trasforma in una metrica. Metti in grafico latenza di ingestione, costo degli embedding per documento e tasso di errore per sorgente. Poi salva la provenienza (URL della fonte, checksum, versione del modello di embedding, timestamp di elaborazione) in OpenSearch accanto a ogni documento. Quando un auditor chiede \"perché l'assistente ha citato X?\", o insegui un'allucinazione, la risposta risale alla sua fonte. Guarda il blocco `_aws` e i campi di provenienza:"
+          "content": "Strumenta tutto con il CloudWatch Embedded Metric Format (EMF): stampi una riga di log JSON con un'intestazione `_aws` e CloudWatch la trasforma in metrica. Metti in grafico latenza di ingestione, costo degli embedding per documento e tasso di errore per sorgente. Poi salva la provenienza (URL della fonte, checksum, versione del modello di embedding, timestamp di elaborazione) in OpenSearch, accanto a ogni documento. Quando un auditor chiede \"perché l'assistente ha citato X?\", o stai inseguendo un'allucinazione, la risposta risale alla sua fonte. Guarda il blocco `_aws` e i campi di provenienza:"
         },
         {
           "type": "code",
@@ -2253,16 +2253,16 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "I metodi `emit_` stampano metriche che CloudWatch raccoglie dai log; `store_provenance_metadata` costruisce il record indicizzato con il documento."
+          "content": "I metodi `emit_` stampano metriche che CloudWatch raccoglie dai log. `store_provenance_metadata` costruisce il record che finisce indicizzato col documento."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Un tenant non deve mai leggere i documenti di un altro"
+          "content": "Un tenant non legge mai i documenti di un altro. Mai"
         },
         {
           "type": "paragraph",
-          "content": "Per un provider SaaS, l'isolamento tra tenant non si negozia. In OpenSearch o usi il document-level access control (DLAC), una row-level security dentro un indice condiviso, o dai a ogni tenant il suo indice, che scala meglio ma richiede una gestione automatizzata degli indici. Sanità e finanza aggiungono la cifratura at rest con chiavi KMS gestite dal cliente, e VPC endpoint perché il traffico non esca mai dalla rete AWS. Il resto della base: ruoli IAM least-privilege, Secrets Manager per API key e credenziali dei database, CloudTrail su ogni chiamata API, audit regolari con AWS Security Hub e scansione dei dati sensibili con Amazon Macie (DLP, data loss prevention) prima dell'indicizzazione. Guarda l'alias della chiave e il percorso del secret, entrambi per tenant:"
+          "content": "Per un provider SaaS l'isolamento tra tenant non si negozia. In OpenSearch hai due strade: il document-level access control (DLAC), una row-level security dentro un indice condiviso, oppure un indice per tenant, che scala meglio ma ti obbliga ad automatizzare la gestione degli indici. Sanità e finanza aggiungono la cifratura at rest con chiavi KMS gestite dal cliente, e VPC endpoint perché il traffico non esca mai dalla rete AWS. Il resto è la base: ruoli IAM least-privilege, Secrets Manager per API key e credenziali dei database, CloudTrail su ogni chiamata API, audit regolari con AWS Security Hub e scansione dei dati sensibili con Amazon Macie (DLP, data loss prevention) prima dell'indicizzazione. Guarda l'alias della chiave e il percorso del secret, tutti e due per tenant:"
         },
         {
           "type": "code",
@@ -2271,36 +2271,36 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Macie cerca dati personali e sanitari prima dell'elaborazione; ogni tenant ha la sua chiave KMS e il suo secret."
+          "content": "Macie cerca dati personali e sanitari prima dell'elaborazione. Ogni tenant ha la sua chiave KMS e il suo secret."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Gli obiettivi, e dove di solito si rallenta"
+          "content": "Gli obiettivi, e dove di solito si inchioda"
         },
         {
           "type": "paragraph",
-          "content": "Quattro numeri stanno su dashboard CloudWatch, con allarmi che chiamano via PagerDuty: latenza end-to-end sotto i 5 minuti per un documento da 10MB, oltre 100 documenti al minuto trasformati in embedding, oltre 1000 documenti al secondo indicizzati in OpenSearch e un tasso di errore sotto lo 0.1%. I colli di bottiglia tipici:"
+          "content": "Quattro numeri vivono su dashboard CloudWatch, con allarmi che ti chiamano via PagerDuty: latenza end-to-end sotto i 5 minuti per un documento da 10MB, oltre 100 documenti al minuto trasformati in embedding, oltre 1000 documenti al secondo indicizzati in OpenSearch e tasso di errore sotto lo 0.1%. I colli di bottiglia tipici:"
         },
         {
           "type": "list",
           "items": [
-            "Textract sui PDF grandi: elaborazione asincrona, guidata dalle notifiche di eventi S3.",
+            "Textract sui PDF grandi: elaborazione asincrona, pilotata dalle notifiche di eventi S3.",
             "Cold start degli endpoint SageMaker: provisioned concurrency o script di warm-up.",
-            "Indicizzazione OpenSearch: bulk API e una strategia di sharding adeguata.",
-            "Limiti di memoria delle Lambda: dimensionarle con query CloudWatch Insights sull'uso reale."
+            "Indicizzazione OpenSearch: bulk API e una strategia di sharding fatta bene.",
+            "Limiti di memoria delle Lambda: dimensionale con query CloudWatch Insights sull'uso reale."
           ]
         },
         {
           "type": "paragraph",
-          "content": "Costruisci per primi il contratto e la DLQ. Tutto il resto si aggiunge più facilmente a una pipeline che sa già dire di no, e dove mettere ciò che ha rifiutato."
+          "content": "Costruisci per primi il contratto e la DLQ. Tutto il resto si aggiunge più facile a una pipeline che sa già dire di no. E sa dove mettere quello che ha rifiutato."
         }
       ]
     },
   },
   'infrastructure-as-code-guide': {
     en: {
-      "title": "Infrastructure as Code in practice: benefits, trade-offs and choosing a tool",
+      "title": "Infrastructure as Code: Terraform, CloudFormation, Pulumi",
       "description": "IaC isn't 'clicks, but in a repo'. What it buys you, where it goes wrong, and how Terraform, CloudFormation and Pulumi fit different teams, plus why running `terraform apply` on a Friday is a personality test.",
       "content": [
         {
@@ -2518,16 +2518,16 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
       ]
     },
     it: {
-      "title": "Infrastructure as Code nella pratica: vantaggi, compromessi e scelta dello strumento",
-      "description": "L'IaC non è 'i click, ma in un repo'. Cosa ti dà, dove va storta e come Terraform, CloudFormation e Pulumi si adattano a team diversi, più il motivo per cui lanciare `terraform apply` di venerdì è un test della personalità.",
+      "title": "Infrastructure as Code: basta click in console",
+      "description": "L'IaC non è 'i click, ma in un repo'. Terraform, CloudFormation e Pulumi a confronto, stato, drift e test, un caso reale con 40 squadre. E perché un `terraform apply` di venerdì è un test della personalità.",
       "content": [
         {
           "type": "paragraph",
-          "content": "Immagina un disservizio in produzione, venerdì pomeriggio. L'ultima modifica alla rete è stata fatta a mano dalla console cloud, da qualcuno che ora è in ferie. Nessuno sa cosa è cambiato, quindi nessuno sa come tornare indietro."
+          "content": "Disservizio in produzione, venerdì pomeriggio. L'ultima modifica alla rete l'ha fatta qualcuno a mano, dalla console cloud. Ed è in ferie. Nessuno sa cosa è cambiato, quindi nessuno sa come tornare indietro."
         },
         {
           "type": "paragraph",
-          "content": "Infrastructure as Code (IaC) significa descrivere server, reti e permessi in file tenuti in git, e lasciare che uno strumento allinei il cloud a quei file. È il contratto tra i team di piattaforma e gli sviluppatori che preferirebbero non aprire mai la console. Fatta bene, dà ambienti riproducibili, compliance automatica e conoscenza in git invece che nella memoria di un solo ingegnere. Fatta male, è una 'migrazione veloce del weekend' che ti perseguita per due anni. Ho visto l'IaC riuscire quando i leader la trattano come un prodotto e fallire quando la trattano come una corvée. Questi pattern vengono da trasformazioni IaC in fintech, sanità ed e-commerce con migliaia di modifiche al mese:"
+          "content": "Infrastructure as Code (IaC) vuol dire descrivere server, reti e permessi in file tenuti in git, e lasciare che uno strumento allinei il cloud a quei file. È il contratto tra i team di piattaforma e gli sviluppatori che la console non vorrebbero aprirla mai. Fatta bene, ti dà ambienti riproducibili, compliance automatica e conoscenza in git invece che nella testa di un solo ingegnere. Fatta male, è la 'migrazione veloce del weekend' che ti perseguita per due anni. Ho visto l'IaC funzionare quando chi guida la tratta come un prodotto, e fallire quando la tratta come una corvée. Questi pattern vengono da trasformazioni IaC in fintech, sanità ed e-commerce, con migliaia di modifiche al mese:"
         },
         {
           "type": "list",
@@ -2535,7 +2535,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
             "cosa ti dà l'IaC, e come va storta;",
             "Terraform, CloudFormation e Pulumi a confronto;",
             "le fondamenta: stato, drift e test;",
-            "come scalarla: un caso reale, molti account e un piano di adozione."
+            "come scalarla: un caso reale, tanti account e un piano di adozione."
           ],
           "ordered": true
         },
@@ -2546,11 +2546,11 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "I vantaggi: versioning, review tramite PR, drift detection, ambienti di test effimeri e motori di policy (OPA, Terraform Cloud, cf-guard) agganciati direttamente alla CI/CD. Il più importante è l'auditabilità. Durante un incidente ripercorri le modifiche infrastrutturali nella storia git, trovi il commit colpevole e fai rollback con sicurezza. Ho visto organizzazioni ridurre il mean time to recovery (MTTR) da ore a minuti solo rendendo le modifiche infrastrutturali versionate e revisionabili. Il prezzo è la disciplina: ogni modifica passa dall'IaC, zero ritocchi manuali in console."
+          "content": "I vantaggi: versioning, review via PR, drift detection, ambienti di test effimeri e motori di policy (OPA, Terraform Cloud, cf-guard) agganciati dritti alla CI/CD. Il più importante è l'auditabilità. Durante un incidente ripercorri le modifiche infrastrutturali nella storia git, trovi il commit colpevole e fai rollback senza tremare. Ho visto organizzazioni portare il mean time to recovery (MTTR) da ore a minuti solo rendendo le modifiche infrastrutturali versionate e revisionabili. Il prezzo è la disciplina: ogni modifica passa dall'IaC. Zero ritocchi a mano in console."
         },
         {
           "type": "paragraph",
-          "content": "I rischi: stato corrotto, policy IAM troppo larghe e moduli copiati e incollati che diventano fiocchi di neve senza manutenzione. Gli anti-pattern classici sono lasciare che ogni squadra faccia il fork dello stesso modulo Terraform e dare ai runner della CI ruoli admin senza paletti. I controlli di policy trasformano le review in paletti. Guarda i tag e la regola Sentinel nel commento:"
+          "content": "I rischi: stato corrotto, policy IAM larghe come un portone e moduli copia-incollati che diventano fiocchi di neve senza manutenzione. Gli anti-pattern classici: ogni squadra si forka lo stesso modulo Terraform, e i runner della CI girano con ruoli admin senza paletti. I controlli di policy trasformano le review in paletti veri. Guarda i tag e la regola Sentinel nel commento:"
         },
         {
           "type": "code",
@@ -2559,7 +2559,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "I team usano una versione fissata del modulo (`?ref=v2.1.0`) con versioning e cifratura KMS già attivi, e Sentinel, il motore di policy-as-code di Terraform Cloud, rifiuta ogni piano che crea un bucket senza versioning."
+          "content": "I team usano una versione fissata del modulo (`?ref=v2.1.0`) con versioning e cifratura KMS già accesi, e Sentinel, il motore di policy-as-code di Terraform Cloud, rifiuta ogni piano che crea un bucket senza versioning."
         },
         {
           "type": "heading",
@@ -2568,11 +2568,11 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Terraform e CloudFormation sono dichiarativi: descrivi lo stato finale, come una planimetria, e lo strumento ricava i passi. Terraform è lo standard di fatto per il multi-cloud, con workflow maturi (stato remoto, Sentinel, CDK for Terraform) e oltre 3.000 provider che coprono quasi ogni cloud e piattaforma SaaS. Il suo linguaggio, HCL, è leggibile ma verboso per logiche complesse. CloudFormation è il più integrato con AWS: i ChangeSet mostrano una modifica prima dell'apply, gli StackSet distribuiscono su più account, la Drift Detection è inclusa. Pulumi punta ai team che partono dal codice: la planimetria la scrivi in TypeScript, Python o Go, quindi cicli, condizioni e librerie esistenti vengono gratis."
+          "content": "Terraform e CloudFormation sono dichiarativi: descrivi lo stato finale, come una planimetria, e i passi se li ricava lo strumento. Terraform è lo standard di fatto per il multi-cloud, con workflow maturi (stato remoto, Sentinel, CDK for Terraform) e oltre 3.000 provider che coprono quasi ogni cloud e piattaforma SaaS. Il suo linguaggio, HCL, si legge bene ma diventa verboso con la logica complessa. CloudFormation è il più integrato con AWS: i ChangeSet ti mostrano la modifica prima dell'apply, gli StackSet distribuiscono su più account, la Drift Detection è inclusa. Pulumi è per i team che partono dal codice: la planimetria la scrivi in TypeScript, Python o Go, quindi cicli, condizioni e librerie che hai già vengono gratis."
         },
         {
           "type": "paragraph",
-          "content": "Ecco un bucket S3 cifrato, versionato e privato in Pulumi, con CloudFormation nel commento:"
+          "content": "Ecco un bucket S3 cifrato, versionato e privato in Pulumi, con la versione CloudFormation nel commento:"
         },
         {
           "type": "code",
@@ -2581,7 +2581,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Stessa cifratura KMS e stesso versioning; Pulumi in più fa scadere gli oggetti dopo 30 giorni e blocca l'accesso pubblico. Cambia il linguaggio, non il bucket."
+          "content": "Stessa cifratura KMS, stesso versioning. Pulumi in più fa scadere gli oggetti dopo 30 giorni e blocca l'accesso pubblico. Cambia il linguaggio, non il bucket."
         },
         {
           "type": "paragraph",
@@ -2594,16 +2594,16 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Chi lo usa sceglie solo ambiente e CIDR; un refuso nel nome dell'ambiente fallisce al plan, non in produzione."
+          "content": "Chi lo usa sceglie solo ambiente e CIDR. Un refuso nel nome dell'ambiente esplode al plan, non in produzione."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Lo stato è la memoria di Terraform: mettilo sotto chiave"
+          "content": "Lo stato è la memoria di Terraform: chiudilo a chiave"
         },
         {
           "type": "paragraph",
-          "content": "Terraform tiene un file di stato che collega ogni risorsa del codice a una risorsa reale nel cloud. Perdilo e Terraform dimentica cosa ha creato; lascia che due apply lo scrivano insieme e ricorderà due cose diverse. È qui che inciampa la maggior parte dei progetti IaC. La produzione vuole un backend remoto con locking, versioning e cifratura at rest: Terraform Cloud, S3 + DynamoDB o Pulumi ESC. Senza locking, apply concorrenti corrompono lo stato e costano ore di recupero."
+          "content": "Terraform tiene un file di stato che collega ogni risorsa del codice a una risorsa vera nel cloud. Perdilo, e Terraform dimentica cosa ha creato. Lascia che due apply ci scrivano insieme, e ricorderà due cose diverse. È qui che inciampa la maggior parte dei progetti IaC. In produzione ti serve un backend remoto con locking, versioning e cifratura at rest: Terraform Cloud, S3 + DynamoDB o Pulumi ESC. Senza locking, due apply concorrenti corrompono lo stato e ti costano ore di recupero."
         },
         {
           "type": "paragraph",
@@ -2616,7 +2616,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Ogni esecuzione prende prima il lock, così una seconda aspetta invece di sovrascrivere. Il runbook copre i lock appesi: cancellare quelli più vecchi di un'ora, ripristinare lo stato dal versioning di S3, fare refresh."
+          "content": "Ogni esecuzione prende prima il lock, così la seconda aspetta invece di sovrascrivere. Il runbook copre i lock appesi: cancelli quelli più vecchi di un'ora, ripristini lo stato dal versioning di S3, fai refresh."
         },
         {
           "type": "heading",
@@ -2625,7 +2625,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Il drift è quando le risorse reali si discostano dalla loro definizione IaC: una modifica manuale in console, uno script, uno strumento di terze parti. È inevitabile, quindi va rilevato in automatico e con regolarità, non solo al deploy; Terraform Cloud e AWS Config lo sanno fare. La vera decisione è la risposta: correggere in automatico (rischioso), solo alert (sicuro ma manuale), o decidere per tipo di risorsa. In produzione consiglio il solo alert con una review settimanale, tranne le risorse critiche (ruoli IAM, security group), che vanno corrette in automatico. Questa Lambda schedulata gestisce gli alert per CloudFormation; guarda `lambda_handler`:"
+          "content": "Il drift è quando le risorse reali si allontanano dalla loro definizione IaC: una modifica a mano in console, uno script, un tool di terze parti. Succederà, punto. Quindi lo rilevi in automatico e con regolarità, non solo al deploy. Terraform Cloud e AWS Config lo sanno fare. La decisione vera è come rispondi: correzione automatica (rischiosa), solo alert (sicuro ma manuale), o una scelta per tipo di risorsa. In produzione ti consiglio solo alert con review settimanale, tranne le risorse critiche (ruoli IAM, security group): quelle si correggono in automatico. Questa Lambda schedulata gestisce gli alert per CloudFormation. Guarda `lambda_handler`:"
         },
         {
           "type": "code",
@@ -2634,16 +2634,16 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Ogni giorno controlla ogni stack, raccoglie le risorse non più `IN_SYNC` con le differenze di proprietà e manda il report su SNS. `remediate_drift` è uno scheletro: come dice il commento, gira solo per risorse non critiche e dopo approvazione."
+          "content": "Ogni giorno passa tutti gli stack, raccoglie le risorse non più `IN_SYNC` con le differenze di proprietà e spara il report su SNS. `remediate_drift` è uno scheletro: come dice il commento, gira solo per risorse non critiche e dopo approvazione."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Testa l'infrastruttura, perché è codice"
+          "content": "L'infrastruttura è codice. Testala"
         },
         {
           "type": "paragraph",
-          "content": "L'IaC di produzione va testata su tre livelli. I test unitari verificano la validazione delle variabili e la logica dei moduli. I test di integrazione creano risorse reali in un ambiente effimero, verificano che si comportino bene e poi le distruggono; lo fanno Terratest (Go), Kitchen-Terraform (Ruby) e Pytest con moto (Python). I test di compliance con Checkov, tfsec o cfn-nag cercano configurazioni insicure. Tutto gira in CI prima del merge su main. Terratest usa AWS vero, per poco; guarda il `defer`:"
+          "content": "L'IaC di produzione si testa su tre livelli. I test unitari verificano la validazione delle variabili e la logica dei moduli. I test di integrazione creano risorse vere in un ambiente effimero, controllano che si comportino bene e poi le distruggono: lo fanno Terratest (Go), Kitchen-Terraform (Ruby) e Pytest con moto (Python). I test di compliance con Checkov, tfsec o cfn-nag cercano configurazioni insicure. Tutto gira in CI prima del merge su main. Terratest usa AWS vero, per poco. Guarda il `defer`:"
         },
         {
           "type": "code",
@@ -2652,11 +2652,11 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "`defer terraform.Destroy` smonta la VPC anche se un'asserzione fallisce; nel mezzo il test verifica DNS, due subnet pubbliche e un security group."
+          "content": "`defer terraform.Destroy` smonta la VPC anche se un'asserzione fallisce. Nel mezzo, il test verifica DNS, due subnet pubbliche e un security group."
         },
         {
           "type": "paragraph",
-          "content": "moto fa l'opposto e simula in memoria le API AWS, così i test sono veloci e gratis. Guarda i due decorator:"
+          "content": "moto fa il contrario: simula in memoria le API AWS, quindi i test sono veloci e gratis. Guarda i due decorator:"
         },
         {
           "type": "code",
@@ -2665,7 +2665,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Distribuisce il template sull'AWS finto di moto e verifica che il bucket sia versionato. I comandi Checkov in fondo coprono la compliance."
+          "content": "Deploya il template sull'AWS finto di moto e verifica che il bucket sia versionato. I comandi Checkov in fondo coprono la compliance."
         },
         {
           "type": "heading",
@@ -2674,7 +2674,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Un'azienda di viaggi con 40 squadre ha adottato Terraform tramite un registry di moduli opinionated gestito dalla piattaforma. Ogni modulo (VPC, cluster ECS, istanza RDS) aveva controlli di policy integrati ed era versionato in modo indipendente con il versioning semantico, così le squadre adottavano gli aggiornamenti con i loro tempi. Sentinel bloccava gli errori comuni: bucket S3 pubblici, tag mancanti, niente cifratura at rest. Un modulo \"golden path\" per ogni tipo di risorsa riduceva la varianza su oltre 200 microservizi. Un unico workflow GitHub Actions, \"infra-apply\", eseguiva ogni rollout, centralizzando locking e drift detection. Il tempo mediano di provisioning è sceso a 12 minuti, contro le 2+ ore con i ticket. Guarda la divisione tra i due job:"
+          "content": "Un'azienda di viaggi con 40 squadre ha adottato Terraform tramite un registry di moduli opinionated gestito dalla piattaforma. Ogni modulo (VPC, cluster ECS, istanza RDS) aveva i controlli di policy dentro ed era versionato per conto suo con il versioning semantico, così ogni squadra si prendeva gli aggiornamenti coi suoi tempi. Sentinel bloccava gli errori classici: bucket S3 pubblici, tag mancanti, niente cifratura at rest. Un modulo \"golden path\" per ogni tipo di risorsa riduceva la varianza su oltre 200 microservizi. Un unico workflow GitHub Actions, \"infra-apply\", faceva ogni rollout e centralizzava locking e drift detection. Il tempo mediano di provisioning è sceso a 12 minuti. Con i ticket erano 2+ ore. Guarda come sono divisi i due job:"
         },
         {
           "type": "code",
@@ -2683,7 +2683,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Le pull request ottengono init, validate, controllo del formato, plan e controllo delle policy; solo un push su `main`, attraverso l'ambiente protetto `production`, esegue `apply`. Il passo delle policy è l'unico in cui l'esempio non può copiare il caso reale: Sentinel gira solo dentro Terraform Cloud o Enterprise, e questo workflow tiene lo stato su S3. Quindi trasforma il plan in JSON e lo verifica con Conftest contro policy Rego, la strada open source di OPA per le stesse regole (niente bucket pubblici, tag obbligatori, cifratura at rest)."
+          "content": "Le pull request si prendono init, validate, controllo del formato, plan e controllo delle policy. Solo un push su `main`, passando dall'ambiente protetto `production`, esegue `apply`. Il passo delle policy è l'unico dove l'esempio non può copiare il caso reale: Sentinel gira solo dentro Terraform Cloud o Enterprise, e questo workflow tiene lo stato su S3. Quindi trasforma il plan in JSON e lo verifica con Conftest contro policy Rego, la strada open source di OPA per le stesse regole (niente bucket pubblici, tag obbligatori, cifratura at rest)."
         },
         {
           "type": "heading",
@@ -2692,7 +2692,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Le grandi aziende separano gli account per isolamento, fatturazione e compliance (workspace Terraform, StackSet CloudFormation e stack Pulumi lo gestiscono tutti). Il pattern: AWS Organizations con un account per ambiente (dev, staging, prod), stato separato per account, moduli condivisi tramite un registry privato e deploy da un account CI/CD centrale via assume-role. Per il multi-region, parametrizza la regione e distribuisci lo stesso stack in ciascuna. Guarda il blocco `assume_role`:"
+          "content": "Le grandi aziende separano gli account per isolamento, fatturazione e compliance (workspace Terraform, StackSet CloudFormation e stack Pulumi lo gestiscono tutti). Il pattern: AWS Organizations con un account per ambiente (dev, staging, prod), stato separato per account, moduli condivisi da un registry privato e deploy da un account CI/CD centrale via assume-role. Per il multi-region, parametrizzi la regione e deployi lo stesso stack in ognuna. Guarda il blocco `assume_role`:"
         },
         {
           "type": "code",
@@ -2701,7 +2701,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Il codice è lo stesso ovunque; per ogni account cambia solo il file `.tfvars`. La pipeline applica prima dev, e prod solo dopo che dev è riuscito."
+          "content": "Il codice è lo stesso ovunque. Per ogni account cambia solo il file `.tfvars`. La pipeline applica prima dev, e prod solo se dev è andato liscio."
         },
         {
           "type": "heading",
@@ -2711,18 +2711,18 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         {
           "type": "list",
           "items": [
-            "Parti da un solo team di piattaforma che possiede i moduli condivisi.",
+            "Parti da un solo team di piattaforma, padrone dei moduli condivisi.",
             "Imponi code review e controlli automatici sul plan.",
-            "Usa backend remoti con locking (S3 + DynamoDB, Terraform Cloud o Pulumi ESC).",
-            "Documenta i runbook per il recupero dello stato e il bootstrap tra account.",
+            "Backend remoti con locking, sempre (S3 + DynamoDB, Terraform Cloud o Pulumi ESC).",
+            "Scrivi i runbook per il recupero dello stato e il bootstrap tra account.",
             "Abilita gli sviluppatori: brown bag, template e office hours valgono più degli ordini dall'alto.",
-            "Misura \"tempo per avere un ambiente\" e \"incidenti dovuti al drift\" per giustificare altri investimenti."
+            "Misura \"tempo per avere un ambiente\" e \"incidenti da drift\", e con quei numeri giustifichi altri investimenti."
           ],
           "ordered": true
         },
         {
           "type": "paragraph",
-          "content": "Non convertire tutto in una volta. Parti dall'infrastruttura nuova, poi migra quella esistente un po' alla volta con terraform import o la drift detection di CloudFormation. Obiettivi da misurare: ambienti pronti in meno di 15 minuti, lead time delle modifiche sotto 1 giorno, meno di 1 incidente di drift al mese. La leva è un modulo golden path per ogni tipo di risorsa, obbligatorio per tutta l'infrastruttura nuova. Guarda quanto poco deve scrivere chi lo usa, in fondo:"
+          "content": "Non convertire tutto in un colpo. Parti dall'infrastruttura nuova, poi migri quella esistente un pezzo alla volta con terraform import o la drift detection di CloudFormation. Obiettivi da misurare: ambienti pronti in meno di 15 minuti, lead time delle modifiche sotto 1 giorno, meno di 1 incidente di drift al mese. La leva è un modulo golden path per ogni tipo di risorsa, obbligatorio per tutta l'infrastruttura nuova. Guarda in fondo quanto poco deve scrivere chi lo usa:"
         },
         {
           "type": "code",
@@ -2731,14 +2731,14 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Il modulo incorpora Fargate, rete privata, load balancer e health check; un team fornisce il nome del servizio e magari CPU e memoria. Col tempo i team migrano da soli, per smettere di mantenere codice custom."
+          "content": "Il modulo si porta dentro Fargate, rete privata, load balancer e health check. Il team ci mette il nome del servizio, e magari CPU e memoria. Col tempo le squadre migrano da sole, perché sono stufe di mantenere codice custom."
         }
       ]
     },
   },
   'github-actions-vs-vercel-ci': {
     en: {
-      "title": "GitHub Actions vs Vercel: choose CI/CD by workflow, not by tribe",
+      "title": "GitHub Actions vs Vercel: picking CI/CD",
       "description": "GitHub Actions and Vercel, minus the tribalism: what each is built for, what it costs, and which one wins each scenario. The answer is 'it depends', but not in the useless way.",
       "content": [
         {
@@ -2921,21 +2921,21 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
       ]
     },
     it: {
-      "title": "GitHub Actions o Vercel: scegliere la CI/CD per workflow, non per tifo",
-      "description": "GitHub Actions e Vercel senza tifo da stadio: per cosa è fatto ciascuno, quanto costa e chi vince in ogni scenario. La risposta è 'dipende', ma non nel modo inutile.",
+      "title": "GitHub Actions o Vercel? Dipende, davvero",
+      "description": "GitHub Actions contro Vercel, senza tifo da stadio. Un'officina e una linea di montaggio: cosa sa fare ciascuno, quanto costa al minuto e chi vince in ogni scenario. La risposta è 'dipende', ma non quello inutile.",
       "content": [
         {
           "type": "paragraph",
-          "content": "Ogni dibattito GitHub Actions contro Vercel parte dal prezzo o da una feature del cuore e finisce in tifo da stadio. La domanda utile è più sommessa: quale workflow stai davvero ottimizzando? Ho gestito monorepo con decine di microservizi su Actions e messo in produzione piattaforme Next.js che non hanno mai lasciato Vercel. Entrambe scelte giuste, per motivi completamente diversi."
+          "content": "Ogni dibattito GitHub Actions contro Vercel parte dal prezzo o dalla feature del cuore e finisce in tifo da stadio. La domanda utile è più sottovoce: quale workflow stai davvero ottimizzando? Ho gestito monorepo con decine di microservizi su Actions e messo in produzione piattaforme Next.js che da Vercel non sono mai uscite. Scelte giuste tutte e due. Per motivi opposti."
         },
         {
           "type": "paragraph",
-          "content": "I due non sono nemmeno lo stesso tipo di strumento. GitHub Actions è un motore di automazione generico: esegue qualunque job descritto in YAML su una macchina pulita. Vercel è una piattaforma di hosting con una pipeline di build attaccata, pensata per i framework frontend. Actions è un'officina piena di attrezzi; Vercel è una linea di montaggio costruita per un solo prodotto. Questo confronto viene dalla CI/CD di team fintech, e-commerce e SaaS con migliaia di deploy al mese. Copre:"
+          "content": "Non sono nemmeno lo stesso tipo di strumento. GitHub Actions è un motore di automazione generico: esegue qualunque job scritto in YAML su una macchina pulita. Vercel è una piattaforma di hosting con una pipeline di build attaccata, pensata per i framework frontend. Actions è un'officina piena di attrezzi. Vercel è una linea di montaggio costruita per un prodotto solo. Questo confronto viene dalla CI/CD di team fintech, e-commerce e SaaS con migliaia di deploy al mese. Il giro:"
         },
         {
           "type": "list",
           "items": [
-            "in cosa è bravo ciascuno, con una pipeline per parte;",
+            "cosa sa fare ciascuno, con una pipeline per parte;",
             "due casi reali con risposte opposte;",
             "costi, velocità e pattern avanzati;",
             "usarli insieme, e come scegliere."
@@ -2949,7 +2949,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Actions offre workflow riutilizzabili, matrix build, action personalizzate, runner self-hosted, federazione OIDC con i cloud e regole di protezione degli ambienti. Eccelle nell'orchestrazione complessa: pipeline multi-stage con condizioni, job paralleli e dipendenze tra loro. Lo YAML è verboso ma esprime quasi qualunque pattern CI/CD. Se devi lanciare Terraform, buildare immagini Docker e pubblicare chart Helm, Actions è tuo amico. Guarda le righe `needs:`, che concatenano i job, e la `matrix`, che apre un job per ogni servizio:"
+          "content": "Actions ti dà workflow riutilizzabili, matrix build, action custom, runner self-hosted, federazione OIDC con i cloud e regole di protezione degli ambienti. Dove spacca è l'orchestrazione complessa: pipeline multi-stage con condizioni, job paralleli e dipendenze tra loro. Lo YAML è verboso, ma ci scrivi quasi qualunque pattern CI/CD. Devi lanciare Terraform, buildare immagini Docker e pubblicare chart Helm? Actions è tuo amico. Guarda le righe `needs:`, che concatenano i job, e la `matrix`, che apre un job per ogni servizio:"
         },
         {
           "type": "code",
@@ -2958,11 +2958,11 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Lint e test girano in parallelo per tre servizi, i container si buildano solo se passano tutti, Terraform applica solo su `main` e i servizi si distribuiscono solo quando l'infrastruttura è pronta."
+          "content": "Lint e test girano in parallelo su tre servizi. I container si buildano solo se passa tutto, Terraform applica solo su `main`, e i servizi si deployano solo quando l'infrastruttura è pronta."
         },
         {
           "type": "paragraph",
-          "content": "Un mattone merita un esempio a parte: OIDC. Invece di salvare una access key AWS come secret, il job riceve da GitHub un token firmato e di breve durata che dice quale repo e quale workflow è, e AWS lo scambia con credenziali temporanee. È un badge da visitatore che scade quando esci, non una copia delle chiavi dell'ufficio. Guarda `id-token: write` e `role-to-assume`:"
+          "content": "Un mattone si merita un esempio a parte: OIDC. Invece di salvare una access key AWS come secret, il job riceve da GitHub un token firmato, a vita breve, che dice quale repo e quale workflow è. AWS lo scambia con credenziali temporanee. È un badge da visitatore che scade quando esci, non una copia delle chiavi dell'ufficio. Guarda `id-token: write` e `role-to-assume`:"
         },
         {
           "type": "code",
@@ -2971,7 +2971,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Il job sincronizza un sito statico su S3 e invalida CloudFront senza nessuna chiave AWS salvata, e le credenziali scadono a fine job."
+          "content": "Il job sincronizza un sito statico su S3 e invalida CloudFront senza una sola chiave AWS salvata. E le credenziali muoiono a fine job."
         },
         {
           "type": "heading",
@@ -2980,7 +2980,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Vercel punta sull'esperienza di sviluppo a configurazione zero: un URL di preview per ogni PR, ottimizzazione delle immagini inclusa, Edge Function e un gestore delle variabili d'ambiente. Riconosce il framework (Next.js, Remix, Astro), configura la build e genera le preview senza che tu lo chieda. Il prezzo è la flessibilità: personalizzare gli step di build o eseguire script arbitrari è difficile. Per frontend serverless con preview in pochi secondi, è imbattibile. Per un'app Next.js standard, questo file opzionale è l'intera pipeline:"
+          "content": "Vercel punta tutto sull'esperienza di sviluppo a configurazione zero: un URL di preview per ogni PR, ottimizzazione delle immagini inclusa, Edge Function e un gestore delle variabili d'ambiente. Riconosce il framework (Next.js, Remix, Astro), configura la build e ti genera le preview senza che tu chieda niente. Il prezzo è la flessibilità: personalizzare gli step di build o lanciare script arbitrari è una sofferenza. Per frontend serverless con preview in pochi secondi, però, non ha rivali. Per un'app Next.js standard, questo file opzionale è tutta la pipeline:"
         },
         {
           "type": "code",
@@ -2989,7 +2989,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Vercel rileva da solo quasi tutte queste impostazioni; il file fissa la regione, i riferimenti alle variabili d'ambiente e un header di sicurezza."
+          "content": "Quasi tutte queste impostazioni Vercel le rileva da solo. Il file fissa la regione, i riferimenti alle variabili d'ambiente e un header di sicurezza. Fine."
         },
         {
           "type": "heading",
@@ -2998,11 +2998,11 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Una startup fintech aveva un monorepo con 15 microservizi (API Node.js, pipeline dati Python, infrastruttura Terraform). Servivano test di integrazione tra servizi, un'immagine Docker per servizio, deploy su ECS e aggiornamenti dell'infrastruttura. Matrix build e dipendenze tra job di Actions hanno dato test paralleli mantenendo l'ordine di deploy. Costo: ~$200/mese per 2.000 minuti di build. Su Vercel lo stesso setup avrebbe richiesto script di build custom, senza build Docker native."
+          "content": "Una startup fintech aveva un monorepo con 15 microservizi (API Node.js, pipeline dati Python, infrastruttura Terraform). Servivano test di integrazione tra servizi, un'immagine Docker per servizio, deploy su ECS e aggiornamenti dell'infrastruttura. Matrix build e dipendenze tra job di Actions hanno dato test in parallelo senza perdere l'ordine di deploy. Costo: ~$200/mese per 2.000 minuti di build. Su Vercel lo stesso setup voleva script di build custom. E niente build Docker native."
         },
         {
           "type": "paragraph",
-          "content": "Un'agenzia di marketing costruisce siti per i clienti in Next.js e ne distribuisce 50+ al mese, ognuno con un URL di preview immediato per l'approvazione del cliente. Preview automatiche su ogni PR ed Edge Function per l'A/B testing hanno reso Vercel la scelta ovvia. Le build durano 2-3 minuti a sito; il costo è $20/mese per membro del team più l'uso. Su Actions servirebbero URL di preview custom, un setup S3/CloudFront e molta più configurazione. Un A/B test su una Edge Function è così; guarda il cookie:"
+          "content": "Un'agenzia di marketing costruisce siti per i clienti in Next.js e ne mette online 50+ al mese, ognuno con un URL di preview immediato per l'ok del cliente. Preview automatiche su ogni PR ed Edge Function per l'A/B testing: Vercel era la scelta ovvia. Le build durano 2-3 minuti a sito, il costo è $20/mese per membro del team più l'uso. Su Actions ti servirebbero URL di preview custom, un setup S3/CloudFront e molta più configurazione. Un A/B test su una Edge Function è così. Guarda il cookie:"
         },
         {
           "type": "code",
@@ -3011,7 +3011,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "La variante si sceglie una volta, resta per un giorno (`Max-Age=86400`) così ogni visitatore vede una pagina coerente, e viene servita dall'edge senza niente da configurare."
+          "content": "La variante si sceglie una volta e resta per un giorno (`Max-Age=86400`), così ogni visitatore vede una pagina coerente. La serve l'edge, senza niente da configurare."
         },
         {
           "type": "heading",
@@ -3020,11 +3020,11 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "I prezzi cambiano, quindi leggete questi come una fotografia del momento in cui è stato scritto (metà 2024). Actions fatturava a minuto di runner, con un moltiplicatore per sistema operativo: $0.008/minuto su Linux, $0.016 su Windows, $0.08 su macOS, con 2.000 minuti gratis al mese per i repo privati. I runner self-hosted sono gratis ma li gestisci tu. Vercel fattura i minuti di build più le risorse di runtime, e l'hosting sta sulla stessa fattura, il che semplifica gli acquisti per i team frontend. Il piano gratuito include 100GB di banda; Pro costa $20/utente/mese con banda illimitata, funzioni per team e minuti di build inclusi, più $40 ogni 1.000 minuti extra. Enterprise ha prezzi su misura."
+          "content": "I prezzi cambiano, quindi prendi questi come una foto del momento in cui ho scritto (metà 2024). Actions fatturava a minuto di runner, con un moltiplicatore per sistema operativo: $0.008/minuto su Linux, $0.016 su Windows, $0.08 su macOS, con 2.000 minuti gratis al mese per i repo privati. I runner self-hosted sono gratis, ma li gestisci tu. Vercel fattura i minuti di build più le risorse di runtime, e l'hosting sta sulla stessa fattura: per i team frontend gli acquisti si semplificano. Il piano gratuito include 100GB di banda. Pro costa $20/utente/mese con banda illimitata, funzioni per team e minuti di build inclusi, più $40 ogni 1.000 minuti extra. Enterprise, prezzi su misura."
         },
         {
           "type": "paragraph",
-          "content": "Quanto a velocità, i runner di Actions sono effimeri: ogni job parte da zero, il che garantisce coerenza ma aggiunge tempo di avvio. La cache di build di Vercel è più aggressiva, quindi le build incrementali sono spesso più rapide. In un monorepo Actions parallelizza i job tra i servizi, mentre Vercel builda in sequenza a meno di configurare i filtri di build. Per tagliare i costi di Actions, collega istanze EC2 spot effimere come runner self-hosted, utili anche per carichi GPU o ARM. Guarda `runs-on` e i conti nei commenti:"
+          "content": "Sulla velocità: i runner di Actions sono effimeri. Ogni job parte da zero, e questo ti garantisce coerenza ma aggiunge tempo di avvio. La cache di build di Vercel è più aggressiva, quindi le build incrementali spesso vanno più veloci. In un monorepo Actions parallelizza i job tra i servizi, Vercel invece builda in sequenza, a meno che non configuri i filtri di build. Per tagliare la bolletta di Actions, attacca istanze EC2 spot effimere come runner self-hosted. Servono anche per carichi GPU o ARM. Guarda `runs-on` e i conti nei commenti:"
         },
         {
           "type": "code",
@@ -3033,7 +3033,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Il workflow in sé è normale; cambia solo la macchina. Stando ai numeri del commento si risparmia circa il 95% al minuto sulle build lunghe, purché qualcuno mantenga i runner."
+          "content": "Il workflow in sé è normalissimo. Cambia solo la macchina. Stando ai numeri del commento risparmi circa il 95% al minuto sulle build lunghe, a patto che qualcuno i runner li mantenga."
         },
         {
           "type": "heading",
@@ -3042,7 +3042,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Su Actions usa matrix build su versioni di Node.js, sistemi operativi o servizi; dipendenze tra job per distribuire in ordine; artifact per passare l'output di build tra job; e workflow riutilizzabili per non duplicare YAML tra repository. In un monorepo la vittoria più grossa sono i path filter, che lanciano i job solo quando cambiano i file rilevanti. Guarda `detect-changes` e l'`if:` su ogni job di test:"
+          "content": "Su Actions usa matrix build su versioni di Node.js, sistemi operativi o servizi; dipendenze tra job per deployare in ordine; artifact per passarti l'output di build tra job; workflow riutilizzabili per non copiare lo stesso YAML tra repository. In un monorepo il colpo grosso sono i path filter: lanciano i job solo quando cambiano i file che contano. Guarda `detect-changes` e l'`if:` su ogni job di test:"
         },
         {
           "type": "code",
@@ -3051,11 +3051,11 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Una modifica sotto `services/api` lancia solo i test dell'API; una in `services/shared` li lancia entrambi, perché entrambi ne dipendono."
+          "content": "Tocchi `services/api`, e partono solo i test dell'API. Tocchi `services/shared`, e partono tutti e due, perché tutti e due ne dipendono."
         },
         {
           "type": "paragraph",
-          "content": "Su Vercel configura i filtri di build perché un monorepo ricostruisca solo i pacchetti cambiati. Usa l'Incremental Static Regeneration (ISR), che serve pagine statiche e le rigenera in background, per i contenuti che non servono in tempo reale, e Vercel Analytics per seguire i Core Web Vitals. L'Edge Middleware gestisce riscritture, autenticazione e A/B testing prima che la richiesta arrivi all'app. Guarda le tre decisioni che prende, in ordine:"
+          "content": "Su Vercel configura i filtri di build, così un monorepo ricostruisce solo i pacchetti cambiati. Usa l'Incremental Static Regeneration (ISR), che serve pagine statiche e le rigenera in background, per i contenuti che non devono essere in tempo reale, e Vercel Analytics per seguire i Core Web Vitals. L'Edge Middleware gestisce riscritture, autenticazione e A/B testing prima che la richiesta arrivi all'app. Guarda le tre decisioni che prende, in ordine:"
         },
         {
           "type": "code",
@@ -3064,16 +3064,16 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "I visitatori dal Regno Unito vengono riscritti su `/uk`, gli anonimi vengono mandati da `/dashboard` al login e tutti gli altri passano con gli header di paese e variante. Il `matcher` lo tiene lontano dalle route API e dagli asset statici."
+          "content": "Chi arriva dal Regno Unito viene riscritto su `/uk`, gli anonimi vengono rimbalzati da `/dashboard` al login, e tutti gli altri passano con gli header di paese e variante. Il `matcher` lo tiene lontano dalle route API e dagli asset statici."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Usarli insieme: Actions per il backend, Vercel per il frontend"
+          "content": "Insieme: Actions per il backend, Vercel per il frontend"
         },
         {
           "type": "paragraph",
-          "content": "Molte organizzazioni usano entrambi. Le modifiche al backend passano da Actions, che lancia i test, builda le immagini Docker e distribuisce su ECS; se va tutto bene, chiama l'API di deploy di Vercel per ricostruire il frontend che consuma l'API aggiornata. Le PR del frontend hanno subito le preview di Vercel. La responsabilità resta chiara: il team di piattaforma possiede i workflow Actions, il team frontend la configurazione Vercel. Guarda l'ultimo step di `deploy-backend`:"
+          "content": "Tante organizzazioni li usano tutti e due. Le modifiche al backend passano da Actions, che lancia i test, builda le immagini Docker e deploya su ECS. Se va tutto bene, chiama l'API di deploy di Vercel per ricostruire il frontend che consuma l'API aggiornata. Le PR del frontend hanno subito le preview di Vercel. Le responsabilità restano nette: il team di piattaforma possiede i workflow Actions, il team frontend la configurazione Vercel. Guarda l'ultimo step di `deploy-backend`:"
         },
         {
           "type": "code",
@@ -3082,31 +3082,31 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Il passaggio di consegne è una sola chiamata HTTP sullo stesso commit, fatta solo dopo che i test del backend sono passati. Un messaggio di commit con `[deploy-frontend]` avvia il frontend da solo."
+          "content": "Il passaggio di consegne è una sola chiamata HTTP sullo stesso commit, e parte solo dopo che i test del backend sono passati. Un messaggio di commit con `[deploy-frontend]` fa partire il frontend da solo."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Come scegliere"
+          "content": "Come scegli"
         },
         {
           "type": "list",
           "items": [
-            "Build Docker, deploy multi-cloud, controlli di policy, approvazioni o orchestrazione complessa di API backend, pipeline Kafka o IaC: GitHub Actions.",
+            "Build Docker, deploy multi-cloud, controlli di policy, approvazioni, o orchestrazione complessa di API backend, pipeline Kafka o IaC: GitHub Actions.",
             "Soprattutto frontend o serverless, Next.js/React e preview istantanee a configurazione zero per gli stakeholder: Vercel.",
-            "Sia backend sia frontend: usali entrambi, Actions per la CI/CD del backend e Vercel per l'hosting del frontend, collegati da webhook."
+            "Backend e frontend: tutti e due. Actions per la CI/CD del backend, Vercel per l'hosting del frontend, collegati da webhook."
           ]
         },
         {
           "type": "paragraph",
-          "content": "Sui costi, Actions conviene per build ad alto volume, soprattutto con runner self-hosted; Vercel conviene quando l'hosting è sulla stessa piattaforma. Nessuna delle due scelte è una trappola. Se parti da Vercel e ti serve più controllo, esporta gli artifact di build e distribuiscili su S3/CloudFront da Actions. Se parti da Actions e vuoi preview frontend più rapide, aggiungi Vercel come secondo target di deploy. Basta non costringere uno strumento a fare tutto."
+          "content": "Sui costi, Actions conviene per build ad alto volume, soprattutto con runner self-hosted. Vercel conviene quando l'hosting sta sulla stessa piattaforma. Nessuna delle due è una trappola. Parti da Vercel e ti serve più controllo? Esporta gli artifact di build e deployali su S3/CloudFront da Actions. Parti da Actions e vuoi preview frontend più rapide? Aggiungi Vercel come secondo target di deploy. Basta non costringere uno strumento a fare tutto."
         }
       ]
     },
   },
   'kubernetes-autoscaling-hpa-keda': {
     en: {
-      "title": "Kubernetes Autoscaling in Production: HPA, KEDA, and Cluster Autoscaler",
+      "title": "Kubernetes autoscaling: HPA, KEDA, nodes",
       "description": "How the three autoscaling layers fit together, which metrics actually matter, and the pitfalls that cause thrash, cold starts, and surprise bills.",
       "content": [
         {
@@ -3227,20 +3227,20 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
       ]
     },
     it: {
-      "title": "Autoscaling Kubernetes in produzione: HPA, KEDA e Cluster Autoscaler",
-      "description": "Come si incastrano i tre livelli di autoscaling, quali metriche contano davvero e le trappole che causano thrash, cold start e bollette a sorpresa.",
+      "title": "HPA e KEDA: il cluster che respira",
+      "description": "HPA, VPA, Cluster Autoscaler, Karpenter e KEDA: tre livelli di autoscaling che non si parlano. Quali metriche contano davvero e come eviti thrash, cold start e bollette a sorpresa.",
       "content": [
         {
           "type": "paragraph",
-          "content": "Arriva un picco di traffico. L'autoscaler fa il suo lavoro e chiede più pod. I pod restano in `Pending`, perché nessun nodo ha spazio per loro. I nuovi nodi arrivano minuti dopo, quando gli utenti hanno già incontrato i timeout. Poi il traffico cala, tutto scala giù, il traffico torna, e il cluster passa il pomeriggio a fare su e giù come un ascensore impazzito mentre la bolletta continua a contare."
+          "content": "Arriva un picco di traffico. L'autoscaler fa il suo lavoro e chiede più pod. I pod restano in `Pending`: nessun nodo ha spazio. I nodi nuovi arrivano minuti dopo, quando gli utenti si sono già presi i timeout. Poi il traffico cala, tutto scala giù, il traffico torna, e il cluster passa il pomeriggio su e giù come un ascensore impazzito. La bolletta, intanto, conta."
         },
         {
           "type": "paragraph",
-          "content": "L'autoscaling è il punto in cui i team risparmiano o bruciano soldi. Kubernetes offre tre controller indipendenti che operano su livelli diversi, e l'errore comune è trattarli come un'unica manopola. Dopo aver messo a punto l'autoscaling per piattaforme con traffico imprevedibile, dai picchi del Black Friday ai job event-driven a raffica, ecco come si incastrano i pezzi e dove mordono."
+          "content": "L'autoscaling è il punto dove un team risparmia o brucia soldi. Kubernetes ti dà tre controller indipendenti, ognuno su un livello diverso, e l'errore classico è trattarli come un'unica manopola. Ho messo a punto l'autoscaling su piattaforme con traffico imprevedibile, dai picchi del Black Friday ai job event-driven a raffica. Ecco come si incastrano i pezzi. E dove mordono."
         },
         {
           "type": "paragraph",
-          "content": "La mappa: prima i tre livelli, poi l'HPA e le sue metriche, poi KEDA per le code, poi i nodi, e infine come evitare che il sistema oscilli."
+          "content": "Il giro: prima i tre livelli, poi l'HPA e le sue metriche, poi KEDA per le code, poi i nodi. Alla fine, come eviti che il sistema oscilli."
         },
         {
           "type": "heading",
@@ -3249,36 +3249,36 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Immaginate un supermercato all'ora di punta. Potete aprire più casse, dare a ogni cassiere un registratore più veloce, o affittare un edificio più grande. Kubernetes ha un controller per ciascuna cosa:"
+          "content": "Pensa a un supermercato all'ora di punta. Puoi aprire più casse, dare a ogni cassiere un registratore più veloce, o affittare un edificio più grande. Kubernetes ha un controller per ognuna:"
         },
         {
           "type": "list",
           "items": [
-            "L'Horizontal Pod Autoscaler (HPA) cambia il numero di repliche di un workload: più casse.",
-            "Il Vertical Pod Autoscaler (VPA) regola le request di CPU e memoria di ogni pod: un registratore più veloce.",
-            "Il Cluster Autoscaler (o Karpenter) aggiunge e rimuove nodi quando i pod non trovano posto: un edificio più grande."
+            "L'Horizontal Pod Autoscaler (HPA) cambia il numero di repliche di un workload. Più casse.",
+            "Il Vertical Pod Autoscaler (VPA) regola le request di CPU e memoria di ogni pod. Un registratore più veloce.",
+            "Il Cluster Autoscaler (o Karpenter) aggiunge e toglie nodi quando i pod non trovano posto. Un edificio più grande."
           ]
         },
         {
           "type": "paragraph",
-          "content": "Non si coordinano tra loro, quindi componeteli con intenzione. Fate girare HPA e VPA sulla stessa risorsa, per esempio la CPU, e litigheranno sullo stesso segnale: il VPA alza la request, l'utilizzo per pod scende, l'HPA toglie repliche, e il giro ricomincia."
+          "content": "Non si coordinano tra loro, quindi componili con la testa. Metti HPA e VPA sulla stessa risorsa, per esempio la CPU, e litigano sullo stesso segnale: il VPA alza la request, l'utilizzo per pod scende, l'HPA toglie repliche, e il giro ricomincia. All'infinito."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "L'HPA scala su un rapporto, quindi scegliete la metrica giusta"
+          "content": "L'HPA ragiona per rapporti: scegli bene la metrica"
         },
         {
           "type": "paragraph",
-          "content": "La logica di base dell'HPA è una riga di aritmetica: repliche desiderate = repliche attuali × (valore attuale della metrica / valore obiettivo), arrotondato per eccesso. Se 3 pod vedono ciascuno il doppio dell'obiettivo, l'HPA ne chiede 6. Tutto dipende da quale metrica mettete in quel rapporto."
+          "content": "La logica di base dell'HPA è una riga di aritmetica: repliche desiderate = repliche attuali × (valore attuale della metrica / valore obiettivo), arrotondato per eccesso. Se 3 pod vedono ognuno il doppio dell'obiettivo, l'HPA ne chiede 6. Tutto sta in quale metrica ci metti dentro."
         },
         {
           "type": "paragraph",
-          "content": "L'HPA basato sulla CPU è il default e quasi mai lo SLI giusto. Molti servizi sensibili alla latenza rallentano molto prima che la CPU salga, perché aspettano I/O, connection pool o chiamate a valle. Dovrebbero scalare sulle richieste al secondo o sulla profondità della coda, esposte come metriche custom o external tramite Prometheus Adapter, che rende i dati di Prometheus leggibili dall'HPA. Puntate a un utilizzo realistico (60–70%) così c'è margine durante la salita, e impostate sempre min e max di repliche sensati."
+          "content": "L'HPA sulla CPU è il default. E quasi mai è lo SLI giusto. Tanti servizi sensibili alla latenza rallentano molto prima che la CPU si muova, perché aspettano I/O, connection pool o chiamate a valle. Quelli vanno scalati sulle richieste al secondo o sulla profondità della coda, esposte come metriche custom o external tramite Prometheus Adapter. Tradotto: rende i dati di Prometheus leggibili all'HPA. Punta a un utilizzo realistico (60–70%), così hai margine durante la salita, e metti sempre min e max di repliche sensati."
         },
         {
           "type": "paragraph",
-          "content": "In questo HPA guardate due parti: il blocco `metrics`, che scala sulle richieste al secondo invece che sulla CPU, e il blocco `behavior`, che rallenta lo scale-down."
+          "content": "In questo HPA guarda due pezzi: il blocco `metrics`, che scala sulle richieste al secondo invece che sulla CPU, e il blocco `behavior`, che frena lo scale-down."
         },
         {
           "type": "code",
@@ -3287,20 +3287,20 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "L'HPA mantiene tra 3 e 20 repliche, puntando a una media di 50 richieste al secondo per pod. Prima di scalare giù guarda indietro su una finestra di 300 secondi, e non toglie mai più di metà dei pod in un singolo minuto."
+          "content": "L'HPA tiene tra 3 e 20 repliche, puntando a una media di 50 richieste al secondo per pod. Prima di scalare giù guarda indietro su una finestra di 300 secondi, e non toglie mai più di metà dei pod in un minuto."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "KEDA scala sul backlog, fino a zero"
+          "content": "KEDA scala sul backlog. Anche a zero"
         },
         {
           "type": "paragraph",
-          "content": "Worker di code, consumer Kafka e job a raffica hanno un segnale migliore della CPU: quanto lavoro è in attesa. KEDA (Kubernetes Event-Driven Autoscaling) scala su quel backlog reale, e può scalare a zero quando è inattivo, cosa che l'HPA standard non sa fare. Non sostituisce l'HPA: KEDA crea un HPA sotto il cofano e lo alimenta con scaler esterni (SQS, Kafka, Prometheus, cron), mentre gestisce da solo il salto da zero a una replica."
+          "content": "Worker di code, consumer Kafka e job a raffica hanno un segnale migliore della CPU: quanto lavoro c'è in attesa. KEDA (Kubernetes Event-Driven Autoscaling) scala su quel backlog vero, e quando non c'è niente da fare scende a zero. L'HPA standard non lo sa fare. Non lo sostituisce, però: KEDA crea un HPA sotto il cofano e lo alimenta con scaler esterni (SQS, Kafka, Prometheus, cron), e il salto da zero a una replica se lo gestisce da solo."
         },
         {
           "type": "paragraph",
-          "content": "Questo ScaledObject osserva una coda SQS. Guardate `minReplicaCount` e `queueLength`."
+          "content": "Questo ScaledObject osserva una coda SQS. Occhio a `minReplicaCount` e `queueLength`."
         },
         {
           "type": "code",
@@ -3309,48 +3309,48 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Con la coda vuota il worker ha zero pod. Quando arrivano messaggi, KEDA punta a circa 20 messaggi per replica, fino a 30 repliche, e aspetta 120 secondi dopo che la coda si è calmata prima di tornare a zero."
+          "content": "Coda vuota, zero pod. Arrivano messaggi, e KEDA punta a circa 20 messaggi per replica, fino a 30 repliche. Quando la coda si calma aspetta 120 secondi, poi torna a zero."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Più pod sono inutili senza nodi su cui metterli"
+          "content": "Più pod, zero nodi: non serve a niente"
         },
         {
           "type": "paragraph",
-          "content": "Scalare le repliche è inutile se i nodi non possono ospitare i pod. Entrambi gli autoscaler di nodi reagiscono ai pod bloccati in `Pending`. Il Cluster Autoscaler scala node group fissi definiti in anticipo, ciascuno con un tipo di istanza. Karpenter provisiona nodi della dimensione giusta just-in-time, scegliendo il tipo di istanza in base ai pod in attesa, e consolida quelli sottoutilizzati."
+          "content": "Scalare le repliche non serve se i nodi non hanno posto per i pod. Tutti e due gli autoscaler di nodi reagiscono ai pod bloccati in `Pending`. Il Cluster Autoscaler scala node group fissi, definiti prima, ognuno con il suo tipo di istanza. Karpenter invece provisiona nodi della taglia giusta just-in-time: sceglie il tipo di istanza in base ai pod in attesa, e consolida quelli mezzi vuoti."
         },
         {
           "type": "paragraph",
-          "content": "In entrambi i casi i nodi vanno e vengono, quindi proteggete la disponibilità. Un PodDisruptionBudget stabilisce quante repliche devono restare attive mentre i nodi vengono svuotati. Le topology spread constraint distribuiscono le repliche tra nodi e zone, così un nodo che se ne va non si porta mai via un intero servizio."
+          "content": "In tutti e due i casi i nodi vanno e vengono, quindi proteggi la disponibilità. Un PodDisruptionBudget stabilisce quante repliche devono restare su mentre i nodi vengono svuotati. Le topology spread constraint spalmano le repliche tra nodi e zone, così un nodo che se ne va non si porta dietro un servizio intero."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Evitare thrash e cold start"
+          "content": "Niente thrash, niente cold start"
         },
         {
           "type": "paragraph",
-          "content": "Il flapping (scale up e down rapidi) brucia soldi e peggiora la latenza. Ogni nuovo pod paga un cold start: scaricare l'immagine, avviare il processo, scaldare le cache. Qualche abitudine lo tiene sotto controllo:"
+          "content": "Il flapping, cioè scale up e down a raffica, brucia soldi e peggiora la latenza. Ogni pod nuovo paga un cold start: scaricare l'immagine, avviare il processo, scaldare le cache. Qualche abitudine lo tiene a bada:"
         },
         {
           "type": "list",
           "items": [
-            "Usate le stabilization window dell'HPA e le policy di scale-down, come nell'esempio sopra.",
-            "Mantenete readiness probe oneste, così i nuovi pod non ricevono traffico prima di essere caldi.",
-            "Pre-provisionate un piccolo buffer per i workload a raffica, così la prima parte del picco arriva su capacità che esiste già."
+            "Usa le stabilization window dell'HPA e le policy di scale-down, come nell'esempio sopra.",
+            "Tieni le readiness probe oneste, così un pod nuovo non riceve traffico prima di essere caldo.",
+            "Pre-provisiona un piccolo buffer per i workload a raffica, così la prima ondata del picco atterra su capacità che c'è già."
           ]
         },
         {
           "type": "paragraph",
-          "content": "Misurate il costo di un cold start prima di ottimizzarlo. I warm pool prematuri sono a loro volta uno spreco. E se il vostro traffico è piatto, un numero fisso di repliche è una strategia di autoscaling rispettabilissima."
+          "content": "Misura quanto ti costa un cold start prima di ottimizzarlo. Anche i warm pool messi su troppo presto sono spreco. E se il tuo traffico è piatto, un numero fisso di repliche è una strategia di autoscaling rispettabilissima. Punto."
         }
       ]
     },
   },
   'llmops-serving-llms-in-production': {
     en: {
-      "title": "LLMOps: Serving LLMs in Production Without Burning the Budget",
+      "title": "LLMOps: serving LLMs on a budget",
       "description": "Model serving patterns, GPU utilization, caching, and evals for LLM workloads: lessons from running inference where every millisecond and every token has a price.",
       "content": [
         {
@@ -3455,16 +3455,16 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
       ]
     },
     it: {
-      "title": "LLMOps: servire LLM in produzione senza bruciare il budget",
-      "description": "Pattern di model serving, utilizzo GPU, caching ed eval per workload LLM: lezioni dall'inferenza in produzione, dove ogni millisecondo e ogni token hanno un prezzo.",
+      "title": "LLMOps: la GPU brucia soldi",
+      "description": "Nel notebook la demo vola. In produzione la GPU fattura tutta la notte a vuoto e un aggettivo nel prompt peggiora le risposte in silenzio. Self-host o API, continuous batching, KV cache, cache semantica, eval in CI e costi tracciati token per token.",
       "content": [
         {
           "type": "paragraph",
-          "content": "La demo nel notebook funzionava benissimo. Poi la feature è andata in produzione. Ora un'istanza GPU fattura a ore tutta la notte mentre nessuno manda un solo prompt, la latenza raddoppia ogni volta che qualche utente incolla documenti lunghi, e una piccola modifica al prompt ha peggiorato le risposte in silenzio. Nessuno se n'è accorto finché non sono arrivati i ticket al supporto."
+          "content": "Nel notebook la demo funzionava benissimo. Poi la feature è andata in produzione. Adesso un'istanza GPU fattura a ore tutta la notte mentre nessuno manda mezzo prompt. La latenza raddoppia ogni volta che un utente incolla un documento lungo. E una piccola modifica al prompt ha peggiorato le risposte in silenzio. Nessuno se n'è accorto finché non sono arrivati i ticket al supporto."
         },
         {
           "type": "paragraph",
-          "content": "Far rispondere un LLM in un notebook è facile. Servirlo a migliaia di utenti con latenza prevedibile e una bolletta che il vostro CFO tollera è la parte difficile. L'LLMOps è DevOps con due variabili nuove: le GPU sono scarse e costose, e la qualità non è deterministica. Ecco i pattern che hanno tenuto entrambe sotto controllo in produzione, in cinque parti: se ospitare il modello o no, il throughput sulla GPU, la cache semantica, eval e guardrail, e l'osservabilità per token."
+          "content": "Far rispondere un LLM in un notebook è facile. Servirlo a migliaia di utenti con latenza prevedibile e una bolletta che il tuo CFO regge: quella è la parte difficile. L'LLMOps è DevOps con due variabili nuove. Le GPU sono poche e care. La qualità non è deterministica. Qui trovi i pattern che le hanno tenute tutte e due sotto controllo in produzione, in cinque parti: ospitare il modello o no, il throughput sulla GPU, la cache semantica, eval e guardrail, l'osservabilità per token."
         },
         {
           "type": "heading",
@@ -3473,11 +3473,11 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Con un'API gestita (Bedrock, OpenAI, Anthropic) pagate a token e le GPU le gestisce qualcun altro. Con il self-hosting le GPU le affittate voi e le pagate che lavorino o no. Le API vincono su time-to-market ed elasticità; il self-hosting vince sul costo unitario a volumi alti e costanti e sulla data residency."
+          "content": "Con un'API gestita (Bedrock, OpenAI, Anthropic) paghi a token e le GPU le gestisce qualcun altro. Col self-hosting le GPU le affitti tu, e le paghi che lavorino o no. Le API vincono su time-to-market ed elasticità. Il self-hosting vince sul costo unitario a volumi alti e costanti, e sulla data residency."
         },
         {
           "type": "paragraph",
-          "content": "Il punto di pareggio di solito è più alto di quanto i team si aspettino. A meno di saturare una GPU per gran parte della giornata, un'API costa meno. Decidete con un foglio di calcolo, non a sensazione."
+          "content": "Il punto di pareggio di solito è più alto di quanto ti aspetti. Se non saturi una GPU per gran parte della giornata, l'API costa meno. Decidi col foglio di calcolo, non a sensazione."
         },
         {
           "type": "heading",
@@ -3486,19 +3486,19 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Se fate self-hosting, il throughput è tutto, perché la GPU costa uguale che serva una richiesta o tante. Contano soprattutto due tecniche."
+          "content": "Se fai self-hosting, il throughput è tutto: la GPU costa uguale che serva una richiesta o cento. Contano soprattutto due tecniche."
         },
         {
           "type": "paragraph",
-          "content": "Continuous batching. Una GPU è più efficiente quando elabora molte richieste insieme in un batch. Con il batching statico il batch parte insieme e finisce insieme, quindi le risposte brevi aspettano la più lunga. Il continuous batching funziona come una seggiovia invece che come un autobus: appena una richiesta finisce, una nuova prende il suo posto, e la GPU non aspetta mai il passeggero più lento. vLLM e TGI lo fanno entrambi."
+          "content": "Continuous batching. Una GPU rende di più quando macina tante richieste insieme in un batch. Col batching statico il batch parte insieme e finisce insieme, quindi le risposte brevi aspettano la più lunga. Il continuous batching funziona come una seggiovia, non come un autobus: appena una richiesta finisce, una nuova prende il suo posto. La GPU non aspetta mai il passeggero più lento. vLLM e TGI lo fanno tutti e due."
         },
         {
           "type": "paragraph",
-          "content": "La KV cache. Un modello genera testo un token alla volta, e ogni nuovo token guarda tutti i token precedenti. Invece di ricalcolare quella storia a ogni passo, il server tiene in memoria GPU i risultati intermedi (le key e le value dei layer di attention). Quella memoria cresce con la lunghezza del contesto e con il numero di richieste concorrenti, ed è per questo che i contesti lunghi divorano la VRAM. Il prefix caching fa un passo in più: quando molte richieste iniziano con lo stesso testo, come un lungo system prompt, il loro prefisso viene calcolato una volta e condiviso."
+          "content": "La KV cache. Un modello genera testo un token alla volta, e ogni nuovo token guarda tutti quelli prima. Invece di ricalcolare quella storia a ogni passo, il server tiene in memoria GPU i risultati intermedi (le key e le value dei layer di attention). Quella memoria cresce con la lunghezza del contesto e col numero di richieste concorrenti. Ecco perché i contesti lunghi si mangiano la VRAM. Il prefix caching fa un passo in più: se tante richieste partono con lo stesso testo, tipo un lungo system prompt, il prefisso lo calcoli una volta e lo condividi."
         },
         {
           "type": "paragraph",
-          "content": "Insieme trasformano una GPU che serviva 3 richieste al secondo in una che ne serve 30. Ecco un server vLLM con quelle manopole impostate; guardate gli ultimi tre flag."
+          "content": "Insieme trasformano una GPU che serviva 3 richieste al secondo in una che ne serve 30. Ecco un server vLLM con quelle manopole già girate. Guarda gli ultimi tre flag."
         },
         {
           "type": "code",
@@ -3507,20 +3507,20 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Questo avvia un'API compatibile con OpenAI. `--max-num-seqs` limita quante sequenze condividono un batch, `--gpu-memory-utilization` fissa la quota di VRAM che vLLM può prendersi per pesi e KV cache, e `--enable-prefix-caching` attiva il riuso dei prefissi. Regolate i primi due sulla lunghezza dei vostri contesti."
+          "content": "Questo tira su un'API compatibile con OpenAI. `--max-num-seqs` limita quante sequenze stanno nello stesso batch, `--gpu-memory-utilization` fissa la fetta di VRAM che vLLM può prendersi per pesi e KV cache, e `--enable-prefix-caching` accende il riuso dei prefissi. I primi due li tari sulla lunghezza dei tuoi contesti."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "La cache semantica taglia i costi più di qualsiasi GPU"
+          "content": "La cache semantica taglia più di qualsiasi GPU"
         },
         {
           "type": "paragraph",
-          "content": "Buona parte del traffico in produzione è quasi-duplicato: la stessa domanda fatta con parole leggermente diverse. Una cache normale trova solo testo identico, quindi se le perde quasi tutte. Una cache semantica confronta il significato. Trasforma il prompt in un embedding (un vettore in cui significati simili stanno vicini), cerca prompt precedenti simili e restituisce il completamento in cache quando la similarità supera una soglia."
+          "content": "Buona parte del traffico in produzione è quasi-duplicato: la stessa domanda, con parole un po' diverse. Una cache normale becca solo testo identico, quindi se le perde quasi tutte. Una cache semantica confronta il significato. Trasforma il prompt in un embedding (un vettore in cui significati simili stanno vicini), cerca prompt precedenti simili e ti restituisce il completamento in cache quando la similarità supera una soglia."
         },
         {
           "type": "paragraph",
-          "content": "Questo devia regolarmente il 30–50% delle chiamate. È quindi l'ottimizzazione a più alto ROI nella maggior parte dei sistemi LLM, e migliora anche la latenza p95, perché l'inferenza più veloce è quella che non parte proprio."
+          "content": "Così devii regolarmente il 30–50% delle chiamate. Nella maggior parte dei sistemi LLM è l'ottimizzazione col ROI più alto, e ti migliora pure la latenza p95. Perché l'inferenza più veloce è quella che non parte."
         },
         {
           "type": "heading",
@@ -3529,11 +3529,11 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Il codice normale dà lo stesso output per lo stesso input, quindi un unit test può verificarlo. Un LLM no, quindi serve un test harness diverso. Tenete un golden dataset di input rappresentativi con i risultati attesi, ed eseguite eval automatiche in CI a ogni cambio di prompt o di modello. L'exact-match funziona per le risposte strutturate, l'LLM-as-judge (un secondo modello che dà il voto al primo) per il testo libero, e metriche specifiche per tutto quello che sta in mezzo."
+          "content": "Il codice normale dà lo stesso output per lo stesso input, e un unit test lo verifica. Un LLM no. Ti serve un test harness diverso. Tieni un golden dataset di input rappresentativi con i risultati attesi, e lancia eval automatiche in CI a ogni cambio di prompt o di modello. Exact-match per le risposte strutturate, LLM-as-judge (un secondo modello che dà il voto al primo) per il testo libero, metriche su misura per tutto quello che sta in mezzo."
         },
         {
           "type": "paragraph",
-          "content": "Aggiungete guardrail su input e output per PII, prompt injection e tossicità. Trattate prompt e versioni del modello come artefatti versionati, revisionati e rilasciati come il codice. Un cambio di prompt è un deploy, anche quando è solo un aggettivo."
+          "content": "Metti guardrail su input e output per PII, prompt injection e tossicità. Tratta prompt e versioni del modello come artefatti: versionati, revisionati e rilasciati come il codice. Un cambio di prompt è un deploy. Anche quando cambi solo un aggettivo."
         },
         {
           "type": "heading",
@@ -3542,7 +3542,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Con gli LLM il costo sta nei token, quindi è lì che si misura. Loggate token-in, token-out, modello, latenza e cache-hit per ogni richiesta, e tracciate il costo per richiesta per feature. Tracciate le catene multi-step per vedere quale tool call o passo di retrieval è lento. Senza osservabilità a livello di token non potete rispondere a \"perché questo mese è costato il doppio?\", e con gli LLM prima o poi quella domanda arriva sempre."
+          "content": "Con gli LLM il costo sta nei token, quindi misuri lì. Logga token-in, token-out, modello, latenza e cache-hit per ogni richiesta, e traccia il costo per richiesta per feature. Traccia le catene multi-step per vedere quale tool call o passo di retrieval si siede. Senza osservabilità a livello di token non rispondi a \"perché questo mese è costato il doppio?\". E con gli LLM quella domanda prima o poi arriva. Sempre."
         },
         {
           "type": "heading",
@@ -3552,9 +3552,9 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         {
           "type": "list",
           "items": [
-            "Una cache semantica può restituire una buona risposta alla domanda sbagliata se la soglia è troppo larga. E non deve mai condividere con un utente risposte costruite sui dati privati di un altro.",
-            "Il self-hosting porta con sé driver GPU, capacity planning e reperibilità, insieme al costo unitario più basso.",
-            "Anche l'LLM-as-judge è un modello, con i suoi bias. Ogni tanto confrontate i suoi voti con una revisione umana."
+            "Con una soglia troppo larga, la cache semantica ti dà una buona risposta alla domanda sbagliata. E non deve mai passare a un utente risposte costruite sui dati privati di un altro.",
+            "Il self-hosting ti porta il costo unitario più basso. E insieme driver GPU, capacity planning e reperibilità.",
+            "Anche l'LLM-as-judge è un modello, con i suoi bias. Ogni tanto confronta i suoi voti con una revisione umana."
           ]
         }
       ]
@@ -3562,7 +3562,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
   },
   'slo-driven-observability': {
     en: {
-      "title": "SLO-Driven Observability: Error Budgets Over Vanity Dashboards",
+      "title": "SLOs and error budgets beat dashboards",
       "description": "Trading 200 dashboards nobody reads for a handful of SLOs that drive decisions, with Prometheus recording rules and multi-window burn-rate alerts.",
       "content": [
         {
@@ -3605,7 +3605,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Read the three rules below from top to bottom: each one builds on the previous."
+          "content": "Read the rules below from top to bottom: each one builds on the previous."
         },
         {
           "type": "code",
@@ -3671,50 +3671,50 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
       ]
     },
     it: {
-      "title": "Osservabilità guidata dagli SLO: error budget invece di dashboard di vanità",
-      "description": "Scambiare 200 dashboard che nessuno legge con pochi SLO che guidano le decisioni, con recording rule Prometheus e alert multi-window sul burn-rate.",
+      "title": "Error budget: la dashboard non ti salva",
+      "description": "200 dashboard che nessuno legge, un pager che suona per la CPU e tace sul checkout rotto. Butta via il muro di grafici: pochi SLO, recording rule Prometheus e alert multi-window sul burn rate.",
       "content": [
         {
           "type": "paragraph",
-          "content": "Sono le 3 di notte e suona il pager: CPU alta su un nodo. Aprite il portatile, guardate i grafici e scoprite che gli utenti stanno bene. Niente da fare, si torna a dormire. Una settimana prima il checkout aveva restituito errori per buona parte del pomeriggio, la CPU era rimasta tranquilla e non era scattato nessun alert. I clienti se ne sono accorti prima di voi."
+          "content": "Sono le 3 di notte e suona il pager: CPU alta su un nodo. Apri il portatile, guardi i grafici, scopri che gli utenti stanno benissimo. Niente da fare, torni a dormire. Una settimana prima il checkout ha sputato errori per mezzo pomeriggio, la CPU è rimasta tranquilla e non è scattato nessun alert. I clienti se ne sono accorti prima di te. Complimenti."
         },
         {
           "type": "paragraph",
-          "content": "Gran parte dell'\"osservabilità\" è un muro di grafici che diventano rossi alle 3 di notte senza dire nulla di azionabile. Gli SLO ribaltano il modello: definisci l'affidabilità di cui gli utenti hanno davvero bisogno, misuri quanto budget stai consumando, e mandi un alert solo quando il budget brucia abbastanza in fretta da contare. Meno page, sonno migliore, decisioni più chiare."
+          "content": "Gran parte della cosiddetta \"osservabilità\" è un muro di grafici che diventano rossi alle 3 di notte senza dirti niente su cui agire. Gli SLO ribaltano il modello: definisci l'affidabilità che serve davvero agli utenti, misuri quanto budget stai consumando, e mandi un alert solo quando il budget brucia abbastanza in fretta da contare. Meno page. Più sonno. Decisioni più chiare."
         },
         {
           "type": "paragraph",
-          "content": "L'articolo lo costruisce in quattro passi: scegliere cosa misurare (SLI, SLO ed error budget), calcolarlo in modo economico in Prometheus, mandare alert sul burn rate, e concordare cosa succede quando il budget finisce."
+          "content": "Il giro è in quattro passi: scegli cosa misurare (SLI, SLO ed error budget), calcolalo spendendo poco in Prometheus, manda alert sul burn rate, e metti per iscritto cosa succede quando il budget finisce."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Gli SLI misurano ciò che sentono gli utenti, gli SLO fissano l'obiettivo"
+          "content": "SLI: cosa sente l'utente. SLO: l'obiettivo"
         },
         {
           "type": "paragraph",
-          "content": "Tre sigle che si somigliano. Uno SLI (service level indicator) è una misura. Uno SLO (service level objective) è l'obiettivo per quella misura su una finestra di tempo. Uno SLA (service level agreement) è un contratto con un cliente, con penali se lo mancate. Questo articolo parla dei primi due; lo SLA è roba da avvocati."
+          "content": "Tre sigle che si somigliano. Uno SLI (service level indicator) è una misura. Uno SLO (service level objective) è l'obiettivo per quella misura su una finestra di tempo. Uno SLA (service level agreement) è un contratto con un cliente, con penali se lo manchi. Qui si parla dei primi due. Lo SLA è roba da avvocati."
         },
         {
           "type": "paragraph",
-          "content": "Un buon SLI è un rapporto tra eventi buoni ed eventi totali, misurato dove l'utente lo vive. Disponibilità = richieste riuscite / richieste totali. Latenza = richieste sotto una soglia / totali. Evitate proxy infrastrutturali (CPU, memoria) come SLI: sono cause, non sintomi. Una CPU alta può far male agli utenti oppure no. Un checkout fallito fa sempre male."
+          "content": "Un buon SLI è un rapporto tra eventi buoni ed eventi totali, misurato dove l'utente lo vive. Disponibilità = richieste riuscite / richieste totali. Latenza = richieste sotto una soglia / totali. Lascia perdere i proxy infrastrutturali (CPU, memoria) come SLI: sono cause, non sintomi. Una CPU alta può far male agli utenti. Oppure no. Un checkout fallito fa male sempre."
         },
         {
           "type": "paragraph",
-          "content": "L'error budget è quello che lo SLO vi lascia. Con uno SLO di disponibilità al 99.9%, una richiesta su mille può fallire. Pensatelo come una paghetta: potete spenderla in deploy rischiosi, esperimenti e qualche giornata storta, ma quando è finita è finita. Iniziate con due o tre SLO per servizio critico, non venti."
+          "content": "L'error budget è quello che lo SLO ti lascia. Con uno SLO di disponibilità al 99.9%, una richiesta su mille può fallire. Pensalo come una paghetta: la spendi in deploy rischiosi, esperimenti e qualche giornata storta. Ma quando è finita, è finita. Parti con due o tre SLO per servizio critico. Non venti."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Recording rule: calcolare il rapporto una volta sola"
+          "content": "Recording rule: il rapporto lo calcoli una volta"
         },
         {
           "type": "paragraph",
-          "content": "Una recording rule dice a Prometheus di valutare una query a intervalli regolari e salvare il risultato come una nuova serie temporale. L'alternativa è mettere la query completa in ogni pannello di dashboard e in ogni alert, che ripete lo stesso lavoro costoso e lascia insinuare piccole differenze tra le copie. Le recording rule danno a dashboard e alert la stessa fonte di verità e li mantengono economici da interrogare su larga scala."
+          "content": "Una recording rule dice a Prometheus di valutare una query a intervalli regolari e salvare il risultato come nuova serie temporale. L'alternativa è incollare la query intera in ogni pannello e in ogni alert: stesso lavoro costoso ripetuto ovunque, e piccole differenze che si infilano tra le copie. Con le recording rule dashboard e alert pescano dalla stessa fonte di verità, e interrogarli su larga scala costa poco."
         },
         {
           "type": "paragraph",
-          "content": "Leggete le tre regole qui sotto dall'alto in basso: ognuna si appoggia alla precedente."
+          "content": "Leggi le regole qui sotto dall'alto in basso: ognuna si appoggia alla precedente."
         },
         {
           "type": "code",
@@ -3723,24 +3723,24 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "La prima regola conta tutte le richieste al secondo su cinque minuti, la seconda solo le risposte 5xx, e la terza divide l'una per l'altra. Il risultato, `job:slo_error_ratio:ratio5m`, è la frazione di richieste che falliscono in questo momento. La quarta calcola lo stesso rapporto su un'ora, che serve all'alert più sotto."
+          "content": "La prima regola conta tutte le richieste al secondo su cinque minuti, la seconda solo le risposte 5xx, la terza divide l'una per l'altra. Il risultato, `job:slo_error_ratio:ratio5m`, è la frazione di richieste che sta fallendo adesso. La quarta calcola lo stesso rapporto su un'ora, e ti serve per l'alert più sotto."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Burn rate: quanto in fretta state spendendo il budget"
+          "content": "Burn rate: quanto in fretta bruci il budget"
         },
         {
           "type": "paragraph",
-          "content": "L'alert ingenuo è \"manda un page quando il rapporto di errore supera la soglia dello SLO\". È troppo nervoso: un solo minuto storto vi sveglia, anche se ha appena toccato il budget. Ed è anche troppo lento per il motivo opposto, perché una perdita costante appena sopra la linea può prosciugare il budget senza mai sembrare drammatica."
+          "content": "L'alert ingenuo è \"manda un page quando il rapporto di errore supera la soglia dello SLO\". Troppo nervoso: un solo minuto storto ti sveglia, anche se il budget l'ha appena sfiorato. E pure troppo lento, per il motivo opposto: una perdita costante appena sopra la linea ti prosciuga il budget senza mai sembrare un dramma."
         },
         {
           "type": "paragraph",
-          "content": "Il burn rate risolve il problema. È la velocità con cui spendete il budget, confrontata con la velocità che lo esaurirebbe esattamente alla fine della finestra dello SLO. Un burn rate pari a uno arriva giusto sull'obiettivo. Per uno SLO al 99.9%, un burn rate di 14.4x consuma il 2% del budget mensile in un'ora, e per questo vale la pena svegliare qualcuno."
+          "content": "Il burn rate risolve. È la velocità con cui spendi il budget, confrontata con quella che lo esaurirebbe esattamente a fine finestra dello SLO. Burn rate uno: arrivi giusto sull'obiettivo. Per uno SLO al 99.9%, un burn rate di 14.4x si mangia il 2% del budget mensile in un'ora. Per questo vale la pena svegliare qualcuno."
         },
         {
           "type": "paragraph",
-          "content": "Il pattern SRE di Google aggiunge una seconda finestra: page solo quando sia una finestra corta sia una lunga mostrano un consumo veloce. La finestra lunga dimostra che il problema è abbastanza grande da contare; quella corta dimostra che sta ancora succedendo. Nell'alert qui sotto, guardate l'`and` tra le due espressioni."
+          "content": "Il pattern SRE di Google aggiunge una seconda finestra: page solo quando sia una finestra corta sia una lunga mostrano un consumo veloce. La lunga dimostra che il problema è abbastanza grosso da contare. La corta dimostra che sta ancora succedendo. Nell'alert qui sotto, guarda l'`and` tra le due espressioni."
         },
         {
           "type": "code",
@@ -3749,32 +3749,32 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "L'alert manda un page solo se il rapporto di errore supera 14.4 volte lo 0.001 consentito sia su cinque minuti sia su un'ora, per almeno due minuti. I blip brevi restano silenziosi; gli incidenti veri suonano in fretta."
+          "content": "L'alert manda un page solo se il rapporto di errore supera 14.4 volte lo 0.001 consentito sia su cinque minuti sia su un'ora, per almeno due minuti. I blip brevi stanno zitti. Gli incidenti veri suonano subito."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "La policy dell'error budget dà i denti ai numeri"
+          "content": "La policy dell'error budget: i numeri con i denti"
         },
         {
           "type": "paragraph",
-          "content": "Lo SLO è utile solo se il budget ha conseguenze. Concordate in anticipo, per iscritto: finché resta budget, si rilasciano feature velocemente; quando è esaurito, si congelano le modifiche rischiose e si dà priorità al lavoro di affidabilità. Concordarlo prima dell'incidente conta, perché nessuno negozia con calma nel mezzo di uno."
+          "content": "Lo SLO serve solo se il budget ha conseguenze. Mettiti d'accordo col team prima, per iscritto: finché c'è budget, le feature escono veloci; quando è finito, congeli le modifiche rischiose e la priorità va all'affidabilità. Prima dell'incidente, non durante. Nel mezzo di un incidente nessuno negozia con calma."
         },
         {
           "type": "paragraph",
-          "content": "Quella policy scritta trasforma l'osservabilità da dashboard a framework decisionale per l'ingegneria."
+          "content": "Quella policy scritta trasforma l'osservabilità da muro di dashboard a strumento per decidere."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Dove gli SLO richiedono attenzione"
+          "content": "Dove gli SLO ti fregano"
         },
         {
           "type": "list",
           "items": [
-            "I servizi con poco traffico rendono i rapporti ballerini: con poche richieste, un solo errore sposta molto il numero. Usate finestre più lunghe o traffico sintetico.",
-            "Un obiettivo perfetto, con zero errori ammessi, non lascia budget, quindi ogni deploy diventa un rischio per lo SLO. Scegliete l'affidabilità di cui gli utenti hanno bisogno, non la massima immaginabile.",
-            "Gli SLO vi dicono che gli utenti soffrono, non perché. Tenete metriche dettagliate, log e trace per il debugging; smettete solo di mandare page su di essi."
+            "I servizi con poco traffico hanno rapporti ballerini: con poche richieste, un errore solo sposta parecchio il numero. Usa finestre più lunghe o traffico sintetico.",
+            "Un obiettivo perfetto, zero errori ammessi, non lascia budget: ogni deploy diventa un rischio per lo SLO. Scegli l'affidabilità che serve agli utenti, non la massima immaginabile.",
+            "Gli SLO ti dicono che gli utenti soffrono, non perché. Tieniti metriche dettagliate, log e trace per il debugging. Smetti solo di mandarci sopra i page."
           ]
         }
       ]
@@ -3782,7 +3782,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
   },
   'devsecops-supply-chain-security': {
     en: {
-      "title": "Securing the Software Supply Chain: SBOMs, Signing, and Policy-as-Code",
+      "title": "Supply chain security: SBOM, Sigstore, admission",
       "description": "A practical DevSecOps pipeline: shift-left scanning, SBOM generation, artifact signing with Sigstore, and admission policies that actually block bad deploys.",
       "content": [
         {
@@ -3901,55 +3901,55 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
       ]
     },
     it: {
-      "title": "Mettere in sicurezza la supply chain del software: SBOM, firma e policy-as-code",
-      "description": "Una pipeline DevSecOps pratica: scanning shift-left, generazione di SBOM, firma degli artefatti con Sigstore e policy di admission che bloccano davvero i deploy sbagliati.",
+      "title": "Supply chain: firma tutto, fidati di niente",
+      "description": "Log4Shell e un weekend a chiedersi \"usiamo Log4j?\". SolarWinds e un update malevolo firmato. Scanning shift-left con gate bloccante, SBOM con Syft, firma keyless con Sigstore e Kyverno che alla porta del cluster dice di no.",
       "content": [
         {
           "type": "paragraph",
-          "content": "La maggior parte del codice che rilasciate non l'avete scritto voi. Arriva da librerie open source, che arrivano da altre librerie, a diversi livelli di profondità. Quando è arrivato Log4Shell, molti team hanno passato il weekend a cercare di rispondere a una domanda: usiamo Log4j da qualche parte? Nessuno aveva una lista. Con SolarWinds il problema era peggiore: era compromesso il sistema di build del fornitore stesso, quindi l'aggiornamento malevolo usciva firmato e sembrava legittimo."
+          "content": "Gran parte del codice che rilasci non l'hai scritto tu. Arriva da librerie open source, che arrivano da altre librerie, giù per diversi livelli. Quando è uscito Log4Shell, un sacco di team ha passato il weekend su una sola domanda: usiamo Log4j da qualche parte? Nessuno aveva una lista. Con SolarWinds è andata peggio: era compromesso il sistema di build del fornitore stesso. L'aggiornamento malevolo usciva firmato e sembrava legittimo."
         },
         {
           "type": "paragraph",
-          "content": "Dopo quei due casi, \"fidati delle tue dipendenze\" ha smesso di essere una strategia. Il DevSecOps moderno parte dall'idea che qualsiasi artefatto possa essere compromesso e costruisce nella pipeline una fiducia verificabile. Il piano ha quattro passi:"
+          "content": "Dopo quei due casi, \"fidati delle tue dipendenze\" non è più una strategia. Il DevSecOps moderno parte da un'idea: qualsiasi artefatto può essere compromesso. Quindi la fiducia la costruisci nella pipeline, e la rendi verificabile. Il piano è in quattro passi:"
         },
         {
           "type": "list",
           "items": [
-            "Fare scanning presto, e lasciare che lo scan blocchi un merge.",
-            "Sapere cosa c'è dentro ogni artefatto (SBOM).",
-            "Dimostrare da dove viene (firma e provenance).",
-            "Rifiutarsi di eseguire qualsiasi cosa non sappia dimostrare entrambe le cose (admission control)."
+            "Scansiona presto, e lascia che lo scan blocchi il merge.",
+            "Sappi cosa c'è dentro ogni artefatto (SBOM).",
+            "Dimostra da dove viene (firma e provenance).",
+            "Non eseguire niente che non sappia dimostrare tutte e due le cose (admission control)."
           ]
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Shift left, ma con un cancello che sa dire di no"
+          "content": "Shift left, con un cancello che sa dire di no"
         },
         {
           "type": "paragraph",
-          "content": "\"Shift left\" significa trovare i problemi prima nella pipeline, al momento della pull request invece che in produzione. Il lavoro lo fanno due tipi di scanner. Il SAST (static application security testing; Semgrep, CodeQL) legge il vostro codice in cerca di pattern pericolosi. Lo scanning delle dipendenze (Grype, Trivy, Dependabot) confronta le librerie che importate con database di vulnerabilità note."
+          "content": "\"Shift left\" vuol dire trovare i problemi prima nella pipeline: alla pull request, non in produzione. Il lavoro lo fanno due tipi di scanner. Il SAST (static application security testing; Semgrep, CodeQL) legge il tuo codice a caccia di pattern pericolosi. Lo scanning delle dipendenze (Grype, Trivy, Dependabot) confronta le librerie che importi con i database di vulnerabilità note."
         },
         {
           "type": "paragraph",
-          "content": "Eseguiteli entrambi su ogni pull request, e fate fallire la build sui finding high e critical che hanno un fix. La parte \"che hanno un fix\" conta: bloccare un merge per una vulnerabilità che nessuno può ancora correggere insegna solo a odiare lo scanner. Ma lo shift-left senza un gate bloccante è solo rumore. Gli sviluppatori imparano a ignorare i warning che non fermano mai un merge, come tutti ignorano l'antifurto che suona in strada."
+          "content": "Falli girare tutti e due su ogni pull request, e fai fallire la build sui finding high e critical che hanno un fix. Quel \"che hanno un fix\" conta: bloccare un merge per una vulnerabilità che nessuno può ancora correggere insegna solo a odiare lo scanner. Ma lo shift-left senza gate bloccante è rumore. Punto. Gli sviluppatori imparano a ignorare i warning che non fermano mai un merge, come tutti ignorano l'antifurto che suona in strada."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Uno SBOM è la lista degli ingredienti del vostro artefatto"
+          "content": "SBOM: la lista degli ingredienti"
         },
         {
           "type": "paragraph",
-          "content": "Un Software Bill of Materials (SBOM) elenca ogni componente di un artefatto: ogni pacchetto, la sua versione e da dove arriva. Pensate all'etichetta degli ingredienti sul cibo. Non la leggete tutti i giorni, ma quando un lotto viene richiamato vi dice in pochi secondi se ce l'avete in frigo."
+          "content": "Un Software Bill of Materials (SBOM) elenca ogni componente di un artefatto: ogni pacchetto, la sua versione, da dove arriva. Pensa all'etichetta degli ingredienti sul cibo. Non la leggi tutti i giorni. Ma quando richiamano un lotto, ti dice in pochi secondi se ce l'hai in frigo."
         },
         {
           "type": "paragraph",
-          "content": "Generate lo SBOM al momento della build, quando sapete esattamente cosa ci è entrato. Allegatelo all'immagine come attestazione, cioè una dichiarazione firmata su un artefatto, e archiviatelo. A quel punto \"siamo colpiti dalla CVE-XXXX?\" diventa una query da minuti invece che da giorni. Lo SBOM dice cosa c'è dentro. La provenance è la sua vicina: una registrazione di come e dove l'artefatto è stato costruito. Il framework SLSA descrive livelli crescenti di fiducia in quella registrazione."
+          "content": "Genera lo SBOM in fase di build, quando sai esattamente cosa ci è entrato. Allegalo all'immagine come attestazione (una dichiarazione firmata su un artefatto) e archivialo. A quel punto \"siamo colpiti dalla CVE-XXXX?\" è una query da minuti, non da giorni. Lo SBOM dice cosa c'è dentro. La provenance è la sua vicina di casa: la registrazione di come e dove l'artefatto è stato costruito. Il framework SLSA descrive livelli crescenti di fiducia in quella registrazione."
         },
         {
           "type": "paragraph",
-          "content": "I comandi qui sotto fanno l'intera catena per un'immagine. Seguite il tag dell'immagine riga per riga."
+          "content": "I comandi qui sotto fanno tutta la catena per un'immagine. Segui il tag dell'immagine riga per riga."
         },
         {
           "type": "code",
@@ -3958,7 +3958,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Syft elenca i pacchetti dell'immagine in SPDX JSON (un formato SBOM standard), Grype scansiona quella lista e fallisce su tutto ciò che è high o peggio, e cosign firma l'immagine e ci allega lo SBOM come attestazione."
+          "content": "Syft elenca i pacchetti dell'immagine in SPDX JSON (un formato SBOM standard). Grype scansiona quella lista e fallisce su tutto ciò che è high o peggio. cosign firma l'immagine e ci attacca lo SBOM come attestazione."
         },
         {
           "type": "heading",
@@ -3967,28 +3967,28 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Il modo ingenuo di firmare le immagini è una coppia di chiavi a lunga vita, con la chiave privata salvata come secret della CI. Funziona finché la chiave non trapela, e da lì un attaccante può firmare qualsiasi cosa a nome vostro, per tutta la vita della chiave. Ruotarla è doloroso, quindi succede di rado."
+          "content": "Il modo ingenuo di firmare le immagini è una coppia di chiavi a lunga vita, con la privata salvata come secret della CI. Funziona finché la chiave non trapela. Da lì un attaccante firma qualsiasi cosa a nome tuo, per tutta la vita della chiave. Ruotarla è un dolore, quindi non lo fa nessuno."
         },
         {
           "type": "paragraph",
-          "content": "Sigstore e la sua CLI, cosign, offrono invece la firma keyless. Il job di CI dimostra la propria identità (per esempio \"questo workflow GitHub Actions in questo repository\") tramite OIDC, riceve un certificato a vita breve per quell'identità, firma e registra la firma in un transparency log pubblico. Il certificato scade nel giro di minuti, quindi non c'è nessuna chiave a lunga vita da far trapelare. La firma lega l'artefatto all'identità che l'ha costruito."
+          "content": "Sigstore e la sua CLI, cosign, ti danno invece la firma keyless. Il job di CI dimostra chi è (tipo \"questo workflow GitHub Actions in questo repository\") via OIDC, riceve un certificato a vita breve per quell'identità, firma e registra la firma in un transparency log pubblico. Il certificato scade nel giro di minuti. Nessuna chiave a lunga vita, niente da far trapelare. La firma lega l'artefatto all'identità che l'ha costruito."
         },
         {
           "type": "paragraph",
-          "content": "Una firma è utile solo se qualcosa la verifica. È qui che entra l'admission control."
+          "content": "Una firma serve solo se qualcosa la verifica. Ed è qui che entra l'admission control."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Admission control: il buttafuori alla porta del cluster"
+          "content": "Admission control: il buttafuori del cluster"
         },
         {
           "type": "paragraph",
-          "content": "Un admission webhook è un aggancio nell'API server di Kubernetes: prima di salvare un oggetto come un Pod, l'API server chiede a un motore di policy esterno se accettarlo. Kyverno e OPA/Gatekeeper sono i due motori più diffusi. Le policy di Kyverno si scrivono come YAML Kubernetes; Gatekeeper usa Rego, un linguaggio dedicato alle policy. Entrambi possono verificare le firme e rifiutare immagini non firmate o non conformi prima che vengano eseguite."
+          "content": "Un admission webhook è un aggancio nell'API server di Kubernetes: prima di salvare un oggetto come un Pod, l'API server chiede a un motore di policy esterno se farlo entrare. Kyverno e OPA/Gatekeeper sono i due più diffusi. Le policy di Kyverno le scrivi in YAML Kubernetes; Gatekeeper usa Rego, un linguaggio fatto apposta per le policy. Tutti e due verificano le firme e rimbalzano le immagini non firmate o non conformi prima che girino."
         },
         {
           "type": "paragraph",
-          "content": "Nella policy Kyverno qui sotto guardate tre campi: `Enforce`, il pattern delle immagini, e issuer e subject di `keyless`."
+          "content": "Nella policy Kyverno qui sotto guarda tre campi: `Enforce`, il pattern delle immagini, e issuer e subject di `keyless`."
         },
         {
           "type": "code",
@@ -3997,32 +3997,32 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Ogni Pod che usa un'immagine da `ghcr.io/acme/` deve avere una firma keyless emessa tramite GitHub Actions per un repository sotto `github.com/acme/`. Tutto il resto viene rifiutato, non solo loggato. È il cancello che rende il resto della catena vincolante invece che consultivo."
+          "content": "Ogni Pod che usa un'immagine da `ghcr.io/acme/` deve avere una firma keyless emessa tramite GitHub Actions per un repository sotto `github.com/acme/`. Tutto il resto viene rifiutato. Non loggato: rifiutato. È il cancello che rende vincolante il resto della catena, invece che un consiglio."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Da cosa questa catena non vi protegge"
+          "content": "Da cosa questa catena non ti salva"
         },
         {
           "type": "list",
           "items": [
-            "Una firma valida dimostra chi ha costruito un artefatto, non che il codice sia sicuro. Anche una dipendenza compromessa costruita dalla vostra CI viene firmata.",
-            "I gate bloccano anche le emergenze. Definite una procedura break-glass per i fix urgenti, e verificate ogni volta che viene usata.",
-            "L'admission webhook sta sul percorso di deploy. Decidete in anticipo cosa succede se il motore di policy è giù: fail closed e deploy bloccati, o fail open e controlli saltati.",
-            "Gli scanner producono finding senza fix e falsi positivi. Senza qualcuno responsabile del triage, il gate si erode in una lista di eccezioni."
+            "Una firma valida dimostra chi ha costruito un artefatto, non che il codice sia sicuro. Anche una dipendenza compromessa buildata dalla tua CI esce firmata.",
+            "I gate bloccano anche le emergenze. Definisci una procedura break-glass per i fix urgenti, e verifica ogni volta che qualcuno la usa.",
+            "L'admission webhook sta sul percorso di deploy. Decidi prima cosa succede se il motore di policy è giù: fail closed e deploy bloccati, o fail open e controlli saltati.",
+            "Gli scanner sfornano finding senza fix e falsi positivi. Senza qualcuno che fa il triage, il gate si sbriciola in una lista di eccezioni."
           ]
         },
         {
           "type": "paragraph",
-          "content": "Ogni passo da solo è facile da aggirare. Insieme rispondono alle domande che contano al prossimo Log4Shell: cosa stiamo eseguendo, chi l'ha costruito, e poteva entrare qualcos'altro?"
+          "content": "Ogni passo da solo lo aggiri facile. Insieme rispondono alle domande che contano al prossimo Log4Shell: cosa stiamo eseguendo, chi l'ha costruito, e poteva entrare altro?"
         }
       ]
     },
   },
   'platform-engineering-gitops-argocd': {
     en: {
-      "title": "Platform Engineering with GitOps: Golden Paths on Argo CD",
+      "title": "GitOps with Argo CD: golden paths",
       "description": "Building an internal developer platform where self-service templates and Argo CD reconciliation replace ticket-driven ops, without turning developers into cluster admins.",
       "content": [
         {
@@ -4128,59 +4128,59 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
       ]
     },
     it: {
-      "title": "Platform Engineering con GitOps: golden path su Argo CD",
-      "description": "Costruire una piattaforma interna per sviluppatori dove template self-service e riconciliazione Argo CD sostituiscono le ops a colpi di ticket, senza trasformare gli sviluppatori in admin del cluster.",
+      "title": "GitOps con Argo CD: comanda Git",
+      "description": "Ticket in coda, `kubectl edit` notturni, cluster che non somiglia più a Git. Strada asfaltata self-service, ApplicationSet, self-heal di Argo CD e canary con rollback automatico, senza fare degli sviluppatori gli admin del cluster.",
       "content": [
         {
           "type": "paragraph",
-          "content": "Uno sviluppatore ha bisogno di un nuovo servizio in staging. Apre un ticket. Il team ops è già sommerso da altri ticket, quindi il nuovo servizio aspetta. Nel frattempo qualcuno ieri notte ha sistemato la produzione con un rapido `kubectl edit`, e adesso nessuno è sicuro che il cluster corrisponda ancora a quello che c'è nel repository."
+          "content": "Uno sviluppatore ha bisogno di un nuovo servizio in staging. Apre un ticket. Le ops sono già sommerse da altri ticket, quindi il servizio aspetta. Intanto ieri notte qualcuno ha sistemato la produzione al volo con un `kubectl edit`. E adesso nessuno giura più che il cluster corrisponda a quello che c'è nel repository."
         },
         {
           "type": "paragraph",
-          "content": "Il platform engineering è DevOps che regge oltre una manciata di team. Invece di far reinventare pipeline e YAML a ogni squadra, un piccolo team di piattaforma consegna una \"strada asfaltata\": self-service, con opinioni precise e sicura per default. Il GitOps è il meccanismo di delivery che rende quella strada verificabile e capace di autoripararsi."
+          "content": "Il platform engineering è DevOps che regge oltre una manciata di team. Niente più pipeline e YAML reinventati da ogni squadra: un piccolo team di piattaforma ti consegna una \"strada asfaltata\". Self-service, con opinioni precise, sicura per default. Il GitOps è il meccanismo di delivery che la rende verificabile e capace di aggiustarsi da sola."
         },
         {
           "type": "paragraph",
-          "content": "Ecco il percorso: perché i ticket non funzionano, cosa fanno davvero GitOps e Argo CD, come gli ApplicationSet trasformano l'onboarding in una cartella, perché il golden path deve avere uscite, e come la progressive delivery rende sicura la velocità."
+          "content": "Il giro: perché i ticket non funzionano, cosa fanno davvero GitOps e Argo CD, come gli ApplicationSet riducono l'onboarding a una cartella, perché il golden path deve avere uscite, e come la progressive delivery ti fa andare veloce senza rompere tutto."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Da una coda di ticket a una strada asfaltata"
+          "content": "Dalla coda di ticket alla strada asfaltata"
         },
         {
           "type": "paragraph",
-          "content": "Il punto debole delle ops centralizzate è la coda di ticket: gli sviluppatori aspettano, le ops saltano da un contesto all'altro, nessuno è contento. Aggiungere persone alle ops accorcia solo un po' la coda."
+          "content": "Il tallone d'Achille delle ops centralizzate è la coda di ticket. Gli sviluppatori aspettano, le ops saltano da un contesto all'altro, nessuno è contento. Metti più persone nelle ops e la coda si accorcia. Di poco."
         },
         {
           "type": "paragraph",
-          "content": "La piattaforma ribalta il flusso. Gli sviluppatori descrivono l'intento in Git (un nuovo servizio, un nuovo ambiente) e l'automazione lo realizza. Le ops passano dal fare il lavoro al possedere i guardrail: i template, le policy e i limiti da cui passa ogni richiesta. La piattaforma diventa un prodotto, e gli sviluppatori sono i suoi utenti."
+          "content": "La piattaforma ribalta il flusso. Lo sviluppatore descrive l'intento in Git (un nuovo servizio, un nuovo ambiente) e l'automazione lo realizza. Le ops smettono di fare il lavoro e iniziano a possedere i guardrail: template, policy e limiti da cui passa ogni richiesta. La piattaforma è un prodotto. Gli sviluppatori sono i suoi utenti."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "GitOps: Git dice cosa deve girare, Argo CD lo rende vero"
+          "content": "GitOps: Git dice cosa gira, Argo CD lo rende vero"
         },
         {
           "type": "paragraph",
-          "content": "GitOps significa che lo stato desiderato del cluster vive in un repository Git, e un agente dentro il cluster continua a leggerlo e ad applicarlo. L'alternativa classica è il deploy push: un job di CI esegue `kubectl apply` una volta e se ne va. Se poi qualcuno modifica il cluster, nessuno se ne accorge."
+          "content": "GitOps vuol dire che lo stato desiderato del cluster vive in un repository Git, e un agente dentro il cluster continua a leggerlo e ad applicarlo. L'alternativa classica è il deploy push: un job di CI lancia `kubectl apply` una volta e se ne va. Se poi qualcuno mette le mani sul cluster, non se ne accorge nessuno."
         },
         {
           "type": "paragraph",
-          "content": "Argo CD è quell'agente. Funziona come un termostato: impostate l'obiettivo in Git, lui confronta la stanza con l'obiettivo e corregge la differenza, ancora e ancora. Quella differenza si chiama drift. Con il self-heal attivo, Argo CD annulla il drift automaticamente, quindi il `kubectl edit` notturno dell'introduzione viene disfatto e il cluster corrisponde sempre a Git. Ogni modifica è un commit, che vi regala anche un audit log."
+          "content": "Argo CD è quell'agente. Ragiona come un termostato: tu imposti l'obiettivo in Git, lui confronta la stanza con l'obiettivo e corregge la differenza. Ancora e ancora. Quella differenza si chiama drift. Con il self-heal attivo Argo CD il drift lo annulla da solo: il `kubectl edit` notturno dell'inizio sparisce e il cluster torna uguale a Git. Ogni modifica è un commit. E l'audit log te lo ritrovi gratis."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Gli ApplicationSet trasformano l'onboarding in una cartella"
+          "content": "ApplicationSet: l'onboarding diventa una cartella"
         },
         {
           "type": "paragraph",
-          "content": "In Argo CD, un'Application è un'unità di deploy: una sorgente in Git e una destinazione in un cluster. Con pochi servizi si possono scrivere a mano, oppure usare il pattern app-of-apps, dove un'Application padre punta a una cartella piena di manifest di Application figlie. Oltre qualche decina di servizi, entrambe le strade diventano copia-incolla."
+          "content": "In Argo CD un'Application è un'unità di deploy: una sorgente in Git, una destinazione in un cluster. Con pochi servizi le scrivi a mano, oppure usi il pattern app-of-apps, dove un'Application padre punta a una cartella piena di manifest di Application figlie. Oltre qualche decina di servizi, tutte e due le strade diventano copia-incolla."
         },
         {
           "type": "paragraph",
-          "content": "Un ApplicationSet genera Application da un unico template. Un generator produce una lista di elementi, e il template viene compilato una volta per elemento. Nell'esempio qui sotto, guardate il generator `git` con il suo path `directories`, poi come `{{path.basename}}` viene riusato nel template."
+          "content": "Un ApplicationSet genera Application da un unico template. Un generator sforna una lista di elementi, e il template viene compilato una volta per elemento. Nell'esempio qui sotto guarda il generator `git` con il suo path `directories`, poi come `{{path.basename}}` torna nel template."
         },
         {
           "type": "code",
@@ -4189,7 +4189,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Ogni cartella sotto `services/` diventa un'Application con il nome della cartella, deployata in un namespace con lo stesso nome. `prune` cancella ciò che è stato rimosso da Git, `selfHeal` annulla il drift. Fare onboarding di un nuovo servizio ora è una cartella in una pull request, non un manifest copiato e incollato."
+          "content": "Ogni cartella sotto `services/` diventa un'Application con il nome della cartella, deployata in un namespace omonimo. `prune` cancella quello che hai tolto da Git, `selfHeal` annulla il drift. Fare onboarding di un nuovo servizio adesso è una cartella in una pull request. Non un manifest copiato e incollato."
         },
         {
           "type": "heading",
@@ -4198,37 +4198,37 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "Un golden path è il modo consigliato e già pronto di fare un'operazione comune, come creare un nuovo servizio. Gli strumenti di scaffolding (Backstage, template cookiecutter) generano il servizio con CI, Dockerfile, Helm chart, SLO e dashboard già collegati. Il team scrive logica di business dal primo giorno invece che YAML."
+          "content": "Il golden path è il modo consigliato e già pronto di fare una cosa comune, tipo creare un nuovo servizio. Gli strumenti di scaffolding (Backstage, template cookiecutter) ti generano il servizio con CI, Dockerfile, Helm chart, SLO e dashboard già collegati. Il team scrive logica di business dal primo giorno, non YAML."
         },
         {
           "type": "paragraph",
-          "content": "Il percorso ha opinioni ma non è obbligatorio. I team con esigenze particolari possono uscirne, e quando lo fanno si prendono il lavoro in più. Una piattaforma che vieta le vie di fuga diventa shadow IT nel giro di un trimestre: le persone non smettono di avere bisogni, smettono solo di chiedere a voi."
+          "content": "Il percorso ha opinioni, ma non è obbligatorio. Il team con esigenze strane può uscirne, e se ne esce si prende il lavoro in più. Una piattaforma senza vie di fuga diventa shadow IT nel giro di un trimestre. La gente non smette di avere bisogni. Smette solo di chiederli a te."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Progressive delivery: rilasciare a pochi, poi a tutti"
+          "content": "Progressive delivery: prima a pochi, poi a tutti"
         },
         {
           "type": "paragraph",
-          "content": "Il self-service rende i deploy frequenti, quindi ognuno deve essere sicuro. Argo Rollouts aggiunge due strategie sopra il GitOps. Un canary manda prima una piccola fetta di traffico alla nuova versione e la allarga passo dopo passo. Il blue/green fa girare la nuova versione accanto alla vecchia e sposta tutto il traffico in un colpo, con la vecchia pronta per tornare indietro."
+          "content": "Col self-service i deploy diventano frequenti, quindi ognuno deve essere sicuro. Argo Rollouts aggiunge due strategie sopra il GitOps. Il canary manda prima una fetta piccola di traffico alla nuova versione e la allarga passo dopo passo. Il blue/green fa girare la nuova versione accanto alla vecchia e sposta tutto il traffico in un colpo, con la vecchia pronta per il rollback."
         },
         {
           "type": "paragraph",
-          "content": "In entrambi i casi la promozione la decidono metriche reali come error rate e latenza, non qualcuno che fissa un grafico. Un'analysis run controlla quelle metriche durante il rollout, e se fallisce Argo Rollouts fa rollback automatico. Combinato con policy-as-code (regole verificate dalle macchine prima che qualcosa venga ammesso) e RBAC per tenant, gli sviluppatori ottengono velocità e la piattaforma mantiene piccolo il raggio d'impatto."
+          "content": "In tutti e due i casi la promozione la decidono metriche vere, error rate e latenza. Non qualcuno che fissa un grafico. Un'analysis run le controlla durante il rollout, e se fallisce Argo Rollouts torna indietro da solo. Aggiungi policy-as-code (regole verificate dalle macchine prima che qualcosa entri) e RBAC per tenant: gli sviluppatori vanno veloci, la piattaforma tiene piccolo il raggio d'impatto."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Quando una piattaforma è più di quanto serve"
+          "content": "Quando la piattaforma è troppa"
         },
         {
           "type": "list",
           "items": [
-            "Una piattaforma è un prodotto. Servono owner, una roadmap e feedback degli utenti. Senza, diventa l'ennesimo strumento interno che la gente aggira.",
-            "Con due o tre team, un repository condiviso di buoni esempi può battere un portale completo. Costruite la piattaforma quando il copia-incolla comincia a fare male.",
-            "Il self-heal è severo. Durante un incidente, un hotfix manuale viene annullato a meno che passi da Git o che l'auto-sync sia in pausa, quindi scrivete quella procedura prima di averne bisogno alle 3 di notte.",
-            "I secret non vanno in Git in chiaro, quindi al GitOps serve un pezzo in più, come secret cifrati o un secret store esterno."
+            "Una piattaforma è un prodotto. Le servono un owner, una roadmap e il feedback degli utenti. Senza, diventa l'ennesimo tool interno che la gente aggira.",
+            "Con due o tre team, un repository condiviso di buoni esempi può battere un portale completo. Costruisci la piattaforma quando il copia-incolla inizia a fare male.",
+            "Il self-heal non perdona. Durante un incidente il tuo hotfix a mano viene annullato, a meno che passi da Git o che l'auto-sync sia in pausa. Scrivi quella procedura prima che ti serva alle 3 di notte.",
+            "I secret in chiaro in Git non ci vanno. Al GitOps serve un pezzo in più: secret cifrati o un secret store esterno."
           ]
         }
       ]
@@ -4236,7 +4236,7 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
   },
   'finops-kubernetes-cost-optimization': {
     en: {
-      "title": "FinOps for Kubernetes: Cutting Cloud Spend Without Cutting Reliability",
+      "title": "Kubernetes FinOps: cut the bill, keep the SLOs",
       "description": "Where Kubernetes money actually goes, how to rightsize with real data, and the spot + autoscaling patterns that cut spend without hurting your SLOs.",
       "content": [
         {
@@ -4362,63 +4362,63 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
       ]
     },
     it: {
-      "title": "FinOps per Kubernetes: tagliare la spesa cloud senza tagliare l'affidabilità",
-      "description": "Dove finiscono davvero i soldi su Kubernetes, come fare rightsizing con dati reali e i pattern spot + autoscaling che tagliano la spesa senza intaccare gli SLO.",
+      "title": "FinOps su Kubernetes: la bolletta non mente",
+      "description": "Request copiate da un template, staging acceso tutto il weekend, una bolletta che nessuno sa attribuire. Cost allocation, rightsizing al p95, spot con Karpenter e caccia agli zombie, senza bruciare gli SLO.",
       "content": [
         {
           "type": "paragraph",
-          "content": "Arriva la bolletta cloud, è più alta del mese scorso, e la finanza fa una domanda semplice: quale team l'ha spesa? Nessuno sa rispondere. La fattura dice \"compute\", il cluster fa girare centinaia di pod di una dozzina di team, e ogni team è convinto che lo spreco sia di qualcun altro."
+          "content": "Arriva la bolletta cloud. È più alta del mese scorso. La finanza fa una domanda semplice: quale team l'ha spesa? Silenzio. La fattura dice \"compute\", il cluster fa girare centinaia di pod di una dozzina di team, e ogni team è convinto che lo spreco sia di qualcun altro."
         },
         {
           "type": "paragraph",
-          "content": "Kubernetes rende banalmente facile sprecare soldi. Request troppo generose, namespace idle e nodi sempre accesi si nascondono tutti dentro una sola bolletta che nessuno riesce ad attribuire. Il FinOps è la pratica che riporta quella responsabilità: rendere il costo visibile per team e per feature, poi ottimizzare con i dati invece che a intuito."
+          "content": "Su Kubernetes sprecare soldi è banale. Request troppo generose, namespace idle, nodi sempre accesi: tutto finisce dentro una sola bolletta che nessuno riesce ad attribuire. Il FinOps serve a questo. Rendi il costo visibile per team e per feature, poi ottimizza con i dati. Non a naso."
         },
         {
           "type": "paragraph",
-          "content": "L'articolo segue quattro passi, nell'ordine in cui rendono:"
+          "content": "Il giro è in quattro passi, nell'ordine in cui rendono:"
         },
         {
           "type": "list",
           "items": [
-            "Vedere il costo: attribuire ogni euro a un owner.",
-            "Rightsizing: chiudere il divario tra ciò che i pod riservano e ciò che usano.",
-            "Comprare capacità più economica: nodi spot e consolidamento con Karpenter.",
-            "Spegnere ciò che nessuno usa: ambienti idle e risorse zombie."
+            "Vedi il costo: ogni euro ha un owner.",
+            "Rightsizing: chiudi il buco tra quello che i pod riservano e quello che usano.",
+            "Compra capacità che costa meno: nodi spot e consolidamento con Karpenter.",
+            "Spegni quello che nessuno usa: ambienti idle e risorse zombie."
           ]
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Non puoi tagliare ciò che non vedi"
+          "content": "Non tagli quello che non vedi"
         },
         {
           "type": "paragraph",
-          "content": "Cost allocation significa dividere la bolletta del cluster nelle parti causate da ciascun workload. Il cloud provider fattura i nodi, ma un nodo è condiviso da molti pod, quindi qualcuno deve fare la divisione. OpenCost e Kubecost fanno esattamente questo: scompongono la bolletta per namespace, workload e label."
+          "content": "Cost allocation vuol dire spaccare la bolletta del cluster nelle parti causate da ciascun workload. Il cloud provider ti fattura i nodi, ma un nodo lo dividono tanti pod, quindi qualcuno deve fare i conti. OpenCost e Kubecost fanno esattamente questo: scompongono la bolletta per namespace, workload e label."
         },
         {
           "type": "paragraph",
-          "content": "Pensate a una cena di gruppo con un solo scontrino. Finché non si sa chi ha ordinato cosa, tutti alzano le spalle. Una volta fatta la divisione, la si può usare in due modi. Lo showback mostra a ogni team la sua quota, senza spostare soldi. Il chargeback addebita davvero quella quota al budget del team. Si parte dallo showback; il chargeback arriva dopo, quando le persone si fidano dei numeri."
+          "content": "Pensa a una cena di gruppo con un solo scontrino. Finché non sai chi ha ordinato cosa, tutti alzano le spalle. Fatta la divisione, la usi in due modi. Lo showback mostra a ogni team la sua quota, senza spostare un euro. Il chargeback quella quota la addebita davvero al budget del team. Parti dallo showback. Il chargeback arriva dopo, quando la gente si fida dei numeri."
         },
         {
           "type": "paragraph",
-          "content": "L'allocazione funziona solo se ogni pod dice a chi appartiene. Imponete uno standard di label così ogni pod è associato a un owner e a un centro di costo. La spesa senza tag è il posto dove i budget vanno a morire: finisce in un calderone \"condiviso\" che tutti vedono e nessuno possiede."
+          "content": "L'allocazione funziona solo se ogni pod dichiara di chi è. Imponi uno standard di label, così ogni pod ha un owner e un centro di costo. La spesa senza tag è il cimitero dei budget: finisce in un calderone \"condiviso\" che tutti vedono e nessuno possiede."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Le request sono ciò che paghi, non ciò che usi"
+          "content": "Paghi le request, non l'uso"
         },
         {
           "type": "paragraph",
-          "content": "Ogni container dichiara due numeri. La request è la CPU e la memoria che lo scheduler gli riserva su un nodo. Il limit è il tetto che il container non può superare. Lo scheduler impacchetta i pod sui nodi in base alle request, non all'uso reale. Quindi un pod che chiede quattro core e ne usa mezzo blocca comunque quattro core, e il nodo che li ospita lo pagate comunque."
+          "content": "Ogni container dichiara due numeri. La request è la CPU e la memoria che lo scheduler gli riserva su un nodo. Il limit è il tetto che non può superare. Lo scheduler impacchetta i pod sui nodi in base alle request, non all'uso reale. Tradotto: un pod che chiede quattro core e ne usa mezzo ne blocca comunque quattro. E il nodo che li ospita lo paghi tu."
         },
         {
           "type": "paragraph",
-          "content": "Quel divario tra richiesto e usato è il più grande spreco su Kubernetes. La causa tipica è una request copiata da un template. La soluzione è impostare le request dall'uso p95 osservato: il valore sotto cui l'uso resta 95 volte su cento. Copre i picchi normali senza pagare il minuto peggiore dell'anno."
+          "content": "Quel buco tra richiesto e usato è lo spreco numero uno su Kubernetes. Il colpevole tipico? Una request copiata da un template. La cura: imposta le request dall'uso p95 osservato, il valore sotto cui l'uso resta 95 volte su cento. Copri i picchi normali senza pagare il minuto peggiore dell'anno."
         },
         {
           "type": "paragraph",
-          "content": "Due comandi mostrano il divario. Guardate i commenti: il primo confronta, il secondo si limita a raccomandare."
+          "content": "Due comandi e il buco salta fuori. Occhio ai commenti: il primo confronta, il secondo si limita a raccomandare."
         },
         {
           "type": "code",
@@ -4427,63 +4427,63 @@ const translations: Record<string, Record<Locale, Pick<Article, 'title' | 'descr
         },
         {
           "type": "paragraph",
-          "content": "`kubectl top` mostra il consumo reale da confrontare con le request. Il VPA (Vertical Pod Autoscaler) in modalità recommendation osserva l'uso e pubblica una request suggerita senza modificare nulla, così una persona può rivederla prima di applicarla."
+          "content": "`kubectl top` ti dà il consumo reale da mettere accanto alle request. Il VPA (Vertical Pod Autoscaler) in modalità recommendation osserva l'uso e pubblica una request suggerita senza toccare niente. Una persona la rivede, poi la applica. Niente sorprese."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "I nodi spot costano poco perché possono sparire"
+          "content": "Lo spot costa poco perché può sparire"
         },
         {
           "type": "paragraph",
-          "content": "Le istanze spot (o preemptible) sono capacità cloud inutilizzata venduta con sconti del 60–90%, con una fregatura: il provider può riprendersele con poco preavviso. Le istanze on-demand costano prezzo pieno e restano finché non le rilasciate voi. I workload fault-tolerant e stateless, quelli che possono perdere una replica e andare avanti, stanno bene su spot."
+          "content": "Le istanze spot (o preemptible) sono capacità cloud avanzata, venduta con sconti del 60–90%. La fregatura: il provider se le riprende con poco preavviso. Le on-demand costano prezzo pieno e restano finché non le rilasci tu. I workload fault-tolerant e stateless, quelli che perdono una replica e tirano dritto, su spot stanno benissimo."
         },
         {
           "type": "paragraph",
-          "content": "Karpenter è un provisioner di nodi. Quando ci sono pod in attesa perché nessun nodo li ospita, sceglie il tipo di istanza più economico che va bene e lo avvia. In più consolida: quando diversi nodi sono mezzi vuoti, raggruppa i loro pod e rimuove i nodi rimasti liberi. Un cluster autoscaler classico si limita ad allargare e restringere node group definiti in anticipo."
+          "content": "Karpenter è un provisioner di nodi. Vede pod in attesa perché nessun nodo li ospita, sceglie il tipo di istanza più economico che va bene e lo accende. E consolida: trova nodi mezzi vuoti, ne raggruppa i pod e butta via i nodi rimasti liberi. Un cluster autoscaler classico, invece, si limita ad allargare e stringere node group definiti in anticipo."
         },
         {
           "type": "paragraph",
-          "content": "Capacità economica che sparisce ha bisogno di una rete di sicurezza. Un PodDisruptionBudget (PDB) dice a Kubernetes quante repliche di un servizio devono restare attive durante le interruzioni volontarie, come il consolidamento. Distribuite le repliche anche tra tipi di capacità, mescolando spot e on-demand, così un singolo reclaim spot non abbatte mai un intero servizio."
+          "content": "Capacità economica che sparisce vuol dire rete di sicurezza. Un PodDisruptionBudget (PDB) dice a Kubernetes quante repliche di un servizio devono restare su durante le interruzioni volontarie, tipo il consolidamento. Spargi le repliche anche tra tipi di capacità, spot e on-demand insieme. Così un singolo reclaim spot non ti tira giù un servizio intero."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Spesa zombie: le risorse che nessuno ricorda di aver creato"
+          "content": "Spesa zombie: roba che nessuno ricorda di aver creato"
         },
         {
           "type": "paragraph",
-          "content": "Una parte dello spreco non è sovradimensionata, è solo dimenticata. Gli ambienti di staging girano tutta la notte e tutto il weekend senza che nessuno li usi. Scalate a zero i namespace non produttivi fuori dall'orario di lavoro, con un trigger cron di KEDA o un semplice controller."
+          "content": "Una parte dello spreco non è sovradimensionata. È solo dimenticata. Lo staging gira tutta la notte e tutto il weekend, e non lo usa nessuno. Scala a zero i namespace non produttivi fuori orario, con un trigger cron di KEDA o un controller da due soldi."
         },
         {
           "type": "paragraph",
-          "content": "Poi andate a caccia di zombie: PersistentVolume orfani i cui pod non esistono più, load balancer collegati al nulla, vecchi snapshot. Storage e networking sono le voci silenziose, perché nessuna dashboard di grafici CPU le mostrerà mai. Un volume chiamato tipo `tmp-non-cancellare` di solito si è guadagnato la cancellazione."
+          "content": "Poi vai a caccia di zombie: PersistentVolume orfani di pod che non esistono più, load balancer collegati al nulla, vecchi snapshot. Storage e networking sono le voci silenziose, nessuna dashboard di grafici CPU te le mostrerà mai. Un volume che si chiama tipo `tmp-non-cancellare`? Di solito la cancellazione se l'è guadagnata."
         },
         {
           "type": "paragraph",
-          "content": "Una pulizia una tantum dà soddisfazione e si degrada nel giro di poche settimane. Un report settimanale automatico degli sprechi, inviato al team owner, tiene a bada l'entropia molto meglio."
+          "content": "La pulizia una tantum dà soddisfazione. Dura poche settimane. Un report settimanale automatico degli sprechi, spedito al team owner, tiene a bada l'entropia molto meglio."
         },
         {
           "type": "heading",
           "level": 2,
-          "content": "Dove risparmiare inizia a costare affidabilità"
+          "content": "Dove il risparmio inizia a costare affidabilità"
         },
         {
           "type": "paragraph",
-          "content": "Ogni leva qui ha un modo di rompersi:"
+          "content": "Ogni leva ha il suo modo di rompere tutto:"
         },
         {
           "type": "list",
           "items": [
-            "Request tagliate troppo strette diventano CPU throttling e kill per out-of-memory. Fate rightsizing sui dati, poi osservate la latenza dopo il cambio.",
+            "Request tagliate troppo strette diventano CPU throttling e kill per out-of-memory. Fai rightsizing sui dati, poi guarda la latenza dopo il cambio.",
             "Lo spot è sbagliato per i workload che non sanno perdere un nodo con grazia: database a replica singola, job lunghi senza checkpoint.",
-            "Il consolidamento sposta i pod. Senza PDB e readiness probe oneste, risparmiare somiglia molto a un'interruzione di servizio.",
-            "Il chargeback prima che i numeri siano credibili trasforma il FinOps in una discussione sul modello di allocazione invece che sugli sprechi."
+            "Il consolidamento sposta i pod. Senza PDB e readiness probe oneste, il tuo risparmio somiglia parecchio a un disservizio.",
+            "Il chargeback prima che i numeri siano credibili trasforma il FinOps in una lite sul modello di allocazione. Degli sprechi non parla più nessuno."
           ]
         },
         {
           "type": "paragraph",
-          "content": "L'ordine conta. Prima la visibilità, perché vi dice dove sono i soldi. Poi rightsizing e spot, perché sono le leve grosse. Poi il report settimanale, perché lo spreco torna sempre."
+          "content": "L'ordine conta. Prima la visibilità: ti dice dove sono i soldi. Poi rightsizing e spot: sono le leve grosse. Poi il report settimanale. Perché lo spreco torna. Sempre."
         }
       ]
     },
