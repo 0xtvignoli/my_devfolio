@@ -71,6 +71,41 @@ jobs:
           set -o pipefail
           sh .github/scripts/guides-ci.sh run 2>&1 | tee evidence/quickstart-transcript.log
 
+      # The quickstart never shows the headline claim, so show it: the same root, the same
+      # two-instruction program, loaded with a raw bpf(BPF_PROG_LOAD) and no signature.
+      # ponytail: same ctypes approach as shirudo's testing/end2end/priv_events.py.
+      - name: "Demo: unsigned BPF load as root, stock kernel vs shirudo target"
+        if: steps.guides.outcome == 'success'
+        timeout-minutes: 20
+        run: |
+          cat > "$RUNNER_TEMP/unsigned-load.py" <<'EOF'
+          import ctypes, errno, os, platform, struct
+          libc = ctypes.CDLL(None, use_errno=True)
+          NR_BPF = {"x86_64": 321, "aarch64": 280}[platform.machine()]
+          # r0 = 0; exit  -- the smallest valid program
+          insns = ctypes.create_string_buffer(struct.pack("<BBhiBBhi", 0xb7, 0, 0, 0, 0x95, 0, 0, 0))
+          lic = ctypes.create_string_buffer(b"GPL")
+          attr = ctypes.create_string_buffer(128)
+          # prog_type=SOCKET_FILTER(1), insn_cnt=2, insns, license
+          struct.pack_into("<IIQQ", attr, 0, 1, 2, ctypes.addressof(insns), ctypes.addressof(lic))
+          fd = libc.syscall(NR_BPF, 5, attr, 128)  # 5 = BPF_PROG_LOAD
+          err = ctypes.get_errno()
+          print(f"kernel {platform.release()}, uid {os.getuid()}")
+          print(f"bpf(BPF_PROG_LOAD, unsigned): " + (f"loaded, fd {fd}" if fd >= 0 else f"refused, {errno.errorcode[err]} ({os.strerror(err)})"))
+          EOF
+          . build/vm-toolchain.env
+          export BPF_VMLINUX_BTF="$PWD/artifacts/bpf-next-kernel-debs/vmlinux.btf"
+          export PATH="$RUNNER_TEMP/no-passt:$PATH"
+          sudo prlimit --pid "$$" --memlock=unlimited:unlimited
+          {
+            echo '--- runner host (stock Ubuntu kernel), as root'
+            sudo python3 -I "$RUNNER_TEMP/unsigned-load.py"
+            make -s -C testing vm VM_NAME=demo </dev/null >/dev/null
+            echo '--- shirudo target, as root'
+            make -s -C testing vm-ssh VM_NAME=demo VM_SSH_COMMAND='python3 -I -' < "$RUNNER_TEMP/unsigned-load.py"
+            make -s -C testing vm-stop VM_NAME=demo
+          } 2>&1 | tee evidence/unsigned-load.log
+
       - name: Summarize the evidence
         if: always()
         run: |
@@ -83,6 +118,10 @@ jobs:
             echo "### Key lines (tamper refused, signed load, attestation)"
             echo '```'
             grep -E 'Permission denied|verdict:|attestation key|OK |FAIL' "$log" 2>/dev/null | head -40 || true
+            echo '```'
+            echo "### Unsigned BPF load as root"
+            echo '```'
+            cat evidence/unsigned-load.log 2>/dev/null || echo "(not run)"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
           cp build/test-vm/vms/quickstart/console.log evidence/guest-console.log 2>/dev/null || true
